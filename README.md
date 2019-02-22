@@ -32,6 +32,7 @@ function love.draw()
 	Slab.Draw()
 end
 ```
+![](Docs/Images/Slab_Hello_World.gif)
 
 ### License
 
