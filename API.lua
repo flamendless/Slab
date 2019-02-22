@@ -1,0 +1,782 @@
+--[[
+
+MIT License
+
+Copyright (c) 2019 Mitchell Davis <coding.jackalope@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--]]
+
+if SLAB_PATH == nil then
+	SLAB_PATH = (...):match("(.-)[^%.]+$") 
+end
+
+local Button = require(SLAB_PATH .. '.Internal.UI.Button')
+local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
+local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
+local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(SLAB_PATH .. '.Internal.UI.Image')
+local Input = require(SLAB_PATH .. '.Internal.UI.Input')
+local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
+local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
+local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
+local MenuBar = require(SLAB_PATH .. '.Internal.UI.MenuBar')
+local Separator = require(SLAB_PATH .. '.Internal.UI.Separator')
+local Style = require(SLAB_PATH .. '.Style')
+local Text = require(SLAB_PATH .. '.Internal.UI.Text')
+local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
+local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+
+--[[
+	Slab
+
+	Slab is an immediate mode GUI toolkit for the Love 2D framework. This library is designed to
+	allow users to easily add this library to their existing Love 2D projects and quickly create
+	tools to enable them to iterate on their ideas quickly. The user should be able to utilize this
+	library with minimal integration steps and is completely written in Lua and utilizes
+	the Love 2D API. No compiled binaries are required and the user will have access to the source
+	so that they may make adjustments that meet the needs of their own projects and tools. Refer
+	to main.lua and SlabTest.lua for example usage of this library.
+
+	Supported Version: 11.2.0
+
+	API:
+		Initialize
+		GetVersion
+		GetLoveVersion
+		Update
+		Draw
+		BeginWindow
+		EndWindow
+		GetWindowPosition
+		GetWindowSize
+		GetWindowContentSize
+		BeginMainMenuBar
+		EndMainMenuBar
+		BeginMenuBar
+		EndMenuBar
+		BeginMenu
+		EndMenu
+		BeginContextMenuItem
+		BeginContextMenuWindow
+		EndContextMenu
+		MenuItem
+		MenuItemChecked
+		Separator
+		Button
+		Text
+		TextSelectable
+		Textf
+		CheckBox
+		Input
+		GetInputText
+		BeginTree
+		EndTree
+		BeginComboBox
+		EndComboBox
+		Image
+		SameLine
+		NewLine
+		Properties
+--]]
+local Slab = {}
+
+-- Slab version numbers.
+local Version_Major = 0
+local Version_Minor = 1
+local Version_Revision = 0
+
+local function TextInput(Ch)
+	Input.Text(Ch)
+
+	if love.textinput ~= nil then
+		love.textinput(Ch)
+	end
+end
+
+local function WheelMoved(X, Y)
+	Window.WheelMoved(X, Y)
+
+	if love.wheelmoved ~= nil then
+		love.wheelmoved(X, Y)
+	end
+end
+
+--[[
+	Initialize
+
+	Initializes Slab and hooks into the required events. This function should be called in love.load.
+
+	args: [Table] The list of parameters passed in by the user on the command-line. This should be passed in from
+		love.load function.
+
+	Return: None.
+--]]
+function Slab.Initialize(args)
+	Style.Initialize()
+	love.handlers['textinput'] = TextInput
+	love.handlers['wheelmoved'] = WheelMoved
+end
+
+--[[
+	GetVersion
+
+	Retrieves the current version of Slab being used as a string.
+
+	Return: [String] String of the current Slab version.
+--]]
+function Slab.GetVersion()
+	return string.format("%d.%d.%d", Version_Major, Version_Minor, Version_Revision)
+end
+
+--[[
+	GetLoveVersion
+
+	Retrieves the current version of Love being used as a string.
+
+	Return: [String] String of the current Love version.
+--]]
+function Slab.GetLoveVersion()
+	local Major, Minor, Revision, Codename = love.getVersion()
+	return string.format("%d.%d.%d - %s", Major, Minor, Revision, Codename)
+end
+
+--[[
+	Update
+
+	Updates the input state and states of various widgets. This function must be called every frame.
+	This should be called before any Slab calls are made to ensure proper responses to Input are made.
+
+	dt: [Number] The delta time for the frame. This should be passed in from love.update.
+
+	Return: None.
+--]]
+function Slab.Update(dt)
+	Mouse.Update()
+	Keyboard.Update()
+	Input.Update(dt)
+	DrawCommands.Reset()
+	Window.Reset()
+
+	if MenuState.IsOpened then
+		MenuState.WasOpened = MenuState.IsOpened
+		if Mouse.IsClicked(1) then
+			MenuState.RequestClose = true
+		end
+	end
+end
+
+--[[
+	Draw
+
+	This function will execute all buffered draw calls from the various Slab calls made prior. This
+	function should be called from love.draw and should be called at the very to ensure Slab is rendered
+	above the user's workspace.
+
+	Return: None.
+--]]
+function Slab.Draw()
+	Window.Validate()
+
+	if MenuState.RequestClose then
+		Menu.Close()
+		MenuBar.Clear()
+	end
+
+	DrawCommands.Execute()
+end
+
+--[[
+	BeginWindow
+
+	This function begins the process of drawing widgets to a window. This function must be followed up with
+	an EndWindow call to ensure proper behavior of drawing windows.
+
+	Id: [String] A unique string identifying this window in the project.
+	Options: [Table] List of options that control how this window will behave.
+		X: [Number] The X position to start rendering the window at.
+		Y: [Number] The Y position to start rendering the window at.
+		W: [Number] The starting width of the window.
+		H: [Number] The starting height of the window.
+		ContentW: [Number] The starting width of the content contained within this window.
+		ContentH: [Number] The starting height of the content contained within this window.
+		BgColor: [Table] The background color value for this window. Will use the default style WindowBackgroundColor if this is empty.
+		Title: [String] The title to display for this window. If emtpy, no title bar will be rendered and the window will not be movable.
+		AllowMove: [Boolean] Controls whether the window is movable within the title bar area. The default value is true.
+		AllowResize: [Boolean] Controls whether the window is resizable. The default value is true. AutoSizeWindow must be false for this to work.
+		AllowFocus: [Boolean] Controls whether the window can be focused. The default value is true.
+		Border: [Number] The value which controls how much empty space should be left between all sides of the window from the content.
+			The default value is 4.0
+		NoOutline: [Boolean] Controls whether an outline should not be rendered. The default value is false.
+		IsMenuBar: [Boolean] Controls whether if this window is a menu bar or not. This flag should be ignored and is used by the menu bar
+			system. The default value is false.
+		AutoSizeWindow: [Boolean] Automatically updates the window size to match the content size. The default value is true.
+		AutoSizeWindowW: [Boolean] Automatically update the window width to match the content size. This value is taken from AutoSizeWindow by default.
+		AutoSizeWindowH: [Boolean] Automatically update the window height to match the content size. This value is taken from AutoSizeWindow by default.
+		AutoSizeContent: [Boolean] The content size of the window is automatically updated with each new widget. The default value is true.
+		Layer: [String] The layer to which to draw this window. This is used internally and should be ignored by the user.
+		ResetPosition: [Boolean] Determines if the window should reset any delta changes to its position.
+		ResetSize: [Boolean] Determines if the window should reset any delta changes to its size.
+		ResetContent: [Boolean] Determines if the window should reset any delta changes to its content size.
+		ResetLayout: [Boolean] Will reset the position, size, and content. Short hand for the above 3 flags.
+
+	Return: None
+--]]
+function Slab.BeginWindow(Id, Options)
+	Window.Begin(Id, Options)
+end
+
+--[[
+	EndWindow
+
+	This function must be called after a BeginWindow and associated widget calls. If the user fails to call this, an assertion will be thrown
+	to alert the user.
+
+	Return: None.
+--]]
+function Slab.EndWindow()
+	Window.End()
+end
+
+--[[
+	GetWindowPosition
+
+	Retrieves the active window's position.
+
+	Return: [Number], [Number] The X and Y position of the active window.
+--]]
+function Slab.GetWindowPosition()
+	return Window.GetPosition()
+end
+
+--[[
+	GetWindowSize
+
+	Retrieves the active window's size.
+
+	Return: [Number], [Number] The width and height of the active window.
+--]]
+function Slab.GetWindowSize()
+	return Window.GetSize()
+end
+
+--[[
+	GetWindowContentSize
+
+	Retrieves the active window's content size.
+
+	Return: [Number], [Number] The width and height of the active window content.
+--]]
+function Slab.GetWindowContentSize()
+	return Window.GetContentSize()
+end
+
+--[[
+	BeginMainMenuBar
+
+	This function begins the process for setting up the main menu bar. This should be called outside of any BeginWindow/EndWindow calls.
+	The user should only call EndMainMenuBar if this function returns true. Use BeginMenu/EndMenu calls to add menu items on the main menu bar.
+
+	Example:
+		if Slab.BeginMainMenuBar() then
+			if Slab.BeginMenu("File") then
+				if Slab.MenuItem("Quit") then
+					love.event.quit()
+				end
+
+				Slab.EndMenu()
+			end
+
+			Slab.EndMainMenuBar()
+		end
+
+	Return: [Boolean] Returns true if the main menu bar process has started.
+--]]
+function Slab.BeginMainMenuBar()
+	Cursor.SetPosition(0.0, 0.0)
+	return Slab.BeginMenuBar(true)
+end
+
+--[[
+	EndMainMenuBar
+
+	This function should be called if BeginMainMenuBar returns true.
+
+	Return: None.
+--]]
+function Slab.EndMainMenuBar()
+	Slab.EndMenuBar()
+end
+
+--[[
+	BeginMenuBar
+
+	This function begins the process of rendering a menu bar for a window. This should only be called within a BeginWindow/EndWindow context.
+
+	Return: [Boolean] Returns true if the menu bar process has started.
+--]]
+function Slab.BeginMenuBar()
+	return MenuBar.Begin()
+end
+
+--[[
+	EndMenuBar
+
+	This function should be called if BeginMenuBar returns true.
+
+	Return: None.
+--]]
+function Slab.EndMenuBar()
+	MenuBar.End()
+end
+
+--[[
+	BeginMenu
+
+	Adds a menu item that when the user hovers over, opens up an additional context menu. When used within a menu bar, BeginMenu calls
+	will be added to the bar. Within a context menu, the menu item will be added within the context menu with an additional arrow to notify
+	the user more options are available. If this function returns true, the user must call EndMenu.
+
+	Label: [String] The label to display for this menu.
+
+	Return: [Boolean] Returns true if the menu item is being hovered.
+--]]
+function Slab.BeginMenu(Label)
+	return Menu.BeginMenu(Label)
+end
+
+--[[
+	EndMenu
+
+	Finishes up a BeginMenu. This function must be called if BeginMenu returns true.
+
+	Return: None.
+--]]
+function Slab.EndMenu()
+	Menu.EndMenu()
+end
+
+--[[
+	BeginContextMenuItem
+
+	Opens up a context menu based on if the user right clicks on the last item. This function should be placed immediately after an item
+	call to open up a context menu for that specific item. If this function returns true, EndContextMenu must be called.
+
+	Example:
+		if Slab.Button("Button!") then
+			-- Perform logic here when button is clicked
+		end
+
+		-- This will only return true if the previous button is hot and the user right-clicks.
+		if Slab.BeginContextMenuItem() then
+			Slab.MenuItem("Button Item 1")
+			Slab.MenuItem("Button Item 2")
+
+			Slab.EndContextMenu()
+		end
+
+	Return: [Boolean] Returns true if the user right clicks on the previous item call. EndContextMenu must be called in order for
+		this to function properly.
+--]]
+function Slab.BeginContextMenuItem()
+	return Menu.BeginContextMenu({IsItem = true})
+end
+
+--[[
+	BeginContextMenuWindow
+
+	Opens up a context menu based on if the user right clicks anywhere within the window. It is recommended to place this function at the end
+	of a window's widget calls so that Slab can catch any BeginContextMenuItem calls before this call. If this function returns true,
+	EndContextMenu must be called.
+
+	Return: [Boolean] Returns true if the user right clicks anywhere within the window. EndContextMenu must be called in order for this
+		to function properly.
+--]]
+function Slab.BeginContextMenuWindow()
+	return Menu.BeginContextMenu({IsWindow = true})
+end
+
+--[[
+	EndContextMenu
+
+	Finishes up any BeginContextMenuItem/BeginContextMenuWindow if they return true.
+
+	Return: None.
+--]]
+function Slab.EndContextMenu()
+	Menu.EndContextMenu()
+end
+
+--[[
+	MenuItem
+
+	Adds a menu item to a given context menu.
+
+	Label: [String] The label to display to the user.
+
+	Return: [Boolean] Returns true if the user clicks on this menu item.
+--]]
+function Slab.MenuItem(Label)
+	return Menu.MenuItem(Label)
+end
+
+--[[
+	MenuItemChecked
+
+	Adds a menu item to a given context menu. If IsChecked is true, then a check mark will be rendered next to the
+	label.
+
+	Example:
+		local Checked = false
+		if Slab.MenuItemChecked("Menu Item", Checked)
+			Checked = not Checked
+		end
+
+	Label: [String] The label to display to the user.
+	IsChecked: [Boolean] Determines if a check mark should be rendered next to the label.
+
+	Return: [Boolean] Returns true if the user clicks on this menu item.
+--]]
+function Slab.MenuItemChecked(Label, IsChecked)
+	return Menu.MenuItemChecked(Label, IsChecked)
+end
+
+--[[
+	Separator
+
+	This functions renders a separator line in the window.
+
+	Return: None.
+--]]
+function Slab.Separator()
+	Separator.Begin()
+end
+
+--[[
+	Button
+
+	Adds a button to the active window.
+
+	Label: [String] The label to display on the button.
+	Options: [Table] List of options for how this button will behave.
+		Tooltip: [String] The tooltip to display when the user hovers over this button.
+
+	Return: [Boolean] Returns true if the user clicks on this button.
+--]]
+function Slab.Button(Label, Options)
+	return Button.Begin(Label, Options)
+end
+
+--[[
+	Text
+
+	Adds text to the active window.
+
+	Label: [String] The string to be displayed in the window.
+	Options: [Table] List of options for how this text is displayed.
+		Color: [Table] The color to render the text.
+		Pad: [Number] How far to pad the text from the left side of the current cursor position.
+		IsSelectable: [Boolean] Whether this text is selectable using the text's Y position and the window X and width as the
+			hot zone.
+		IsSelectableTextOnly: [Boolean] Only available if IsSelectable is true. Will use the text width instead of the
+			window width to determine the hot zone.
+		IsSelected: [Boolean] Forces the hover background to be rendered.
+		SelectOnHover: [Boolean] Returns true if the user is hovering over the hot zone of this text.
+		HoverColor: [Table] The color to render the background if the IsSelected option is true.
+
+	Return: [Boolean] Returns true if SelectOnHover option is set to true. False otherwise.
+--]]
+function Slab.Text(Label, Options)
+	return Text.Begin(Label, Options)
+end
+
+--[[
+	TextSelectable
+
+	This function is a shortcut for SlabText with the IsSelectable option set to true.
+
+	Label: [String] The string to be displayed in the window.
+	Options: [Table] List of options for how this text is displayed.
+		See Slab.Text for all options.
+
+	Return: [Boolean] Returns true if SelectOnHover option is set to true. False otherwise.
+--]]
+function Slab.TextSelectable(Label, Options)
+	Options = Options == nil and {} or Options
+	Options.IsSelectable = true
+	return Slab.Text(Label, Options)
+end
+
+--[[
+	Textf
+
+	Adds formatted text to the active window. This text will wrap to fit within the contents of
+	either the window or a user specified width.
+
+	Label: [String] The text to be rendered.
+	Options: [Table] List of options for how this text is displayed.
+		Color: [Table] The color to render the text.
+		W: [Number] The width to restrict the text to. If this option is not specified, then the window
+			width is used.
+		Align: [String] The alignment to use for this text. For more information, refer to the love documentation
+			at https://love2d.org/wiki/AlignMode. Below are the available options:
+			center: Align text center.
+			left: Align text left.
+			right: Align text right.
+			justify: Align text both left and right.
+
+	Return: None.
+--]]
+function Slab.Textf(Label, Options)
+	Text.BeginFormatted(Label, Options)
+end
+
+--[[
+	CheckBox
+
+	Renders a check box with a label. The check box when enabled will render an 'X'.
+
+	Enabled: [Boolean] Will render an 'X' within the box if true. Will be an empty box otherwise.
+	Label: [String] The label to display after the check box.
+	Options: [Table] List of options for how this check box will behave.
+		Tooltip: [String] Text to be displayed if the user hovers over the check box.
+		Id: [String] An optional Id that can be supplied by the user. By default, the Id will be the label.
+
+	Return: [Boolean] Returns true if the user clicks within the check box.
+--]]
+function Slab.CheckBox(Enabled, Label, Options)
+	return CheckBox.Begin(Enabled, Label, Options)
+end
+
+--[[
+	Input
+
+	This function will render an input box for a user to input text in. This widget behaves like input boxes
+	found in other applications. This function will only return true if it has focus and user has either input
+	text or pressed the return key.
+
+	Example:
+		local Text = "Hello World"
+		if Slab.Input('Example', {Text = Text}) then
+			Text = Slab.GetInputText()
+		end
+
+	Id: [String] A string that uniquely identifies this Input within the context of the window.
+	Options: [Table] List of options for how this Input will behave.
+		Tooltip: [String] Text to be displayed if the user hovers over the Input box.
+		ReturnOnText: [Boolean] Will cause this function to return true whenever the user has input
+			a new character into the Input box. This is true by default.
+		Text: [String] The text to be supplied to the input box. It is recommended to use this option
+			when ReturnOnText is true.
+		BgColor: [Table] The background color for the input box.
+		SelectColor: [Table] The color used when the user is selecting text within the input box.
+		SelectOnFocus: [Boolean] When this input box is focused by the user, the text contents within the input
+			will be selected. This is true by default.
+		NumbersOnly: [Boolean] When true, only numeric characters and the '.' character are allowed to be input into
+			the input box. If no text is input, the input box will display '0'.
+
+	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
+		is set to true, then this function will return true whenever the user has input any character into the input box.
+--]]
+function Slab.Input(Id, Options)
+	return Input.Begin(Id, Options)
+end
+
+--[[
+	GetInputText
+
+	Retrieves the text entered into the focused input box. Refer to the documentation for Slab.Input for an example on how to
+	use this function.
+
+	Return: [String] Returns the text entered into the focused input box.
+--]]
+function Slab.GetInputText()
+	return Input.GetText()
+end
+
+--[[
+	BeginTree
+
+	This function will render a tree item with an optional label. The tree can be expanded or collapsed based on whether
+	the user clicked on the tree item. This function can also be nested to create a hierarchy of tree items. This function
+	will return false when collapsed and true when expanded. If this function returns true, Slab.EndTree must be called in
+	order for this tree item to behave properly. The hot zone of this tree item will be the height of the label and the width
+	of the window by default.
+
+	Id: [String] A string uniquely identifying this tree item within the context of the window.
+	Options: [Table] List of options for how this tree item will behave.
+		Label: [String] The text to be rendered for this tree item.
+		Tooltip: [String] The text to be rendered when the user hovers over this tree item.
+		IsLeaf: [Boolean] If this is true, this tree item will not be expandable/collapsable.
+		OpenWithHighlight: [Boolean] If this is true, the tree will be expanded/collapsed when the user hovers over the hot
+			zone of this tree item. If this is false, the user must click the expand/collapse icon to interact with this tree
+			item.
+
+	Return: [Boolean] Returns true if this tree item is expanded. Slab.EndTree must be called if this returns true.
+--]]
+function Slab.BeginTree(Id, Options)
+	return Tree.Begin(Id, Options)
+end
+
+--[[
+	EndTree
+
+	Finishes up any BeginTree calls if those functions return true.
+
+	Return: None.
+--]]
+function Slab.EndTree()
+	Tree.End()
+end
+
+--[[
+	BeginComboBox
+
+	This function renders a non-editable input field with a drop down arrow. When the user clicks this option, a window is
+	created and the user can supply their own Slab.TextSelectable calls to add possible items to select from. This function
+	will return true if the combo box is opened. Slab.EndComboBox must be called if this function returns true.
+
+	Example:
+		local Options = {"Apple", "Banana", "Orange", "Pear", "Lemon"}
+		local Options_Selected = ""
+		if Slab.BeginComboBox('Fruits', {Selected = Options_Selected}) then
+			for K, V in pairs(Options) do
+				if Slab.TextSelectable(V) then
+					Options_Selected = V
+				end
+			end
+
+			Slab.EndComboBox()
+		end
+
+	Id: [String] A string that uniquely identifies this combo box within the context of the active window.
+	Options: [Table] List of options that control how this combo box behaves.
+		Tooltip: [String] Text that is rendered when the user hovers over this combo box.
+		Selected: [String] Text that is displayed in the non-editable input box for this combo box.
+
+	Return: [Boolean] This function will return true if the combo box is open.
+--]]
+function Slab.BeginComboBox(Id, Options)
+	return ComboBox.Begin(Id, Options)
+end
+
+--[[
+	EndComboBox
+
+	Finishes up any BeginComboBox calls if those functions return true.
+
+	Return: None.
+--]]
+function Slab.EndComboBox()
+	ComboBox.End()
+end
+
+--[[
+	Image
+
+	Draws an image at the current cursor position. The Id uniquely identifies this
+	image to manage behaviors with this image. An image can be supplied through the
+	options or a path can be specified which Slab will manage the loading and storing of
+	the image reference.
+
+	Id: [String] A string uniquely identifying this image within the context of the current window.
+	Options: [Table] List of options controlling how the image should be drawn.
+		Image: [Object] A user supplied image. This must be a valid Love image or the call will assert.
+		Path: [String] If the Image option is nil, then a path must be specified. Slab will load and
+			manage the image resource.
+		Rotation: [Number] The rotation value to apply when this image is drawn.
+		Scale: [Number] The scale value to apply to both the X and Y axis.
+		ScaleX: [Number] The scale value to apply to the X axis.
+		ScaleY: [Number] The scale value to apply to the Y axis.
+		Color: [Table] The color to use when rendering this image.
+		ReturnOnHover: [Boolean] Returns true when the mouse is hovered over the image.
+		ReturnOnClick: [Boolean] Returns true when the mouse is released over the image.
+
+	Return: [Boolean] Returns true if the mouse is hovering over the image or clicking on the image based on
+		ReturnOnHover or ReturnOnClick options.
+--]]
+function Slab.Image(Id, Options)
+	return Image.Begin(Id, Options)
+end
+
+--[[
+	SameLine
+
+	This forces the cursor to move back up to the same line as the previous widget. By default, all Slab widgets will
+	advance the cursor to the next line based on the height of the current font. By using this call with other widget
+	calls, the user will be able to set up multiple widgets on the same line to control how a window may look.
+
+	Return: None.
+--]]
+function Slab.SameLine()
+	Cursor.SameLine()
+end
+
+--[[
+	NewLine
+
+	This forces the cursor to advance to the next line based on the height of the current font.
+
+	Return: None.
+--]]
+function Slab.NewLine()
+	Cursor.NewLine()
+end
+
+--[[
+	Properties
+
+	Iterates through the table's key-value pairs and adds them to the active window. This currently only does
+	a shallow loop and will not iterate through nested tables.
+
+	TODO: Iterate through nested tables.
+
+	Table: [Table] The list of properties to build widgets for.
+
+	Return: None.
+--]]
+function Slab.Properties(Table)
+	if Table ~= nil then
+		for K, V in pairs(Table) do
+			local Type = type(V)
+			if Type == "boolean" then
+				if Slab.CheckBox(V, K) then
+					Table[K] = not Table[K]
+				end
+			elseif Type == "number" then
+				Slab.Text(K .. ": ")
+				Slab.SameLine()
+				if Slab.Input(K, {Text = tostring(V), NumbersOnly = true, ReturnOnText = false}) then
+					Table[K] = tonumber(Slab.GetInputText())
+				end
+			elseif Type == "string" then
+				Slab.Text(K .. ": ")
+				Slab.SameLine()
+				if Slab.Input(K, {Text = V, ReturnOnText = false}) then
+					Table[K] = Slab.GetInputText()
+				end
+			end
+		end
+	end
+end
+
+return Slab

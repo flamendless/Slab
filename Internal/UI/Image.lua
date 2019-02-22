@@ -1,0 +1,103 @@
+--[[
+
+MIT License
+
+Copyright (c) 2019 Mitchell Davis <coding.jackalope@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--]]
+
+local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Style = require(SLAB_PATH .. '.Style')
+local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
+local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+
+local Image = {}
+local Instances = {}
+local ImageCache = {}
+
+local function GetImage(Path)
+	if ImageCache[Path] == nil then
+		ImageCache[Path] = love.graphics.newImage(Path)
+	end
+	return ImageCache[Path]
+end
+
+local function GetInstance(Id)
+	local Key = Window.GetId() .. '.' .. Id
+	if Instances[Key] == nil then
+		local Instance = {}
+		Instance.Id = Id
+		Instance.Image = nil
+		Instances[Key] = Instance
+	end
+	return Instances[Key]
+end
+
+function Image.Begin(Id, Options)
+	Options = Options == nil and {} or Options
+	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+	Options.Rotation = Options.Rotation == nil and 0 or Options.Rotation
+	Options.Scale = Options.Scale == nil and 1 or Options.Scale
+	Options.ScaleX = Options.ScaleX == nil and Options.Scale or Options.ScaleX
+	Options.ScaleY = Options.ScaleY == nil and Options.Scale or Options.ScaleY
+	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
+	Options.ReturnOnHover = Options.ReturnOnHover == nil and false or Options.ReturnOnHover
+	Options.ReturnOnClick = Options.ReturnOnClick == nil and false or Options.ReturnOnClick
+
+	local Instance = GetInstance(Id)
+
+	if Instance.Image == nil then
+		if Options.Image == nil then
+			assert(Options.Path ~= nil, "Path to an image is required if no image is set!")
+			Instance.Image = GetImage(Options.Path)
+		else
+			Instance.Image = Options.Image
+		end
+	end
+
+	local X, Y = Cursor.GetPosition()
+	local W = Instance.Image:getWidth() * Options.ScaleX
+	local H = Instance.Image:getHeight() * Options.ScaleY
+	local Result = false
+	local MouseX, MouseY = Window.GetMousePosition()
+
+	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+		Result = Options.ReturnOnHover
+		Tooltip.Begin(Options.Tooltip)
+
+		if Mouse.IsReleased(1) and Options.ReturnOnClick then
+			Result = true
+		end
+	end
+
+	DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
+
+	Window.AddItem(X, Y, W, H)
+
+	return Result
+end
+
+return Image
