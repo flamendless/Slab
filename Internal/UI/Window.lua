@@ -110,6 +110,7 @@ local function NewInstance(Id)
 	Instance.Border = 4.0
 	Instance.CanObstruct = true
 	Instance.Children = {}
+	Instance.LastItem = nil
 	Instance.HotItem = nil
 	Instance.ContextHotItem = nil
 	Instance.LastVisibleTime = 0.0
@@ -706,8 +707,9 @@ function Window.GetWindowAtMouse()
 	return Instance == nil and 'None' or Instance.Id
 end
 
-function Window.AddItem(X, Y, W, H)
+function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
+		ActiveInstance.LastItem = Id
 		if ActiveInstance.AutoSizeWindowW then
 			ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W + ActiveInstance.Border - ActiveInstance.X)
 		end
@@ -782,6 +784,13 @@ function Window.GetItemId(Id)
 			ActiveInstance.Items[Id] = ActiveInstance.Id .. '.' .. Id
 		end
 		return ActiveInstance.Items[Id]
+	end
+	return nil
+end
+
+function Window.GetLastItem()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.LastItem
 	end
 	return nil
 end

@@ -71,7 +71,7 @@ function Button.Begin(Label, Options)
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
 
-	Window.AddItem(X, Y, W, H)
+	Window.AddItem(X, Y, W, H, Id)
 
 	return Result
 end

@@ -9,6 +9,7 @@ Window: Check sizers for window obstruction.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Column support.
+Window: Lock mouse resize icon while resizing.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.
 Bug: Scroll bar position incorrect when tree is collapsed.

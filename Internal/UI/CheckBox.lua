@@ -72,9 +72,9 @@ function CheckBox.Begin(Enabled, Label, Options)
 	else
 		Cursor.SetItemBounds(X, Y, W, H)
 		Cursor.AdvanceY(H)
-
-		Window.AddItem(X, Y, W, H)
 	end
+
+	Window.AddItem(X, Y, W, H, Id)
 
 	return Result
 end

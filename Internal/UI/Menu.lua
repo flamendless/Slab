@@ -239,6 +239,10 @@ function Menu.BeginContextMenu(Options)
 		end
 	end
 
+	if Options.IsItem and Window.GetLastItem() ~= BaseId then
+		return false
+	end
+
 	if BaseId ~= nil then
 		Id = BaseId .. '.ContextMenu'
 	end
