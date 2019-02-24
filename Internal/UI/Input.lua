@@ -495,7 +495,7 @@ function Input.Begin(Id, Options)
 	Cursor.AdvanceX(W)
 	Cursor.AdvanceY(H)
 
-	Window.AddItem(X, Y, W, H)
+	Window.AddItem(X, Y, W, H, WinItemId)
 
 	if ClearFocus then
 		LastText = Instance.Text

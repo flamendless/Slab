@@ -38,3 +38,4 @@ File Dialog: Initial implementation.
 Dialog Box: Initial implementation.
 Color Picker: Initial implementation.
 List Box: Initial implementation.
+Tree: Auto-sized windows should clear window size when tree item closes.

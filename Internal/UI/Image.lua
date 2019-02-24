@@ -65,6 +65,7 @@ function Image.Begin(Id, Options)
 	Options.ReturnOnClick = Options.ReturnOnClick == nil and false or Options.ReturnOnClick
 
 	local Instance = GetInstance(Id)
+	local WinItemId = Window.GetItemId(Id)
 
 	if Instance.Image == nil then
 		if Options.Image == nil then
@@ -95,7 +96,7 @@ function Image.Begin(Id, Options)
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
 
-	Window.AddItem(X, Y, W, H)
+	Window.AddItem(X, Y, W, H, WinItemId)
 
 	return Result
 end

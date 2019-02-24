@@ -115,7 +115,7 @@ function Tree.Begin(Id, Options)
 		Cursor.SetX(X)
 	end
 
-	Window.AddItem(X, Y, WinW, H, WinItemId)
+	Window.AddItem(X, Y, (WinW + WinX) - Instance.X, H, WinItemId)
 
 	return Instance.IsOpen
 end
