@@ -287,7 +287,7 @@ function Input.Begin(Id, Options)
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
-	Options.Text = Options.Text == nil and "" or Options.Text
+	Options.Text = Options.Text == nil and nil or Options.Text
 	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
 	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
 	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
@@ -296,7 +296,7 @@ function Input.Begin(Id, Options)
 	Instance.NumbersOnly = Options.NumbersOnly
 	local WinItemId = Window.GetItemId(Id)
 	if Focused ~= Instance then
-		Instance.Text = Options.Text
+		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
 	end
 
 	local X, Y = Cursor.GetPosition()
