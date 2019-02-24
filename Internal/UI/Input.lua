@@ -49,6 +49,16 @@ local LastText = ""
 local MIN_WIDTH = 150.0
 local TEXT_CURSOR_PAD = 3.0
 
+local function GetSelection(Instance)
+	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
+		local Min = math.min(TextCursorAnchor, TextCursorPos) + 1
+		local Max = math.max(TextCursorAnchor, TextCursorPos)
+
+		return string.sub(Instance.Text, Min, Max)
+	end
+	return ""
+end
+
 local function IsValidDigit(Instance, Ch)
 	if Instance ~= nil then
 		if Instance.NumbersOnly then
@@ -56,8 +66,15 @@ local function IsValidDigit(Instance, Ch)
 				return true
 			end
 
-			if Ch == "." and string.find(Instance.Text, ".", 1, true) == nil then
-				return true
+			if Ch == "." then
+				local Selected = GetSelection(Instance)
+				if Selected ~= nil and string.find(Selected, ".", 1, true) ~= nil then
+					return true
+				end
+
+				if string.find(Instance.Text, ".", 1, true) == nil then
+					return true
+				end
 			end
 		else
 			return true
@@ -252,16 +269,6 @@ local function DrawCursor(Instance, X, Y, W, H)
 	end
 end
 
-local function GetSelection(Instance)
-	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
-		local Min = math.min(TextCursorAnchor, TextCursorPos) + 1
-		local Max = math.max(TextCursorAnchor, TextCursorPos)
-
-		return string.sub(Instance.Text, Min, Max)
-	end
-	return ""
-end
-
 local function GetInstance(Id)
 	for I, V in ipairs(Instances) do
 		if V.Id == Id then
@@ -338,8 +345,6 @@ function Input.Begin(Id, Options)
 	if LastFocused == Instance then
 		LastFocused = nil
 	end
-
-	local ValidateNumbersOnly = false
 
 	if Instance == Focused then
 		local Back = false
@@ -437,7 +442,6 @@ function Input.Begin(Id, Options)
 		if Keyboard.IsPressed('return') then
 			Result = true
 			ClearFocus = true
-			ValidateNumbersOnly = true
 		end
 
 		if Instance.TextChanged or Back then
@@ -452,11 +456,7 @@ function Input.Begin(Id, Options)
 			TextCursorAnchor = -1
 		end
 	else
-		ValidateNumbersOnly = true
-	end
-
-	if ValidateNumbersOnly then
-		if Options.NumbersOnly and (Instance.Text == "" or Instance.Text == ".") then
+		if Instance.NumbersOnly and (Instance.Text == "" or Instance.Text == ".") then
 			Instance.Text = "0"
 		end
 	end
@@ -498,6 +498,13 @@ function Input.Begin(Id, Options)
 	Window.AddItem(X, Y, W, H, WinItemId)
 
 	if ClearFocus then
+		if Instance.NumbersOnly then
+			local Value = tonumber(Instance.Text)
+			if Value ~= nil then
+				Instance.Text = tostring(Value)
+			end
+		end
+
 		LastText = Instance.Text
 		Focused = nil
 	end

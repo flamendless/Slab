@@ -23,8 +23,6 @@ Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 Cursor: Expose cursor API to slab.
-Input: Validate no leading or trailing zeroes.
-Input: Validate digit before . separator.
 Input: Double click to select word.
 Input: Multi-line input control.
 SlabDebug: Show frame stats.
