@@ -248,7 +248,7 @@ local function DrawCursor(Instance, X, Y, W, H)
 		local CX = X + GetCursorXOffset(Instance)
 		local CY = Y
 
-		DrawCommands.Line(CX, CY, CX, CY + H, 0.5, {0.0, 0.0, 0.0, TextCursorAlpha})
+		DrawCommands.Line(CX, CY, CX, CY + H, 1.0, {0.0, 0.0, 0.0, TextCursorAlpha})
 	end
 end
 
