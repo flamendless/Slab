@@ -206,6 +206,18 @@ function Slab.Draw()
 end
 
 --[[
+	GetStyle
+
+	Retrieve the style table associated with the current instance of Slab. This will allow the user to add custom styling
+	to their controls.
+
+	Return: [Table] The style table.
+--]]
+function Slab.GetStyle()
+	return Style
+end
+
+--[[
 	BeginWindow
 
 	This function begins the process of drawing widgets to a window. This function must be followed up with
