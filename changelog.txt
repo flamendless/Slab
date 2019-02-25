@@ -30,7 +30,6 @@ Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 Tree: Auto-sized windows should clear window size when tree item closes.
 Window: Cache obstructed window for all future calls.
-Window: Resize filter.
 Window: Check sizers for window obstruction.
 Window: Menu support.
 Window: Ids should be used as keys.

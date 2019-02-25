@@ -250,6 +250,8 @@ end
 		ResetSize: [Boolean] Determines if the window should reset any delta changes to its size.
 		ResetContent: [Boolean] Determines if the window should reset any delta changes to its content size.
 		ResetLayout: [Boolean] Will reset the position, size, and content. Short hand for the above 3 flags.
+		SizerFilter: [Table] Specifies what sizers are enabled for the window. If nothing is specified, all sizers are available. The values can
+			be: NW, NE, SW, SE, N, S, E, W
 
 	Return: None
 --]]

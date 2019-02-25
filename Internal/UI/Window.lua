@@ -100,6 +100,7 @@ local function NewInstance(Id)
 	Instance.AllowResize = true
 	Instance.AllowFocus = true
 	Instance.SizerType = SizerType.None
+	Instance.SizerFilter = nil
 	Instance.SizeDeltaX = 0.0
 	Instance.SizeDeltaY = 0.0
 	Instance.DeltaContentW = 0.0
@@ -309,6 +310,21 @@ local function UpdateTitleBar(Instance)
 	end
 end
 
+local function IsSizerEnabled(Instance, Sizer)
+	if Instance ~= nil then
+		if #Instance.SizerFilter > 0 then
+			for I, V in ipairs(Instance.SizerFilter) do
+				if V == Sizer then
+					return true
+				end
+			end
+			return false
+		end
+		return true
+	end
+	return false
+end
+
 local function UpdateSize(Instance)
 	if Instance ~= nil and Instance.AllowResize then
 		if Instance.HoverScrollX or Instance.HoverScrollY then
@@ -330,28 +346,28 @@ local function UpdateSize(Instance)
 		local NewSizerType = SizerType.None
 
 		if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-			if X <= MouseX and MouseX <= X + ScrollPad and Y <= MouseY and MouseY <= Y + ScrollPad then
+			if X <= MouseX and MouseX <= X + ScrollPad and Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "NW") then
 				Mouse.SetCursor('sizenwse')
 				NewSizerType = SizerType.NW
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + ScrollPad then
+			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "NE") then
 				Mouse.SetCursor('sizenesw')
 				NewSizerType = SizerType.NE
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y + H - ScrollPad <= MouseY and MouseY <= Y + H then
+			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "SE") then
 				Mouse.SetCursor('sizenwse')
 				NewSizerType = SizerType.SE
-			elseif X <= MouseX and MouseX <= X + ScrollPad and Y + H - ScrollPad <= MouseY and MouseY <= Y + H then
+			elseif X <= MouseX and MouseX <= X + ScrollPad and Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "SW") then
 				Mouse.SetCursor('sizenesw')
 				NewSizerType = SizerType.SW
-			elseif X <= MouseX and MouseX <= X + ScrollPad then
+			elseif X <= MouseX and MouseX <= X + ScrollPad and IsSizerEnabled(Instance, "W") then
 				Mouse.SetCursor('sizewe')
 				NewSizerType = SizerType.W
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W then
+			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and IsSizerEnabled(Instance, "E") then
 				Mouse.SetCursor('sizewe')
 				NewSizerType = SizerType.E
-			elseif Y <= MouseY and MouseY <= Y + ScrollPad then
+			elseif Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "N") then
 				Mouse.SetCursor('sizens')
 				NewSizerType = SizerType.N
-			elseif Y + H - ScrollPad <= MouseY and MouseY <= Y + H then
+			elseif Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "S") then
 				Mouse.SetCursor('sizens')
 				NewSizerType = SizerType.S
 			end
@@ -493,6 +509,7 @@ function Window.Begin(Id, Options)
 	Options.ResetSize = Options.ResetSize == nil and false or Options.ResetSize
 	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
 	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
+	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 
 	local Instance = GetInstance(Id)
 	table.insert(Stack, 1, Instance)
@@ -551,6 +568,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.Layer = ActiveInstance == FocusedInstance and 'Focused' or Options.Layer
 	ActiveInstance.HotItem = nil
 	ActiveInstance.LastVisibleTime = love.timer.getTime()
+	ActiveInstance.SizerFilter = Options.SizerFilter
 
 	if ActiveInstance.AutoSizeContent then
 		ActiveInstance.ContentW = math.max(Options.ContentW, ActiveInstance.DeltaContentW)
