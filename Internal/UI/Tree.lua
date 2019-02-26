@@ -74,9 +74,7 @@ function Tree.Begin(Id, Options)
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	local ContentW, ContentH = Window.GetContentSize()
 	local IsObstructed = Window.IsObstructedAtMouse()
-	WinW = math.max(WinW, ContentW)
 
 	if not IsObstructed and WinX <= MouseX and MouseX <= WinX + WinW and Y <= MouseY and MouseY <= Y + H then
 		DrawCommands.Rectangle('fill', WinX, Y, WinW, H, Style.MenuHoveredColor)

@@ -28,6 +28,7 @@ local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
 local Style = require(SLAB_PATH .. ".Style")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
@@ -39,12 +40,6 @@ local PendingStack = {}
 local ActiveInstance = nil
 local FocusedInstance = nil
 local TopInstances = nil
-
-local ScrollPad = 3.0
-local ScrollBarSize = 10.0
-local WheelX = 0.0
-local WheelY = 0.0
-local WheelSpeed = 3.0
 
 local SizerType =
 {
@@ -59,20 +54,6 @@ local SizerType =
 	NW = 8
 }
 
-local function GetXScrollSize(Instance)
-	if Instance ~= nil then
-		return math.max(Instance.W - (Instance.ContentW - Instance.W), 20.0)
-	end
-	return 0.0
-end
-
-local function GetYScrollSize(Instance)
-	if Instance ~= nil then
-		return math.max(Instance.H - (Instance.ContentH - Instance.H), 20.0)
-	end
-	return 0.0
-end
-
 local function NewInstance(Id)
 	local Instance = {}
 	Instance.Id = Id
@@ -82,16 +63,6 @@ local function NewInstance(Id)
 	Instance.H = 200.0
 	Instance.ContentW = 0.0
 	Instance.ContentH = 0.0
-	Instance.HasScrollX = false
-	Instance.HasScrollY = false
-	Instance.HoverScrollX = false
-	Instance.HoverScrollY = false
-	Instance.IsScrollingX = false
-	Instance.IsScrollingY = false
-	Instance.ScrollPosX = 0.0
-	Instance.ScrollPosY = 0.0
-	Instance.ScrollAlphaX = 0.0
-	Instance.ScrollAlphaY = 0.0
 	Instance.Title = ""
 	Instance.IsMoving = false
 	Instance.TitleDeltaX = 0.0
@@ -106,8 +77,6 @@ local function NewInstance(Id)
 	Instance.DeltaContentW = 0.0
 	Instance.DeltaContentH = 0.0
 	Instance.BackgroundColor = Style.WindowBackgroundColor
-	Instance.Transform = love.math.newTransform()
-	Instance.Transform:reset()
 	Instance.Border = 4.0
 	Instance.CanObstruct = true
 	Instance.Children = {}
@@ -139,147 +108,6 @@ local function Contains(Instance, X, Y)
 		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - OffsetY <= Y and Y <= Instance.Y + Instance.H
 	end
 	return false
-end
-
-local function IsScrollHovered(Instance, X, Y)
-	local HasScrollX, HasScrollY = false, false
-
-	if Instance ~= nil then
-		if Instance.HasScrollX then
-			local PosY = Instance.Y + Instance.H - ScrollPad - ScrollBarSize
-			local SizeX = GetXScrollSize(Instance)
-			local PosX = Instance.ScrollPosX
-			HasScrollX = Instance.X + PosX <= X and X < Instance.X + PosX + SizeX and PosY <= Y and Y < PosY + ScrollBarSize
-		end
-
-		if Instance.HasScrollY then
-			local PosX = Instance.X + Instance.W - ScrollPad - ScrollBarSize
-			local SizeY = GetYScrollSize(Instance)
-			local PosY = Instance.ScrollPosY
-			HasScrollY = PosX <= X and X < PosX + ScrollBarSize and Instance.Y + PosY <= Y and Y < Instance.Y + PosY + SizeY
-		end
-	end
-	return HasScrollX, HasScrollY
-end
-
-local function UpdateScrollBars(Instance)
-	Instance.HasScrollX = Instance.ContentW > Instance.W
-	Instance.HasScrollY = Instance.ContentH > Instance.H
-
-	local X, Y = Mouse.Position()
-	Instance.HoverScrollX, Instance.HoverScrollY = IsScrollHovered(Instance, X, Y)
-	local XSize = Instance.W - GetXScrollSize(Instance)
-	local YSize = Instance.H - GetYScrollSize(Instance)
-
-	local IsMouseDragging = Mouse.IsDragging(1)
-	local IsMouseReleased = Mouse.IsReleased(1)
-
-	local DeltaX, DeltaY = Mouse.GetDelta()
-
-	if not Window.IsObstructed(X, Y) and Contains(Instance, X, Y) or Instance.HoverScrollX or Instance.HoverScrollY then
-		Instance.ScrollAlphaX = 1.0
-		Instance.ScrollAlphaY = 1.0
-
-		if WheelX ~= 0.0 then
-			Instance.ScrollPosX = Instance.ScrollPosX + WheelX
-			Instance.IsScrollingX = true
-			IsMouseDragging = true
-			IsMouseReleased = true
-			WheelX = 0.0
-		end
-
-		if WheelY ~= 0.0 then
-			Instance.ScrollPosY = Instance.ScrollPosY - WheelY
-			Instance.IsScrollingY = true
-			IsMouseDragging = true
-			IsMouseReleased = true
-			WheelY = 0.0
-		end
-	else
-		local dt = love.timer.getDelta()
-		Instance.ScrollAlphaX = math.max(Instance.ScrollAlphaX - dt, 0.0)
-		Instance.ScrollAlphaY = math.max(Instance.ScrollAlphaY - dt, 0.0)
-	end
-
-	if Instance.HasScrollX then
-		if Instance.HasScrollY then
-			XSize = XSize - ScrollBarSize - ScrollPad
-		end
-		if Instance.HoverScrollX or Instance.IsScrollingX then
-			MenuState.RequestClose = false
-
-			if IsMouseDragging then
-				Instance.IsScrollingX = true
-
-				Instance.ScrollPosX = math.max(Instance.ScrollPosX + DeltaX, 0.0)
-				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
-			end
-
-			if Instance.IsScrollingX and IsMouseReleased then
-				Instance.IsScrollingX = false
-			end
-		end
-	end
-
-	if Instance.HasScrollY then
-		if Instance.HasScrollX then
-			YSize = YSize - ScrollBarSize - ScrollPad
-		end
-		if Instance.HoverScrollY or Instance.IsScrollingY then
-			MenuState.RequestClose = false
-
-			if IsMouseDragging then
-				Instance.IsScrollingY = true
-				
-				Instance.ScrollPosY = math.max(Instance.ScrollPosY + DeltaY, 0.0)
-				Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
-			end
-
-			if Instance.IsScrollingY and IsMouseReleased then
-				Instance.IsScrollingY = false
-			end
-		end
-	end
-
-	local XRatio, YRatio = 0.0, 0.0
-	if XSize ~= 0.0 then
-		XRatio = math.max(Instance.ScrollPosX / XSize, 0.0)
-	end
-	if YSize ~= 0.0 then
-		YRatio = math.max(Instance.ScrollPosY / YSize, 0.0)
-	end
-
-	local TX = math.max(Instance.ContentW - Instance.W, 0.0) * -XRatio
-	local TY = math.max(Instance.ContentH - Instance.H, 0.0) * -YRatio
-	Instance.Transform:setTransformation(TX, TY)
-end
-
-local function DrawScrollBars(Instance)
-	if not Instance.HasScrollX and not Instance.HasScrollY then
-		return
-	end
-
-	if Instance.HasScrollX then
-		local XSize = GetXScrollSize(Instance)
-		local Color = Utility.MakeColor(Style.ScrollBarColor)
-		if Instance.HoverScrollX or Instance.IsScrollingX then
-			Color = Utility.MakeColor(Style.ScrollBarHoveredColor)
-		end
-		Color[4] = Instance.ScrollAlphaX
-		local XPos = Instance.ScrollPosX
-		DrawCommands.Rectangle('fill', Instance.X + XPos, Instance.Y + Instance.H - ScrollPad - ScrollBarSize, XSize, ScrollBarSize, Color)
-	end
-
-	if Instance.HasScrollY then
-		local YSize = GetYScrollSize(Instance)
-		local Color = Utility.MakeColor(Style.ScrollBarColor)
-		if Instance.HoverScrollY or Instance.IsScrollingY then
-			Color = Utility.MakeColor(Style.ScrollBarHoveredColor)
-		end
-		Color[4] = Instance.ScrollAlphaY
-		local YPos = Instance.ScrollPosY
-		DrawCommands.Rectangle('fill', Instance.X + Instance.W - ScrollPad - ScrollBarSize, Instance.Y + YPos, ScrollBarSize, YSize, Color)
-	end
 end
 
 local function UpdateTitleBar(Instance)
@@ -327,7 +155,7 @@ end
 
 local function UpdateSize(Instance)
 	if Instance ~= nil and Instance.AllowResize then
-		if Instance.HoverScrollX or Instance.HoverScrollY then
+		if Region.IsHoverScrollBar(Instance.Id) then
 			return
 		end
 
@@ -344,6 +172,7 @@ local function UpdateSize(Instance)
 
 		local MouseX, MouseY = Mouse.Position()
 		local NewSizerType = SizerType.None
+		local ScrollPad = Region.GetScrollPad()
 
 		if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 			if X <= MouseX and MouseX <= X + ScrollPad and Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "NW") then
@@ -458,7 +287,7 @@ function Window.IsObstructed(X, Y)
 	end
 
 	if Instance ~= nil then
-		if Instance.HoverScrollX or Instance.HoverScrollY then
+		if Region.IsHoverScrollBar(Instance.Id) then
 			return true
 		end
 
@@ -585,7 +414,6 @@ function Window.Begin(Id, Options)
 	end
 
 	UpdateSize(ActiveInstance)
-	UpdateScrollBars(ActiveInstance)
 	UpdateTitleBar(ActiveInstance)
 
 	local MouseX, MouseY = Mouse.Position()
@@ -599,18 +427,21 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	DrawCommands.Begin()
-	DrawCommands.Scissor(ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, ActiveInstance.H + OffsetY)
-	DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y, ActiveInstance.W, ActiveInstance.H, ActiveInstance.BackgroundColor)
-	if not Options.NoOutline then
-		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, ActiveInstance.H + OffsetY)
-	end
-	DrawCommands.TransformPush()
-	DrawCommands.ApplyTransform(ActiveInstance.Transform)
+	Region.Begin(ActiveInstance.Id, {
+		X = ActiveInstance.X,
+		Y = ActiveInstance.Y,
+		W = ActiveInstance.W,
+		H = ActiveInstance.H,
+		ContentW = ActiveInstance.ContentW,
+		ContentH = ActiveInstance.ContentH,
+		BgColor = ActiveInstance.BackgroundColor,
+		IsObstructed = Window.IsObstructed(MouseX, MouseY)
+	})
 end
 
 function Window.End()
 	if ActiveInstance ~= nil then
-		DrawCommands.TransformPop()
+		Region.End()
 		if ActiveInstance.Title ~= "" then
 			local OffsetY = Style.Font:getHeight()
 			local TitleX = math.floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
@@ -622,7 +453,6 @@ function Window.End()
 			DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY)
 			DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 0.5)
 		end
-		DrawScrollBars(ActiveInstance)
 		DrawCommands.End()
 		table.remove(PendingStack, 1)
 
@@ -644,7 +474,7 @@ end
 function Window.GetMousePosition()
 	local X, Y = Mouse.Position()
 	if ActiveInstance ~= nil then
-		X, Y = ActiveInstance.Transform:inverseTransformPoint(X, Y)
+		X, Y = Region.InverseTransform(X, Y)
 	end
 	return X, Y
 end
@@ -744,13 +574,12 @@ function Window.AddItem(X, Y, W, H, Id)
 end
 
 function Window.WheelMoved(X, Y)
-	WheelX = X * WheelSpeed
-	WheelY = Y * WheelSpeed
+	Region.WheelMoved(X, Y)
 end
 
 function Window.TransformPoint(X, Y)
 	if ActiveInstance ~= nil then
-		return ActiveInstance.Transform:transformPoint(X, Y)
+		return Region.Transform(X, Y)
 	end
 	return 0.0, 0.0
 end

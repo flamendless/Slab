@@ -12,12 +12,14 @@ Combo Box: User should be able to open by clicking input box.
 Cursor: Expose cursor API to slab.
 Dialog Box: Initial implementation.
 File Dialog: Initial implementation.
+Input: Convert input area to use Region control.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.
 List Box: Initial implementation.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
+Region: Only allow wheel move on the hovered region with child regions within a window.
 Scroll bar: Check for window obstruction.
 Scroll Bar: Scroll bar is moved when obstructed by other window.
 Scroll Bar: Interact with scroll bar on click instead of drag.
@@ -29,6 +31,7 @@ Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 Tree: Auto-sized windows should clear window size when tree item closes.
+Window: Resizing window should reset content size.
 Window: Cache obstructed window for all future calls.
 Window: Check sizers for window obstruction.
 Window: Menu support.
