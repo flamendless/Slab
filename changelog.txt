@@ -9,10 +9,10 @@ Combo Box: Highlight input box when mouse is hovered.
 Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
+Combo Box: Window should obstruct after making selection and closing window.
 Cursor: Expose cursor API to slab.
 Dialog Box: Initial implementation.
 File Dialog: Initial implementation.
-Input: Convert input area to use Region control.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.

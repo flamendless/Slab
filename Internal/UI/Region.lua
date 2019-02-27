@@ -83,6 +83,10 @@ local function Contains(Instance, X, Y)
 end
 
 local function UpdateScrollBars(Instance, IsObstructed)
+	if Instance.IgnoreScroll then
+		return
+	end
+
 	Instance.HasScrollX = Instance.ContentW > Instance.W
 	Instance.HasScrollY = Instance.ContentH > Instance.H
 
@@ -203,12 +207,19 @@ local function DrawScrollBars(Instance)
 end
 
 local function GetInstance(Id)
+	if Id == nil then
+		return ActiveInstance
+	end
+
 	if Instances[Id] == nil then
 		local Instance = {}
+		Instance.Id = Id
 		Instance.X = 0.0
 		Instance.Y = 0.0
 		Instance.W = 0.0
 		Instance.H = 0.0
+		Instance.SX = 0.0
+		Instance.SY = 0.0
 		Instance.ContentW = 0.0
 		Instance.ContentH = 0.0
 		Instance.HasScrollX = false
@@ -221,6 +232,7 @@ local function GetInstance(Id)
 		Instance.ScrollPosY = 0.0
 		Instance.ScrollAlphaX = 0.0
 		Instance.ScrollAlphaY = 0.0
+		Instance.Intersect = false
 		Instance.Transform = love.math.newTransform()
 		Instance.Transform:reset()
 		Instances[Id] = Instance
@@ -234,43 +246,66 @@ function Region.Begin(Id, Options)
 	Options.Y = Options.Y == nil and 0.0 or Options.Y
 	Options.W = Options.W == nil and 0.0 or Options.W
 	Options.H = Options.H == nil and 0.0 or Options.H
+	Options.SX = Options.SX == nil and Options.X or Options.SX
+	Options.SY = Options.SY == nil and Options.Y or Options.SY
 	Options.ContentW = Options.ContentW == nil and 0.0 or Options.ContentW
 	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
 	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
-	Options.NoOutline = Options.NoOutline == nil and false and Options.NoOutline
-	Options.IsObstructed = Options.IsObstructed == nil and false and Options.IsObstructed
+	Options.NoOutline = Options.NoOutline == nil and false or Options.NoOutline
+	Options.IsObstructed = Options.IsObstructed == nil and false or Options.IsObstructed
+	Options.Intersect = Options.Intersect == nil and false or Options.Intersect
+	Options.IgnoreScroll = Options.IgnoreScroll == nil and false or Options.IgnoreScroll
 
 	local Instance = GetInstance(Id)
 	Instance.X = Options.X
 	Instance.Y = Options.Y
 	Instance.W = Options.W
 	Instance.H = Options.H
+	Instance.SX = Options.SX
+	Instance.SY = Options.SY
 	Instance.ContentW = Options.ContentW
 	Instance.ContentH = Options.ContentH
+	Instance.Intersect = Options.Intersect
+	Instance.IgnoreScroll = Options.IgnoreScroll
 
 	ActiveInstance = Instance
 	table.insert(Stack, 1, ActiveInstance)
 
 	UpdateScrollBars(Instance, Options.IsObstructed)
 
-	DrawCommands.Scissor(Instance.X, Instance.Y, Instance.W, Instance.H)
 	DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor)
 	if not Options.NoOutline then
 		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H)
 	end
 	DrawCommands.TransformPush()
 	DrawCommands.ApplyTransform(Instance.Transform)
+	if Instance.Intersect then
+		DrawCommands.IntersectScissor(Instance.SX, Instance.SY, Instance.W, Instance.H)
+	else
+		DrawCommands.Scissor(Instance.SX, Instance.SY, Instance.W, Instance.H)
+	end
 end
 
 function Region.End()
 	DrawCommands.TransformPop()
 	DrawScrollBars(ActiveInstance)
-	DrawCommands.Scissor()
+
+	if ActiveInstance.Intersect then
+		DrawCommands.IntersectScissor()
+	else
+		DrawCommands.Scissor()
+	end
+
 	ActiveInstance = nil
+	table.remove(Stack, 1)
 
 	if #Stack > 0 then
 		ActiveInstance = Stack[1]
-		table.remove(Stack, 1)
+		if ActiveInstance.Intersect then
+			DrawCommands.IntersectScissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
+		else
+			DrawCommands.Scissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
+		end
 	end
 end
 
@@ -282,18 +317,34 @@ function Region.IsHoverScrollBar(Id)
 	return false
 end
 
-function Region.Transform(X, Y)
-	if ActiveInstance ~= nil then
-		return ActiveInstance.Transform:transformPoint(X, Y)
+function Region.Translate(Id, X, Y)
+	local Instance = GetInstance(Id)
+	if Instance ~= nil then
+		Instance.Transform:translate(X, Y)
+	end
+end
+
+function Region.Transform(Id, X, Y)
+	local Instance = GetInstance(Id)
+	if Instance ~= nil then
+		return Instance.Transform:transformPoint(X, Y)
 	end
 	return X, Y
 end
 
-function Region.InverseTransform(X, Y)
-	if ActiveInstance ~= nil then
-		return ActiveInstance.Transform:inverseTransformPoint(X, Y)
+function Region.InverseTransform(Id, X, Y)
+	local Instance = GetInstance(Id)
+	if Instance ~= nil then
+		return Instance.Transform:inverseTransformPoint(X, Y)
 	end
 	return X, Y
+end
+
+function Region.ResetTransform(Id)
+	local Instance = GetInstance(Id)
+	if Instance ~= nil then
+		Instance.Transform:reset()
+	end
 end
 
 function Region.GetScrollPad()

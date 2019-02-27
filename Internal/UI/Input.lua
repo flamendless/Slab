@@ -28,6 +28,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
@@ -179,13 +180,13 @@ end
 local function UpdateTransform(Instance)
 	if Instance ~= nil then
 		local Offset = GetCursorXOffset(Instance)
-		local TX, TY = Instance.Transform:inverseTransformPoint(0.0, 0.0)
+		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
 		local W = TX + Instance.W
 
 		if Offset > W then
-			Instance.Transform:translate(-(Offset - W + TEXT_CURSOR_PAD), 0.0)
+			Region.Translate(Instance.Id, -(Offset - W + TEXT_CURSOR_PAD), 0.0)
 		elseif Offset < TX then
-			Instance.Transform:translate(TX - Offset + TEXT_CURSOR_PAD, 0.0)
+			Region.Translate(Instance.Id, TX - Offset + TEXT_CURSOR_PAD, 0.0)
 		end
 	end
 end
@@ -280,8 +281,6 @@ local function GetInstance(Id)
 	Instance.Text = ""
 	Instance.W = MIN_WIDTH
 	Instance.H = Style.Font:getHeight()
-	Instance.Transform = love.math.newTransform()
-	Instance.Transform:reset()
 	Instance.TextChanged = false
 	Instance.NumbersOnly = true
 	table.insert(Instances, Instance)
@@ -416,7 +415,7 @@ function Input.Begin(Id, Options)
 				TextCursorPos = #Instance.Text
 			else
 				local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
-				local CX, CY = Instance.Transform:inverseTransformPoint(MouseInputX, MouseInputY)
+				local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
 				TextCursorPos = GetTextCursorPos(Instance, CX)
 				if Mouse.IsClicked(1) then
 					TextCursorAnchor = TextCursorPos
@@ -466,11 +465,17 @@ function Input.Begin(Id, Options)
 	end
 
 	local TX, TY = Window.TransformPoint(X, Y)
-	DrawCommands.Rectangle('fill', math.floor(X), math.floor(Y), W, H, Options.BgColor)
-	DrawCommands.Rectangle('line', math.floor(X), math.floor(Y), W, H, {0.0, 0.0, 0.0, 1.0})
-	DrawCommands.TransformPush()
-	DrawCommands.ApplyTransform(Instance.Transform)
-	DrawCommands.IntersectScissor(TX, TY, W, H)
+	Region.Begin(Instance.Id, {
+		X = X,
+		Y = Y,
+		W = W,
+		H = H,
+		BgColor = Options.BgColor,
+		SX = TX,
+		SY = TY,
+		Intersect = true,
+		IgnoreScroll = true
+	})
 	if Instance == Focused then
 		DrawSelection(Instance, X, Y, W, H, Options.SelectColor)
 		DrawCursor(Instance, X, Y, W, H)
@@ -484,11 +489,7 @@ function Input.Begin(Id, Options)
 		end
 		Text.Begin(Instance.Text, {AddItem = false})
 	end
-	DrawCommands.TransformPop()
-	DrawCommands.IntersectScissor()
-
-	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	DrawCommands.Scissor(WinX, WinY, WinW, WinH)
+	Region.End()
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.SetPosition(X, Y)
@@ -507,6 +508,7 @@ function Input.Begin(Id, Options)
 
 		LastText = Instance.Text
 		Focused = nil
+		Region.ResetTransform(Instance.Id)
 	end
 
 	return Result

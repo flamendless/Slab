@@ -427,6 +427,18 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	DrawCommands.Begin()
+	if ActiveInstance.Title ~= "" then
+		local TitleX = math.floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
+		local TitleColor = ActiveInstance.BackgroundColor
+		if ActiveInstance == FocusedInstance then
+			TitleColor = Style.WindowTitleFocusedColor
+		end
+		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor)
+		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY)
+		DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY)
+		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
+	end
+
 	Region.Begin(ActiveInstance.Id, {
 		X = ActiveInstance.X,
 		Y = ActiveInstance.Y,
@@ -442,17 +454,6 @@ end
 function Window.End()
 	if ActiveInstance ~= nil then
 		Region.End()
-		if ActiveInstance.Title ~= "" then
-			local OffsetY = Style.Font:getHeight()
-			local TitleX = math.floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
-			local TitleColor = ActiveInstance.BackgroundColor
-			if ActiveInstance == FocusedInstance then
-				TitleColor = Style.WindowTitleFocusedColor
-			end
-			DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor)
-			DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY)
-			DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 0.5)
-		end
 		DrawCommands.End()
 		table.remove(PendingStack, 1)
 
@@ -474,7 +475,7 @@ end
 function Window.GetMousePosition()
 	local X, Y = Mouse.Position()
 	if ActiveInstance ~= nil then
-		X, Y = Region.InverseTransform(X, Y)
+		X, Y = Region.InverseTransform(ActiveInstance.Id, X, Y)
 	end
 	return X, Y
 end
@@ -579,7 +580,7 @@ end
 
 function Window.TransformPoint(X, Y)
 	if ActiveInstance ~= nil then
-		return Region.Transform(X, Y)
+		return Region.Transform(ActiveInstance.Id, X, Y)
 	end
 	return 0.0, 0.0
 end
