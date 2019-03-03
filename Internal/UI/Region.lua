@@ -90,7 +90,7 @@ local function UpdateScrollBars(Instance, IsObstructed)
 	Instance.HasScrollX = Instance.ContentW > Instance.W
 	Instance.HasScrollY = Instance.ContentH > Instance.H
 
-	local X, Y = Mouse.Position()
+	local X, Y = Instance.MouseX, Instance.MouseY
 	Instance.HoverScrollX, Instance.HoverScrollY = IsScrollHovered(Instance, X, Y)
 	local XSize = Instance.W - GetXScrollSize(Instance)
 	local YSize = Instance.H - GetYScrollSize(Instance)
@@ -250,11 +250,15 @@ function Region.Begin(Id, Options)
 	Options.SY = Options.SY == nil and Options.Y or Options.SY
 	Options.ContentW = Options.ContentW == nil and 0.0 or Options.ContentW
 	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
+	Options.AutoSizeContent = Options.AutoSizeContent == nil and false or Options.AutoSizeContent
 	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
 	Options.NoOutline = Options.NoOutline == nil and false or Options.NoOutline
+	Options.NoBackground = Options.NoBackground == nil and false or Options.NoBackground
 	Options.IsObstructed = Options.IsObstructed == nil and false or Options.IsObstructed
 	Options.Intersect = Options.Intersect == nil and false or Options.Intersect
 	Options.IgnoreScroll = Options.IgnoreScroll == nil and false or Options.IgnoreScroll
+	Options.MouseX = Options.MouseX == nil and 0.0 or Options.MouseX
+	Options.MouseY = Options.MouseY == nil and 0.0 or Options.MouseY
 
 	local Instance = GetInstance(Id)
 	Instance.X = Options.X
@@ -263,17 +267,24 @@ function Region.Begin(Id, Options)
 	Instance.H = Options.H
 	Instance.SX = Options.SX
 	Instance.SY = Options.SY
-	Instance.ContentW = Options.ContentW
-	Instance.ContentH = Options.ContentH
 	Instance.Intersect = Options.Intersect
 	Instance.IgnoreScroll = Options.IgnoreScroll
+	Instance.MouseX = Options.MouseX
+	Instance.MouseY = Options.MouseY
+
+	if not Options.AutoSizeContent then
+		Instance.ContentW = Options.ContentW
+		Instance.ContentH = Options.ContentH
+	end
 
 	ActiveInstance = Instance
 	table.insert(Stack, 1, ActiveInstance)
 
 	UpdateScrollBars(Instance, Options.IsObstructed)
 
-	DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor)
+	if not Options.NoBackground then
+		DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor)
+	end
 	if not Options.NoOutline then
 		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H)
 	end
@@ -344,6 +355,22 @@ function Region.ResetTransform(Id)
 	local Instance = GetInstance(Id)
 	if Instance ~= nil then
 		Instance.Transform:reset()
+	end
+end
+
+function Region.IsActive(Id)
+	if ActiveInstance ~= nil then
+		return ActiveInstance.Id == Id
+	end
+	return false
+end
+
+function Region.AddItem(X, Y, W, H)
+	if ActiveInstance ~= nil then
+		local NewW = X + W - ActiveInstance.X
+		local NewH = Y + H - ActiveInstance.Y
+		ActiveInstance.ContentW = math.max(ActiveInstance.ContentW, NewW)
+		ActiveInstance.ContentH = math.max(ActiveInstance.ContentH, NewH)
 	end
 end
 

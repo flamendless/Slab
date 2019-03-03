@@ -447,7 +447,9 @@ function Window.Begin(Id, Options)
 		ContentW = ActiveInstance.ContentW,
 		ContentH = ActiveInstance.ContentH,
 		BgColor = ActiveInstance.BackgroundColor,
-		IsObstructed = Window.IsObstructed(MouseX, MouseY)
+		IsObstructed = Window.IsObstructed(MouseX, MouseY),
+		MouseX = MouseX,
+		MouseY = MouseY
 	})
 end
 
@@ -558,18 +560,22 @@ end
 
 function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
-		ActiveInstance.LastItem = Id
-		if ActiveInstance.AutoSizeWindowW then
-			ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W + ActiveInstance.Border - ActiveInstance.X)
-		end
+		if Region.IsActive(ActiveInstance.Id) then
+			ActiveInstance.LastItem = Id
+			if ActiveInstance.AutoSizeWindowW then
+				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W + ActiveInstance.Border - ActiveInstance.X)
+			end
 
-		if ActiveInstance.AutoSizeWindowH then
-			ActiveInstance.SizeDeltaY = math.max(ActiveInstance.SizeDeltaY, Y + H + ActiveInstance.Border - ActiveInstance.Y)
-		end
+			if ActiveInstance.AutoSizeWindowH then
+				ActiveInstance.SizeDeltaY = math.max(ActiveInstance.SizeDeltaY, Y + H + ActiveInstance.Border - ActiveInstance.Y)
+			end
 
-		if ActiveInstance.AutoSizeContent then
-			ActiveInstance.DeltaContentW = math.max(ActiveInstance.DeltaContentW, X + W + ActiveInstance.Border - ActiveInstance.X)
-			ActiveInstance.DeltaContentH = math.max(ActiveInstance.DeltaContentH, Y + H + ActiveInstance.Border - ActiveInstance.Y)
+			if ActiveInstance.AutoSizeContent then
+				ActiveInstance.DeltaContentW = math.max(ActiveInstance.DeltaContentW, X + W + ActiveInstance.Border - ActiveInstance.X)
+				ActiveInstance.DeltaContentH = math.max(ActiveInstance.DeltaContentH, Y + H + ActiveInstance.Border - ActiveInstance.Y)
+			end
+		else
+			Region.AddItem(X, Y, W, H)
 		end
 	end
 end

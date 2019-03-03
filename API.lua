@@ -36,6 +36,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
+local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
@@ -791,6 +792,74 @@ function Slab.Properties(Table)
 			end
 		end
 	end
+end
+
+--[[
+	BeginListBox
+
+	Begins the process of creating a list box. If this function is called, EndListBox must be called after all
+	items have been added.
+
+	Id: [String] A string uniquely identifying this list box within the context of the current window.
+	Options: [Table] List of options controlling the behavior of the list box.
+		W: [Number] The width of the list box. If nil, then the width of the window is used.
+		H: [Number] The height of the list box. If nil, a default value of 150 is used.
+
+	Return: None.
+--]]
+function Slab.BeginListBox(Id, Options)
+	ListBox.Begin(Id, Options)
+end
+
+--[[
+	EndListBox
+
+	Ends the list box container. Will close off the region and properly adjust the cursor.
+
+	Return: None.
+--]]
+function Slab.EndListBox()
+	ListBox.End()
+end
+
+--[[
+	BeginListBoxItem
+
+	Adds an item to the current list box with the given Id. The user can then draw controls however they see
+	fit to display a single item. This allows the user to draw list items such as a texture with a name or just
+	a text to represent the item. If this is called, EndListBoxItem must be called to complete the item.
+
+	Id: [String] A string uniquely identifying this item within the context of the current list box.
+
+	Return: None.
+--]]
+function Slab.BeginListBoxItem(Id)
+	ListBox.BeginItem(Id)
+end
+
+--[[
+	IsListBoxItemClicked
+
+	Checks to see if a hot list item is clicked. This should only be called within a BeginListBoxLitem/EndListBoxItem
+	block.
+
+	Button: [Number] The button to check for the click of the item.
+
+	Return: [Boolean] Returns true if the active item is hovered with mouse and the requested mouse button is clicked.
+--]]
+function Slab.IsListBoxItemClicked(Button)
+	return ListBox.IsItemClicked(Button)
+end
+
+--[[
+	EndListBoxItem
+
+	Ends the current item and commits the bounds of the item to the list.
+
+	Return: None.
+--]]
+function Slab.EndListBoxItem()
+	ListBox.EndItem()
 end
 
 return Slab

@@ -1,3 +1,9 @@
+Next Release
+==========
+Version: Switch to 0.2.0.
+ListBox: Wiki documentation.
+ListBox: Example usage with texture and name.
+
 TODO
 ==========
 Bug: Scroll bar position incorrect when tree is collapsed.
@@ -11,18 +17,22 @@ Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Window should obstruct after making selection and closing window.
 Cursor: Expose cursor API to slab.
+Cursor: Store line information such as min/max width/height.
+Cursor: Center position on line in X and Y.
 Dialog Box: Initial implementation.
 File Dialog: Initial implementation.
+Image: Sub-rectangle for an image.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.
-List Box: Initial implementation.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
 Region: Only allow wheel move on the hovered region with child regions within a window.
+Region: Reset content size if window was resized this frame.
 Scroll bar: Check for window obstruction.
 Scroll Bar: Scroll bar is moved when obstructed by other window.
 Scroll Bar: Interact with scroll bar on click instead of drag.
+Scroll Bar: Only render scroll bar in child region of window if one is active.
 SlabDebug: Show frame stats.
 SlabDebug: Show draw time.
 SlabDebug: Show update time.

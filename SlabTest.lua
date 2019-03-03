@@ -107,6 +107,7 @@ end
 
 function SlabTest.TreeWindow()
 	Slab.BeginWindow('SlabTest_Tree', {Title = "Tree Window", X = 600.0, Y = 100.0, AutoSizeWindow = false, ResetLayout = ResetLayout})
+	
 	if Slab.BeginTree('SlabTest_TreeRoot1', {Label = "Can be opened within rect"}) then
 		Slab.BeginTree('SlabTest_Child1_Leaf', {Label = "Leaf 1", IsLeaf = true})
 
@@ -133,9 +134,22 @@ function SlabTest.TreeWindow()
 		ReturnOnClick = true,
 		Tooltip = "This is a sample image."
 	}
+
 	if Slab.Image('SlabTest_Image', ImageOptions) then
 		-- Perform logic when clicked
 	end
+	
+	Slab.BeginListBox('SlabTest_ListBox')
+	for I = 1, 10, 1 do
+		Slab.BeginListBoxItem('Item ' .. I)
+		Slab.Text("Item " .. I)
+		if Slab.IsListBoxItemClicked() then
+			-- Perform logic when clicked
+		end
+		Slab.EndListBoxItem()
+	end
+	Slab.EndListBox()
+	Slab.Text("After List Box")
 	Slab.EndWindow()
 end
 
