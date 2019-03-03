@@ -4,6 +4,7 @@ Version: Switch to 0.2.0.
 ListBox: Wiki documentation.
 ListBox: Example usage with texture and name.
 Image: Example usage of sub-image.
+Cursor: Wiki documentation.
 
 TODO
 ==========
@@ -17,7 +18,6 @@ Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Window should obstruct after making selection and closing window.
-Cursor: Expose cursor API to slab.
 Cursor: Store line information such as min/max width/height.
 Cursor: Center position on line in X and Y.
 Dialog Box: Initial implementation.

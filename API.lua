@@ -103,6 +103,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		BeginListBoxItem
 		IsListBoxItemClicked
 		EndListBoxItem
+		SetCursorPos
 --]]
 local Slab = {}
 
@@ -869,6 +870,37 @@ end
 --]]
 function Slab.EndListBoxItem()
 	ListBox.EndItem()
+end
+
+--[[
+	SetCursorPos
+
+	Sets the cursor position. The default behavior is to set the cursor position relative to
+	the current window. The absolute position can be set if the 'Absolute' option is set.
+
+	Controls will only be drawn within a window. If the cursor is set outside of the current
+	window context, the control will not be displayed.
+
+	X: [Number] The X coordinate to place the cursor. If nil, then the X coordinate is not modified.
+	Y: [Number] The Y coordinate to place the cursor. If nil, then the Y coordinate is not modified.
+	Options: [Table] List of options that control how the cursor position should be set.
+		Absolute: [Boolean] If true, will place the cursor using absolute coordinates.
+
+	Return: None.
+--]]
+function Slab.SetCursorPos(X, Y, Options)
+	Options = Options == nil and {} or Options
+	Options.Absolute = Options.Absolute == nil and false or Options.Absolute
+
+	if Options.Absolute then
+		X = X == nil and Cursor.GetX() or X
+		Y = Y == nil and Cursor.GetY() or Y
+		Cursor.SetPosition(X, Y)
+	else
+		X = X == nil and Cursor.GetX() - Cursor.GetAnchorX() or X
+		Y = Y == nil and Cursor.GetY() - Cursor.GetAnchorY() or Y
+		Cursor.SetRelativePosition(X, Y)
+	end
 end
 
 return Slab

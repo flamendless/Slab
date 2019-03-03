@@ -60,6 +60,13 @@ function Cursor.SetY(Y)
 	State.Y = Y
 end
 
+function Cursor.SetRelativePosition(X, Y)
+	State.PrevX = State.X
+	State.PrevY = State.Y
+	State.X = State.AnchorX + X
+	State.Y = State.AnchorY + Y
+end
+
 function Cursor.AdvanceX(X)
 	State.PrevX = State.X
 	State.X = State.X + X + State.PadX
