@@ -3,6 +3,7 @@ Next Release
 Version: Switch to 0.2.0.
 ListBox: Wiki documentation.
 ListBox: Example usage with texture and name.
+Image: Example usage of sub-image.
 
 TODO
 ==========
@@ -21,7 +22,6 @@ Cursor: Store line information such as min/max width/height.
 Cursor: Center position on line in X and Y.
 Dialog Box: Initial implementation.
 File Dialog: Initial implementation.
-Image: Sub-rectangle for an image.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.

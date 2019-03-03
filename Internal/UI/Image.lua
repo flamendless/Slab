@@ -63,6 +63,10 @@ function Image.Begin(Id, Options)
 	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
 	Options.ReturnOnHover = Options.ReturnOnHover == nil and false or Options.ReturnOnHover
 	Options.ReturnOnClick = Options.ReturnOnClick == nil and false or Options.ReturnOnClick
+	Options.SubX = Options.SubX == nil and 0.0 or Options.SubX
+	Options.SubY = Options.SubY == nil and 0.0 or Options.SubY
+	Options.SubW = Options.SubW == nil and 0.0 or Options.SubW
+	Options.SubH = Options.SubH == nil and 0.0 or Options.SubH
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -82,6 +86,13 @@ function Image.Begin(Id, Options)
 	local Result = false
 	local MouseX, MouseY = Window.GetMousePosition()
 
+	local UseSubImage = false
+	if Options.SubW > 0.0 and Options.SubH > 0.0 then
+		W = Options.SubW
+		H = Options.SubH
+		UseSubImage = true
+	end
+
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Result = Options.ReturnOnHover
 		Tooltip.Begin(Options.Tooltip)
@@ -91,7 +102,22 @@ function Image.Begin(Id, Options)
 		end
 	end
 
-	DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+	if UseSubImage then
+		DrawCommands.SubImage(
+			X,
+			Y,
+			Instance.Image,
+			Options.SubX,
+			Options.SubY,
+			Options.SubW,
+			Options.SubH,
+			Options.Rotation,
+			Options.ScaleX,
+			Options.ScaleY,
+			Options.Color)
+	else
+		DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+	end
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)

@@ -98,6 +98,11 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		SameLine
 		NewLine
 		Properties
+		BeginListBox
+		EndListBox
+		BeginListBoxItem
+		IsListBoxItemClicked
+		EndListBoxItem
 --]]
 local Slab = {}
 
@@ -725,6 +730,10 @@ end
 		Color: [Table] The color to use when rendering this image.
 		ReturnOnHover: [Boolean] Returns true when the mouse is hovered over the image.
 		ReturnOnClick: [Boolean] Returns true when the mouse is released over the image.
+		SubX: [Number] The X-coordinate used inside the given image.
+		SubY: [Number] The Y-coordinate used inside the given image.
+		SubW: [Number] The width used inside the given image.
+		SubH: [Number] The height used insided the given image.
 
 	Return: [Boolean] Returns true if the mouse is hovering over the image or clicking on the image based on
 		ReturnOnHover or ReturnOnClick options.

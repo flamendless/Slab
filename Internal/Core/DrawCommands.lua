@@ -46,7 +46,8 @@ local Types =
 	TextFormatted = 10,
 	IntersectScissor = 11,
 	Cross = 12,
-	Image = 13
+	Image = 13,
+	SubImage = 14
 }
 
 local Layers =
@@ -153,6 +154,11 @@ local function DrawImage(Image)
 	love.graphics.draw(Image.Image, Image.X, Image.Y, Image.Rotation, Image.ScaleX, Image.ScaleY)
 end
 
+local function DrawSubImage(Image)
+	love.graphics.setColor(Image.Color)
+	love.graphics.draw(Image.Image, Image.Quad, Image.Transform)
+end
+
 local function DrawElements(Elements)
 	for K, V in pairs(Elements) do
 		if V.Type == Types.Rect then
@@ -181,6 +187,8 @@ local function DrawElements(Elements)
 			DrawCross(V)
 		elseif V.Type == Types.Image then
 			DrawImage(V)
+		elseif V.Type == Types.SubImage then
+			DrawSubImage(V)
 		end
 	end
 end
@@ -379,6 +387,17 @@ function DrawCommands.Image(X, Y, Image, Rotation, ScaleX, ScaleY, Color)
 	Item.Rotation = Rotation
 	Item.ScaleX = ScaleX
 	Item.ScaleY = ScaleY
+	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, ScaleY, Color)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.SubImage
+	Item.Transform = love.math.newTransform(X, Y, Rotation, ScaleX, ScaleY)
+	Item.Image = Image
+	Item.Quad = love.graphics.newQuad(SX, SY, SW, SH, Image:getWidth(), Image:getHeight())
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
 	table.insert(ActiveBatch.Elements, Item)
 end
