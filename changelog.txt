@@ -18,8 +18,6 @@ Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Window should obstruct after making selection and closing window.
-Cursor: Store line information such as min/max width/height.
-Cursor: Center position on line in X and Y.
 Dialog Box: Initial implementation.
 File Dialog: Initial implementation.
 Input: Double click to select word.

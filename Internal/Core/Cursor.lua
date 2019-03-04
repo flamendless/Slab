@@ -40,7 +40,11 @@ local State =
 	ItemH = 0.0,
 	PadX = 4.0,
 	PadY = 4.0,
-	NewLineSize = 16.0
+	NewLineSize = 16.0,
+	LineY = 0.0,
+	LineH = 0.0,
+	PrevLineY = 0.0,
+	PrevLineH = 0.0
 }
 
 function Cursor.SetPosition(X, Y)
@@ -76,6 +80,10 @@ function Cursor.AdvanceY(Y)
 	State.X = State.AnchorX
 	State.PrevY = State.Y
 	State.Y = State.Y + Y + State.PadY
+	State.PrevLineY = State.LineY
+	State.PrevLineH = State.LineH
+	State.LineY = 0.0
+	State.LineH = 0.0
 end
 
 function Cursor.SetAnchor(X, Y)
@@ -112,16 +120,30 @@ function Cursor.SetItemBounds(X, Y, W, H)
 	State.ItemY = Y
 	State.ItemW = W
 	State.ItemH = H
+	if State.LineY == 0.0 then
+		State.LineY = Y
+	end
+	State.LineY = math.min(State.LineY, Y)
+	State.LineH = math.max(State.LineH, H)
 end
 
 function Cursor.GetItemBounds()
 	return State.ItemX, State.ItemY, State.ItemW, State.ItemH
 end
 
-function Cursor.SameLine(Pad)
-	Pad = Pad ~= nil and Pad or 0.0
-	State.X = State.ItemX + State.ItemW + State.PadX + Pad
+function Cursor.SameLine(Options)
+	Options = Options == nil and {} or Options
+	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
+	Options.CenterY = Options.CenterY == nil and false or Options.CenterY
+
+	State.LineY = State.PrevLineY
+	State.LineH = State.PrevLineH
+	State.X = State.ItemX + State.ItemW + State.PadX + Options.Pad
 	State.Y = State.PrevY
+
+	if Options.CenterY then
+		State.Y = State.Y + (State.LineH * 0.5) - (State.NewLineSize * 0.5)
+	end
 end
 
 function Cursor.SetNewLineSize(NewLineSize)
