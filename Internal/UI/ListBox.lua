@@ -148,7 +148,9 @@ function ListBox.EndItem()
 	assert(ActiveInstance.ActiveItem ~= nil, "Trying to call EndListBoxItem without calling BeginListBoxItem.")
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	ActiveInstance.ActiveItem.W = ItemW
-	ActiveInstance.ActiveItem.H = ItemH
+	ActiveInstance.ActiveItem.H = Cursor.GetLineHeight()
+	Cursor.SetY(ActiveInstance.ActiveItem.Y + ActiveInstance.ActiveItem.H)
+	Cursor.AdvanceY(0.0)
 	ActiveInstance.ActiveItem = nil
 end
 

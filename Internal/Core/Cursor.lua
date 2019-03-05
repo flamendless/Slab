@@ -154,4 +154,8 @@ function Cursor.NewLine()
 	Cursor.AdvanceY(State.NewLineSize)
 end
 
+function Cursor.GetLineHeight()
+	return State.PrevLineH
+end
+
 return Cursor
