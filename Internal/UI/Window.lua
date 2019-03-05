@@ -40,6 +40,7 @@ local PendingStack = {}
 local ActiveInstance = nil
 local FocusedInstance = nil
 local TopInstances = nil
+local ObstructAll = false
 
 local SizerType =
 {
@@ -86,6 +87,8 @@ local function NewInstance(Id)
 	Instance.ContextHotItem = nil
 	Instance.LastVisibleTime = 0.0
 	Instance.Items = {}
+	Instance.Layer = 'Normal'
+	Instance.SkipObstruct = false
 	return Instance
 end
 
@@ -155,7 +158,7 @@ local function IsSizerEnabled(Instance, Sizer)
 end
 
 local function UpdateSize(Instance)
-	if Instance ~= nil and Instance.AllowResize then
+	if Instance ~= nil and Instance.AllowResize and not Instance.IsObstructed then
 		if Region.IsHoverScrollBar(Instance.Id) then
 			return
 		end
@@ -272,6 +275,16 @@ function Window.Top()
 end
 
 function Window.IsObstructed(X, Y)
+	if ActiveInstance ~= nil then
+		if ActiveInstance.SkipObstruct then
+			return false
+		end
+	end
+
+	if ObstructAll then
+		return true
+	end
+
 	local X, Y = Mouse.Position()
 	local Instance = nil
 
@@ -347,6 +360,7 @@ function Window.Begin(Id, Options)
 	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
 	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
+	Options.SkipObstruct = Options.SkipObstruct == nil and false or Options.SkipObstruct
 
 	local Instance = GetInstance(Id)
 	table.insert(Stack, 1, Instance)
@@ -407,6 +421,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.LastVisibleTime = love.timer.getTime()
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
+	ActiveInstance.SkipObstruct = Options.SkipObstruct
 
 	if ActiveInstance.AutoSizeContent then
 		ActiveInstance.ContentW = math.max(Options.ContentW, ActiveInstance.DeltaContentW)
@@ -426,7 +441,8 @@ function Window.Begin(Id, Options)
 	UpdateTitleBar(ActiveInstance)
 
 	local MouseX, MouseY = Mouse.Position()
-	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not Window.IsObstructed(MouseX, MouseY) then
+	local IsObstructed = Window.IsObstructed(MouseX, MouseY)
+	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed then
 		FocusedInstance = ActiveInstance
 	end
 
@@ -456,7 +472,7 @@ function Window.Begin(Id, Options)
 		ContentW = ActiveInstance.ContentW,
 		ContentH = ActiveInstance.ContentH,
 		BgColor = ActiveInstance.BackgroundColor,
-		IsObstructed = Window.IsObstructed(MouseX, MouseY),
+		IsObstructed = IsObstructed,
 		MouseX = MouseX,
 		MouseY = MouseY,
 		ResetContent = ActiveInstance.HasResized
@@ -684,6 +700,10 @@ function Window.HasResized()
 		return ActiveInstance.HasResized
 	end
 	return false
+end
+
+function Window.SetObstructAll(ShouldObstructAll)
+	ObstructAll = ShouldObstructAll
 end
 
 return Window

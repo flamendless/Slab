@@ -28,14 +28,18 @@ local Slab = require('Slab')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 
 local SlabDebug = {}
-local SlabDebug_About = false
+local SlabDebug_About = 'SlabDebug_About'
 local SlabDebug_Mouse = false
 
 function SlabDebug.About()
-	Slab.BeginWindow('SlabDebug_About', {Title = "About"})
-	Slab.Text("Slab Version: " .. Slab.GetVersion())
-	Slab.Text("Love Version: " .. Slab.GetLoveVersion())
-	Slab.EndWindow()
+	if Slab.BeginDialog(SlabDebug_About, {Title = "About"}) then
+		Slab.Text("Slab Version: " .. Slab.GetVersion())
+		Slab.Text("Love Version: " .. Slab.GetLoveVersion())
+		if Slab.Button("OK") then
+			Slab.CloseDialog()
+		end
+		Slab.EndDialog()
+	end
 end
 
 function SlabDebug.Mouse()
@@ -52,8 +56,8 @@ end
 
 function SlabDebug.Menu()
 	if Slab.BeginMenu("Debug") then
-		if Slab.MenuItemChecked("About", SlabDebug_About) then
-			SlabDebug_About = not SlabDebug_About
+		if Slab.MenuItem("About") then
+			Slab.OpenDialog(SlabDebug_About)
 		end
 
 		if Slab.MenuItemChecked("Mouse", SlabDebug_Mouse) then
@@ -65,9 +69,7 @@ function SlabDebug.Menu()
 end
 
 function SlabDebug.Begin()
-	if SlabDebug_About then
-		SlabDebug.About()
-	end
+	SlabDebug.About()
 
 	if SlabDebug_Mouse then
 		SlabDebug.Mouse()

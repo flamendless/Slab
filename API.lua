@@ -32,6 +32,7 @@ local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
@@ -104,6 +105,12 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		IsListBoxItemClicked
 		EndListBoxItem
 		SetCursorPos
+
+		Dialog:
+			OpenDialog
+			BeginDialog
+			EndDialog
+			CloseDialog
 --]]
 local Slab = {}
 
@@ -190,6 +197,8 @@ function Slab.Update(dt)
 			MenuState.RequestClose = true
 		end
 	end
+
+	Window.SetObstructAll(Dialog.IsOpen())
 end
 
 --[[
@@ -355,8 +364,8 @@ end
 
 	Return: [Boolean] Returns true if the menu bar process has started.
 --]]
-function Slab.BeginMenuBar()
-	return MenuBar.Begin()
+function Slab.BeginMenuBar(IsMainMenuBar)
+	return MenuBar.Begin(IsMainMenuBar)
 end
 
 --[[
@@ -909,6 +918,60 @@ function Slab.SetCursorPos(X, Y, Options)
 		Y = Y == nil and Cursor.GetY() - Cursor.GetAnchorY() or Y
 		Cursor.SetRelativePosition(X, Y)
 	end
+end
+
+--[[
+	OpenDialog
+
+	Opens the dialog box with the given Id. If the dialog box was opened, then it is pushed onto the stack.
+	Calls to the BeginDialog with this same Id will return true if opened.
+
+	Id: A string uniquely identifying this dialog box.
+
+	Return: None.
+--]]
+function Slab.OpenDialog(Id)
+	Dialog.Open(Id)
+end
+
+--[[
+	BeginDialog
+
+	Begins the dialog window with the given Id if it is open. If this function returns true, then EndDialog must be called.
+	Dialog boxes are windows which are centered in the center of the viewport. The dialog box cannot be moved and will
+	capture all input from all other windows.
+
+	Id: A string uniquely identifying this dialog box.
+	Options: [Table] List of options that control how this dialog box behaves. These are the same parameters found
+		for BeginWindow, with some caveats. Certain options are overridden by the Dialog system. They are:
+			X, Y, Layer, AllowFocus, AllowMove, and AutoSizeWindow.
+
+	Return: [Boolean] Returns true if the dialog with the given Id is open.
+--]]
+function Slab.BeginDialog(Id, Options)
+	return Dialog.Begin(Id, Options)
+end
+
+--[[
+	EndDialog
+
+	Ends the dialog window if a call to BeginDialog returns true.
+
+	Return: None.
+--]]
+function Slab.EndDialog()
+	Dialog.End()
+end
+
+--[[
+	CloseDialog
+
+	Closes the currently active dialog box.
+
+	Return: None.
+--]]
+function Slab.CloseDialog()
+	Dialog.Close()
 end
 
 return Slab

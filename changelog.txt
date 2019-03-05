@@ -5,6 +5,7 @@ ListBox: Wiki documentation.
 ListBox: Example usage with texture and name.
 Image: Example usage of sub-image.
 Cursor: Wiki documentation.
+Dialog Box: Wiki documentation.
 
 TODO
 ==========
@@ -18,13 +19,16 @@ Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Window should obstruct after making selection and closing window.
-Dialog Box: Initial implementation.
+Dialog: Stack dialog boxes.
+Dialog: Function to close all dialog boxes.
+Dialog: Modal/Non-modal dialogs.
 File Dialog: Initial implementation.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
+Region: Clamp position check with owning window's size.
 Region: Only allow wheel move on the hovered region with child regions within a window.
 Scroll bar: Check for window obstruction.
 Scroll Bar: Scroll bar is moved when obstructed by other window.

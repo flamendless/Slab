@@ -56,7 +56,8 @@ local Layers =
 	Focused = 2,
 	ContextMenu = 3,
 	MainMenuBar = 4,
-	Debug = 5
+	Dialog = 5,
+	Debug = 6
 }
 
 local ActiveLayer = Layers.Normal
@@ -209,6 +210,7 @@ function DrawCommands.Reset()
 	Batches[Layers.Focused] = {}
 	Batches[Layers.ContextMenu] = {}
 	Batches[Layers.MainMenuBar] = {}
+	Batches[Layers.Dialog] = {}
 	Batches[Layers.Debug] = {}
 	ActiveLayer = Layers.Normal
 	PendingBatches = {}
@@ -243,6 +245,8 @@ function DrawCommands.SetLayer(Layer)
 		ActiveLayer = Layers.ContextMenu
 	elseif Layer == 'MainMenuBar' then
 		ActiveLayer = Layers.MainMenuBar
+	elseif Layer == 'Dialog' then
+		ActiveLayer = Layers.Dialog
 	elseif Layer == 'Debug' then
 		ActiveLayer = Layers.Debug
 	end
@@ -407,6 +411,7 @@ function DrawCommands.Execute()
 	DrawBatch(Batches[Layers.Focused])
 	DrawBatch(Batches[Layers.ContextMenu])
 	DrawBatch(Batches[Layers.MainMenuBar])
+	DrawBatch(Batches[Layers.Dialog])
 	DrawBatch(Batches[Layers.Debug])
 end
 

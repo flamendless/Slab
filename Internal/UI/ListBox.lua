@@ -94,6 +94,8 @@ function ListBox.Begin(Id, Options)
 	Instance.H = H
 	ActiveInstance = Instance
 
+	local IsObstructed = Window.IsObstructedAtMouse()
+
 	local TX, TY = Window.TransformPoint(X, Y)
 	local MouseX, MouseY = Window.GetMousePosition()
 	Region.Begin(Instance.Id, {
@@ -108,13 +110,14 @@ function ListBox.Begin(Id, Options)
 		Intersect = true,
 		MouseX = MouseX,
 		MouseY = MouseY,
-		ResetContent = Window.HasResized()
+		ResetContent = Window.HasResized(),
+		IsObstructed = IsObstructed
 	})
 
 	Instance.HotItem = nil
 	MouseX, MouseY = Region.InverseTransform(Instance.Id, MouseX, MouseY)
 	for K, V in pairs(Instance.Items) do
-		if not Window.IsObstructedAtMouse()
+		if not IsObstructed
 			and not Region.IsHoverScrollBar(Instance.Id)
 			and V.X <= MouseX and MouseX <= V.X + Instance.W and V.Y <= MouseY and MouseY <= V.Y + V.H
 			then

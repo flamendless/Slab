@@ -43,6 +43,7 @@ local BasicWindow_Properties =
 }
 
 local ResetLayout = false
+local ListBoxIndex = 1
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -124,7 +125,7 @@ function SlabTest.TreeWindow()
 		Slab.BeginTree('SlabTest_Child1_leaf', {Label = "Leaf 1", IsLeaf = true})
 		Slab.EndTree()
 	end
-
+	
 	local Path = "/Internal/Resources/Textures/power.png"
 	local ImageOptions =
 	{
@@ -141,10 +142,10 @@ function SlabTest.TreeWindow()
 	
 	Slab.BeginListBox('SlabTest_ListBox')
 	for I = 1, 10, 1 do
-		Slab.BeginListBoxItem('Item ' .. I)
+		Slab.BeginListBoxItem('Item ' .. I, {Selected = I == ListBoxIndex})
 		Slab.Text("Item " .. I)
 		if Slab.IsListBoxItemClicked() then
-			-- Perform logic when clicked
+			ListBoxIndex = I
 		end
 		Slab.EndListBoxItem()
 	end
