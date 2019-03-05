@@ -259,6 +259,7 @@ function Region.Begin(Id, Options)
 	Options.IgnoreScroll = Options.IgnoreScroll == nil and false or Options.IgnoreScroll
 	Options.MouseX = Options.MouseX == nil and 0.0 or Options.MouseX
 	Options.MouseY = Options.MouseY == nil and 0.0 or Options.MouseY
+	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
 
 	local Instance = GetInstance(Id)
 	Instance.X = Options.X
@@ -271,6 +272,11 @@ function Region.Begin(Id, Options)
 	Instance.IgnoreScroll = Options.IgnoreScroll
 	Instance.MouseX = Options.MouseX
 	Instance.MouseY = Options.MouseY
+
+	if Options.ResetContent then
+		Instance.ContentW = 0.0
+		Instance.ContentH = 0.0
+	end
 
 	if not Options.AutoSizeContent then
 		Instance.ContentW = Options.ContentW

@@ -102,7 +102,8 @@ function ListBox.Begin(Id, Options)
 		NoBackground = true,
 		Intersect = true,
 		MouseX = MouseX,
-		MouseY = MouseY
+		MouseY = MouseY,
+		ResetContent = Window.HasResized()
 	})
 
 	Instance.HotItem = nil

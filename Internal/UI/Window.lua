@@ -74,6 +74,7 @@ local function NewInstance(Id)
 	Instance.SizerFilter = nil
 	Instance.SizeDeltaX = 0.0
 	Instance.SizeDeltaY = 0.0
+	Instance.HasResized = false
 	Instance.DeltaContentW = 0.0
 	Instance.DeltaContentH = 0.0
 	Instance.BackgroundColor = Style.WindowBackgroundColor
@@ -210,6 +211,13 @@ local function UpdateSize(Instance)
 
 		if Instance.SizerType ~= SizerType.None then
 			local DeltaX, DeltaY = Mouse.GetDelta()
+
+			if DeltaX ~= 0.0 or DeltaY ~= 0.0 then
+				Instance.HasResized = true
+				Instance.DeltaContentW = 0.0
+				Instance.DeltaContentH = 0.0
+			end
+
 			if Instance.SizerType == SizerType.N then
 				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
 				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
@@ -398,6 +406,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.HotItem = nil
 	ActiveInstance.LastVisibleTime = love.timer.getTime()
 	ActiveInstance.SizerFilter = Options.SizerFilter
+	ActiveInstance.HasResized = false
 
 	if ActiveInstance.AutoSizeContent then
 		ActiveInstance.ContentW = math.max(Options.ContentW, ActiveInstance.DeltaContentW)
@@ -449,7 +458,8 @@ function Window.Begin(Id, Options)
 		BgColor = ActiveInstance.BackgroundColor,
 		IsObstructed = Window.IsObstructed(MouseX, MouseY),
 		MouseX = MouseX,
-		MouseY = MouseY
+		MouseY = MouseY,
+		ResetContent = ActiveInstance.HasResized
 	})
 end
 
@@ -667,6 +677,13 @@ function Window.Validate()
 	if #PendingStack > 1 then
 		assert(false, "EndWindow was not called for: " .. PendingStack[1].Id)
 	end
+end
+
+function Window.HasResized()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.HasResized
+	end
+	return false
 end
 
 return Window
