@@ -818,7 +818,8 @@ end
 	Id: [String] A string uniquely identifying this list box within the context of the current window.
 	Options: [Table] List of options controlling the behavior of the list box.
 		W: [Number] The width of the list box. If nil, then the width of the window is used.
-		H: [Number] The height of the list box. If nil, a default value of 150 is used.
+		H: [Number] The height of the list box. If nil, a default value of 150 is used. If H is 0, then
+			the list box will stretch to the height of the window.
 
 	Return: None.
 --]]

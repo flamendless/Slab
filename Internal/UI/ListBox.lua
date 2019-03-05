@@ -81,6 +81,10 @@ function ListBox.Begin(Id, Options)
 		Options.W = math.max(0.0, WinW - (X - WinX) - Window.GetBorder() * 2.0)
 	end
 
+	if Options.H == 0.0 then
+		Options.H = math.max(0.0, WinH - (Y - WinH) - Window.GetBorder() * 2.0)
+	end
+
 	local W = Options.W
 	local H = Options.H
 
@@ -167,6 +171,7 @@ function ListBox.End()
 	assert(ActiveInstance ~= nil, "EndListBox was called without calling BeginListBox.")
 	Region.End()
 
+	Cursor.SetItemBounds(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.W, ActiveInstance.H)
 	Cursor.SetPosition(ActiveInstance.X, ActiveInstance.Y)
 	Cursor.AdvanceY(ActiveInstance.H)
 

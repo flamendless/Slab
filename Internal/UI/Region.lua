@@ -136,13 +136,13 @@ local function UpdateScrollBars(Instance, IsObstructed)
 				Instance.IsScrollingX = true
 
 				Instance.ScrollPosX = math.max(Instance.ScrollPosX + DeltaX, 0.0)
-				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
 			end
 
 			if Instance.IsScrollingX and IsMouseReleased then
 				Instance.IsScrollingX = false
 			end
 		end
+		Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
 	end
 
 	if Instance.HasScrollY then
@@ -156,13 +156,13 @@ local function UpdateScrollBars(Instance, IsObstructed)
 				Instance.IsScrollingY = true
 				
 				Instance.ScrollPosY = math.max(Instance.ScrollPosY + DeltaY, 0.0)
-				Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
 			end
 
 			if Instance.IsScrollingY and IsMouseReleased then
 				Instance.IsScrollingY = false
 			end
 		end
+		Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
 	end
 
 	local XRatio, YRatio = 0.0, 0.0
