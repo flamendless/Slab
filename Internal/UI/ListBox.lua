@@ -63,6 +63,7 @@ local function GetInstance(Id)
 		Instance.Items = {}
 		Instance.ActiveItem = nil
 		Instance.HotItem = nil
+		Instance.Selected = false
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -109,12 +110,15 @@ function ListBox.Begin(Id, Options)
 	Instance.HotItem = nil
 	MouseX, MouseY = Region.InverseTransform(Instance.Id, MouseX, MouseY)
 	for K, V in pairs(Instance.Items) do
-		if not Window.IsObstructedAtMouse() and 
-			not Region.IsHoverScrollBar(Instance.Id) and
-			V.X <= MouseX and MouseX <= V.X + Instance.W and V.Y <= MouseY and MouseY <= V.Y + V.H then
-			DrawCommands.Rectangle('fill', V.X, V.Y, Instance.W, V.H, Style.TextHoverBgColor)
+		if not Window.IsObstructedAtMouse()
+			and not Region.IsHoverScrollBar(Instance.Id)
+			and V.X <= MouseX and MouseX <= V.X + Instance.W and V.Y <= MouseY and MouseY <= V.Y + V.H
+			then
 			Instance.HotItem = V
-			break
+		end
+
+		if Instance.HotItem == V or V.Selected then
+			DrawCommands.Rectangle('fill', V.X, V.Y, Instance.W, V.H, Style.TextHoverBgColor)
 		end
 	end
 
@@ -124,7 +128,10 @@ function ListBox.Begin(Id, Options)
 	Window.AddItem(X, Y, W, H, Instance.Id)
 end
 
-function ListBox.BeginItem(Id)
+function ListBox.BeginItem(Id, Options)
+	Options = Options == nil and {} or Options
+	Options.Selected = Options.Selected == nil and false or Options.Selected
+
 	assert(ActiveInstance ~= nil, "Trying to call BeginListBoxItem outside of BeginListBox.")
 	assert(ActiveInstance.ActiveItem == nil, 
 		"BeginListBoxItem was called for item '" .. (ActiveInstance.ActiveItem ~= nil and ActiveInstance.ActiveItem.Id or "nil") .. 
@@ -132,6 +139,7 @@ function ListBox.BeginItem(Id)
 	local Item = GetItemInstance(ActiveInstance, Id)
 	Item.X, Item.Y = Cursor.GetPosition()
 	ActiveInstance.ActiveItem = Item
+	ActiveInstance.ActiveItem.Selected = Options.Selected
 end
 
 function ListBox.IsItemClicked(Button)

@@ -845,11 +845,13 @@ end
 	a text to represent the item. If this is called, EndListBoxItem must be called to complete the item.
 
 	Id: [String] A string uniquely identifying this item within the context of the current list box.
+	Options: [Table] List of options that control the behavior of the active list item.
+		Selected: [Boolean] If true, will draw the item with a selection background.
 
 	Return: None.
 --]]
-function Slab.BeginListBoxItem(Id)
-	ListBox.BeginItem(Id)
+function Slab.BeginListBoxItem(Id, Options)
+	ListBox.BeginItem(Id, Options)
 end
 
 --[[
