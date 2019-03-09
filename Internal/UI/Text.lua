@@ -40,7 +40,7 @@ function Text.Begin(Label, Options)
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
 
 	local X, Y = Cursor.GetPosition()
-	local W = Style.Font:getWidth(Label)
+	local W = Text.GetWidth(Label)
 	local H = Style.Font:getHeight()
 	local Color = Options.Color
 	local Result = false
@@ -101,6 +101,10 @@ function Text.BeginFormatted(Label, Options)
 
 	Window.ResetContentSize()
 	Window.AddItem(math.floor(X), math.floor(Y), Width, H)
+end
+
+function Text.GetWidth(Label)
+	return Style.Font:getWidth(Label)
 end
 
 return Text

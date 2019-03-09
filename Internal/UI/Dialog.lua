@@ -24,6 +24,9 @@ SOFTWARE.
 
 --]]
 
+local Button = require(SLAB_PATH .. '.Internal.UI.Button')
+local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Dialog = {}
@@ -97,6 +100,47 @@ end
 
 function Dialog.IsOpen()
 	return #Stack > 0
+end
+
+function Dialog.MessageBox(Title, Message, Options)
+	local Result = ""
+	Dialog.Open('MessageBox')
+	if Dialog.Begin('MessageBox', {Title = Title}) then
+		Options = Options == nil and {} or Options
+		Options.Buttons = Options.Buttons == nil and {"OK"} or Options.Buttons
+
+		Cursor.NewLine()
+
+		local WinX, WinY, WinW, WinH = Window.GetBounds()
+		local TextW = Text.GetWidth(Message)
+		TextW = math.min(TextW, love.graphics.getWidth() * 0.65)
+		Cursor.SetX(WinX + (WinW * 0.5) - (TextW * 0.5))
+		Text.BeginFormatted(Message, {W = TextW, Align = 'center'})
+
+		Cursor.NewLine()
+		Cursor.NewLine()
+
+		local ButtonWidth = 0.0
+		local WinW, WinH = Window.GetSize()
+		for I, V in ipairs(Options.Buttons) do
+			ButtonWidth = ButtonWidth + Button.GetWidth(V) + Cursor.PadX()
+		end
+
+		for I, V in ipairs(Options.Buttons) do
+			if Button.Begin(V, {AlignRight = WinW > ButtonWidth}) then
+				Result = V
+			end
+			Cursor.SameLine()
+		end
+
+		if Result ~= "" then
+			Dialog.Close()
+		end
+
+		Dialog.End()
+	end
+
+	return Result
 end
 
 return Dialog

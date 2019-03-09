@@ -43,7 +43,8 @@ function Layout.AlignRight(W)
 
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	if ItemY == Y then
-		RightPad = RightPad + ItemW + Cursor.PadX()
+		Offset = ItemX
+		RightPad = Cursor.PadX()
 	end
 
 	return Offset - W - RightPad

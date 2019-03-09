@@ -111,6 +111,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			BeginDialog
 			EndDialog
 			CloseDialog
+			MessageBox
 --]]
 local Slab = {}
 
@@ -972,6 +973,24 @@ end
 --]]
 function Slab.CloseDialog()
 	Dialog.Close()
+end
+
+--[[
+	MessageBox
+
+	Opens a message box to be displayed to the user with a title and a message. Buttons can be specified through the options
+	table which when clicked, the string of the button is returned. This function should be called every frame when a message
+	box wants to be displayed.
+
+	Title: [String] The title to display for the message box.
+	Message: [String] The message to be displayed. The text is aligned in the center. Multi-line strings are supported.
+	Options: [Table] List of options to control the behavior of the message box.
+		Buttons: [Table] List of buttons to display with the message box. The order of the buttons are displayed from right to left.
+
+	Return: [String] The name of the button that was clicked. If none was clicked, an emtpy string is returned.
+--]]
+function Slab.MessageBox(Title, Message, Options)
+	return Dialog.MessageBox(Title, Message, Options)
 end
 
 return Slab

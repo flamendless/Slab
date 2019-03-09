@@ -37,4 +37,14 @@ function Utility.MakeColor(Color)
 	return Copy
 end
 
+function Utility.HasValue(Table, Value)
+	for I, V in ipairs(Table) do
+		if V == Value then
+			return true
+		end
+	end
+
+	return false
+end
+
 return Utility

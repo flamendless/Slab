@@ -6,6 +6,7 @@ ListBox: Example usage with texture and name.
 Image: Example usage of sub-image.
 Cursor: Wiki documentation.
 Dialog Box: Wiki documentation.
+Message Box: Wiki documentation.
 
 BUGS
 ==========

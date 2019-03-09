@@ -46,7 +46,7 @@ function Button.Begin(Label, Options)
 	local FontHeight = Style.Font:getHeight()
 	local X, Y = Cursor.GetPosition()
 	local LabelW = Style.Font:getWidth(Label)
-	local W = math.max(LabelW, MinWidth) + Pad * 2.0
+	local W = Button.GetWidth(Label)
 	local H = FontHeight + Pad * 0.5
 
 	if Options.AlignRight then
@@ -72,7 +72,7 @@ function Button.Begin(Label, Options)
 	local LabelX = X + (W * 0.5) - (LabelW * 0.5)
 
 	DrawCommands.Rectangle('fill', X, Y, W, H, Color)
-	DrawCommands.Print(Label, math.floor(LabelX), Y + math.floor(H * 0.5) - math.floor(FontHeight * 0.5))
+	DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5))
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
@@ -80,6 +80,11 @@ function Button.Begin(Label, Options)
 	Window.AddItem(X, Y, W, H, Id)
 
 	return Result
+end
+
+function Button.GetWidth(Label)
+	local LabelW = Style.Font:getWidth(Label)
+	return math.max(LabelW, MinWidth) + Pad * 2.0
 end
 
 return Button

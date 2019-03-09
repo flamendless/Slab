@@ -44,6 +44,7 @@ local BasicWindow_Properties =
 
 local ResetLayout = false
 local ListBoxIndex = 1
+local SlabTest_MessageBox = false
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -187,6 +188,10 @@ function SlabTest.MainMenuBar()
 				ResetLayout = true
 			end
 
+			if Slab.MenuItemChecked("Message Box", SlabTest_MessageBox) then
+				SlabTest_MessageBox = not SlabTest_MessageBox
+			end
+
 			Slab.EndMenu()
 		end
 
@@ -214,6 +219,14 @@ function SlabTest.Begin()
 	SlabTest.GlobalContextMenu()
 	SlabDebug.Begin()
 	ResetLayout = false
+
+	if SlabTest_MessageBox then
+		local Result = Slab.MessageBox("Test", "This is a test message box.")
+
+		if Result ~= "" then
+			SlabTest_MessageBox = false
+		end
+	end
 end
 
 return SlabTest

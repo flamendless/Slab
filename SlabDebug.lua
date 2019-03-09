@@ -35,7 +35,8 @@ function SlabDebug.About()
 	if Slab.BeginDialog(SlabDebug_About, {Title = "About"}) then
 		Slab.Text("Slab Version: " .. Slab.GetVersion())
 		Slab.Text("Love Version: " .. Slab.GetLoveVersion())
-		if Slab.Button("OK") then
+		Slab.NewLine()
+		if Slab.Button("OK", {AlignRight = true}) then
 			Slab.CloseDialog()
 		end
 		Slab.EndDialog()
