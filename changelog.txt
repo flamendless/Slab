@@ -1,4 +1,4 @@
-Next Release
+NEXT RELEASE
 ==========
 Version: Switch to 0.2.0.
 ListBox: Wiki documentation.
@@ -7,11 +7,13 @@ Image: Example usage of sub-image.
 Cursor: Wiki documentation.
 Dialog Box: Wiki documentation.
 
+BUGS
+==========
+[Scrollbar]: Position incorrect when tree is collapsed.
+
 TODO
 ==========
-Bug: Scroll bar position incorrect when tree is collapsed.
 Button: Expand to fit width of window.
-Button: Left, Center, Right align.
 Color Picker: Initial implementation.
 Combo Box: Move all cursor updates on End call.
 Combo Box: Highlight input box when mouse is hovered.
@@ -23,6 +25,8 @@ Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 File Dialog: Initial implementation.
+Group: Initial implementation of grouping of controls. Controls with their options are stored
+	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
 Input: Multi-line input control.
 License: Show license for Kenney.nl assets.

@@ -158,4 +158,12 @@ function Cursor.GetLineHeight()
 	return State.PrevLineH
 end
 
+function Cursor.PadX()
+	return State.PadX
+end
+
+function Cursor.PadY()
+	return State.PadY
+end
+
 return Cursor
