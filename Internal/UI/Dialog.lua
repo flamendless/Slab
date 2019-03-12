@@ -41,6 +41,35 @@ local Instances = {}
 local ActiveInstance = nil
 local Stack = {}
 
+local function PruneResults(Items, DirectoryOnly)
+	local Result = {}
+
+	for I, V in ipairs(Items) do
+		if FileSystem.IsDirectory(V) then
+			if DirectoryOnly then
+				table.insert(Result, V)
+			end
+		else
+			if not DirectoryOnly then
+				table.insert(Result, V)
+			end
+		end
+	end
+
+	return Result
+end
+
+local function OpenDirectory(Dir)
+	if ActiveInstance ~= nil and ActiveInstance.Directory ~= nil then
+		ActiveInstance.Items = nil
+		if Dir == ".." then
+			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
+		else
+			ActiveInstance.Directory = ActiveInstance.Directory .. "/" .. Dir
+		end
+	end
+end
+
 local function FileDialogItem(Id, Label, IsDirectory, Index)
 	ListBox.BeginItem(Id, {Selected = Utility.HasValue(ActiveInstance.Selected, Index)})
 
@@ -62,12 +91,7 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 	end
 
 	if ListBox.IsItemClicked(1, true) and IsDirectory then
-		ActiveInstance.Items = nil
-		if Label == ".." then
-			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
-		else
-			ActiveInstance.Directory = ActiveInstance.Directory .. "/" .. Label
-		end
+		OpenDirectory(Label)
 	end
 
 	ListBox.EndItem()
@@ -195,6 +219,7 @@ function Dialog.FileDialog(Options)
 	Options = Options == nil and {} or Options
 	Options.AllowMultiSelect = Options.AllowMultiSelect == nil and true or Options.AllowMultiSelect
 	Options.Directory = Options.Directory == nil and nil or Options.Directory
+	Options.Type = Options.Type == nil and 'openfile' or Options.Type
 
 	local Result = {Button = "", Files = {}}
 	local WasOpen = IsInstanceOpen('FileDialog')
@@ -234,7 +259,9 @@ function Dialog.FileDialog(Options)
 					if FileSystem.IsDirectory(ActiveInstance.Directory .. "/" .. V) or V == ".." then
 						table.insert(ActiveInstance.Directories, V)
 					else
-						table.insert(ActiveInstance.Files, V)
+						if Options.Type ~= 'opendirectory' then
+							table.insert(ActiveInstance.Files, V)
+						end
 					end
 				end
 			end
@@ -265,8 +292,19 @@ function Dialog.FileDialog(Options)
 		Cursor.SameLine()
 
 		if Button.Begin("OK", {AlignRight = true}) then
-			Result.Button = "OK"
-			Result.Files = ActiveInstance.Return
+			local OpeningDirectory = false
+			if #ActiveInstance.Return == 1 and Options.Type ~= 'opendirectory' then
+				local Path = ActiveInstance.Return[1]
+				if FileSystem.IsDirectory(Path) then
+					OpeningDirectory = true
+					OpenDirectory(FileSystem.GetBaseName(Path))
+				end
+			end
+
+			if not OpeningDirectory then
+				Result.Button = "OK"
+				Result.Files = PruneResults(ActiveInstance.Return, Options.Type == 'opendirectory')
+			end
 		end
 
 		if Result.Button ~= "" then

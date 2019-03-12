@@ -233,7 +233,7 @@ function SlabTest.Begin()
 	end
 
 	if SlabTest_FileDialog then
-		local Result = Slab.FileDialog({AllowMultiSelect = true, Directory = love.filesystem.getSourceBaseDirectory() .. "/Slab"})
+		local Result = Slab.FileDialog()
 
 		if Result.Button ~= "" then
 			print("Button: " .. Result.Button)

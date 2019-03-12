@@ -30,9 +30,9 @@ Dialog: Modal/Non-modal dialogs.
 File Dialog: Add tree dialog explorer with icons.
 File Dialog: Shift select for range selection.
 File Dialog: Save option with input field for file name and error checking.
-File Dialog: Filter by directory only.
 File Dialog: Filter by files only.
 File Dialog: Deselect item with multiselect enabled.
+File Dialog: Filter by extension.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
@@ -54,6 +54,7 @@ Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 Tree: Auto-sized windows should clear window size when tree item closes.
+Tree: Add icon option to tree items.
 Window: Cache obstructed window for all future calls.
 Window: Check sizers for window obstruction.
 Window: Menu support.

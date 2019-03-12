@@ -26,6 +26,11 @@ SOFTWARE.
 
 local FileSystem = {}
 
+function FileSystem.Separator()
+	local OS = love.system.getOS()
+	return OS == "Windows" and "\\" or "/"
+end
+
 function FileSystem.GetDirectoryItems(Directory)
 	local Cmd = ""
 	local OS = love.system.getOS()
@@ -66,18 +71,32 @@ end
 function FileSystem.Parent(Path)
 	local Result = Path
 
-	local OS = love.system.getOS()
-	local Sep = OS == "Windows" and "\\" or "/"
+	local Index = 1
+	local I = Index
+	repeat
+		Index = I
+		I = string.find(Path, FileSystem.Separator(), Index + 1, true)
+	until I == nil
+
+	if Index > 1 then
+		Result = string.sub(Path, 1, Index - 1)
+	end
+
+	return Result
+end
+
+function FileSystem.GetBaseName(Path)
+	local Result = Path
 
 	local Index = 1
 	local I = Index
 	repeat
 		Index = I
-		I = string.find(Path, Sep, Index + 1, true)
+		I = string.find(Path, FileSystem.Separator(), Index + 1, true)
 	until I == nil
 
 	if Index > 1 then
-		Result = string.sub(Path, 1, Index - 1)
+		Result = string.sub(Path, Index + 1)
 	end
 
 	return Result

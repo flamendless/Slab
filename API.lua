@@ -1001,10 +1001,15 @@ end
 	Opens up a dialog box that displays a file explorer for opening or saving files or directories.
 
 	Options: [Table] List of options that control the behavior of the file dialog.
-		AllowMultiSelect: Allows the user to select multiple items in the file dialog.
-		Directory: The starting directory when the file dialog is open. If none is specified, the dialog
+		AllowMultiSelect: [Boolean] Allows the user to select multiple items in the file dialog.
+		Directory: [String] The starting directory when the file dialog is open. If none is specified, the dialog
 			will start at love.filesystem.getSourceBaseDirectory and the dialog will remember the last
 			directory navigated to by the user between calls to this function.
+		Type: [String] The type of file dialog to use. The options are:
+			openfile: This is the default method. The user will have access to both directories and files. However,
+				only file selections are returned.
+			opendirectory: This type is used to filter the file dialog for directories only. No files will appear
+				in the list.
 
 	Return: [Table] Returns items for how the user interacted with this file dialog.
 		Button: [String] The button the user clicked. Will either be OK or Cancel.
