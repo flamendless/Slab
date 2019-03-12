@@ -265,6 +265,10 @@ function Dialog.FileDialog(Options)
 					end
 				end
 			end
+
+			if not Utility.HasValue(ActiveInstance.Directories, "..") then
+				table.insert(ActiveInstance.Directories, 1, "..")
+			end
 		end
 
 		local WinW, WinH = Window.GetSize()

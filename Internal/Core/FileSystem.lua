@@ -27,8 +27,8 @@ SOFTWARE.
 local FileSystem = {}
 
 function FileSystem.Separator()
-	local OS = love.system.getOS()
-	return OS == "Windows" and "\\" or "/"
+	-- Lua/Love2D returns all paths with back slashes.
+	return "/"
 end
 
 function FileSystem.GetDirectoryItems(Directory)
@@ -36,7 +36,7 @@ function FileSystem.GetDirectoryItems(Directory)
 	local OS = love.system.getOS()
 
 	if OS == "Windows" then
-		Cmd = 'dir "' .. Directory .. '" /b /ad'
+		Cmd = 'dir "' .. Directory .. '" /b /a'
 	else
 		Cmd = 'ls -a "' .. Directory .. '"'
 	end
@@ -59,13 +59,25 @@ function FileSystem.Exists(Path)
 	if Handle ~= nil then
 		io.close(Handle)
 		return true
+	else
+		local OS = love.system.getOS()
+		if OS == "Windows" then
+			local OK, Error, Code = os.rename(Path, Path)
+			if OK then
+				return true
+			else
+				if Code == 13 then
+					return true
+				end
+			end
+		end
 	end
 
 	return false
 end
 
 function FileSystem.IsDirectory(Path)
-	return FileSystem.Exists(Path .. "/")
+	return FileSystem.Exists(Path .. FileSystem.Separator())
 end
 
 function FileSystem.Parent(Path)
