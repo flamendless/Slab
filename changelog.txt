@@ -7,6 +7,8 @@ Image: Example usage of sub-image.
 Cursor: Wiki documentation.
 Dialog Box: Wiki documentation.
 Message Box: Wiki documentation.
+File Dialog: Wiki documentation.
+CC0 - license for UI image.
 
 BUGS
 ==========
@@ -25,7 +27,12 @@ Combo Box: Window should obstruct after making selection and closing window.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-File Dialog: Initial implementation.
+File Dialog: Add tree dialog explorer with icons.
+File Dialog: Shift select for range selection.
+File Dialog: Save option with input field for file name and error checking.
+File Dialog: Filter by directory only.
+File Dialog: Filter by files only.
+File Dialog: Deselect item with multiselect enabled.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.

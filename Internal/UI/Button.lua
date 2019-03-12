@@ -43,11 +43,10 @@ function Button.Begin(Label, Options)
 	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
 
 	local Id = Window.GetItemId(Label)
-	local FontHeight = Style.Font:getHeight()
 	local X, Y = Cursor.GetPosition()
+	local W, H = Button.GetSize(Label)
 	local LabelW = Style.Font:getWidth(Label)
-	local W = Button.GetWidth(Label)
-	local H = FontHeight + Pad * 0.5
+	local FontHeight = Style.Font:getHeight()
 
 	if Options.AlignRight then
 		X = Layout.AlignRight(W)
@@ -82,9 +81,10 @@ function Button.Begin(Label, Options)
 	return Result
 end
 
-function Button.GetWidth(Label)
-	local LabelW = Style.Font:getWidth(Label)
-	return math.max(LabelW, MinWidth) + Pad * 2.0
+function Button.GetSize(Label)
+	local W = Style.Font:getWidth(Label)
+	local H = Style.Font:getHeight()
+	return math.max(W, MinWidth) + Pad * 2.0, H + Pad * 0.5
 end
 
 return Button

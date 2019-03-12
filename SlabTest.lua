@@ -45,6 +45,7 @@ local BasicWindow_Properties =
 local ResetLayout = false
 local ListBoxIndex = 1
 local SlabTest_MessageBox = false
+local SlabTest_FileDialog = false
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -170,7 +171,10 @@ function SlabTest.MainMenuBar()
 				Slab.EndMenu()
 			end
 
-			Slab.MenuItem("Open")
+			if Slab.MenuItem("Open") then
+				SlabTest_FileDialog = true
+			end
+
 			Slab.MenuItem("Save")
 			Slab.MenuItem("Save As")
 
@@ -225,6 +229,19 @@ function SlabTest.Begin()
 
 		if Result ~= "" then
 			SlabTest_MessageBox = false
+		end
+	end
+
+	if SlabTest_FileDialog then
+		local Result = Slab.FileDialog({AllowMultiSelect = true, Directory = love.filesystem.getSourceBaseDirectory() .. "/Slab"})
+
+		if Result.Button ~= "" then
+			print("Button: " .. Result.Button)
+			print("Files: " .. #Result.Files)
+			for I, V in ipairs(Result.Files) do
+				print("   " .. V)
+			end
+			SlabTest_FileDialog = false
 		end
 	end
 end

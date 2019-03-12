@@ -112,6 +112,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			EndDialog
 			CloseDialog
 			MessageBox
+			FileDialog
 --]]
 local Slab = {}
 
@@ -872,11 +873,12 @@ end
 	block.
 
 	Button: [Number] The button to check for the click of the item.
+	IsDoubleClick: [Boolean] Check for double-click instead of single click.
 
 	Return: [Boolean] Returns true if the active item is hovered with mouse and the requested mouse button is clicked.
 --]]
-function Slab.IsListBoxItemClicked(Button)
-	return ListBox.IsItemClicked(Button)
+function Slab.IsListBoxItemClicked(Button, IsDoubleClick)
+	return ListBox.IsItemClicked(Button, IsDoubleClick)
 end
 
 --[[
@@ -991,6 +993,25 @@ end
 --]]
 function Slab.MessageBox(Title, Message, Options)
 	return Dialog.MessageBox(Title, Message, Options)
+end
+
+--[[
+	FileDialog
+
+	Opens up a dialog box that displays a file explorer for opening or saving files or directories.
+
+	Options: [Table] List of options that control the behavior of the file dialog.
+		AllowMultiSelect: Allows the user to select multiple items in the file dialog.
+		Directory: The starting directory when the file dialog is open. If none is specified, the dialog
+			will start at love.filesystem.getSourceBaseDirectory and the dialog will remember the last
+			directory navigated to by the user between calls to this function.
+
+	Return: [Table] Returns items for how the user interacted with this file dialog.
+		Button: [String] The button the user clicked. Will either be OK or Cancel.
+		Files: [Table] An array of selected file items the user selected when OK is pressed. Will be empty otherwise.
+--]]
+function Slab.FileDialog(Options)
+	return Dialog.FileDialog(Options)
 end
 
 return Slab

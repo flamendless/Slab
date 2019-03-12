@@ -145,16 +145,21 @@ function ListBox.BeginItem(Id, Options)
 			"' without a call to EndListBoxItem.")
 	local Item = GetItemInstance(ActiveInstance, Id)
 	Item.X, Item.Y = Cursor.GetPosition()
+	Cursor.AdvanceX(0.0)
 	ActiveInstance.ActiveItem = Item
 	ActiveInstance.ActiveItem.Selected = Options.Selected
 end
 
-function ListBox.IsItemClicked(Button)
+function ListBox.IsItemClicked(Button, IsDoubleClick)
 	assert(ActiveInstance ~= nil, "Trying to call IsItemClicked outside of BeginListBox.")
 	assert(ActiveInstance.ActiveItem ~= nil, "IsItemClicked was called outside of BeginListBoxItem.")
 	if ActiveInstance.HotItem == ActiveInstance.ActiveItem then
 		Button = Button == nil and 1 or Button
-		return Mouse.IsClicked(Button)
+		if IsDoubleClick then
+			return Mouse.IsDoubleClicked(Button)
+		else
+			return Mouse.IsClicked(Button)
+		end
 	end
 	return false
 end
