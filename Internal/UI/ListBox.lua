@@ -72,6 +72,7 @@ end
 function ListBox.Begin(Id, Options)
 	Options = Options == nil and {} or Options
 	Options.H = Options.H == nil and 150.0 or Options.H
+	Options.Clear = Options.Clear == nil and false or Options.Clear
 
 	local Instance = GetInstance(Window.GetItemId(Id))
 	local WinX, WinY, WinW, WinH = Window.GetBounds()
@@ -87,6 +88,10 @@ function ListBox.Begin(Id, Options)
 
 	local W = Options.W
 	local H = Options.H
+
+	if Options.Clear then
+		Instance.Items = {}
+	end
 
 	Instance.X = X
 	Instance.Y = Y

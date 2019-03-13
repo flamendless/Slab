@@ -82,8 +82,13 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 
 	if ListBox.IsItemClicked(1) then
 		if ActiveInstance.AllowMultiSelect and (Keyboard.IsDown('lctrl') or Keyboard.IsDown('rctrl')) then
-			table.insert(ActiveInstance.Selected, Index)
-			table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+			if Utility.HasValue(ActiveInstance.Selected, Index) then
+				Utility.Remove(ActiveInstance.Selected, Index)
+				Utility.Remove(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+			else
+				table.insert(ActiveInstance.Selected, Index)
+				table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+			end
 		else
 			ActiveInstance.Selected = {Index}
 			ActiveInstance.Return = {ActiveInstance.Directory .. "/" .. Label}
@@ -247,6 +252,7 @@ function Dialog.FileDialog(Options)
 			end
 		end
 
+		local Clear = false
 		if ActiveInstance.Items == nil then
 			ActiveInstance.Items = FileSystem.GetDirectoryItems(ActiveInstance.Directory)
 			ActiveInstance.Selected = {}
@@ -269,6 +275,8 @@ function Dialog.FileDialog(Options)
 			if not Utility.HasValue(ActiveInstance.Directories, "..") then
 				table.insert(ActiveInstance.Directories, 1, "..")
 			end
+
+			Clear = true
 		end
 
 		local WinW, WinH = Window.GetSize()
@@ -276,7 +284,7 @@ function Dialog.FileDialog(Options)
 
 		Text.Begin(ActiveInstance.Directory)
 
-		ListBox.Begin('FileDialog_ListBox', {H = WinH - ButtonH * 3.0 - Cursor.PadY() * 2.0})
+		ListBox.Begin('FileDialog_ListBox', {H = WinH - ButtonH * 3.0 - Cursor.PadY() * 2.0, Clear = Clear})
 		local Index = 1
 		for I, V in ipairs(ActiveInstance.Directories) do
 			FileDialogItem('Item_' .. Index, V, true, Index)

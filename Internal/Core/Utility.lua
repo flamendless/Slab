@@ -47,4 +47,13 @@ function Utility.HasValue(Table, Value)
 	return false
 end
 
+function Utility.Remove(Table, Value)
+	for I, V in ipairs(Table) do
+		if V == Value then
+			table.remove(Table, I)
+			break
+		end
+	end
+end
+
 return Utility

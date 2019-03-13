@@ -31,7 +31,6 @@ File Dialog: Add tree dialog explorer with icons.
 File Dialog: Shift select for range selection.
 File Dialog: Save option with input field for file name and error checking.
 File Dialog: Filter by files only.
-File Dialog: Deselect item with multiselect enabled.
 File Dialog: Filter by extension.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.

@@ -831,6 +831,8 @@ end
 		W: [Number] The width of the list box. If nil, then the width of the window is used.
 		H: [Number] The height of the list box. If nil, a default value of 150 is used. If H is 0, then
 			the list box will stretch to the height of the window.
+		Clear: [Boolean] Clears out the items in the list. It is recommended to only call this if the list items
+			has changed and should not be set to true on every frame.
 
 	Return: None.
 --]]

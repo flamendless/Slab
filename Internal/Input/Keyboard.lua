@@ -96,7 +96,7 @@ end
 
 function Keyboard.IsDown(Key)
 	InsertKey(Key)
-	return State.Pressed[Key]
+	return State.Pressed[Key] or love.keyboard.isDown(Key)
 end
 
 return Keyboard
