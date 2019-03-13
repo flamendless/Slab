@@ -111,7 +111,7 @@ end
 function SlabTest.TreeWindow()
 	Slab.BeginWindow('SlabTest_Tree', {Title = "Tree Window", X = 600.0, Y = 100.0, AutoSizeWindow = false, ResetLayout = ResetLayout})
 	
-	if Slab.BeginTree('SlabTest_TreeRoot1', {Label = "Can be opened within rect"}) then
+	if Slab.BeginTree('SlabTest_TreeRoot1', {Label = "Can be opened within rect", IconPath = SLAB_PATH .. "/Internal/Resources/Textures/folder.png"}) then
 		Slab.BeginTree('SlabTest_Child1_Leaf', {Label = "Leaf 1", IsLeaf = true})
 
 		if Slab.BeginTree('SlabTest_Child1', {Label = "Child 1"}) then

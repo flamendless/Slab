@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
@@ -48,6 +49,7 @@ local function GetInstance(Id)
 		local Instance = {}
 		Instance.X = 0.0
 		Instance.Y = 0.0
+		Instance.H = 0.0
 		Instance.IsOpen = false
 		Instance.WasOpen = false
 		Instance.Id = Id
@@ -61,6 +63,8 @@ function Tree.Begin(Id, Options)
 	Options.Label = Options.Label == nil and Id or Options.Label
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or OpenWithHighlight
+	Options.Icon = Options.Icon == nil and nil or Options.Icon
+	Options.IconPath = Options.IconPath == nil and nil or Options.IconPath
 
 	local Instance = GetInstance(Id)
 
@@ -68,7 +72,7 @@ function Tree.Begin(Id, Options)
 
 	local WinItemId = Window.GetItemId(Instance.Id)
 	local X, Y = Cursor.GetPosition()
-	local H = Style.Font:getHeight()
+	local H = math.max(Style.Font:getHeight(), Instance.H)
 	local TriX, TriY = X + Radius, Y + H * 0.5
 	local Diameter = Radius * 2.0
 
@@ -103,8 +107,23 @@ function Tree.Begin(Id, Options)
 
 	Cursor.AdvanceX(Radius * 2.0)
 	Instance.X = Cursor.GetX()
+	Instance.Y = Cursor.GetY()
+
+	if Options.Icon ~= nil or Options.IconPath ~= nil then
+		Image.Begin(Instance.Id .. '_Icon', {
+			Image = Options.Icon,
+			Path = Options.IconPath
+		})
+
+		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
+		Instance.H = math.max(Instance.H, ItemH)
+		Cursor.SameLine({CenterY = true})
+	end
 
 	Text.Begin(Options.Label)
+
+	Cursor.SetY(Instance.Y)
+	Cursor.AdvanceY(H)
 
 	if Instance.IsOpen then
 		table.insert(Hierarchy, 1, Instance)

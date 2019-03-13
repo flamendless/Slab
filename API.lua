@@ -662,6 +662,9 @@ end
 		OpenWithHighlight: [Boolean] If this is true, the tree will be expanded/collapsed when the user hovers over the hot
 			zone of this tree item. If this is false, the user must click the expand/collapse icon to interact with this tree
 			item.
+		Icon: [Object] A user supplied image. This must be a valid Love image or the call will assert.
+		IconPath: [String] If the Icon option is nil, then a path can be specified. Slab will load and
+			manage the image resource.
 
 	Return: [Boolean] Returns true if this tree item is expanded. Slab.EndTree must be called if this returns true.
 --]]

@@ -12,7 +12,7 @@ CC0 - license for UI image.
 
 BUGS
 ==========
-[Scrollbar]: Position incorrect when tree is collapsed.
+[Tooltip]: Makes main menu bar disappears when rendered.
 
 TODO
 ==========
@@ -53,7 +53,6 @@ Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 Tree: Auto-sized windows should clear window size when tree item closes.
-Tree: Add icon option to tree items.
 Window: Cache obstructed window for all future calls.
 Window: Check sizers for window obstruction.
 Window: Menu support.
