@@ -12,7 +12,7 @@ CC0 - license for UI image.
 
 BUGS
 ==========
-[Tooltip]: Makes main menu bar disappears when rendered.
+[List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 
 TODO
 ==========

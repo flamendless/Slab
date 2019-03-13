@@ -296,11 +296,7 @@ function Region.Begin(Id, Options)
 	end
 	DrawCommands.TransformPush()
 	DrawCommands.ApplyTransform(Instance.Transform)
-	if Instance.Intersect then
-		DrawCommands.IntersectScissor(Instance.SX, Instance.SY, Instance.W, Instance.H)
-	else
-		DrawCommands.Scissor(Instance.SX, Instance.SY, Instance.W, Instance.H)
-	end
+	Region.ApplyScissor()
 end
 
 function Region.End()
@@ -318,11 +314,6 @@ function Region.End()
 
 	if #Stack > 0 then
 		ActiveInstance = Stack[1]
-		if ActiveInstance.Intersect then
-			DrawCommands.IntersectScissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
-		else
-			DrawCommands.Scissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
-		end
 	end
 end
 
@@ -377,6 +368,16 @@ function Region.AddItem(X, Y, W, H)
 		local NewH = Y + H - ActiveInstance.Y
 		ActiveInstance.ContentW = math.max(ActiveInstance.ContentW, NewW)
 		ActiveInstance.ContentH = math.max(ActiveInstance.ContentH, NewH)
+	end
+end
+
+function Region.ApplyScissor()
+	if ActiveInstance ~= nil then
+		if ActiveInstance.Intersect then
+			DrawCommands.IntersectScissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
+		else
+			DrawCommands.Scissor(ActiveInstance.SX, ActiveInstance.SY, ActiveInstance.W, ActiveInstance.H)
+		end
 	end
 end
 

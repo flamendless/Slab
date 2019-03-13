@@ -198,7 +198,7 @@ local function AssertActiveBatch()
 	assert(ActiveBatch ~= nil, "DrawCommands.Begin was not called before commands were issued!")
 end
 
-local function DrawBatch(Batch)
+local function DrawBatch(Batch, Layer)
 	for K, V in pairs(Batch) do
 		DrawElements(V.Elements)
 	end
@@ -407,12 +407,12 @@ function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, Sc
 end
 
 function DrawCommands.Execute()
-	DrawBatch(Batches[Layers.Normal])
-	DrawBatch(Batches[Layers.Focused])
-	DrawBatch(Batches[Layers.ContextMenu])
-	DrawBatch(Batches[Layers.MainMenuBar])
-	DrawBatch(Batches[Layers.Dialog])
-	DrawBatch(Batches[Layers.Debug])
+	DrawBatch(Batches[Layers.Normal], 'Normal')
+	DrawBatch(Batches[Layers.Focused], 'Focused')
+	DrawBatch(Batches[Layers.ContextMenu], 'ContextMenu')
+	DrawBatch(Batches[Layers.MainMenuBar], 'MainMenuBar')
+	DrawBatch(Batches[Layers.Dialog], 'Dialog')
+	DrawBatch(Batches[Layers.Debug], 'Debug')
 end
 
 return DrawCommands

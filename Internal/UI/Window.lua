@@ -490,6 +490,7 @@ function Window.End()
 			ActiveInstance = PendingStack[1]
 			Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 			DrawCommands.SetLayer(ActiveInstance.Layer)
+			Region.ApplyScissor()
 		end
 	end
 end

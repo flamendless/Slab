@@ -183,6 +183,7 @@ end
 function ListBox.End()
 	assert(ActiveInstance ~= nil, "EndListBox was called without calling BeginListBox.")
 	Region.End()
+	Region.ApplyScissor()
 
 	Cursor.SetItemBounds(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.W, ActiveInstance.H)
 	Cursor.SetPosition(ActiveInstance.X, ActiveInstance.Y)

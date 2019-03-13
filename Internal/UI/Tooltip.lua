@@ -76,6 +76,7 @@ function Tooltip.Begin(Tip)
 			AutoSizeWindow = true,
 			AutoSizeContent = false,
 			AllowResize = false,
+			AllowFocus = false,
 			Layer = 'ContextMenu',
 			BgColor = BgColor,
 			ResetWindowSize = ResetSize

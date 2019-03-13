@@ -490,6 +490,7 @@ function Input.Begin(Id, Options)
 		Text.Begin(Instance.Text, {AddItem = false})
 	end
 	Region.End()
+	Region.ApplyScissor()
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.SetPosition(X, Y)
