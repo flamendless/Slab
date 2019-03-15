@@ -381,6 +381,35 @@ function Region.ApplyScissor()
 	end
 end
 
+function Region.GetBounds()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.X, ActiveInstance.Y, ActiveInstance.W, ActiveInstance.H
+	end
+	return 0.0, 0.0, 0.0, 0.0
+end
+
+function Region.GetContentSize()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.ContentW, ActiveInstance.ContentH
+	end
+	return 0.0, 0.0
+end
+
+function Region.Contains(X, Y)
+	if ActiveInstance ~= nil then
+		return ActiveInstance.X <= X and X <= ActiveInstance.X + ActiveInstance.W and ActiveInstance.Y <= Y and Y <= ActiveInstance.Y + ActiveInstance.H
+	end
+	return false
+end
+
+function Region.ResetContentSize(Id)
+	local Instance = GetInstance(Id)
+	if Instance ~= nil then
+		Instance.ContentW = 0.0
+		Instance.ContentH = 0.0
+	end
+end
+
 function Region.GetScrollPad()
 	return ScrollPad
 end

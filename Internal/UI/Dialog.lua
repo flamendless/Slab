@@ -32,7 +32,9 @@ local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
+local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
 local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -65,7 +67,7 @@ local function OpenDirectory(Dir)
 		if Dir == ".." then
 			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
 		else
-			ActiveInstance.Directory = ActiveInstance.Directory .. "/" .. Dir
+			ActiveInstance.Directory = Dir
 		end
 	end
 end
@@ -96,10 +98,58 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 	end
 
 	if ListBox.IsItemClicked(1, true) and IsDirectory then
-		OpenDirectory(Label)
+		OpenDirectory(ActiveInstance.Directory .. "/" .. Label)
 	end
 
 	ListBox.EndItem()
+end
+
+local function AddDirectoryItem(Path)
+	local Item = {}
+	Item.Path = Path
+	Item.Name = FileSystem.GetBaseName(Path)
+	Item.Children = nil
+	return Item
+end
+
+local function FileDialogExplorer(Instance, Root)
+	if Instance == nil then
+		return
+	end
+
+	if Root ~= nil then
+		local ShouldOpen = string.find(Instance.Directory, Root.Path, 1, true) ~= nil
+
+		local Options = {
+			Label = Root.Name,
+			OpenWithHighlight = false,
+			IsSelected = ActiveInstance.Directory == Root.Path,
+			IsOpen = ShouldOpen
+		}
+		local IsOpen = Tree.Begin(Root.Path, Options)
+
+		if Mouse.IsClicked(1) and Window.IsItemHot() then
+			OpenDirectory(Root.Path)
+		end
+
+		if IsOpen then
+			if Root.Children == nil then
+				Root.Children = {}
+
+				local Directories = FileSystem.GetDirectoryItems(Root.Path .. "/", {Files = false})
+				for I, V in ipairs(Directories) do
+					local Item = AddDirectoryItem(Root.Path .. FileSystem.Separator() .. V)
+					table.insert(Root.Children, Item)
+				end
+			end
+
+			for I, V in ipairs(Root.Children) do
+				FileDialogExplorer(Instance, V)
+			end
+
+			Tree.End()
+		end
+	end
 end
 
 local function IsInstanceOpen(Id)
@@ -254,7 +304,8 @@ function Dialog.FileDialog(Options)
 
 		local Clear = false
 		if ActiveInstance.Items == nil then
-			ActiveInstance.Items = FileSystem.GetDirectoryItems(ActiveInstance.Directory)
+			ActiveInstance.Root = AddDirectoryItem(FileSystem.GetRootDirectory(ActiveInstance.Directory))
+			ActiveInstance.Items = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/")
 			ActiveInstance.Selected = {}
 			ActiveInstance.Directories = {}
 			ActiveInstance.Files = {}
@@ -272,19 +323,44 @@ function Dialog.FileDialog(Options)
 				end
 			end
 
-			if not Utility.HasValue(ActiveInstance.Directories, "..") then
-				table.insert(ActiveInstance.Directories, 1, "..")
-			end
-
 			Clear = true
 		end
 
 		local WinW, WinH = Window.GetSize()
 		local ButtonW, ButtonH = Button.GetSize("OK")
+		local ExplorerW = 150.0
+		local ListH = WinH - ButtonH * 3.0 - Cursor.PadY() * 2.0
+		local PrevAnchorX = Cursor.GetAnchorX()
 
 		Text.Begin(ActiveInstance.Directory)
 
-		ListBox.Begin('FileDialog_ListBox', {H = WinH - ButtonH * 3.0 - Cursor.PadY() * 2.0, Clear = Clear})
+		local CursorX, CursorY = Cursor.GetPosition()
+		local MouseX, MouseY = Window.GetMousePosition()
+		Region.Begin('FileDialog_DirectoryExplorer', {
+			X = CursorX,
+			Y = CursorY,
+			W = ExplorerW,
+			H = ListH,
+			AutoSizeContent = true,
+			NoBackground = true,
+			Intersect = true,
+			MouseX = MouseX,
+			MouseY = MouseY,
+			IsObstructed = Window.IsObstructedAtMouse()
+		})
+
+		Cursor.AdvanceX(0.0)
+		Cursor.SetAnchorX(Cursor.GetX())
+
+		FileDialogExplorer(ActiveInstance, ActiveInstance.Root)
+
+		Region.End()
+		Region.ApplyScissor()
+		Cursor.AdvanceX(ExplorerW + 4.0)
+		Cursor.SetAnchorX(Cursor.GetX())
+		Cursor.SetY(CursorY)
+
+		ListBox.Begin('FileDialog_ListBox', {H = ListH, Clear = Clear})
 		local Index = 1
 		for I, V in ipairs(ActiveInstance.Directories) do
 			FileDialogItem('Item_' .. Index, V, true, Index)
@@ -295,6 +371,7 @@ function Dialog.FileDialog(Options)
 			Index = Index + 1
 		end
 		ListBox.End()
+		Cursor.SetAnchorX(PrevAnchorX)
 
 		Cursor.SetRelativeY(H - ButtonH - Cursor.PadY())
 		if Button.Begin("Cancel", {AlignRight = true}) then
@@ -309,7 +386,7 @@ function Dialog.FileDialog(Options)
 				local Path = ActiveInstance.Return[1]
 				if FileSystem.IsDirectory(Path) then
 					OpeningDirectory = true
-					OpenDirectory(FileSystem.GetBaseName(Path))
+					OpenDirectory(Path)
 				end
 			end
 

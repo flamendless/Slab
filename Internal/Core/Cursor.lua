@@ -101,6 +101,14 @@ function Cursor.SetAnchor(X, Y)
 	State.AnchorY = Y
 end
 
+function Cursor.SetAnchorX(X)
+	State.AnchorX = X
+end
+
+function Cursor.SetAnchorY(Y)
+	State.AnchorY = Y
+end
+
 function Cursor.GetAnchor()
 	return State.AnchorX, State.AnchorY
 end

@@ -31,12 +31,24 @@ function FileSystem.Separator()
 	return "/"
 end
 
-function FileSystem.GetDirectoryItems(Directory)
+function FileSystem.GetDirectoryItems(Directory, Options)
+	Options = Options == nil and {} or Options
+	Options.Files = Options.Files == nil and true or Options.Files
+	Options.Directories = Options.Directories == nil and true or Options.Directories
+
 	local Cmd = ""
 	local OS = love.system.getOS()
 
 	if OS == "Windows" then
-		Cmd = 'dir "' .. Directory .. '" /b /a'
+		Cmd = 'DIR "' .. Directory .. '" /B '
+
+		if Options.Files and not Options.Directories then
+			Cmd = Cmd .. '/A:-D-H'
+		elseif Options.Directories and not Options.Files then
+			Cmd = Cmd .. '/A:D-H'
+		else
+			Cmd = Cmd .. '/A-H'
+		end
 	else
 		Cmd = 'ls -a "' .. Directory .. '"'
 	end
@@ -109,6 +121,18 @@ function FileSystem.GetBaseName(Path)
 
 	if Index > 1 then
 		Result = string.sub(Path, Index + 1)
+	end
+
+	return Result
+end
+
+function FileSystem.GetRootDirectory(Path)
+	local Result = Path
+
+	local Index = string.find(Path, FileSystem.Separator(), 1, true)
+
+	if Index ~= nil then
+		Result = string.sub(Path, 1, Index - 1)
 	end
 
 	return Result

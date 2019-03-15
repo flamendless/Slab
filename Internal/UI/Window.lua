@@ -587,8 +587,8 @@ end
 
 function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
+		ActiveInstance.LastItem = Id
 		if Region.IsActive(ActiveInstance.Id) then
-			ActiveInstance.LastItem = Id
 			if ActiveInstance.AutoSizeWindowW then
 				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W + ActiveInstance.Border - ActiveInstance.X)
 			end
@@ -642,6 +642,13 @@ function Window.GetHotItem()
 		return ActiveInstance.HotItem
 	end
 	return nil
+end
+
+function Window.IsItemHot()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.HotItem == ActiveInstance.LastItem
+	end
+	return false
 end
 
 function Window.GetContextHotItem()

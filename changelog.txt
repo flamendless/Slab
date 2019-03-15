@@ -24,10 +24,10 @@ Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Window should obstruct after making selection and closing window.
+Controls: Convert all window bounds check to use region.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-File Dialog: Add tree dialog explorer with icons.
 File Dialog: Shift select for range selection.
 File Dialog: Save option with input field for file name and error checking.
 File Dialog: Filter by files only.
@@ -52,12 +52,12 @@ SlabDebug: Show image stats.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
-Tree: Auto-sized windows should clear window size when tree item closes.
 Window: Cache obstructed window for all future calls.
 Window: Check sizers for window obstruction.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Column support.
 Window: Lock mouse resize icon while resizing.
+Window: Deprecate window bounds values and use region directly.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.

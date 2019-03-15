@@ -28,6 +28,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
@@ -65,6 +66,8 @@ function Tree.Begin(Id, Options)
 	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or OpenWithHighlight
 	Options.Icon = Options.Icon == nil and nil or Options.Icon
 	Options.IconPath = Options.IconPath == nil and nil or Options.IconPath
+	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
+	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
 
 	local Instance = GetInstance(Id)
 
@@ -76,12 +79,20 @@ function Tree.Begin(Id, Options)
 	local TriX, TriY = X + Radius, Y + H * 0.5
 	local Diameter = Radius * 2.0
 
-	local MouseX, MouseY = Window.GetMousePosition()
-	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	local IsObstructed = Window.IsObstructedAtMouse()
+	local MouseX, MouseY = Mouse.Position()
+	local TMouseX, TMouseY = Region.InverseTransform(nil, MouseX, MouseY)
+	local WinX, WinY, WinW, WinH = Region.GetBounds()
+	local ContentW, ContentH = Region.GetContentSize()
+	WinW = math.max(WinW, ContentW)
+	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
 
-	if not IsObstructed and WinX <= MouseX and MouseX <= WinX + WinW and Y <= MouseY and MouseY <= Y + H then
+	local IsHot = not IsObstructed and WinX <= TMouseX and TMouseX <= WinX + WinW and Y <= TMouseY and TMouseY <= Y + H and Region.Contains(MouseX, MouseY)
+
+	if IsHot or Options.IsSelected then
 		DrawCommands.Rectangle('fill', WinX, Y, WinW, H, Style.MenuHoveredColor)
+	end
+
+	if IsHot then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
 
@@ -91,9 +102,10 @@ function Tree.Begin(Id, Options)
 	end
 
 	if not Options.IsLeaf then
-		if not IsObstructed and X <= MouseX and MouseX <= X + Diameter and Y <= MouseY and MouseY <= Y + H then
+		if not IsObstructed and X <= TMouseX and TMouseX <= X + Diameter and Y <= TMouseY and TMouseY <= Y + H then
 			if Mouse.IsClicked(1) and not Options.OpenWithHighlight then
 				Instance.IsOpen = not Instance.IsOpen
+				Window.SetHotItem(nil)
 			end
 		end
 
@@ -103,6 +115,7 @@ function Tree.Begin(Id, Options)
 
 	if not Instance.IsOpen and Instance.WasOpen then
 		Window.ResetContentSize()
+		Region.ResetContentSize()
 	end
 
 	Cursor.AdvanceX(Radius * 2.0)
@@ -124,6 +137,10 @@ function Tree.Begin(Id, Options)
 
 	Cursor.SetY(Instance.Y)
 	Cursor.AdvanceY(H)
+
+	if Options.IsOpen then
+		Instance.IsOpen = true
+	end
 
 	if Instance.IsOpen then
 		table.insert(Hierarchy, 1, Instance)
