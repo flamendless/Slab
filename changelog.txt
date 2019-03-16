@@ -13,6 +13,7 @@ CC0 - license for UI image.
 BUGS
 ==========
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
+[List Box]: Region size not reset when list items change.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 
 TODO
@@ -29,9 +30,7 @@ Controls: Convert all window bounds check to use region.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-File Dialog: Shift select for range selection.
 File Dialog: Save option with input field for file name and error checking.
-File Dialog: Filter by files only.
 File Dialog: Filter by extension.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.

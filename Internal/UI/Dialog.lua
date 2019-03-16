@@ -83,15 +83,40 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 	Text.Begin(Label)
 
 	if ListBox.IsItemClicked(1) then
-		if ActiveInstance.AllowMultiSelect and (Keyboard.IsDown('lctrl') or Keyboard.IsDown('rctrl')) then
-			if Utility.HasValue(ActiveInstance.Selected, Index) then
-				Utility.Remove(ActiveInstance.Selected, Index)
-				Utility.Remove(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
-			else
-				table.insert(ActiveInstance.Selected, Index)
-				table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+		local Set = true
+		if ActiveInstance.AllowMultiSelect then
+			if Keyboard.IsDown('lctrl') or Keyboard.IsDown('rctrl') then
+				Set = false
+				if Utility.HasValue(ActiveInstance.Selected, Index) then
+					Utility.Remove(ActiveInstance.Selected, Index)
+					Utility.Remove(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+				else
+					table.insert(ActiveInstance.Selected, Index)
+					table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+				end
+			elseif Keyboard.IsDown('lshift') or Keyboard.IsDown('rshift') then
+				if #ActiveInstance.Selected > 0 then
+					Set = false
+					local Anchor = ActiveInstance.Selected[#ActiveInstance.Selected]
+					local Min = math.min(Anchor, Index)
+					local Max = math.max(Anchor, Index)
+
+					ActiveInstance.Selected = {}
+					ActiveInstance.Return = {}
+					for I = Min, Max, 1 do
+						table.insert(ActiveInstance.Selected, I)
+						if I > #ActiveInstance.Directories then
+							I = I - #ActiveInstance.Directories
+							table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Files[I])
+						else
+							table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Directories[I])
+						end
+					end
+				end
 			end
-		else
+		end
+
+		if Set then
 			ActiveInstance.Selected = {Index}
 			ActiveInstance.Return = {ActiveInstance.Directory .. "/" .. Label}
 		end
