@@ -60,13 +60,16 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 	end
 
 	local Result = {}
-	local Handle = io.popen(Cmd)
+	local Handle, Error = io.popen(Cmd)
 	if Handle ~= nil then
 		local I = 1
 		for Item in Handle:lines() do
-			Result[I] = Item
-			I = I + 1
+			if Item ~= "nil" then
+				Result[I] = Item
+				I = I + 1
+			end
 		end
+		io.close(Handle)
 	end
 
 	return Result
