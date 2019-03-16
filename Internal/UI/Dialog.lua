@@ -63,7 +63,7 @@ end
 
 local function OpenDirectory(Dir)
 	if ActiveInstance ~= nil and ActiveInstance.Directory ~= nil then
-		ActiveInstance.Items = nil
+		ActiveInstance.Parsed = false
 		if Dir == ".." then
 			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
 		else
@@ -105,9 +105,15 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 end
 
 local function AddDirectoryItem(Path)
+	local Separator = FileSystem.Separator()
 	local Item = {}
 	Item.Path = Path
 	Item.Name = FileSystem.GetBaseName(Path)
+	Item.Name = Item.Name == "" and Separator or Item.Name
+	-- Remove the starting slash for Unix style directories.
+	if string.sub(Item.Name, 1, 1) == Separator and Item.Name ~= Separator then
+		Item.Name = string.sub(Item.Name, 2)
+	end
 	Item.Children = nil
 	return Item
 end
@@ -136,9 +142,17 @@ local function FileDialogExplorer(Instance, Root)
 			if Root.Children == nil then
 				Root.Children = {}
 
-				local Directories = FileSystem.GetDirectoryItems(Root.Path .. "/", {Files = false})
+				local Separator = FileSystem.Separator()
+				local Directories = FileSystem.GetDirectoryItems(Root.Path .. Separator, {Files = false})
 				for I, V in ipairs(Directories) do
-					local Item = AddDirectoryItem(Root.Path .. FileSystem.Separator() .. V)
+					local Path = Root.Path
+					if string.sub(Path, #Path) ~= Separator and Path ~= Separator then
+						Path = Path .. Separator
+					end
+					if string.sub(V, 1, 1) == Separator then
+						V = string.sub(V, 2)
+					end
+					local Item = AddDirectoryItem(Path .. FileSystem.GetBaseName(V))
 					table.insert(Root.Children, Item)
 				end
 			end
@@ -303,24 +317,20 @@ function Dialog.FileDialog(Options)
 		end
 
 		local Clear = false
-		if ActiveInstance.Items == nil then
+		if not ActiveInstance.Parsed then
 			ActiveInstance.Root = AddDirectoryItem(FileSystem.GetRootDirectory(ActiveInstance.Directory))
-			ActiveInstance.Items = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/")
 			ActiveInstance.Selected = {}
-			ActiveInstance.Directories = {}
-			ActiveInstance.Files = {}
+			ActiveInstance.Directories = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Files = false})
+			ActiveInstance.Files = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Directories = false})
 			ActiveInstance.Return = {}
+			ActiveInstance.Parsed = true
 
-			for I, V in ipairs(ActiveInstance.Items) do
-				if V ~= "." then
-					if FileSystem.IsDirectory(ActiveInstance.Directory .. "/" .. V) or V == ".." then
-						table.insert(ActiveInstance.Directories, V)
-					else
-						if Options.Type ~= 'opendirectory' then
-							table.insert(ActiveInstance.Files, V)
-						end
-					end
-				end
+			for I, V in ipairs(ActiveInstance.Directories) do
+				ActiveInstance.Directories[I] = FileSystem.GetBaseName(V)
+			end
+
+			for I, V in ipairs(ActiveInstance.Files) do
+				ActiveInstance.Files[I] = FileSystem.GetBaseName(V)
 			end
 
 			Clear = true
@@ -397,7 +407,7 @@ function Dialog.FileDialog(Options)
 		end
 
 		if Result.Button ~= "" then
-			ActiveInstance.Items = nil
+			ActiveInstance.Parsed = false
 			Dialog.Close()
 		end
 

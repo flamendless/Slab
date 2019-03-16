@@ -13,6 +13,7 @@ CC0 - license for UI image.
 BUGS
 ==========
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
+[Tree]: View transform not correct with content size. Content size may be incorrect.
 
 TODO
 ==========

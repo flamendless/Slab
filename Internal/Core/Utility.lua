@@ -56,4 +56,8 @@ function Utility.Remove(Table, Value)
 	end
 end
 
+function Utility.IsWindows()
+	return love.system.getOS() == "Windows"
+end
+
 return Utility
