@@ -43,6 +43,16 @@ local Instances = {}
 local ActiveInstance = nil
 local Stack = {}
 
+local function UpdateInputText(Instance)
+	if Instance ~= nil then
+		if #Instance.Return > 0 then
+			Instance.Text = #Instance.Return > 1 and "<Multiple>" or Instance.Return[1]
+		else
+			Instance.Text = ""
+		end
+	end
+end
+
 local function PruneResults(Items, DirectoryOnly)
 	local Result = {}
 
@@ -120,6 +130,8 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 			ActiveInstance.Selected = {Index}
 			ActiveInstance.Return = {ActiveInstance.Directory .. "/" .. Label}
 		end
+
+		UpdateInputText(ActiveInstance)
 	end
 
 	if ListBox.IsItemClicked(1, true) and IsDirectory then
@@ -315,6 +327,10 @@ function Dialog.FileDialog(Options)
 	Options.Directory = Options.Directory == nil and nil or Options.Directory
 	Options.Type = Options.Type == nil and 'openfile' or Options.Type
 
+	if Options.Type == 'savefile' then
+		Options.AllowMultiSelect = false
+	end
+
 	local Result = {Button = "", Files = {}}
 	local WasOpen = IsInstanceOpen('FileDialog')
 
@@ -332,6 +348,7 @@ function Dialog.FileDialog(Options)
 		ActiveInstance.AllowMultiSelect = Options.AllowMultiSelect
 
 		if not WasOpen then
+			ActiveInstance.Text = ""
 			if ActiveInstance.Directory == nil then
 				ActiveInstance.Directory = love.filesystem.getSourceBaseDirectory()
 			end
@@ -364,7 +381,7 @@ function Dialog.FileDialog(Options)
 		local WinW, WinH = Window.GetSize()
 		local ButtonW, ButtonH = Button.GetSize("OK")
 		local ExplorerW = 150.0
-		local ListH = WinH - ButtonH * 3.0 - Cursor.PadY() * 2.0
+		local ListH = WinH - Input.GetHeight() - ButtonH * 3.0 - Cursor.PadY() * 2.0
 		local PrevAnchorX = Cursor.GetAnchorX()
 
 		Text.Begin(ActiveInstance.Directory)
@@ -406,7 +423,17 @@ function Dialog.FileDialog(Options)
 			Index = Index + 1
 		end
 		ListBox.End()
+
+		local ListBoxX, ListBoxY, ListBoxW, ListBoxH = Cursor.GetItemBounds()
+		local InputX = ExplorerW + ListBoxW + Cursor.PadX() * 2.0 + 4.0
+
 		Cursor.SetAnchorX(PrevAnchorX)
+		Cursor.SetX(PrevAnchorX)
+
+		local ReadOnly = Options.Type ~= 'savefile'
+		if Input.Begin('FileDialog_Input', {W = InputX, ReadOnly = ReadOnly, Text = ActiveInstance.Text, Align = 'left'}) then
+			ActiveInstance.Text = Input.GetText()
+		end
 
 		Cursor.SetRelativeY(H - ButtonH - Cursor.PadY())
 		if Button.Begin("Cancel", {AlignRight = true}) then

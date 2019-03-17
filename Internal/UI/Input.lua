@@ -279,8 +279,6 @@ local function GetInstance(Id)
 	local Instance = {}
 	Instance.Id = Id
 	Instance.Text = ""
-	Instance.W = MIN_WIDTH
-	Instance.H = Style.Font:getHeight()
 	Instance.TextChanged = false
 	Instance.NumbersOnly = true
 	table.insert(Instances, Instance)
@@ -297,6 +295,10 @@ function Input.Begin(Id, Options)
 	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
 	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
 	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
+	Options.W = Options.W == nil and nil or Options.W
+	Options.H = Options.H == nil and nil or Options.H
+	Options.ReadOnly = Options.ReadOnly == nil and false or Options.ReadOnly
+	Options.Align = Options.Align == nil and 'center' or Options.Align
 
 	local Instance = GetInstance(Window.GetId() .. "." .. Id)
 	Instance.NumbersOnly = Options.NumbersOnly
@@ -306,9 +308,11 @@ function Input.Begin(Id, Options)
 	end
 
 	local X, Y = Cursor.GetPosition()
-	local H = Instance.H
-	local W = Instance.W
+	local H = Options.H == nil and Input.GetHeight() or Options.H
+	local W = Options.W == nil and MIN_WIDTH or Options.W
 	local Result = false
+
+	Instance.W = W
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	local Hovered = not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
@@ -319,7 +323,7 @@ function Input.Begin(Id, Options)
 		Window.SetHotItem(WinItemId)
 	end
 
-	local CheckFocus = Mouse.IsClicked(1)
+	local CheckFocus = Mouse.IsClicked(1) and not Options.ReadOnly
 
 	local FocusedThisFrame = false
 	local ClearFocus = false
@@ -481,7 +485,7 @@ function Input.Begin(Id, Options)
 		DrawCursor(Instance, X, Y, W, H)
 	end
 	if Instance.Text ~= "" then
-		if Instance == Focused then
+		if Instance == Focused or Options.Align == 'left' then
 			Cursor.SetPosition(X + 2.0, Y)
 		else
 			local TextW = Style.Font:getWidth(Instance.Text)
@@ -563,6 +567,10 @@ function Input.GetText()
 		return Focused.Text
 	end
 	return LastText
+end
+
+function Input.GetHeight()
+	return Style.Font:getHeight()
 end
 
 return Input

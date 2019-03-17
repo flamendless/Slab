@@ -46,6 +46,7 @@ local ResetLayout = false
 local ListBoxIndex = 1
 local SlabTest_MessageBox = false
 local SlabTest_FileDialog = false
+local SlabTest_FileDialogType = 'openfile'
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -173,9 +174,14 @@ function SlabTest.MainMenuBar()
 
 			if Slab.MenuItem("Open") then
 				SlabTest_FileDialog = true
+				SlabTest_FileDialogType = 'openfile'
 			end
 
-			Slab.MenuItem("Save")
+			if Slab.MenuItem("Save") then
+				SlabTest_FileDialog = true
+				SlabTest_FileDialogType = 'savefile'
+			end
+
 			Slab.MenuItem("Save As")
 
 			Slab.Separator()
@@ -233,7 +239,7 @@ function SlabTest.Begin()
 	end
 
 	if SlabTest_FileDialog then
-		local Result = Slab.FileDialog()
+		local Result = Slab.FileDialog({Type = SlabTest_FileDialogType})
 
 		if Result.Button ~= "" then
 			print("Button: " .. Result.Button)

@@ -53,11 +53,12 @@ end
 function ComboBox.Begin(Id, Options)
 	Options = Options ~= nil and Options or {}
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+	Options.W = Options.W == nil and MIN_WIDTH or Options.W
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
 	local X, Y = Cursor.GetPosition()
-	local W = MIN_WIDTH
+	local W = Options.W
 	local H = Style.Font:getHeight()
 	local Radius = H * 0.35
 
@@ -106,7 +107,6 @@ function ComboBox.Begin(Id, Options)
 
 	if Instance.IsOpen then
 		Window.SetCanObstruct(false)
-		DrawCommands.SetLayer('ContextMenu')
 		Window.Begin(Id .. '_combobox',
 		{
 			X = X - 1.0,
@@ -116,7 +116,9 @@ function ComboBox.Begin(Id, Options)
 			AllowResize = false,
 			BgColor = Style.ComboBoxDropDownBgColor,
 			AutoSizeWindow = false,
-			AutoSizeWindowH = true
+			AutoSizeWindowH = true,
+			AllowFocus = false,
+			Layer = 'ContextMenu'
 		})
 		Window.SetCanObstruct(true)
 		Active = Instance

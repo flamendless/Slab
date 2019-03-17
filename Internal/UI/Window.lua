@@ -714,4 +714,11 @@ function Window.SetObstructAll(ShouldObstructAll)
 	ObstructAll = ShouldObstructAll
 end
 
+function Window.GetLayer()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.Layer
+	end
+	return 'Normal'
+end
+
 return Window

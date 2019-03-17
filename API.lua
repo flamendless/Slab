@@ -625,6 +625,12 @@ end
 			will be selected. This is true by default.
 		NumbersOnly: [Boolean] When true, only numeric characters and the '.' character are allowed to be input into
 			the input box. If no text is input, the input box will display '0'.
+		W: [Number] The width of the input box. By default, will be 150.0
+		H: [Number] The height of the input box. By default, will be the height of the current font.
+		ReadOnly: [Boolean] Whether this input field can be editable or not.
+		Align: [String] Aligns the text within the input box. Options are:
+			left: Aligns the text to the left. This will be set when this Input is focused.
+			center: Aligns the text in the center. This is the default for when the text is not focused.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
@@ -665,6 +671,8 @@ end
 		Icon: [Object] A user supplied image. This must be a valid Love image or the call will assert.
 		IconPath: [String] If the Icon option is nil, then a path can be specified. Slab will load and
 			manage the image resource.
+		IsSelected: [Boolean] If true, will render a highlight rectangle around the tree item.
+		IsOpen: [Boolean] Will force the tree item to be expanded.
 
 	Return: [Boolean] Returns true if this tree item is expanded. Slab.EndTree must be called if this returns true.
 --]]
@@ -707,6 +715,7 @@ end
 	Options: [Table] List of options that control how this combo box behaves.
 		Tooltip: [String] Text that is rendered when the user hovers over this combo box.
 		Selected: [String] Text that is displayed in the non-editable input box for this combo box.
+		W: [Number] The width of the combo box. The default value is 150.0.
 
 	Return: [Boolean] This function will return true if the combo box is open.
 --]]

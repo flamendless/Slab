@@ -30,7 +30,8 @@ Controls: Convert all window bounds check to use region.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-File Dialog: Save option with input field for file name and error checking.
+Draw Commands: Draw Channels for custom ordering within a layer.
+File Dialog: Prompt user if they wish to overwrite existing file.
 File Dialog: Filter by extension.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
@@ -59,5 +60,6 @@ Window: Ids should be used as keys.
 Window: Column support.
 Window: Lock mouse resize icon while resizing.
 Window: Deprecate window bounds values and use region directly.
+Window: Stack windows for input check.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.
