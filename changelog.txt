@@ -30,7 +30,6 @@ Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 File Dialog: Prompt user if they wish to overwrite existing file.
-File Dialog: Change API to call an Open function and move drawing to internal code.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.

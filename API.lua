@@ -1016,7 +1016,8 @@ end
 --[[
 	FileDialog
 
-	Opens up a dialog box that displays a file explorer for opening or saving files or directories.
+	Opens up a dialog box that displays a file explorer for opening or saving files or directories. This function does not create any file
+	handles, it just returns the list of files selected by the user.
 
 	Options: [Table] List of options that control the behavior of the file dialog.
 		AllowMultiSelect: [Boolean] Allows the user to select multiple items in the file dialog.
@@ -1028,6 +1029,11 @@ end
 				only file selections are returned.
 			opendirectory: This type is used to filter the file dialog for directories only. No files will appear
 				in the list.
+		Filters: [Table] A list of filters the user can select from when browsing files. The table can contain tables or strings.
+			Table: If a table is used for a filter, it should contain two elements. The first element is the filter while the second
+				element is the description of the filter e.g. {"*.lua", "Lua Files"}
+			String: If a raw string is used, then it should just be the filter. It is recommended to use the table option since a
+				description can be given for each filter.
 
 	Return: [Table] Returns items for how the user interacted with this file dialog.
 		Button: [String] The button the user clicked. Will either be OK or Cancel.
