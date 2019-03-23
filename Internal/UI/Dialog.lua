@@ -399,6 +399,7 @@ function Dialog.FileDialog(Options)
 			ActiveInstance.Directories = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Files = false})
 			ActiveInstance.Files = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Directories = false, Filter = Filter})
 			ActiveInstance.Return = {}
+			ActiveInstance.Text = ""
 			ActiveInstance.Parsed = true
 
 			for I, V in ipairs(ActiveInstance.Directories) do

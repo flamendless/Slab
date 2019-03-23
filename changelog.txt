@@ -25,7 +25,6 @@ Combo Box: Highlight input box when mouse is hovered.
 Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
-Combo Box: Window should obstruct after making selection and closing window.
 Controls: Convert all window bounds check to use region.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.

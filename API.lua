@@ -220,6 +220,10 @@ function Slab.Draw()
 		MenuBar.Clear()
 	end
 
+	if Mouse.IsReleased(1) then
+		Button.ClearClicked()
+	end
+
 	DrawCommands.Execute()
 end
 

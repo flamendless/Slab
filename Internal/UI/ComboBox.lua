@@ -145,6 +145,7 @@ function ComboBox.End()
 			Active.IsOpen = false
 			Active = nil
 			Window.SetCanObstruct(false)
+			Mouse.Consume()
 		end
 	end
 

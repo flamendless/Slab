@@ -36,6 +36,7 @@ local Button = {}
 
 local Pad = 10.0
 local MinWidth = 75.0
+local ClickedId = nil
 
 function Button.Begin(Label, Options)
 	Options = Options == nil and {} or Options
@@ -61,10 +62,17 @@ function Button.Begin(Label, Options)
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(Id)
 
-		if Mouse.IsPressed(1) then
+		if ClickedId == Id then
 			Color = Style.ButtonPressedColor
-		elseif Mouse.IsReleased(1) then
+		end
+
+		if Mouse.IsClicked(1) then
+			ClickedId = Id
+		end
+
+		if Mouse.IsReleased(1) and ClickedId == Id then
 			Result = true
+			ClickedId = nil
 		end
 	end
 
@@ -85,6 +93,10 @@ function Button.GetSize(Label)
 	local W = Style.Font:getWidth(Label)
 	local H = Style.Font:getHeight()
 	return math.max(W, MinWidth) + Pad * 2.0, H + Pad * 0.5
+end
+
+function Button.ClearClicked()
+	ClickedId = nil
 end
 
 return Button
