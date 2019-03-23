@@ -239,7 +239,7 @@ function SlabTest.Begin()
 	end
 
 	if SlabTest_FileDialog then
-		local Result = Slab.FileDialog({Type = SlabTest_FileDialogType})
+		local Result = Slab.FileDialog({Type = SlabTest_FileDialogType, Filters = {{"*.*", "All Files"}, {"*.lua", "Lua Files"}, {"*.txt", "Text Files"}}})
 
 		if Result.Button ~= "" then
 			print("Button: " .. Result.Button)

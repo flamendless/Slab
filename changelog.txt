@@ -30,9 +30,9 @@ Controls: Convert all window bounds check to use region.
 Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-Draw Commands: Draw Channels for custom ordering within a layer.
 File Dialog: Prompt user if they wish to overwrite existing file.
-File Dialog: Filter by extension.
+File Dialog: Change API to call an Open function and move drawing to internal code.
+File Dialog: Get file filters working on Mac.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.

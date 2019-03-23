@@ -35,19 +35,23 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 	Options = Options == nil and {} or Options
 	Options.Files = Options.Files == nil and true or Options.Files
 	Options.Directories = Options.Directories == nil and true or Options.Directories
+	Options.Filter = Options.Filter == nil and "*.*" or Options.Filter
 
 	local Cmd = ""
 	local OS = love.system.getOS()
 
-	if OS == "Windows" then
-		Cmd = 'DIR "' .. Directory .. '" /B '
+	if string.sub(Directory, #Directory, #Directory) ~= FileSystem.Separator() then
+		Directory = Directory .. FileSystem.Separator()
+	end
 
+	if OS == "Windows" then
+		Directory = string.gsub(Directory, "/", "\\")
 		if Options.Files and not Options.Directories then
-			Cmd = Cmd .. '/A:-D-H'
+			Cmd = 'DIR "' .. Directory .. Options.Filter .. '" /B /A:-D-H'
 		elseif Options.Directories and not Options.Files then
-			Cmd = Cmd .. '/A:D-H'
+			Cmd = 'DIR "' .. Directory .. '" /B /A:D-H'
 		else
-			Cmd = Cmd .. '/A-H'
+			Cmd = 'DIR "' .. Directory .. '" /B /A-H'
 		end
 	else
 		if Options.Files and not Options.Directories then

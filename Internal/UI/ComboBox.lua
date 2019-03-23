@@ -54,6 +54,8 @@ function ComboBox.Begin(Id, Options)
 	Options = Options ~= nil and Options or {}
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.W = Options.W == nil and MIN_WIDTH or Options.W
+	Options.WinH = Options.WinH == nil and MIN_HEIGHT or Options.WinH
+	Options.SkipObstruct = Options.SkipObstruct == nil and false or Options.SkipObstruct
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -66,6 +68,11 @@ function ComboBox.Begin(Id, Options)
 	Instance.Y = Y
 	Instance.W = W
 	Instance.H = H
+	Instance.WinH = Options.WinH
+
+	if Y + H + Instance.WinH > love.graphics.getHeight() then
+		Instance.WinH = love.graphics.getHeight() - (Y + H)
+	end
 
 	local DropDownX = X + W - Radius * 4.0
 	local DropDownW = Radius * 4.0
@@ -112,13 +119,14 @@ function ComboBox.Begin(Id, Options)
 			X = X - 1.0,
 			Y = Y + H,
 			W = W,
-			H = math.min(MIN_HEIGHT, Instance.WinH),
+			H = Instance.WinH,
 			AllowResize = false,
 			BgColor = Style.ComboBoxDropDownBgColor,
 			AutoSizeWindow = false,
-			AutoSizeWindowH = true,
 			AllowFocus = false,
-			Layer = 'ContextMenu'
+			Layer = Window.GetLayer(),
+			SkipObstruct = Options.SkipObstruct,
+			AutoSizeContent = true
 		})
 		Window.SetCanObstruct(true)
 		Active = Instance
@@ -132,7 +140,6 @@ function ComboBox.End()
 	local H = 0.0
 
 	if Active ~= nil then
-		Active.WinH = Window.GetHeight()
 		Y, H = Active.Y, Active.H
 		if Mouse.IsClicked(1) and Active.WasOpened and not Window.IsObstructedAtMouse() then
 			Active.IsOpen = false

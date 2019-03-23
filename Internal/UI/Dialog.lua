@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
+local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
@@ -203,6 +204,34 @@ local function FileDialogExplorer(Instance, Root)
 	end
 end
 
+local function GetFilter(Instance, Index)
+	local Filter = "*.*"
+	local Desc = "All Files"
+	if Instance ~= nil and #Instance.Filters > 0 then
+		if Index == nil then
+			Index = Instance.SelectedFilter
+		end
+
+		local Item = Instance.Filters[Index]
+		if Item ~= nil then
+			if type(Item) == "table" then
+				if #Item == 1 then
+					Filter = Item[1]
+					Desc = ""
+				elseif #Item == 2 then
+					Filter = Item[1]
+					Desc = Item[2]
+				end
+			else
+				Filter = tostring(Item)
+				Desc = ""
+			end
+		end
+	end
+
+	return Filter, Desc
+end
+
 local function IsInstanceOpen(Id)
 	local Instance = Instances[Id]
 	if Instance ~= nil then
@@ -326,6 +355,7 @@ function Dialog.FileDialog(Options)
 	Options.AllowMultiSelect = Options.AllowMultiSelect == nil and true or Options.AllowMultiSelect
 	Options.Directory = Options.Directory == nil and nil or Options.Directory
 	Options.Type = Options.Type == nil and 'openfile' or Options.Type
+	Options.Filters = Options.Filters == nil and {{"*.*", "All Files"}} or Options.Filters
 
 	if Options.Type == 'savefile' then
 		Options.AllowMultiSelect = false
@@ -356,14 +386,18 @@ function Dialog.FileDialog(Options)
 			if Options.Directory ~= nil and FileSystem.IsDirectory(Options.Directory) then
 				ActiveInstance.Directory = Options.Directory
 			end
+
+			ActiveInstance.Filters = Options.Filters
+			ActiveInstance.SelectedFilter = 1
 		end
 
 		local Clear = false
 		if not ActiveInstance.Parsed then
+			local Filter = GetFilter(ActiveInstance)
 			ActiveInstance.Root = AddDirectoryItem(FileSystem.GetRootDirectory(ActiveInstance.Directory))
 			ActiveInstance.Selected = {}
 			ActiveInstance.Directories = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Files = false})
-			ActiveInstance.Files = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Directories = false})
+			ActiveInstance.Files = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Directories = false, Filter = Filter})
 			ActiveInstance.Return = {}
 			ActiveInstance.Parsed = true
 
@@ -424,15 +458,31 @@ function Dialog.FileDialog(Options)
 		end
 		ListBox.End()
 
+		local FilterW = 150.0
 		local ListBoxX, ListBoxY, ListBoxW, ListBoxH = Cursor.GetItemBounds()
-		local InputX = ExplorerW + ListBoxW + Cursor.PadX() * 2.0 + 4.0
+		local InputW = ListBoxX + ListBoxW - PrevAnchorX - FilterW
 
 		Cursor.SetAnchorX(PrevAnchorX)
 		Cursor.SetX(PrevAnchorX)
 
 		local ReadOnly = Options.Type ~= 'savefile'
-		if Input.Begin('FileDialog_Input', {W = InputX, ReadOnly = ReadOnly, Text = ActiveInstance.Text, Align = 'left'}) then
+		if Input.Begin('FileDialog_Input', {W = InputW, ReadOnly = ReadOnly, Text = ActiveInstance.Text, Align = 'left'}) then
 			ActiveInstance.Text = Input.GetText()
+		end
+
+		Cursor.SameLine()
+
+		local Filter, Desc = GetFilter(ActiveInstance)
+		if ComboBox.Begin('FileDialog_Filter', {W = FilterW, SkipObstruct = true, Selected = Filter .. " " .. Desc}) then
+			for I, V in ipairs(ActiveInstance.Filters) do
+				Filter, Desc = GetFilter(ActiveInstance, I)
+				if Text.Begin(Filter .. " " .. Desc, {IsSelectable = true}) then
+					ActiveInstance.SelectedFilter = I
+					ActiveInstance.Parsed = false
+				end
+			end
+
+			ComboBox.End()
 		end
 
 		Cursor.SetRelativeY(H - ButtonH - Cursor.PadY())

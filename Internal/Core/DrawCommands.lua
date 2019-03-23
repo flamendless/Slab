@@ -220,7 +220,7 @@ end
 function DrawCommands.Begin()
 	ActiveBatch = {}
 	ActiveBatch.Elements = {}
-	table.insert(Batches[ActiveLayer], 1, ActiveBatch)
+	table.insert(Batches[ActiveLayer], ActiveBatch)
 	table.insert(PendingBatches, 1, ActiveBatch)
 end
 

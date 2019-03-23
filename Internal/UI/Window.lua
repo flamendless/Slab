@@ -277,6 +277,10 @@ end
 function Window.IsObstructed(X, Y)
 	if ActiveInstance ~= nil then
 		if ActiveInstance.SkipObstruct then
+			if Region.IsHoverScrollBar(ActiveInstance.Id) then
+				return true
+			end
+
 			return false
 		end
 	end
