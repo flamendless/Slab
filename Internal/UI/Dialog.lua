@@ -266,9 +266,6 @@ function Dialog.Begin(Id, Options)
 	Options.AllowFocus = false
 	Options.AllowMove = false
 	Options.AutoSizeWindow = Options.AutoSizeWindow == nil and true or Options.AutoSizeWindow
-	if #Stack > 0 and Stack[1] == Instance then
-		Options.SkipObstruct = true
-	end
 
 	Window.Begin(Instance.Id, Options)
 
@@ -474,7 +471,7 @@ function Dialog.FileDialog(Options)
 		Cursor.SameLine()
 
 		local Filter, Desc = GetFilter(ActiveInstance)
-		if ComboBox.Begin('FileDialog_Filter', {W = FilterW, SkipObstruct = true, Selected = Filter .. " " .. Desc}) then
+		if ComboBox.Begin('FileDialog_Filter', {W = FilterW, Selected = Filter .. " " .. Desc}) then
 			for I, V in ipairs(ActiveInstance.Filters) do
 				Filter, Desc = GetFilter(ActiveInstance, I)
 				if Text.Begin(Filter .. " " .. Desc, {IsSelectable = true}) then

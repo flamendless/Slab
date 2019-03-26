@@ -55,7 +55,6 @@ function ComboBox.Begin(Id, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.W = Options.W == nil and MIN_WIDTH or Options.W
 	Options.WinH = Options.WinH == nil and MIN_HEIGHT or Options.WinH
-	Options.SkipObstruct = Options.SkipObstruct == nil and false or Options.SkipObstruct
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -113,7 +112,6 @@ function ComboBox.Begin(Id, Options)
 	Window.AddItem(X, Y, W, H, WinItemId)
 
 	if Instance.IsOpen then
-		Window.SetCanObstruct(false)
 		Window.Begin(Id .. '_combobox',
 		{
 			X = X - 1.0,
@@ -125,10 +123,8 @@ function ComboBox.Begin(Id, Options)
 			AutoSizeWindow = false,
 			AllowFocus = false,
 			Layer = Window.GetLayer(),
-			SkipObstruct = Options.SkipObstruct,
 			AutoSizeContent = true
 		})
-		Window.SetCanObstruct(true)
 		Active = Instance
 	end
 
@@ -144,14 +140,11 @@ function ComboBox.End()
 		if Mouse.IsClicked(1) and Active.WasOpened and not Window.IsObstructedAtMouse() then
 			Active.IsOpen = false
 			Active = nil
-			Window.SetCanObstruct(false)
-			Mouse.Consume()
 		end
 	end
 
 	Window.End()
 	DrawCommands.SetLayer('Normal')
-	Window.SetCanObstruct(true)
 
 	if Y ~= 0.0 and H ~= 0.0 then
 		Cursor.SetY(Y)

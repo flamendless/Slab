@@ -79,15 +79,27 @@ function Tooltip.Begin(Tip)
 			AllowFocus = false,
 			Layer = 'ContextMenu',
 			BgColor = BgColor,
-			ResetWindowSize = ResetSize
+			ResetWindowSize = ResetSize,
+			CanObstruct = false
 		})
-		Window.SetCanObstruct(false)
 		Text.Begin(Tip, {Color = TextColor})
 		OffsetY = Window.GetHeight()
 		Window.End()
 		Cursor.SetPosition(CursorX, CursorY)
 		ResetSize = false
 	end
+end
+
+function Tooltip.GetDebugInfo()
+	local Info = {}
+
+	local Elapsed = love.timer.getTime() - LastDisplayTime
+	table.insert(Info, string.format("Time: %.2f", AccumDisplayTime))
+	table.insert(Info, string.format("Is Visible: %s", tostring(AccumDisplayTime > TooltipTime and Elapsed <= TooltipExpireTime)))
+	table.insert(Info, string.format("Time to Display: %.2f", TooltipTime))
+	table.insert(Info, string.format("Expire Time: %f", TooltipExpireTime))
+
+	return Info
 end
 
 return Tooltip

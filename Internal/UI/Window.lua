@@ -38,9 +38,6 @@ local Instances = {}
 local Stack = {}
 local PendingStack = {}
 local ActiveInstance = nil
-local FocusedInstance = nil
-local TopInstances = nil
-local ObstructAll = false
 
 local SizerType =
 {
@@ -54,6 +51,25 @@ local SizerType =
 	SW = 7,
 	NW = 8
 }
+
+local function UpdateStackIndex()
+	for I = 1, #Stack, 1 do
+		Stack[I].StackIndex = #Stack - I + 1
+	end
+end
+
+local function PushToTop(Instance)
+	for I, V in ipairs(Stack) do
+		if Instance == V then
+			table.remove(Stack, I)
+			break
+		end
+	end
+
+	table.insert(Stack, 1, Instance)
+
+	UpdateStackIndex()
+end
 
 local function NewInstance(Id)
 	local Instance = {}
@@ -80,7 +96,6 @@ local function NewInstance(Id)
 	Instance.DeltaContentH = 0.0
 	Instance.BackgroundColor = Style.WindowBackgroundColor
 	Instance.Border = 4.0
-	Instance.CanObstruct = true
 	Instance.Children = {}
 	Instance.LastItem = nil
 	Instance.HotItem = nil
@@ -88,7 +103,8 @@ local function NewInstance(Id)
 	Instance.LastVisibleTime = 0.0
 	Instance.Items = {}
 	Instance.Layer = 'Normal'
-	Instance.SkipObstruct = false
+	Instance.StackIndex = 0
+	Instance.CanObstruct = true
 	return Instance
 end
 
@@ -127,7 +143,7 @@ local function UpdateTitleBar(Instance)
 			if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 				Instance.IsMoving = true
 				if Instance.AllowFocus then
-					FocusedInstance = Instance
+					PushToTop(Instance)
 				end
 			end
 		elseif Mouse.IsReleased(1) then
@@ -252,71 +268,25 @@ local function UpdateSize(Instance)
 	end
 end
 
-local function GetHoveredInstance(Instance, X, Y)
-	local Result = nil
-	if Instance ~= nil then
-		local Time = love.timer.getTime() - Instance.LastVisibleTime
-		if Instance.CanObstruct and Contains(Instance, X, Y) and Time <= 0.25 then
-			Result = Instance
-			local Child = nil
-			for K, V in pairs(Instance.Children) do
-				Child = GetHoveredInstance(V, X, Y)
-			end
-			if Child ~= nil then
-				Result = Child
-			end
-		end
-	end
-	return Result
-end
-
 function Window.Top()
 	return ActiveInstance
 end
 
 function Window.IsObstructed(X, Y)
 	if ActiveInstance ~= nil then
-		if ActiveInstance.SkipObstruct then
-			if Region.IsHoverScrollBar(ActiveInstance.Id) then
-				return true
-			end
+		for I, V in ipairs(Stack) do
+			if Contains(V, X, Y) and V.CanObstruct then
+				if ActiveInstance == V then
+					if Region.IsHoverScrollBar(ActiveInstance.Id) then
+						return true
+					end
 
-			return false
-		end
-	end
-
-	if ObstructAll then
-		return true
-	end
-
-	local X, Y = Mouse.Position()
-	local Instance = nil
-
-	if TopInstances ~= nil then
-		for K, V in pairs(TopInstances) do
-			Instance = GetHoveredInstance(V, X, Y)
-		end
-	end
-
-	if Instance == nil and FocusedInstance ~= nil then
-		Instance = GetHoveredInstance(FocusedInstance, X, Y)
-	end
-
-	if Instance == nil then
-		for I, V in ipairs(Instances) do
-			local Child = GetHoveredInstance(V, X, Y)
-			if Child ~= nil then
-				Instance = Child
+					return false
+				else
+					return true
+				end
 			end
 		end
-	end
-
-	if Instance ~= nil then
-		if Region.IsHoverScrollBar(Instance.Id) then
-			return true
-		end
-
-		return ActiveInstance ~= Instance
 	end
 
 	return false
@@ -328,10 +298,8 @@ function Window.IsObstructedAtMouse()
 end
 
 function Window.Reset()
-	Stack = {}
 	PendingStack = {}
 	ActiveInstance = GetInstance('Global')
-	ActiveInstance.CanObstruct = false
 	ActiveInstance.W = love.graphics.getWidth()
 	ActiveInstance.H = love.graphics.getHeight()
 	ActiveInstance.Border = 0.0
@@ -364,10 +332,9 @@ function Window.Begin(Id, Options)
 	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
 	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
-	Options.SkipObstruct = Options.SkipObstruct == nil and false or Options.SkipObstruct
+	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 
 	local Instance = GetInstance(Id)
-	table.insert(Stack, 1, Instance)
 	table.insert(PendingStack, 1, Instance)
 
 	if ActiveInstance ~= nil then
@@ -420,12 +387,17 @@ function Window.Begin(Id, Options)
 	ActiveInstance.AutoSizeWindowW = Options.AutoSizeWindowW
 	ActiveInstance.AutoSizeWindowH = Options.AutoSizeWindowH
 	ActiveInstance.AutoSizeContent = Options.AutoSizeContent
-	ActiveInstance.Layer = ActiveInstance == FocusedInstance and 'Focused' or Options.Layer
+	ActiveInstance.Layer = Options.Layer
 	ActiveInstance.HotItem = nil
 	ActiveInstance.LastVisibleTime = love.timer.getTime()
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
-	ActiveInstance.SkipObstruct = Options.SkipObstruct
+	ActiveInstance.CanObstruct = Options.CanObstruct
+
+	if ActiveInstance.StackIndex == 0 then
+		table.insert(Stack, 1, ActiveInstance)
+		UpdateStackIndex()
+	end
 
 	if ActiveInstance.AutoSizeContent then
 		ActiveInstance.ContentW = math.max(Options.ContentW, ActiveInstance.DeltaContentW)
@@ -447,7 +419,7 @@ function Window.Begin(Id, Options)
 	local MouseX, MouseY = Mouse.Position()
 	local IsObstructed = Window.IsObstructed(MouseX, MouseY)
 	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed then
-		FocusedInstance = ActiveInstance
+		PushToTop(ActiveInstance)
 	end
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
@@ -455,11 +427,11 @@ function Window.Begin(Id, Options)
 	Cursor.SetPosition(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
-	DrawCommands.Begin()
+	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
 		local TitleX = math.floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
 		local TitleColor = ActiveInstance.BackgroundColor
-		if ActiveInstance == FocusedInstance then
+		if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
 		end
 		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor)
@@ -496,12 +468,6 @@ function Window.End()
 			DrawCommands.SetLayer(ActiveInstance.Layer)
 			Region.ApplyScissor()
 		end
-	end
-end
-
-function Window.SetCanObstruct(CanObstruct)
-	if ActiveInstance ~= nil then
-		ActiveInstance.CanObstruct = CanObstruct
 	end
 end
 
@@ -687,23 +653,24 @@ function Window.GetLastItem()
 	return nil
 end
 
-function Window.PushToTop()
-	if TopInstances == nil then
-		TopInstances = {}
-	end
-
-	if ActiveInstance ~= nil then
-		TopInstances[ActiveInstance.Id] = ActiveInstance
-	end
-end
-
-function Window.ClearTopInstances()
-	TopInstances = nil
-end
-
 function Window.Validate()
 	if #PendingStack > 1 then
 		assert(false, "EndWindow was not called for: " .. PendingStack[1].Id)
+	end
+
+	local Time = love.timer.getTime()
+	local Delta = love.timer.getDelta()
+	local ShouldUpdate = false
+	for I = #Stack, 1, -1 do
+		if Time - Stack[I].LastVisibleTime > Delta then
+			Stack[I].StackIndex = 0
+			table.remove(Stack, I)
+			ShouldUpdate = true
+		end
+	end
+
+	if ShouldUpdate then
+		UpdateStackIndex()
 	end
 end
 
@@ -714,15 +681,51 @@ function Window.HasResized()
 	return false
 end
 
-function Window.SetObstructAll(ShouldObstructAll)
-	ObstructAll = ShouldObstructAll
-end
-
 function Window.GetLayer()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.Layer
 	end
 	return 'Normal'
+end
+
+function Window.GetInstanceIds()
+	local Result = {}
+
+	for I, V in ipairs(Instances) do
+		table.insert(Result, V.Id)
+	end
+
+	return Result
+end
+
+function Window.GetInstanceInfo(Id)
+	local Result = {}
+
+	local Instance = nil
+	for I, V in ipairs(Instances) do
+		if V.Id == Id then
+			Instance = V
+			break
+		end
+	end
+
+	if Instance ~= nil then
+		table.insert(Result, "Title: " .. Instance.Title)
+		table.insert(Result, "Layer: " .. Instance.Layer)
+		table.insert(Result, "Stack Index: " .. Instance.StackIndex)
+	end
+
+	return Result
+end
+
+function Window.GetStackDebug()
+	local Result = {}
+
+	for I, V in ipairs(Stack) do
+		Result[I] = tostring(V.StackIndex) .. ": " .. V.Id
+	end
+
+	return Result
 end
 
 return Window

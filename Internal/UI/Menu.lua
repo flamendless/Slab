@@ -88,7 +88,6 @@ local function BeginWindow(Id, X, Y)
 		Layer = 'ContextMenu',
 		BgColor = Style.MenuColor
 	})
-	Window.PushToTop()
 end
 
 function Menu.BeginMenu(Label)
@@ -295,8 +294,6 @@ function Menu.Close()
 		OpenedContextMenu.Win.ContextHotItem = nil
 		OpenedContextMenu = nil
 	end
-
-	Window.ClearTopInstances()
 end
 
 return Menu

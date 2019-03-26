@@ -137,13 +137,4 @@ function Mouse.SetCursor(Type)
 	end
 end
 
-function Mouse.Consume()
-	State.WasButton[1] = true
-	State.WasButton[2] = true
-	State.WasButton[3] = true
-	State.Button[1] = true
-	State.Button[2] = true
-	State.Button[3] = true
-end
-
 return Mouse

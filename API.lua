@@ -199,8 +199,6 @@ function Slab.Update(dt)
 			MenuState.RequestClose = true
 		end
 	end
-
-	Window.SetObstructAll(Dialog.IsOpen())
 end
 
 --[[
@@ -274,6 +272,7 @@ end
 		ResetLayout: [Boolean] Will reset the position, size, and content. Short hand for the above 3 flags.
 		SizerFilter: [Table] Specifies what sizers are enabled for the window. If nothing is specified, all sizers are available. The values can
 			be: NW, NE, SW, SE, N, S, E, W
+		CanObstruct: [Boolean] Sets whether this window is considered for obstruction of other windows and their controls. The default value is true.
 
 	Return: None
 --]]
