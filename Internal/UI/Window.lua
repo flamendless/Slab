@@ -36,6 +36,7 @@ local Window = {}
 
 local Instances = {}
 local Stack = {}
+local StackLockId = nil
 local PendingStack = {}
 local ActiveInstance = nil
 
@@ -109,6 +110,10 @@ local function NewInstance(Id)
 end
 
 local function GetInstance(Id)
+	if Id == nil then
+		return ActiveInstance
+	end
+
 	for K, V in pairs(Instances) do
 		if V.Id == Id then
 			return V
@@ -274,7 +279,15 @@ end
 
 function Window.IsObstructed(X, Y)
 	if ActiveInstance ~= nil then
+		local FoundStackLock = false
+
 		for I, V in ipairs(Stack) do
+			if V.Id == StackLockId then
+				FoundStackLock = true
+			elseif FoundStackLock then
+				return true
+			end
+
 			if Contains(V, X, Y) and V.CanObstruct then
 				if ActiveInstance == V then
 					if Region.IsHoverScrollBar(ActiveInstance.Id) then
@@ -681,6 +694,18 @@ function Window.HasResized()
 	return false
 end
 
+function Window.SetStackLock(Id)
+	StackLockId = Id
+end
+
+function Window.PushToTop(Id)
+	local Instance = GetInstance(Id)
+
+	if Instance ~= nil then
+		PushToTop(Instance)
+	end
+end
+
 function Window.GetLayer()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.Layer
@@ -711,6 +736,8 @@ function Window.GetInstanceInfo(Id)
 
 	if Instance ~= nil then
 		table.insert(Result, "Title: " .. Instance.Title)
+		table.insert(Result, "X: " .. Instance.X)
+		table.insert(Result, "Y: " .. Instance.Y)
 		table.insert(Result, "Layer: " .. Instance.Layer)
 		table.insert(Result, "Stack Index: " .. Instance.StackIndex)
 	end
@@ -723,6 +750,10 @@ function Window.GetStackDebug()
 
 	for I, V in ipairs(Stack) do
 		Result[I] = tostring(V.StackIndex) .. ": " .. V.Id
+
+		if V.Id == StackLockId then
+			Result[I] = Result[I] .. " (Locked)"
+		end
 	end
 
 	return Result

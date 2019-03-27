@@ -43,6 +43,8 @@ local Dialog = {}
 local Instances = {}
 local ActiveInstance = nil
 local Stack = {}
+local InstanceStack = {}
+local FileDialog_AskOverwrite = false
 
 local function UpdateInputText(Instance)
 	if Instance ~= nil then
@@ -270,16 +272,21 @@ function Dialog.Begin(Id, Options)
 	Window.Begin(Instance.Id, Options)
 
 	ActiveInstance = Instance
+	table.insert(InstanceStack, 1, ActiveInstance)
 
 	return true
 end
 
 function Dialog.End()
-	assert(ActiveInstance ~= nil, "EndDialog was called outside of BeginDialog.")
 	ActiveInstance.W, ActiveInstance.H = Window.GetSize()
 	Window.End()
 
 	ActiveInstance = nil
+	table.remove(InstanceStack, 1)
+
+	if #InstanceStack > 0 then
+		ActiveInstance = InstanceStack[1]
+	end
 end
 
 function Dialog.Open(Id)
@@ -287,6 +294,8 @@ function Dialog.Open(Id)
 	if not Instance.IsOpen then
 		Instance.IsOpen = true
 		table.insert(Stack, 1, Instance)
+		Window.SetStackLock(Instance.Id)
+		Window.PushToTop(Instance.Id)
 	end
 end
 
@@ -294,9 +303,12 @@ function Dialog.Close()
 	if ActiveInstance ~= nil and ActiveInstance.IsOpen then
 		ActiveInstance.IsOpen = false
 		table.remove(Stack, 1)
+		Window.SetStackLock(nil)
 
 		if #Stack > 0 then
-			ActiveInstance = Stack[1]
+			Instance = Stack[1]
+			Window.SetStackLock(Instance.Id)
+			Window.PushToTop(Instance.Id)
 		end
 	end
 end
@@ -354,8 +366,12 @@ function Dialog.FileDialog(Options)
 	Options.Type = Options.Type == nil and 'openfile' or Options.Type
 	Options.Filters = Options.Filters == nil and {{"*.*", "All Files"}} or Options.Filters
 
+	local Title = "Open File"
 	if Options.Type == 'savefile' then
 		Options.AllowMultiSelect = false
+		Title = "Save File"
+	elseif Options.Type == 'opendirectory' then
+		Title = "Open Directory"
 	end
 
 	local Result = {Button = "", Files = {}}
@@ -365,7 +381,7 @@ function Dialog.FileDialog(Options)
 	local W = love.graphics.getWidth() * 0.65
 	local H = love.graphics.getHeight() * 0.65
 	if Dialog.Begin('FileDialog', {
-		Title = "Open File",
+		Title = Title,
 		AutoSizeWindow = false,
 		W = W,
 		H = H,
@@ -497,6 +513,11 @@ function Dialog.FileDialog(Options)
 				if FileSystem.IsDirectory(Path) then
 					OpeningDirectory = true
 					OpenDirectory(Path)
+				elseif Options.Type == 'savefile' then
+					if FileSystem.Exists(Path) then
+						FileDialog_AskOverwrite = true
+						OpeningDirectory = true
+					end
 				end
 			end
 
@@ -506,10 +527,28 @@ function Dialog.FileDialog(Options)
 			end
 		end
 
+		if FileDialog_AskOverwrite then
+			local FileName = #ActiveInstance.Return > 0 and ActiveInstance.Return[1] or ""
+			local AskOverwrite = Dialog.MessageBox("Overwriting", "Are you sure you would like to overwrite file " .. FileName, {Buttons = {"Cancel", "No", "Yes"}})
+
+			if AskOverwrite ~= "" then
+				if AskOverwrite == "No" then
+					Result.Button = "Cancel"
+					Result.Files = {}
+				elseif AskOverwrite == "Yes" then
+					Result.Button = "OK"
+					Result.Files = PruneResults(ActiveInstance.Return, Options.Type == 'opendirectory')
+				end
+
+				FileDialog_AskOverwrite = false
+			end
+		end
+
 		if Result.Button ~= "" then
 			ActiveInstance.Parsed = false
 			Dialog.Close()
 		end
+
 
 		Dialog.End()
 	end

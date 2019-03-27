@@ -30,12 +30,10 @@ Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Convert text and box to use input control.
 Controls: Convert all window bounds check to use region.
-Dialog: Stack dialog boxes.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 Draw Commands: Rename tables to be Layers->Channels->Batches.
 Draw Commands: Deprecate 'Focused' layer.
-File Dialog: Prompt user if they wish to overwrite existing file.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.

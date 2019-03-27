@@ -220,8 +220,15 @@ local function DrawBatch(Batch, Layer)
 		return
 	end
 
-	for K, V in pairs(Batch.Channels) do
-		local Channel = Batch.Channels[K]
+	local Keys = {}
+	for K, Channel in pairs(Batch.Channels) do
+		table.insert(Keys, K)
+	end
+
+	table.sort(Keys)
+
+	for Index, C in ipairs(Keys) do
+		local Channel = Batch.Channels[C]
 		if Channel ~= nil then
 			for I, V in ipairs(Channel) do
 				DrawElements(V.Elements)
