@@ -67,6 +67,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		GetLoveVersion
 		Update
 		Draw
+		GetStyle
 		BeginWindow
 		EndWindow
 		GetWindowPosition
