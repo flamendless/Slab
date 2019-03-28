@@ -97,15 +97,20 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		BeginComboBox
 		EndComboBox
 		Image
-		SameLine
-		NewLine
+
+		Cursor:
+			SameLine
+			NewLine
+			SetCursorPos
+
 		Properties
-		BeginListBox
-		EndListBox
-		BeginListBoxItem
-		IsListBoxItemClicked
-		EndListBoxItem
-		SetCursorPos
+
+		ListBox:
+			BeginListBox
+			EndListBox
+			BeginListBoxItem
+			IsListBoxItemClicked
+			EndListBoxItem
 
 		Dialog:
 			OpenDialog
@@ -515,6 +520,7 @@ end
 	Label: [String] The label to display on the button.
 	Options: [Table] List of options for how this button will behave.
 		Tooltip: [String] The tooltip to display when the user hovers over this button.
+		AlignRight: [Boolean] Flag to push this button to the right side of the window.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
@@ -774,7 +780,7 @@ end
 	SameLine
 
 	This forces the cursor to move back up to the same line as the previous widget. By default, all Slab widgets will
-	advance the cursor to the next line based on the height of the current font. By using this call with other widget
+	advance the cursor to the next line based on the height of the current line. By using this call with other widget
 	calls, the user will be able to set up multiple widgets on the same line to control how a window may look.
 
 	Options: [Table] List of options that controls how the cursor should handle the same line.
@@ -797,6 +803,37 @@ end
 --]]
 function Slab.NewLine()
 	Cursor.NewLine()
+end
+
+--[[
+	SetCursorPos
+
+	Sets the cursor position. The default behavior is to set the cursor position relative to
+	the current window. The absolute position can be set if the 'Absolute' option is set.
+
+	Controls will only be drawn within a window. If the cursor is set outside of the current
+	window context, the control will not be displayed.
+
+	X: [Number] The X coordinate to place the cursor. If nil, then the X coordinate is not modified.
+	Y: [Number] The Y coordinate to place the cursor. If nil, then the Y coordinate is not modified.
+	Options: [Table] List of options that control how the cursor position should be set.
+		Absolute: [Boolean] If true, will place the cursor using absolute coordinates.
+
+	Return: None.
+--]]
+function Slab.SetCursorPos(X, Y, Options)
+	Options = Options == nil and {} or Options
+	Options.Absolute = Options.Absolute == nil and false or Options.Absolute
+
+	if Options.Absolute then
+		X = X == nil and Cursor.GetX() or X
+		Y = Y == nil and Cursor.GetY() or Y
+		Cursor.SetPosition(X, Y)
+	else
+		X = X == nil and Cursor.GetX() - Cursor.GetAnchorX() or X
+		Y = Y == nil and Cursor.GetY() - Cursor.GetAnchorY() or Y
+		Cursor.SetRelativePosition(X, Y)
+	end
 end
 
 --[[
@@ -911,43 +948,12 @@ function Slab.EndListBoxItem()
 end
 
 --[[
-	SetCursorPos
-
-	Sets the cursor position. The default behavior is to set the cursor position relative to
-	the current window. The absolute position can be set if the 'Absolute' option is set.
-
-	Controls will only be drawn within a window. If the cursor is set outside of the current
-	window context, the control will not be displayed.
-
-	X: [Number] The X coordinate to place the cursor. If nil, then the X coordinate is not modified.
-	Y: [Number] The Y coordinate to place the cursor. If nil, then the Y coordinate is not modified.
-	Options: [Table] List of options that control how the cursor position should be set.
-		Absolute: [Boolean] If true, will place the cursor using absolute coordinates.
-
-	Return: None.
---]]
-function Slab.SetCursorPos(X, Y, Options)
-	Options = Options == nil and {} or Options
-	Options.Absolute = Options.Absolute == nil and false or Options.Absolute
-
-	if Options.Absolute then
-		X = X == nil and Cursor.GetX() or X
-		Y = Y == nil and Cursor.GetY() or Y
-		Cursor.SetPosition(X, Y)
-	else
-		X = X == nil and Cursor.GetX() - Cursor.GetAnchorX() or X
-		Y = Y == nil and Cursor.GetY() - Cursor.GetAnchorY() or Y
-		Cursor.SetRelativePosition(X, Y)
-	end
-end
-
---[[
 	OpenDialog
 
 	Opens the dialog box with the given Id. If the dialog box was opened, then it is pushed onto the stack.
 	Calls to the BeginDialog with this same Id will return true if opened.
 
-	Id: A string uniquely identifying this dialog box.
+	Id: [String] A string uniquely identifying this dialog box.
 
 	Return: None.
 --]]
@@ -962,7 +968,7 @@ end
 	Dialog boxes are windows which are centered in the center of the viewport. The dialog box cannot be moved and will
 	capture all input from all other windows.
 
-	Id: A string uniquely identifying this dialog box.
+	Id: [String] A string uniquely identifying this dialog box.
 	Options: [Table] List of options that control how this dialog box behaves. These are the same parameters found
 		for BeginWindow, with some caveats. Certain options are overridden by the Dialog system. They are:
 			X, Y, Layer, AllowFocus, AllowMove, and AutoSizeWindow.
@@ -1029,6 +1035,8 @@ end
 				only file selections are returned.
 			opendirectory: This type is used to filter the file dialog for directories only. No files will appear
 				in the list.
+			savefile: This type is used to select a name of a file to save. The user will be prompted if they wish to overwrite
+				an existing file.
 		Filters: [Table] A list of filters the user can select from when browsing files. The table can contain tables or strings.
 			Table: If a table is used for a filter, it should contain two elements. The first element is the filter while the second
 				element is the description of the filter e.g. {"*.lua", "Lua Files"}

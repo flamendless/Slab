@@ -9,6 +9,7 @@ Dialog Box: Wiki documentation.
 Message Box: Wiki documentation.
 File Dialog: Wiki documentation.
 CC0 - license for UI image.
+Window: Sizer filter gif.
 
 BUGS
 ==========
