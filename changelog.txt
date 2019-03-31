@@ -1,20 +1,12 @@
 NEXT RELEASE
 ==========
-Version: Switch to 0.2.0.
-ListBox: Wiki documentation.
-ListBox: Example usage with texture and name.
-Image: Example usage of sub-image.
-Cursor: Wiki documentation.
-Dialog Box: Wiki documentation.
-Message Box: Wiki documentation.
-File Dialog: Wiki documentation.
 CC0 - license for UI image.
-Window: Sizer filter gif.
 
 BUGS
 ==========
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
+[List Box]: Window not properly auto-sized.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Title exceeds width of window.
@@ -30,15 +22,18 @@ Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
 Combo Box: Convert text and box to use input control.
+Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 Draw Commands: Rename tables to be Layers->Channels->Batches.
 Draw Commands: Deprecate 'Focused' layer.
+Draw Commands: Add rectangle rounding.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
 Input: Multi-line input control.
+Item: API for managing if an item is clicked, hovered, etc.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.

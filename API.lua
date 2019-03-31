@@ -124,7 +124,7 @@ local Slab = {}
 
 -- Slab version numbers.
 local Version_Major = 0
-local Version_Minor = 1
+local Version_Minor = 2
 local Version_Revision = 0
 
 local function TextInput(Ch)
@@ -373,6 +373,8 @@ end
 
 	This function begins the process of rendering a menu bar for a window. This should only be called within a BeginWindow/EndWindow context.
 
+	IsMainMenuBar: [Boolean] Is this menu bar for the main viewport. Used internally. Should be ignored for all other calls.
+
 	Return: [Boolean] Returns true if the menu bar process has started.
 --]]
 function Slab.BeginMenuBar(IsMainMenuBar)
@@ -560,7 +562,7 @@ end
 	Options: [Table] List of options for how this text is displayed.
 		See Slab.Text for all options.
 
-	Return: [Boolean] Returns true if SelectOnHover option is set to true. False otherwise.
+	Return: [Boolean] Returns true if user clicks on this text. False otherwise.
 --]]
 function Slab.TextSelectable(Label, Options)
 	Options = Options == nil and {} or Options
