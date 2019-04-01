@@ -47,6 +47,10 @@ local InstanceStack = {}
 local FileDialog_AskOverwrite = false
 
 local function ValidateSaveFile(Files, Extension)
+	if Extension == nil or Extension == "" then
+		return
+	end
+
 	if Files ~= nil and #Files == 1 then
 		local Index = string.find(Files[1], ".", 1, true)
 
