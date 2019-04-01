@@ -46,6 +46,18 @@ local Stack = {}
 local InstanceStack = {}
 local FileDialog_AskOverwrite = false
 
+local function ValidateSaveFile(Files, Extension)
+	if Files ~= nil and #Files == 1 then
+		local Index = string.find(Files[1], ".", 1, true)
+
+		if Index ~= nil then
+			Files[1] = string.sub(Files[1], 1, Index - 1)
+		end
+
+		Files[1] = Files[1] .. Extension
+	end
+end
+
 local function UpdateInputText(Instance)
 	if Instance ~= nil then
 		if #Instance.Return > 0 then
@@ -80,6 +92,9 @@ local function OpenDirectory(Dir)
 		if Dir == ".." then
 			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
 		else
+			if string.sub(Dir, #Dir, #Dir) == FileSystem.Separator() then
+				Dir = string.sub(Dir, 1, #Dir - 1)
+			end
 			ActiveInstance.Directory = Dir
 		end
 	end
@@ -232,6 +247,21 @@ local function GetFilter(Instance, Index)
 	end
 
 	return Filter, Desc
+end
+
+local function GetExtension(Instance)
+	local Filter, Desc = GetFilter(Instance)
+	local Result = ""
+
+	if Filter ~= "*.*" then
+		local Index = string.find(Filter, ".", 1, true)
+
+		if Index ~= nil then
+			Result = string.sub(Filter, Index)
+		end
+	end
+
+	return Result
 end
 
 local function IsInstanceOpen(Id)
@@ -411,9 +441,11 @@ function Dialog.FileDialog(Options)
 			ActiveInstance.Selected = {}
 			ActiveInstance.Directories = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Files = false})
 			ActiveInstance.Files = FileSystem.GetDirectoryItems(ActiveInstance.Directory .. "/", {Directories = false, Filter = Filter})
-			ActiveInstance.Return = {}
+			ActiveInstance.Return = {ActiveInstance.Directory .. "/"}
 			ActiveInstance.Text = ""
 			ActiveInstance.Parsed = true
+
+			UpdateInputText(ActiveInstance)
 
 			for I, V in ipairs(ActiveInstance.Directories) do
 				ActiveInstance.Directories[I] = FileSystem.GetBaseName(V)
@@ -482,6 +514,7 @@ function Dialog.FileDialog(Options)
 		local ReadOnly = Options.Type ~= 'savefile'
 		if Input.Begin('FileDialog_Input', {W = InputW, ReadOnly = ReadOnly, Text = ActiveInstance.Text, Align = 'left'}) then
 			ActiveInstance.Text = Input.GetText()
+			ActiveInstance.Return[1] = ActiveInstance.Text
 		end
 
 		Cursor.SameLine()
@@ -524,6 +557,10 @@ function Dialog.FileDialog(Options)
 			if not OpeningDirectory then
 				Result.Button = "OK"
 				Result.Files = PruneResults(ActiveInstance.Return, Options.Type == 'opendirectory')
+
+				if Options.Type == 'savefile' then
+					ValidateSaveFile(Result.Files, GetExtension(ActiveInstance))
+				end
 			end
 		end
 
