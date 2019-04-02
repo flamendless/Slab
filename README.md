@@ -39,3 +39,7 @@ For more detailed information on usage of this library, refer to the [Wiki](http
 ### License
 
 Slab is licensed under the MIT license. Please see the LICENSE file for more information.
+
+### Credits
+* [Dear ImGui](https://github.com/ocornut/imgui) project built by Omar Cornut and various contributors. This project was the inspiration for building an Immediate Mode GUI for Love2D specifically. If anyone is building a game or application in C++, I highly recommend using this library and its rich toolset to speed up development.
+* [Kenney.nl](https://kenney.nl/) and the [Tango Desktop Project](https://opengameart.org/content/tango-desktop-icons) for providing icons used in this project.
