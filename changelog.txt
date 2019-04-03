@@ -2,6 +2,10 @@ NEXT RELEASE
 ==========
 CC0 - license for UI image.
 
+v0.3.0 RELEASE
+==========
+Update version number.
+
 BUGS
 ==========
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
@@ -16,12 +20,9 @@ TODO
 ==========
 Button: Expand to fit width of window.
 Color Picker: Initial implementation.
-Combo Box: Move all cursor updates on End call.
 Combo Box: Highlight input box when mouse is hovered.
-Combo Box: Check if same line functionality works.
 Combo Box: Easy API with table of possible values.
 Combo Box: User should be able to open by clicking input box.
-Combo Box: Convert text and box to use input control.
 Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
@@ -33,6 +34,7 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
 Input: Multi-line input control.
+[Input]: Allow user to highlight text in read-only mode.
 Item: API for managing if an item is clicked, hovered, etc.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.

@@ -26,9 +26,10 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -55,6 +56,7 @@ function ComboBox.Begin(Id, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.W = Options.W == nil and MIN_WIDTH or Options.W
 	Options.WinH = Options.WinH == nil and MIN_HEIGHT or Options.WinH
+	Options.Selected = Options.Selected == nil and "" or Options.Selected
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -73,7 +75,7 @@ function ComboBox.Begin(Id, Options)
 		Instance.WinH = love.graphics.getHeight() - (Y + H)
 	end
 
-	local DropDownX = X + W - Radius * 4.0
+	local DropDownX = X + W
 	local DropDownW = Radius * 4.0
 	local DropDownColor = Style.ComboBoxDropDownColor
 
@@ -84,7 +86,7 @@ function ComboBox.Begin(Id, Options)
 
 	local IsObstructed = Window.IsObstructedAtMouse()
 
-	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+	if not IsObstructed and X <= MouseX and MouseX <= X + W + DropDownW and Y <= MouseY and MouseY <= Y + H then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
 	end
@@ -94,22 +96,24 @@ function ComboBox.Begin(Id, Options)
 
 		if MouseClicked then
 			Instance.IsOpen = not Instance.IsOpen
+
+			if Instance.IsOpen then
+				Window.SetStackLock(Id .. '_combobox')
+			end
 		end
 	end
 
-	DrawCommands.Rectangle('fill', X, Y, W, H, Style.ComboBoxColor)
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H})
 
-	if Options.Selected ~= nil then
-		DrawCommands.Print(Options.Selected, X + 4.0, Y)
-	end
+	Cursor.SameLine()
 
-	DrawCommands.Rectangle('fill', X + W - Radius * 4.0, Y, Radius * 4.0, H, DropDownColor)
-	DrawCommands.Triangle('fill', X + W - Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
+	DrawCommands.Rectangle('fill', X + W, Y, Radius * 4.0, H, DropDownColor)
+	DrawCommands.Triangle('fill', X + W + Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
 
-	Window.AddItem(X, Y, W, H, WinItemId)
+	Window.AddItem(X, Y, W + DropDownW, H, WinItemId)
 
 	if Instance.IsOpen then
 		Window.Begin(Id .. '_combobox',
@@ -137,9 +141,10 @@ function ComboBox.End()
 
 	if Active ~= nil then
 		Y, H = Active.Y, Active.H
-		if Mouse.IsClicked(1) and Active.WasOpened and not Window.IsObstructedAtMouse() then
+		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
 			Active.IsOpen = false
 			Active = nil
+			Window.SetStackLock(nil)
 		end
 	end
 
