@@ -423,7 +423,7 @@ function Window.Begin(Id, Options)
 		ActiveInstance.Y = ActiveInstance.Y + OffsetY
 
 		local TitleW = Style.Font:getWidth(ActiveInstance.Title)
-		Window.AddItem(ActiveInstance.X, ActiveInstance.Y, TitleW, 0.0)
+		ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
 	end
 
 	UpdateSize(ActiveInstance)
@@ -738,6 +738,13 @@ function Window.GetInstanceInfo(Id)
 		table.insert(Result, "Title: " .. Instance.Title)
 		table.insert(Result, "X: " .. Instance.X)
 		table.insert(Result, "Y: " .. Instance.Y)
+		table.insert(Result, "W: " .. Instance.W)
+		table.insert(Result, "H: " .. Instance.H)
+		table.insert(Result, "ContentW: " .. Instance.ContentW)
+		table.insert(Result, "ContentH: " .. Instance.ContentH)
+		table.insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
+		table.insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
+		table.insert(Result, "Border: " .. Instance.Border)
 		table.insert(Result, "Layer: " .. Instance.Layer)
 		table.insert(Result, "Stack Index: " .. Instance.StackIndex)
 	end

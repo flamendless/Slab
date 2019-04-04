@@ -13,7 +13,7 @@ BUGS
 [List Box]: Window not properly auto-sized.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
-[Window]: Title exceeds width of window.
+[Window]: Empty Id window may exist.
 [File Dialog]: Controls not aligned properly on right.
 
 TODO
