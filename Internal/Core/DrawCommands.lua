@@ -346,6 +346,12 @@ end
 
 function DrawCommands.Scissor(X, Y, W, H)
 	AssertActiveBatch()
+	if W ~= nil then
+		assert(W >= 0.0, "Cannot set scissor with negative width.")
+	end
+	if H ~= nil then
+		assert(H >= 0.0, "Cannot set scissor with negative height.")
+	end
 	local Item = {}
 	Item.Type = Types.Scissor
 	Item.X = X

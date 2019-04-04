@@ -71,10 +71,6 @@ function ComboBox.Begin(Id, Options)
 	Instance.H = H
 	Instance.WinH = math.min(Instance.WinH, Options.WinH)
 
-	if Y + H + Instance.WinH > love.graphics.getHeight() then
-		Instance.WinH = love.graphics.getHeight() - (Y + H)
-	end
-
 	local DropDownX = X + W
 	local DropDownW = Radius * 4.0
 	local DropDownColor = Style.ComboBoxDropDownColor
