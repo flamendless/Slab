@@ -28,7 +28,7 @@ local Style = require(SLAB_PATH .. ".Style")
 
 local DrawCommands = {}
 
-local Batches = {}
+local LayerTable = {}
 local PendingBatches = {}
 local ActiveBatch = nil
 
@@ -53,22 +53,21 @@ local Types =
 local Layers =
 {
 	Normal = 1,
-	Focused = 2,
-	ContextMenu = 3,
-	MainMenuBar = 4,
-	Dialog = 5,
-	Debug = 6
+	ContextMenu = 2,
+	MainMenuBar = 3,
+	Dialog = 4,
+	Debug = 5
 }
 
 local ActiveLayer = Layers.Normal
 
-local function GetLayerDebugInfo(Batch)
+local function GetLayerDebugInfo(Layer)
 	local Result = {}
 
-	Result['Channel Count'] = #Batch
+	Result['Channel Count'] = #Layer
 
 	local Channels = {}
-	for K, Channel in pairs(Batch) do
+	for K, Channel in pairs(Layer) do
 		local Collection = {}
 		Collection['Batch Count'] = #Channel
 		table.insert(Channels, Collection)
@@ -215,20 +214,20 @@ local function AssertActiveBatch()
 	assert(ActiveBatch ~= nil, "DrawCommands.Begin was not called before commands were issued!")
 end
 
-local function DrawBatch(Batch, Layer)
-	if Batch.Channels == nil then
+local function DrawLayer(Layer, Name)
+	if Layer.Channels == nil then
 		return
 	end
 
 	local Keys = {}
-	for K, Channel in pairs(Batch.Channels) do
+	for K, Channel in pairs(Layer.Channels) do
 		table.insert(Keys, K)
 	end
 
 	table.sort(Keys)
 
 	for Index, C in ipairs(Keys) do
-		local Channel = Batch.Channels[C]
+		local Channel = Layer.Channels[C]
 		if Channel ~= nil then
 			for I, V in ipairs(Channel) do
 				DrawElements(V.Elements)
@@ -238,13 +237,12 @@ local function DrawBatch(Batch, Layer)
 end
 
 function DrawCommands.Reset()
-	Batches = {}
-	Batches[Layers.Normal] = {}
-	Batches[Layers.Focused] = {}
-	Batches[Layers.ContextMenu] = {}
-	Batches[Layers.MainMenuBar] = {}
-	Batches[Layers.Dialog] = {}
-	Batches[Layers.Debug] = {}
+	LayerTable = {}
+	LayerTable[Layers.Normal] = {}
+	LayerTable[Layers.ContextMenu] = {}
+	LayerTable[Layers.MainMenuBar] = {}
+	LayerTable[Layers.Dialog] = {}
+	LayerTable[Layers.Debug] = {}
 	ActiveLayer = Layers.Normal
 	PendingBatches = {}
 	ActiveBatch = nil
@@ -254,15 +252,15 @@ function DrawCommands.Begin(Options)
 	Options = Options == nil and {} or Options
 	Options.Channel = Options.Channel == nil and 1 or Options.Channel
 
-	if Batches[ActiveLayer].Channels == nil then
-		Batches[ActiveLayer].Channels = {}
+	if LayerTable[ActiveLayer].Channels == nil then
+		LayerTable[ActiveLayer].Channels = {}
 	end
 
-	if Batches[ActiveLayer].Channels[Options.Channel] == nil then
-		Batches[ActiveLayer].Channels[Options.Channel] = {}
+	if LayerTable[ActiveLayer].Channels[Options.Channel] == nil then
+		LayerTable[ActiveLayer].Channels[Options.Channel] = {}
 	end
 
-	local Channel = Batches[ActiveLayer].Channels[Options.Channel]
+	local Channel = LayerTable[ActiveLayer].Channels[Options.Channel]
 
 	ActiveBatch = {}
 	ActiveBatch.Elements = {}
@@ -285,8 +283,6 @@ end
 function DrawCommands.SetLayer(Layer)
 	if Layer == 'Normal' then
 		ActiveLayer = Layers.Normal
-	elseif Layer == 'Focused' then
-		ActiveLayer = Layers.Focused
 	elseif Layer == 'ContextMenu' then
 		ActiveLayer = Layers.ContextMenu
 	elseif Layer == 'MainMenuBar' then
@@ -453,23 +449,21 @@ function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, Sc
 end
 
 function DrawCommands.Execute()
-	DrawBatch(Batches[Layers.Normal], 'Normal')
-	DrawBatch(Batches[Layers.Focused], 'Focused')
-	DrawBatch(Batches[Layers.ContextMenu], 'ContextMenu')
-	DrawBatch(Batches[Layers.MainMenuBar], 'MainMenuBar')
-	DrawBatch(Batches[Layers.Dialog], 'Dialog')
-	DrawBatch(Batches[Layers.Debug], 'Debug')
+	DrawLayer(LayerTable[Layers.Normal], 'Normal')
+	DrawLayer(LayerTable[Layers.ContextMenu], 'ContextMenu')
+	DrawLayer(LayerTable[Layers.MainMenuBar], 'MainMenuBar')
+	DrawLayer(LayerTable[Layers.Dialog], 'Dialog')
+	DrawLayer(LayerTable[Layers.Debug], 'Debug')
 end
 
 function DrawCommands.GetDebugInfo()
 	local Result = {}
 
-	Result['Normal'] = GetLayerDebugInfo(Batches[Layers.Normal])
-	Result['Focused'] = GetLayerDebugInfo(Batches[Layers.Focused])
-	Result['ContextMenu'] = GetLayerDebugInfo(Batches[Layers.ContextMenu])
-	Result['MainMenuBar'] = GetLayerDebugInfo(Batches[Layers.MainMenuBar])
-	Result['Dialog'] = GetLayerDebugInfo(Batches[Layers.Dialog])
-	Result['Debug'] = GetLayerDebugInfo(Batches[Layers.Debug])
+	Result['Normal'] = GetLayerDebugInfo(LayerTable[Layers.Normal])
+	Result['ContextMenu'] = GetLayerDebugInfo(LayerTable[Layers.ContextMenu])
+	Result['MainMenuBar'] = GetLayerDebugInfo(LayerTable[Layers.MainMenuBar])
+	Result['Dialog'] = GetLayerDebugInfo(LayerTable[Layers.Dialog])
+	Result['Debug'] = GetLayerDebugInfo(LayerTable[Layers.Debug])
 
 	return Result
 end

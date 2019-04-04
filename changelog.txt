@@ -14,7 +14,7 @@ BUGS
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Title exceeds width of window.
-[File Dialog]: Filter combo box sometimes renders below dialog.
+[File Dialog]: Controls not aligned properly on right.
 
 TODO
 ==========
@@ -27,9 +27,8 @@ Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-Draw Commands: Rename tables to be Layers->Channels->Batches.
-Draw Commands: Deprecate 'Focused' layer.
 Draw Commands: Add rectangle rounding.
+[Draw Commands]: Remove dependency on Style.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
