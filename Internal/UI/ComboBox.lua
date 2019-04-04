@@ -69,7 +69,7 @@ function ComboBox.Begin(Id, Options)
 	Instance.Y = Y
 	Instance.W = W
 	Instance.H = H
-	Instance.WinH = Options.WinH
+	Instance.WinH = math.min(Instance.WinH, Options.WinH)
 
 	if Y + H + Instance.WinH > love.graphics.getHeight() then
 		Instance.WinH = love.graphics.getHeight() - (Y + H)
@@ -141,6 +141,8 @@ function ComboBox.End()
 
 	if Active ~= nil then
 		Y, H = Active.Y, Active.H
+		local ContentW, ContentH = Window.GetContentSize()
+		Active.WinH = ContentH
 		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
 			Active.IsOpen = false
 			Active = nil

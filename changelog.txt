@@ -8,13 +8,12 @@ Update version number.
 
 BUGS
 ==========
+[File Dialog]: Controls not aligned properly on right.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
-[Window]: Empty Id window may exist.
-[File Dialog]: Controls not aligned properly on right.
 
 TODO
 ==========
