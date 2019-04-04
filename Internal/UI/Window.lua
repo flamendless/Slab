@@ -178,9 +178,13 @@ local function IsSizerEnabled(Instance, Sizer)
 	return false
 end
 
-local function UpdateSize(Instance)
-	if Instance ~= nil and Instance.AllowResize and not Instance.IsObstructed then
+local function UpdateSize(Instance, IsObstructed)
+	if Instance ~= nil and Instance.AllowResize then
 		if Region.IsHoverScrollBar(Instance.Id) then
+			return
+		end
+
+		if Instance.SizerType == SizerType.None and IsObstructed then
 			return
 		end
 
@@ -426,14 +430,14 @@ function Window.Begin(Id, Options)
 		ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
 	end
 
-	UpdateSize(ActiveInstance)
-	UpdateTitleBar(ActiveInstance)
-
 	local MouseX, MouseY = Mouse.Position()
 	local IsObstructed = Window.IsObstructed(MouseX, MouseY)
 	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed then
 		PushToTop(ActiveInstance)
 	end
+
+	UpdateSize(ActiveInstance, IsObstructed)
+	UpdateTitleBar(ActiveInstance)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 

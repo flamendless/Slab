@@ -48,8 +48,6 @@ SlabDebug: Show image stats.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
-Window: Cache obstructed window for all future calls.
-Window: Check sizers for window obstruction.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Column support.
