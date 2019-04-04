@@ -32,10 +32,10 @@ local Layout = {}
 function Layout.AlignRight(W)
 	local X, Y = Cursor.GetPosition()
 	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	local ContentW, ContentH = Window.GetContentSize()
+	local ContentW, ContentH = Window.GetBorderlessSize()
 
 	local Offset = WinX + WinW
-	local RightPad = Window.GetBorder() * 2.0
+	local RightPad = Window.GetBorder()
 
 	if ContentW > WinW then
 		Offset = WinX + ContentW

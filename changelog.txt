@@ -17,7 +17,6 @@ BUGS
 
 TODO
 ==========
-Button: Expand to fit width of window.
 Color Picker: Initial implementation.
 Combo Box: Highlight input box when mouse is hovered.
 Combo Box: Easy API with table of possible values.

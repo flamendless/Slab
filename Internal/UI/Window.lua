@@ -542,6 +542,24 @@ function Window.GetContentSize()
 	return 0.0, 0.0
 end
 
+--[[
+	This function is used to help other controls retrieve the available real estate needed to expand their
+	bounds without expanding the bounds of the window by removing borders.
+--]]
+function Window.GetBorderlessSize()
+	local W, H = 0.0, 0.0
+
+	if ActiveInstance ~= nil then
+		W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
+		H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
+
+		W = math.max(0.0, W - ActiveInstance.Border * 2.0)
+		H = math.max(0.0, H - ActiveInstance.Border * 2.0)
+	end
+
+	return W, H
+end
+
 function Window.IsMenuBar()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.IsMenuBar
@@ -573,16 +591,16 @@ function Window.AddItem(X, Y, W, H, Id)
 		ActiveInstance.LastItem = Id
 		if Region.IsActive(ActiveInstance.Id) then
 			if ActiveInstance.AutoSizeWindowW then
-				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W + ActiveInstance.Border - ActiveInstance.X)
+				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
 			end
 
 			if ActiveInstance.AutoSizeWindowH then
-				ActiveInstance.SizeDeltaY = math.max(ActiveInstance.SizeDeltaY, Y + H + ActiveInstance.Border - ActiveInstance.Y)
+				ActiveInstance.SizeDeltaY = math.max(ActiveInstance.SizeDeltaY, Y + H - ActiveInstance.Y)
 			end
 
 			if ActiveInstance.AutoSizeContent then
-				ActiveInstance.DeltaContentW = math.max(ActiveInstance.DeltaContentW, X + W + ActiveInstance.Border - ActiveInstance.X)
-				ActiveInstance.DeltaContentH = math.max(ActiveInstance.DeltaContentH, Y + H + ActiveInstance.Border - ActiveInstance.Y)
+				ActiveInstance.DeltaContentW = math.max(ActiveInstance.DeltaContentW, X + W - ActiveInstance.X)
+				ActiveInstance.DeltaContentH = math.max(ActiveInstance.DeltaContentH, Y + H - ActiveInstance.Y)
 			end
 		else
 			Region.AddItem(X, Y, W, H)

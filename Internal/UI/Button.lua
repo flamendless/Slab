@@ -42,12 +42,18 @@ function Button.Begin(Label, Options)
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
+	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
 
 	local Id = Window.GetItemId(Label)
 	local X, Y = Cursor.GetPosition()
 	local W, H = Button.GetSize(Label)
 	local LabelW = Style.Font:getWidth(Label)
 	local FontHeight = Style.Font:getHeight()
+
+	if Options.ExpandW then
+		local RegionW, RegionH = Window.GetBorderlessSize()
+		W = RegionW
+	end
 
 	if Options.AlignRight then
 		X = Layout.AlignRight(W)
