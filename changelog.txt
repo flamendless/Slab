@@ -38,7 +38,6 @@ Region: Clamp position check with owning window's size.
 Region: Only allow wheel move on the hovered region with child regions within a window.
 Scroll Bar: Scroll bar is moved when obstructed by other window.
 Scroll Bar: Interact with scroll bar on click instead of drag.
-Scroll Bar: Only render scroll bar in child region of window if one is active.
 SlabDebug: Show frame stats.
 SlabDebug: Show draw time.
 SlabDebug: Show update time.

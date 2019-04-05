@@ -39,6 +39,7 @@ local ScrollBarSize = 10.0
 local WheelX = 0.0
 local WheelY = 0.0
 local WheelSpeed = 3.0
+local HotInstance = nil
 
 local function GetXScrollSize(Instance)
 	if Instance ~= nil then
@@ -101,6 +102,7 @@ local function UpdateScrollBars(Instance, IsObstructed)
 	local DeltaX, DeltaY = Mouse.GetDelta()
 
 	if not IsObstructed and Contains(Instance, X, Y) or Instance.HoverScrollX or Instance.HoverScrollY then
+		HotInstance = Instance
 		Instance.ScrollAlphaX = 1.0
 		Instance.ScrollAlphaY = 1.0
 
@@ -181,6 +183,11 @@ end
 local function DrawScrollBars(Instance)
 	if not Instance.HasScrollX and not Instance.HasScrollY then
 		return
+	end
+
+	if HotInstance ~= Instance then
+		Instance.ScrollAlphaX = 0.0
+		Instance.ScrollAlphaY = 0.0
 	end
 
 	if Instance.HasScrollX then
