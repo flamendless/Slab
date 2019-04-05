@@ -64,6 +64,7 @@ function ComboBox.Begin(Id, Options)
 	local W = Options.W
 	local H = Style.Font:getHeight()
 	local Radius = H * 0.35
+	local InputBgColor = Style.ComboBoxColor
 
 	Instance.X = X
 	Instance.Y = Y
@@ -85,9 +86,7 @@ function ComboBox.Begin(Id, Options)
 	if not IsObstructed and X <= MouseX and MouseX <= X + W + DropDownW and Y <= MouseY and MouseY <= Y + H then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
-	end
-
-	if not IsObstructed and DropDownX <= MouseX and MouseX <= DropDownX + DropDownW and Y <= MouseY and MouseY <= Y + H then
+		InputBgColor = Style.ComboBoxHoveredColor
 		DropDownColor = Style.ComboBoxDropDownHoveredColor
 
 		if MouseClicked then
@@ -99,7 +98,7 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H})
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H, BgColor = InputBgColor})
 
 	Cursor.SameLine()
 

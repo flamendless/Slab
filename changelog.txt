@@ -18,9 +18,7 @@ BUGS
 TODO
 ==========
 Color Picker: Initial implementation.
-Combo Box: Highlight input box when mouse is hovered.
 Combo Box: Easy API with table of possible values.
-Combo Box: User should be able to open by clicking input box.
 Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
