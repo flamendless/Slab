@@ -35,9 +35,9 @@ License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
-Region: Only allow wheel move on the hovered region with child regions within a window.
 Scroll Bar: Scroll bar is moved when obstructed by other window.
 Scroll Bar: Interact with scroll bar on click instead of drag.
+[Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 SlabDebug: Show frame stats.
 SlabDebug: Show draw time.
 SlabDebug: Show update time.

@@ -40,6 +40,7 @@ local WheelX = 0.0
 local WheelY = 0.0
 local WheelSpeed = 3.0
 local HotInstance = nil
+local WheelInsance = nil
 
 local function GetXScrollSize(Instance)
 	if Instance ~= nil then
@@ -101,30 +102,39 @@ local function UpdateScrollBars(Instance, IsObstructed)
 
 	local DeltaX, DeltaY = Mouse.GetDelta()
 
-	if not IsObstructed and Contains(Instance, X, Y) or Instance.HoverScrollX or Instance.HoverScrollY then
-		HotInstance = Instance
+	if not IsObstructed and Contains(Instance, X, Y) or (Instance.HoverScrollX or Instance.HoverScrollY) then
 		Instance.ScrollAlphaX = 1.0
 		Instance.ScrollAlphaY = 1.0
 
-		if WheelX ~= 0.0 then
-			Instance.ScrollPosX = Instance.ScrollPosX + WheelX
-			Instance.IsScrollingX = true
-			IsMouseDragging = true
-			IsMouseReleased = true
-			WheelX = 0.0
+		if WheelInsance == Instance then
+			if WheelX ~= 0.0 then
+				Instance.ScrollPosX = Instance.ScrollPosX + WheelX
+				Instance.IsScrollingX = true
+				IsMouseDragging = true
+				IsMouseReleased = true
+				WheelX = 0.0
+			end
+
+			if WheelY ~= 0.0 then
+				Instance.ScrollPosY = Instance.ScrollPosY - WheelY
+				Instance.IsScrollingY = true
+				IsMouseDragging = true
+				IsMouseReleased = true
+				WheelY = 0.0
+			end
+
+			WheelInsance = nil
 		end
 
-		if WheelY ~= 0.0 then
-			Instance.ScrollPosY = Instance.ScrollPosY - WheelY
-			Instance.IsScrollingY = true
-			IsMouseDragging = true
-			IsMouseReleased = true
-			WheelY = 0.0
-		end
+		HotInstance = Instance
 	else
 		local dt = love.timer.getDelta()
 		Instance.ScrollAlphaX = math.max(Instance.ScrollAlphaX - dt, 0.0)
 		Instance.ScrollAlphaY = math.max(Instance.ScrollAlphaY - dt, 0.0)
+	end
+
+	if HotInstance == Instance and not Contains(Instance, X, Y) then
+		HotInstance = nil
 	end
 
 	if Instance.HasScrollX then
@@ -310,6 +320,10 @@ function Region.End()
 	DrawCommands.TransformPop()
 	DrawScrollBars(ActiveInstance)
 
+	if HotInstance == ActiveInstance and WheelInsance == nil and (WheelX ~= 0.0 or WheelY ~= 0.0) then
+		WheelInsance = ActiveInstance
+	end
+
 	if ActiveInstance.Intersect then
 		DrawCommands.IntersectScissor()
 	else
@@ -424,6 +438,14 @@ end
 function Region.WheelMoved(X, Y)
 	WheelX = X * WheelSpeed
 	WheelY = Y * WheelSpeed
+end
+
+function Region.GetHotInstanceId()
+	if HotInstance ~= nil then
+		return HotInstance.Id
+	end
+
+	return ''
 end
 
 return Region

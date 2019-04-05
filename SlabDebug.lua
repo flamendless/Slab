@@ -27,6 +27,7 @@ SOFTWARE.
 local Slab = require('Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -103,6 +104,8 @@ function SlabDebug.Mouse()
 	for I = 1, 3, 1 do
 		Slab.Text("Button " .. I .. ": " .. (Mouse.IsPressed(I) and "Pressed" or "Released"))
 	end
+
+	Slab.Text("Hot Region: " .. Region.GetHotInstanceId())
 	Slab.EndWindow()
 end
 
