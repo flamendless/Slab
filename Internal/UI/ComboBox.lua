@@ -65,16 +65,17 @@ function ComboBox.Begin(Id, Options)
 	local H = Style.Font:getHeight()
 	local Radius = H * 0.35
 	local InputBgColor = Style.ComboBoxColor
+	local DropDownX = X + W
+	local DropDownW = Radius * 4.0
+	local DropDownColor = Style.ComboBoxDropDownColor
+
+	W = W + DropDownW
 
 	Instance.X = X
 	Instance.Y = Y
 	Instance.W = W
 	Instance.H = H
 	Instance.WinH = math.min(Instance.WinH, Options.WinH)
-
-	local DropDownX = X + W
-	local DropDownW = Radius * 4.0
-	local DropDownColor = Style.ComboBoxDropDownColor
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	local MouseClicked = Mouse.IsClicked(1)
@@ -83,7 +84,7 @@ function ComboBox.Begin(Id, Options)
 
 	local IsObstructed = Window.IsObstructedAtMouse()
 
-	if not IsObstructed and X <= MouseX and MouseX <= X + W + DropDownW and Y <= MouseY and MouseY <= Y + H then
+	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
 		InputBgColor = Style.ComboBoxHoveredColor
@@ -102,13 +103,13 @@ function ComboBox.Begin(Id, Options)
 
 	Cursor.SameLine()
 
-	DrawCommands.Rectangle('fill', X + W, Y, Radius * 4.0, H, DropDownColor)
-	DrawCommands.Triangle('fill', X + W + Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
+	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor)
+	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
 
-	Window.AddItem(X, Y, W + DropDownW, H, WinItemId)
+	Window.AddItem(X, Y, W, H, WinItemId)
 
 	if Instance.IsOpen then
 		Window.Begin(Id .. '_combobox',
@@ -135,6 +136,7 @@ function ComboBox.End()
 	local H = 0.0
 
 	if Active ~= nil then
+		Cursor.SetItemBounds(Active.X, Active.Y, Active.W, Active.H)
 		Y, H = Active.Y, Active.H
 		local ContentW, ContentH = Window.GetContentSize()
 		Active.WinH = ContentH

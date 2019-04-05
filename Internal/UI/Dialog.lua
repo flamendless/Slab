@@ -45,6 +45,7 @@ local ActiveInstance = nil
 local Stack = {}
 local InstanceStack = {}
 local FileDialog_AskOverwrite = false
+local FilterW = 0.0
 
 local function ValidateSaveFile(Files, Extension)
 	if Extension == nil or Extension == "" then
@@ -508,9 +509,8 @@ function Dialog.FileDialog(Options)
 		end
 		ListBox.End()
 
-		local FilterW = 150.0
 		local ListBoxX, ListBoxY, ListBoxW, ListBoxH = Cursor.GetItemBounds()
-		local InputW = ListBoxX + ListBoxW - PrevAnchorX - FilterW
+		local InputW = ListBoxX + ListBoxW - PrevAnchorX - FilterW - Cursor.PadX()
 
 		Cursor.SetAnchorX(PrevAnchorX)
 		Cursor.SetX(PrevAnchorX)
@@ -524,7 +524,7 @@ function Dialog.FileDialog(Options)
 		Cursor.SameLine()
 
 		local Filter, Desc = GetFilter(ActiveInstance)
-		if ComboBox.Begin('FileDialog_Filter', {W = FilterW, Selected = Filter .. " " .. Desc}) then
+		if ComboBox.Begin('FileDialog_Filter', {Selected = Filter .. " " .. Desc}) then
 			for I, V in ipairs(ActiveInstance.Filters) do
 				Filter, Desc = GetFilter(ActiveInstance, I)
 				if Text.Begin(Filter .. " " .. Desc, {IsSelectable = true}) then
@@ -535,6 +535,9 @@ function Dialog.FileDialog(Options)
 
 			ComboBox.End()
 		end
+
+		local FilterCBX, FilterCBY, FilterCBW, FilterCBH = Cursor.GetItemBounds()
+		FilterW = FilterCBW
 
 		Cursor.SetRelativeY(H - ButtonH - Cursor.PadY())
 		if Button.Begin("Cancel", {AlignRight = true}) then

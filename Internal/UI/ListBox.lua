@@ -77,13 +77,14 @@ function ListBox.Begin(Id, Options)
 	local Instance = GetInstance(Window.GetItemId(Id))
 	local WinX, WinY, WinW, WinH = Window.GetBounds()
 	local X, Y = Cursor.GetPosition()
+	local ContentW, ContentH = Window.GetBorderlessSize()
 
 	if Options.W == nil then
-		Options.W = math.max(0.0, WinW - (X - WinX) - Window.GetBorder() * 2.0)
+		Options.W = math.max(0.0, ContentW - (X - WinX))
 	end
 
 	if Options.H == 0.0 then
-		Options.H = math.max(0.0, WinH - (Y - WinH) - Window.GetBorder() * 2.0)
+		Options.H = math.max(0.0, ContentH - (Y - WinY))
 	end
 
 	local W = Options.W
