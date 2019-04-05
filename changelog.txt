@@ -21,8 +21,10 @@ Color Picker: Initial implementation.
 Combo Box: Easy API with table of possible values.
 Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
+[Date Time]: Initial implementation for a date/time control.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
+[Dock]: Initial implementation of docking.
 Draw Commands: Add rectangle rounding.
 [Draw Commands]: Remove dependency on Style.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
@@ -35,9 +37,8 @@ License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
-Scroll Bar: Scroll bar is moved when obstructed by other window.
-Scroll Bar: Interact with scroll bar on click instead of drag.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
+[Scroll Bar]: Focus owning window if scroll bar is clicked.
 SlabDebug: Show frame stats.
 SlabDebug: Show draw time.
 SlabDebug: Show update time.
@@ -45,6 +46,7 @@ SlabDebug: Show image stats.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
+[Tab]: Initial implementation of a container holding Window instances with tabs for each.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Column support.

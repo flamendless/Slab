@@ -41,6 +41,7 @@ local WheelY = 0.0
 local WheelSpeed = 3.0
 local HotInstance = nil
 local WheelInsance = nil
+local ScrollInstance = nil
 
 local function GetXScrollSize(Instance)
 	if Instance ~= nil then
@@ -97,61 +98,68 @@ local function UpdateScrollBars(Instance, IsObstructed)
 	local XSize = Instance.W - GetXScrollSize(Instance)
 	local YSize = Instance.H - GetYScrollSize(Instance)
 
-	local IsMouseDragging = Mouse.IsDragging(1)
+	if IsObstructed then
+		Instance.HoverScrollX = false
+		Instance.HoverScrollY = false
+	end
+
+	local IsMousePressed = Mouse.IsPressed(1)
 	local IsMouseReleased = Mouse.IsReleased(1)
 
 	local DeltaX, DeltaY = Mouse.GetDelta()
 
 	if not IsObstructed and Contains(Instance, X, Y) or (Instance.HoverScrollX or Instance.HoverScrollY) then
-		Instance.ScrollAlphaX = 1.0
-		Instance.ScrollAlphaY = 1.0
-
 		if WheelInsance == Instance then
 			if WheelX ~= 0.0 then
-				Instance.ScrollPosX = Instance.ScrollPosX + WheelX
+				Instance.ScrollPosX = math.max(Instance.ScrollPosX + WheelX, 0.0)
 				Instance.IsScrollingX = true
-				IsMouseDragging = true
 				IsMouseReleased = true
 				WheelX = 0.0
 			end
 
 			if WheelY ~= 0.0 then
-				Instance.ScrollPosY = Instance.ScrollPosY - WheelY
+				Instance.ScrollPosY = math.max(Instance.ScrollPosY - WheelY, 0.0)
 				Instance.IsScrollingY = true
-				IsMouseDragging = true
 				IsMouseReleased = true
 				WheelY = 0.0
 			end
 
 			WheelInsance = nil
+			ScrollInstance = Instance
 		end
 
-		HotInstance = Instance
-	else
-		local dt = love.timer.getDelta()
-		Instance.ScrollAlphaX = math.max(Instance.ScrollAlphaX - dt, 0.0)
-		Instance.ScrollAlphaY = math.max(Instance.ScrollAlphaY - dt, 0.0)
+		if ScrollInstance == nil and IsMousePressed and (Instance.HoverScrollX or Instance.HoverScrollY) then
+			ScrollInstance = Instance
+			ScrollInstance.IsScrollingX = Instance.HoverScrollX
+			ScrollInstance.IsScrollingY = Instance.HoverScrollY
+		end
+
+		if ScrollInstance == nil then
+			HotInstance = Instance
+		else
+			HotInstance = ScrollInstance
+		end
 	end
 
 	if HotInstance == Instance and not Contains(Instance, X, Y) then
 		HotInstance = nil
 	end
 
+	if ScrollInstance == Instance and IsMouseReleased then
+		Instance.IsScrollingX = false
+		Instance.IsScrollingY = false
+		ScrollInstance = nil
+	end
+
 	if Instance.HasScrollX then
 		if Instance.HasScrollY then
 			XSize = XSize - ScrollBarSize - ScrollPad
 		end
-		if Instance.HoverScrollX or Instance.IsScrollingX then
+		if ScrollInstance == Instance then
 			MenuState.RequestClose = false
 
-			if IsMouseDragging then
-				Instance.IsScrollingX = true
-
+			if Instance.IsScrollingX then
 				Instance.ScrollPosX = math.max(Instance.ScrollPosX + DeltaX, 0.0)
-			end
-
-			if Instance.IsScrollingX and IsMouseReleased then
-				Instance.IsScrollingX = false
 			end
 		end
 		Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
@@ -161,17 +169,11 @@ local function UpdateScrollBars(Instance, IsObstructed)
 		if Instance.HasScrollX then
 			YSize = YSize - ScrollBarSize - ScrollPad
 		end
-		if Instance.HoverScrollY or Instance.IsScrollingY then
+		if ScrollInstance == Instance then
 			MenuState.RequestClose = false
 
-			if IsMouseDragging then
-				Instance.IsScrollingY = true
-				
+			if Instance.IsScrollingY then
 				Instance.ScrollPosY = math.max(Instance.ScrollPosY + DeltaY, 0.0)
-			end
-
-			if Instance.IsScrollingY and IsMouseReleased then
-				Instance.IsScrollingY = false
 			end
 		end
 		Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
@@ -195,9 +197,13 @@ local function DrawScrollBars(Instance)
 		return
 	end
 
-	if HotInstance ~= Instance then
-		Instance.ScrollAlphaX = 0.0
-		Instance.ScrollAlphaY = 0.0
+	if HotInstance ~= Instance and ScrollInstance ~= Instance then
+		local dt = love.timer.getDelta()
+		Instance.ScrollAlphaX = math.max(Instance.ScrollAlphaX - dt, 0.0)
+		Instance.ScrollAlphaY = math.max(Instance.ScrollAlphaY - dt, 0.0)
+	else
+		Instance.ScrollAlphaX = 1.0
+		Instance.ScrollAlphaY = 1.0
 	end
 
 	if Instance.HasScrollX then
@@ -438,6 +444,10 @@ end
 function Region.WheelMoved(X, Y)
 	WheelX = X * WheelSpeed
 	WheelY = Y * WheelSpeed
+end
+
+function Region.IsScrolling()
+	return ScrollInstance ~= nil
 end
 
 function Region.GetHotInstanceId()

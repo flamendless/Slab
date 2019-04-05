@@ -282,6 +282,10 @@ function Window.Top()
 end
 
 function Window.IsObstructed(X, Y)
+	if Region.IsScrolling() then
+		return true
+	end
+
 	if ActiveInstance ~= nil then
 		local FoundStackLock = false
 
