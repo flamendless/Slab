@@ -119,6 +119,15 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			CloseDialog
 			MessageBox
 			FileDialog
+
+		Mouse:
+			IsMouseDown
+			IsMouseClicked
+			IsMouseReleased
+			IsMouseDoubleClicked
+			IsMouseDragging
+			GetMousePosition
+			GetMouseDelta
 --]]
 local Slab = {}
 
@@ -1058,6 +1067,93 @@ end
 --]]
 function Slab.FileDialog(Options)
 	return Dialog.FileDialog(Options)
+end
+
+--[[
+	IsMouseDown
+
+	Determines if a given mouse button is down.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the given button is down. False otherwise.
+--]]
+function Slab.IsMouseDown(Button)
+	return Mouse.IsPressed(Button and Button or 1)
+end
+
+--[[
+	IsMouseClicked
+
+	Determines if a given mouse button changes state from up to down this frame.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the given button changes state from up to down. False otherwise.
+--]]
+function Slab.IsMouseClicked(Button)
+	return Mouse.IsClicked(Button and Button or 1)
+end
+
+--[[
+	IsMouseReleased
+
+	Determines if a given mouse button changes state from down to up this frame.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the given button changes state from down to up. False otherwise.
+--]]
+function Slab.IsMouseReleased(Button)
+	return Mouse.IsReleased(Button and Button or 1)
+end
+
+--[[
+	IsMouseDoubleClicked
+
+	Determines if a given mouse button has been clicked twice within a given time frame.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the given button was double clicked. False otherwise.
+--]]
+function Slab.IsMouseDoubleClicked(Button)
+	return Mouse.IsDoubleClicked(Button and Button or 1)
+end
+
+--[[
+	IsMouseDragging
+
+	Determines if a given mouse button is down and there has been movement.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the button is held down and is moving. False otherwise.
+--]]
+function Slab.IsMouseDragging(Button)
+	return Mouse.IsDragging(Button and Button or 1)
+end
+
+--[[
+	GetMousePosition
+
+	Retrieves the current mouse position in the viewport.
+
+	Return: [Number], [Number] The X and Y coordinates of the mouse position.
+--]]
+function Slab.GetMousePosition()
+	return Mouse.Position()
+end
+
+--[[
+	GetMouseDelta
+
+	Retrieves the change in mouse coordinates from the last frame.
+
+	Return: [Number], [Number] The X and Y coordinates of the delta from the last frame.
+--]]
+function Slab.GetMouseDelta()
+	return Mouse.GetDelta()
 end
 
 return Slab

@@ -7,6 +7,7 @@ v0.3.0 RELEASE
 [API]: Update version number.
 [Button]: ExpandW documentation.
 [Controls]: Rounding documentation.
+[Mouse]: API documentation.
 
 BUGS
 ==========
@@ -18,6 +19,9 @@ BUGS
 
 TODO
 ==========
+[API]: Expose Keyboard functions.
+[API]: Expose Draw Command functions.
+[Button]: Invisible button support.
 Color Picker: Initial implementation.
 Combo Box: Easy API with table of possible values.
 Context Menu: Investigate checking hot item and last item of window.
