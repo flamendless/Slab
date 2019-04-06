@@ -299,6 +299,7 @@ function Input.Begin(Id, Options)
 	Options.H = Options.H == nil and nil or Options.H
 	Options.ReadOnly = Options.ReadOnly == nil and false or Options.ReadOnly
 	Options.Align = Options.Align == nil and 'center' or Options.Align
+	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
 
 	local Instance = GetInstance(Window.GetId() .. "." .. Id)
 	Instance.NumbersOnly = Options.NumbersOnly
@@ -478,7 +479,8 @@ function Input.Begin(Id, Options)
 		SX = TX,
 		SY = TY,
 		Intersect = true,
-		IgnoreScroll = true
+		IgnoreScroll = true,
+		Rounding = Options.Rounding
 	})
 	if Instance == Focused then
 		DrawSelection(Instance, X, Y, W, H, Options.SelectColor)

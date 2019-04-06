@@ -354,6 +354,7 @@ function Window.Begin(Id, Options)
 	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
+	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 
 	local Instance = GetInstance(Id)
 	table.insert(PendingStack, 1, Instance)
@@ -455,8 +456,8 @@ function Window.Begin(Id, Options)
 		if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
 		end
-		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor)
-		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY)
+		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, Options.Rounding)
+		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, Options.Rounding)
 		DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY)
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
 	end
@@ -472,7 +473,8 @@ function Window.Begin(Id, Options)
 		IsObstructed = IsObstructed,
 		MouseX = MouseX,
 		MouseY = MouseY,
-		ResetContent = ActiveInstance.HasResized
+		ResetContent = ActiveInstance.HasResized,
+		Rounding = Options.Rounding
 	})
 end
 

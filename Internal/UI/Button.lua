@@ -43,6 +43,7 @@ function Button.Begin(Label, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
 	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
+	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
 
 	local Id = Window.GetItemId(Label)
 	local X, Y = Cursor.GetPosition()
@@ -84,7 +85,7 @@ function Button.Begin(Label, Options)
 
 	local LabelX = X + (W * 0.5) - (LabelW * 0.5)
 
-	DrawCommands.Rectangle('fill', X, Y, W, H, Color)
+	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
 	DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5))
 
 	Cursor.SetItemBounds(X, Y, W, H)

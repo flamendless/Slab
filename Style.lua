@@ -55,7 +55,14 @@ local Style =
 	InputBgColor = {0.4, 0.4, 0.4, 1.0},
 	InputEditBgColor = {0.5, 0.5, 0.5, 1.0},
 	InputSelectColor = {0.14, 0.29, 0.53, 0.4},
-	TooltipBgColor = {0.4, 0.4, 0.4, 1.0}
+	TooltipBgColor = {0.4, 0.4, 0.4, 1.0},
+
+	WindowRounding = 2.0,
+	ButtonRounding = 2.0,
+	CheckBoxRounding = 2.0,
+	ComboBoxRounding = 2.0,
+	InputBgRounding = 2.0,
+	ScrollBarRounding = 2.0
 }
 
 function Style.Initialize()

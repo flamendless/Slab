@@ -80,7 +80,7 @@ end
 
 local function DrawRect(Rect)
 	love.graphics.setColor(Rect.Color)
-	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height)
+	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
 end
 
 local function GetTriangleVertices(X, Y, Radius, Direction)
@@ -294,7 +294,7 @@ function DrawCommands.SetLayer(Layer)
 	end
 end
 
-function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color)
+function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius)
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.Rect
@@ -304,6 +304,7 @@ function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color)
 	Item.Width = Width
 	Item.Height = Height
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
+	Item.Radius = Radius and Radius or 0.0
 	table.insert(ActiveBatch.Elements, Item)
 end
 

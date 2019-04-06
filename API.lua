@@ -279,6 +279,7 @@ end
 		SizerFilter: [Table] Specifies what sizers are enabled for the window. If nothing is specified, all sizers are available. The values can
 			be: NW, NE, SW, SE, N, S, E, W
 		CanObstruct: [Boolean] Sets whether this window is considered for obstruction of other windows and their controls. The default value is true.
+		Rounding: [Number] Amount of rounding to apply to the corners of the window.
 
 	Return: None
 --]]
@@ -523,6 +524,8 @@ end
 	Options: [Table] List of options for how this button will behave.
 		Tooltip: [String] The tooltip to display when the user hovers over this button.
 		AlignRight: [Boolean] Flag to push this button to the right side of the window.
+		ExpandW: [Boolean] Expands the button to fit the contents of the window.
+		Rounding: [Number] Amount of rounding to apply to the corners of the button.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
@@ -604,6 +607,7 @@ end
 	Options: [Table] List of options for how this check box will behave.
 		Tooltip: [String] Text to be displayed if the user hovers over the check box.
 		Id: [String] An optional Id that can be supplied by the user. By default, the Id will be the label.
+		Rounding: [Number] Amount of rounding to apply to the corners of the check box.
 
 	Return: [Boolean] Returns true if the user clicks within the check box.
 --]]
@@ -643,6 +647,7 @@ end
 		Align: [String] Aligns the text within the input box. Options are:
 			left: Aligns the text to the left. This will be set when this Input is focused.
 			center: Aligns the text in the center. This is the default for when the text is not focused.
+		Rounding: [Number] Amount of rounding to apply to the corners of the input box.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
@@ -728,6 +733,7 @@ end
 		Tooltip: [String] Text that is rendered when the user hovers over this combo box.
 		Selected: [String] Text that is displayed in the non-editable input box for this combo box.
 		W: [Number] The width of the combo box. The default value is 150.0.
+		Rounding: [Number] Amount of rounding to apply to the corners of the combo box.
 
 	Return: [Boolean] This function will return true if the combo box is open.
 --]]
@@ -888,6 +894,7 @@ end
 			the list box will stretch to the height of the window.
 		Clear: [Boolean] Clears out the items in the list. It is recommended to only call this if the list items
 			has changed and should not be set to true on every frame.
+		Rounding: [Number] Amount of rounding to apply to the corners of the list box.
 
 	Return: None.
 --]]

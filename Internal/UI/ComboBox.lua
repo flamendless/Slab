@@ -57,6 +57,7 @@ function ComboBox.Begin(Id, Options)
 	Options.W = Options.W == nil and MIN_WIDTH or Options.W
 	Options.WinH = Options.WinH == nil and MIN_HEIGHT or Options.WinH
 	Options.Selected = Options.Selected == nil and "" or Options.Selected
+	Options.Rounding = Options.Rounding == nil and Style.ComboBoxRounding or Options.Rounding
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -99,11 +100,11 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H, BgColor = InputBgColor})
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H, BgColor = InputBgColor, Rounding = Options.Rounding})
 
 	Cursor.SameLine()
 
-	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor)
+	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor, Options.Rounding)
 	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)

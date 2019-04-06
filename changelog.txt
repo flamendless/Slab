@@ -4,7 +4,9 @@ CC0 - license for UI image.
 
 v0.3.0 RELEASE
 ==========
-Update version number.
+[API]: Update version number.
+[Button]: ExpandW documentation.
+[Controls]: Rounding documentation.
 
 BUGS
 ==========
@@ -24,7 +26,6 @@ Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
-Draw Commands: Add rectangle rounding.
 [Draw Commands]: Remove dependency on Style.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.

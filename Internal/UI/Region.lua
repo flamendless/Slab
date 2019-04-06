@@ -214,7 +214,7 @@ local function DrawScrollBars(Instance)
 		end
 		Color[4] = Instance.ScrollAlphaX
 		local XPos = Instance.ScrollPosX
-		DrawCommands.Rectangle('fill', Instance.X + XPos, Instance.Y + Instance.H - ScrollPad - ScrollBarSize, XSize, ScrollBarSize, Color)
+		DrawCommands.Rectangle('fill', Instance.X + XPos, Instance.Y + Instance.H - ScrollPad - ScrollBarSize, XSize, ScrollBarSize, Color, Style.ScrollBarRounding)
 	end
 
 	if Instance.HasScrollY then
@@ -225,7 +225,7 @@ local function DrawScrollBars(Instance)
 		end
 		Color[4] = Instance.ScrollAlphaY
 		local YPos = Instance.ScrollPosY
-		DrawCommands.Rectangle('fill', Instance.X + Instance.W - ScrollPad - ScrollBarSize, Instance.Y + YPos, ScrollBarSize, YSize, Color)
+		DrawCommands.Rectangle('fill', Instance.X + Instance.W - ScrollPad - ScrollBarSize, Instance.Y + YPos, ScrollBarSize, YSize, Color, Style.ScrollBarRounding)
 	end
 end
 
@@ -283,6 +283,7 @@ function Region.Begin(Id, Options)
 	Options.MouseX = Options.MouseX == nil and 0.0 or Options.MouseX
 	Options.MouseY = Options.MouseY == nil and 0.0 or Options.MouseY
 	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
+	Options.Rounding = Options.Rounding == nil and 0.0 or Options.Rounding
 
 	local Instance = GetInstance(Id)
 	Instance.X = Options.X
@@ -312,10 +313,10 @@ function Region.Begin(Id, Options)
 	UpdateScrollBars(Instance, Options.IsObstructed)
 
 	if not Options.NoBackground then
-		DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor)
+		DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)
 	end
 	if not Options.NoOutline then
-		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H)
+		DrawCommands.Rectangle('line', Instance.X, Instance.Y, Instance.W, Instance.H, nil, Options.Rounding)
 	end
 	DrawCommands.TransformPush()
 	DrawCommands.ApplyTransform(Instance.Transform)

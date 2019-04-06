@@ -40,6 +40,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.Id = Options.Id == nil and Label or Options.Id
+	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
 
 	local Id = Window.GetItemId(Options.Id and Options.Id or 'CheckBox')
 	local X, Y = Cursor.GetPosition()
@@ -62,7 +63,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 		end
 	end
 
-	DrawCommands.Rectangle('fill', X, Y, W, H, Color)
+	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
 	if Enabled then
 		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0)
 	end

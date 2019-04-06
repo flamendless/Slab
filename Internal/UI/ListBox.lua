@@ -73,6 +73,7 @@ function ListBox.Begin(Id, Options)
 	Options = Options == nil and {} or Options
 	Options.H = Options.H == nil and 150.0 or Options.H
 	Options.Clear = Options.Clear == nil and false or Options.Clear
+	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 
 	local Instance = GetInstance(Window.GetItemId(Id))
 	local WinX, WinY, WinW, WinH = Window.GetBounds()
@@ -117,7 +118,8 @@ function ListBox.Begin(Id, Options)
 		MouseX = MouseX,
 		MouseY = MouseY,
 		ResetContent = Window.HasResized(),
-		IsObstructed = IsObstructed
+		IsObstructed = IsObstructed,
+		Rounding = Options.Rounding
 	})
 
 	Instance.HotItem = nil

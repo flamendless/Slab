@@ -34,6 +34,7 @@ local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
 local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
@@ -483,7 +484,8 @@ function Dialog.FileDialog(Options)
 			Intersect = true,
 			MouseX = MouseX,
 			MouseY = MouseY,
-			IsObstructed = Window.IsObstructedAtMouse()
+			IsObstructed = Window.IsObstructedAtMouse(),
+			Rounding = Style.WindowRounding
 		})
 
 		Cursor.AdvanceX(0.0)
