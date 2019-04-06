@@ -8,7 +8,6 @@ Update version number.
 
 BUGS
 ==========
-[Button]: Right align not taking into account window border.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
@@ -43,6 +42,7 @@ SlabDebug: Show frame stats.
 SlabDebug: Show draw time.
 SlabDebug: Show update time.
 SlabDebug: Show image stats.
+[Slab Debug]: Style editor.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
