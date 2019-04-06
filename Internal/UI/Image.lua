@@ -96,6 +96,7 @@ function Image.Begin(Id, Options)
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Result = Options.ReturnOnHover
 		Tooltip.Begin(Options.Tooltip)
+		Window.SetHotItem(WinItemId)
 
 		if Mouse.IsReleased(1) and Options.ReturnOnClick then
 			Result = true

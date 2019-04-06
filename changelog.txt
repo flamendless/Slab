@@ -8,6 +8,7 @@ v0.3.0 RELEASE
 [Button]: ExpandW documentation.
 [Controls]: Rounding documentation.
 [Mouse]: API documentation.
+[Control]: API documentation.
 
 BUGS
 ==========
@@ -16,6 +17,7 @@ BUGS
 [List Box]: Window not properly auto-sized.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
+[Window]: Focused window flickers between multiple windows sometimes.
 
 TODO
 ==========
@@ -36,7 +38,6 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 Input: Double click to select word.
 Input: Multi-line input control.
 [Input]: Allow user to highlight text in read-only mode.
-Item: API for managing if an item is clicked, hovered, etc.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Radio Button: Initial implementation.
@@ -52,6 +53,7 @@ Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
+[Text]: Tooltip support.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Column support.

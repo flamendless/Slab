@@ -42,7 +42,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	Options.Id = Options.Id == nil and Label or Options.Id
 	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
 
-	local Id = Window.GetItemId(Options.Id and Options.Id or 'CheckBox')
+	local Id = Window.GetItemId(Options.Id and Options.Id or ('_' .. Label .. '_CheckBox'))
 	local X, Y = Cursor.GetPosition()
 	local W = Radius * 2.0
 	local H = Radius * 2.0
@@ -51,10 +51,9 @@ function CheckBox.Begin(Enabled, Label, Options)
 	local Color = Style.CheckBoxColor
 
 	local MouseX, MouseY = Window.GetMousePosition()
-	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+	local IsObstructed = Window.IsObstructedAtMouse()
+	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Color = Style.CheckBoxHoveredColor
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(Id)
 
 		if Mouse.IsPressed(1) then
 			Color = Style.CheckBoxPressedColor
@@ -70,9 +69,17 @@ function CheckBox.Begin(Enabled, Label, Options)
 	if Label ~= nil and Label ~= "" then
 		Cursor.AdvanceX(W + 2.0)
 		Text.Begin(Label)
+
+		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
+		W = ItemX + ItemW - X
 	else
 		Cursor.SetItemBounds(X, Y, W, H)
 		Cursor.AdvanceY(H)
+	end
+
+	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+		Tooltip.Begin(Options.Tooltip)
+		Window.SetHotItem(Id)
 	end
 
 	Window.AddItem(X, Y, W, H, Id)

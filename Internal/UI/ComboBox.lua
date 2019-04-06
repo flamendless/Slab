@@ -84,10 +84,9 @@ function ComboBox.Begin(Id, Options)
 	Instance.WasOpened = Instance.IsOpen
 
 	local IsObstructed = Window.IsObstructedAtMouse()
+	local Hovered = not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
 
-	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(WinItemId)
+	if Hovered then
 		InputBgColor = Style.ComboBoxHoveredColor
 		DropDownColor = Style.ComboBoxDropDownHoveredColor
 
@@ -109,6 +108,11 @@ function ComboBox.Begin(Id, Options)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
+
+	if Hovered then
+		Tooltip.Begin(Options.Tooltip)
+		Window.SetHotItem(WinItemId)
+	end
 
 	Window.AddItem(X, Y, W, H, WinItemId)
 

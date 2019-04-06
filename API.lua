@@ -1156,4 +1156,28 @@ function Slab.GetMouseDelta()
 	return Mouse.GetDelta()
 end
 
+--[[
+	IsControlHovered
+
+	Checks to see if the last control added to the window is hovered by the mouse.
+
+	Return: [Boolean] True if the last control is hovered, false otherwise.
+--]]
+function Slab.IsControlHovered()
+	return Window.IsItemHot()
+end
+
+--[[
+	IsControlClicked
+
+	Checks to see if the previous control is hovered and clicked.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if the previous control is hovered and clicked. False otherwise.
+--]]
+function Slab.IsControlClicked(Button)
+	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
 return Slab

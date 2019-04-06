@@ -93,19 +93,18 @@ function Tree.Begin(Id, Options)
 	end
 
 	if IsHot then
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(WinItemId)
-
 		if Mouse.IsClicked(1) and not Options.IsLeaf and Options.OpenWithHighlight then
 			Instance.IsOpen = not Instance.IsOpen
 		end
 	end
 
+	local IsExpanderClicked = false
 	if not Options.IsLeaf then
 		if not IsObstructed and X <= TMouseX and TMouseX <= X + Diameter and Y <= TMouseY and TMouseY <= Y + H then
 			if Mouse.IsClicked(1) and not Options.OpenWithHighlight then
 				Instance.IsOpen = not Instance.IsOpen
 				Window.SetHotItem(nil)
+				IsExpanderClicked = true
 			end
 		end
 
@@ -147,6 +146,14 @@ function Tree.Begin(Id, Options)
 		Cursor.SetX(Instance.X)
 	else
 		Cursor.SetX(X)
+	end
+
+	if IsHot then
+		Tooltip.Begin(Options.Tooltip)
+
+		if not IsExpanderClicked then
+			Window.SetHotItem(WinItemId)
+		end
 	end
 
 	Window.AddItem(X, Y, (WinW + WinX) - Instance.X, H, WinItemId)

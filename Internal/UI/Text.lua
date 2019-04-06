@@ -45,15 +45,22 @@ function Text.Begin(Label, Options)
 	local Color = Options.Color
 	local Result = false
 	local PadX = Options.Pad
+	local WinId = Window.GetItemId(Label)
+	local MouseX, MouseY = Window.GetMousePosition()
+
+	local IsObstructed = Window.IsObstructedAtMouse()
+
+	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+		Window.SetHotItem(WinId)
+	end
 
 	if Options.IsSelectable or Options.IsSelected then
-		local MouseX, MouseY = Window.GetMousePosition()
 		local WinX, WinY, WinW, WinH = Window.GetBounds()
 		
 		local CheckX = Options.IsSelectableTextOnly and X or WinX
 		local CheckW = Options.IsSelectableTextOnly and W or WinW
 
-		local Hovered = not Window.IsObstructedAtMouse() and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
+		local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
 
 		if Hovered or Options.IsSelected then
 			DrawCommands.Rectangle('fill', CheckX, Y, CheckW + PadX, H, Options.HoverColor)
@@ -76,7 +83,7 @@ function Text.Begin(Label, Options)
 	Cursor.AdvanceY(H)
 
 	if Options.AddItem then
-		Window.AddItem(X, Y, W + PadX, H)
+		Window.AddItem(X, Y, W + PadX, H, WinId)
 	end
 
 	return Result
