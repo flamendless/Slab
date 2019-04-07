@@ -128,6 +128,10 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			IsMouseDragging
 			GetMousePosition
 			GetMouseDelta
+
+		Control:
+			IsControlHovered
+			IsControlClicked
 --]]
 local Slab = {}
 

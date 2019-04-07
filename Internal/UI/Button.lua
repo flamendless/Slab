@@ -86,7 +86,7 @@ function Button.Begin(Label, Options)
 	local LabelX = X + (W * 0.5) - (LabelW * 0.5)
 
 	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
-	DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5))
+	DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5), nil, Style.Font)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)

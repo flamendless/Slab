@@ -15,6 +15,7 @@ BUGS
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
+[Slab Debug]: Window combo box being overlapped when initially opened.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Focused window flickers between multiple windows sometimes.
@@ -23,6 +24,7 @@ TODO
 ==========
 [API]: Expose Keyboard functions.
 [API]: Expose Draw Command functions.
+[API]: Re-organize functions in categories and update comment.
 [Button]: Invisible button support.
 Color Picker: Initial implementation.
 Combo Box: Easy API with table of possible values.
@@ -32,7 +34,6 @@ Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
-[Draw Commands]: Remove dependency on Style.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.

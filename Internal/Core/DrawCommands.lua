@@ -24,8 +24,6 @@ SOFTWARE.
 
 --]]
 
-local Style = require(SLAB_PATH .. ".Style")
-
 local DrawCommands = {}
 
 local LayerTable = {}
@@ -139,13 +137,13 @@ local function DrawCheck(Check)
 end
 
 local function DrawText(Text)
-	love.graphics.setFont(Style.Font)
+	love.graphics.setFont(Text.Font)
 	love.graphics.setColor(Text.Color)
 	love.graphics.print(Text.Text, Text.X, Text.Y)
 end
 
 local function DrawTextFormatted(Text)
-	love.graphics.setFont(Style.Font)
+	love.graphics.setFont(Text.Font)
 	love.graphics.setColor(Text.Color)
 	love.graphics.printf(Text.Text, Text.X, Text.Y, Text.W, Text.Align)
 end
@@ -321,7 +319,7 @@ function DrawCommands.Triangle(Mode, X, Y, Radius, Direction, Color)
 	table.insert(ActiveBatch.Elements, Item)
 end
 
-function DrawCommands.Print(Text, X, Y, Color)
+function DrawCommands.Print(Text, X, Y, Color, Font)
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.Text
@@ -329,10 +327,11 @@ function DrawCommands.Print(Text, X, Y, Color)
 	Item.X = X
 	Item.Y = Y
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
+	Item.Font = Font
 	table.insert(ActiveBatch.Elements, Item)
 end
 
-function DrawCommands.Printf(Text, X, Y, W, Align, Color)
+function DrawCommands.Printf(Text, X, Y, W, Align, Color, Font)
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.TextFormatted
@@ -342,6 +341,7 @@ function DrawCommands.Printf(Text, X, Y, W, Align, Color)
 	Item.W = W
 	Item.Align = Align and Align or 'left'
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
+	Item.Font = Font
 	table.insert(ActiveBatch.Elements, Item)
 end
 

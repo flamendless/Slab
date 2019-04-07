@@ -77,7 +77,7 @@ function Text.Begin(Label, Options)
 		end
 	end
 
-	DrawCommands.Print(Label, math.floor(X + PadX * 0.5), math.floor(Y), Color)
+	DrawCommands.Print(Label, math.floor(X + PadX * 0.5), math.floor(Y), Color, Style.Font)
 
 	Cursor.SetItemBounds(X, Y, W + PadX, H)
 	Cursor.AdvanceY(H)
@@ -97,7 +97,7 @@ function Text.BeginFormatted(Label, Options)
 
 	local X, Y = Cursor.GetPosition()
 
-	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Options.W, Options.Align, Options.Color)
+	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Options.W, Options.Align, Options.Color, Style.Font)
 	PendingText = {}
 
 	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
