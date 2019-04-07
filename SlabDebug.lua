@@ -28,6 +28,7 @@ local Slab = require('Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -37,6 +38,7 @@ local SlabDebug_Mouse = false
 local SlabDebug_Windows = false
 local SlabDebug_Tooltip = false
 local SlabDebug_DrawCommands = false
+local SlabDebug_Performance = false
 
 local SlabDebug_Windows_Categories = {"Inspector", "Stack"}
 local SlabDebug_Windows_Category = "Inspector"
@@ -81,6 +83,14 @@ local function DrawCommands_Item(Root, Label)
 	else
 		Slab.BeginTree(Label .. " " .. tostring(Root), {IsLeaf = true})
 	end
+end
+
+local function DrawPerformance()
+	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance"})
+	Slab.Text(string.format("Frame Time: %.5f", Stats.GetTime('Frame')))
+	Slab.Text(string.format("Update Time: %.5f", Stats.GetTime('Update')))
+	Slab.Text(string.format("Draw Time: %.5f", Stats.GetTime('Draw')))
+	Slab.EndWindow()
 end
 
 function SlabDebug.About()
@@ -175,6 +185,10 @@ function SlabDebug.Menu()
 			SlabDebug_DrawCommands = not SlabDebug_DrawCommands
 		end
 
+		if Slab.MenuItemChecked("Performance", SlabDebug_Performance) then
+			SlabDebug_Performance = not SlabDebug_Performance
+		end
+
 		Slab.EndMenu()
 	end
 end
@@ -196,6 +210,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_DrawCommands then
 		SlabDebug.DrawCommands()
+	end
+
+	if SlabDebug_Performance then
+		DrawPerformance()
 	end
 end
 

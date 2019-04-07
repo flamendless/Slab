@@ -43,6 +43,7 @@ local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
 local MenuBar = require(SLAB_PATH .. '.Internal.UI.MenuBar')
 local Separator = require(SLAB_PATH .. '.Internal.UI.Separator')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
@@ -206,6 +207,9 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
+	Stats.BeginTime('Frame')
+	Stats.BeginTime('Update')
+
 	Mouse.Update()
 	Keyboard.Update()
 	Input.Update(dt)
@@ -218,6 +222,8 @@ function Slab.Update(dt)
 			MenuState.RequestClose = true
 		end
 	end
+
+	Stats.EndTime('Update')
 end
 
 --[[
@@ -230,6 +236,8 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
+	Stats.BeginTime('Draw')
+
 	Window.Validate()
 
 	if MenuState.RequestClose then
@@ -242,6 +250,9 @@ function Slab.Draw()
 	end
 
 	DrawCommands.Execute()
+
+	Stats.EndTime('Draw')
+	Stats.EndTime('Frame')
 end
 
 --[[

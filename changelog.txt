@@ -8,7 +8,7 @@ v0.3.0 RELEASE
 [Button]: ExpandW documentation.
 [Controls]: Rounding documentation.
 [Mouse]: API documentation.
-[Control]: API documentation.
+[Control]: API documentation on hover and click.
 
 BUGS
 ==========
@@ -45,11 +45,10 @@ Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
-SlabDebug: Show frame stats.
-SlabDebug: Show draw time.
-SlabDebug: Show update time.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
+[Stats]: Option to accumulate time for categories.
+[Stats]: Keep track of number of calls for a category.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
