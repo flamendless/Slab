@@ -103,6 +103,8 @@ local function DrawPerformance()
 	PrintStatsCategory("List Box Time", 'ListBox')
 	PrintStatsCategory("Text Time", 'Text')
 	PrintStatsCategory("Text Formatted Time", 'Textf')
+	PrintStatsCategory("Tree Time", 'Tree')
+	PrintStatsCategory("Window Time", 'Window')
 	Slab.EndWindow()
 end
 

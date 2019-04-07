@@ -51,7 +51,6 @@ Region: Clamp position check with owning window's size.
 [Separator]: Use window content width without borders for right end.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
-[Stats]: Stack for nested calls such as Windows and Trees.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.

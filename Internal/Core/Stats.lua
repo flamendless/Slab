@@ -27,6 +27,7 @@ SOFTWARE.
 local Stats = {}
 
 local Data = {}
+local Stack = {}
 local Enabled = false
 local QueueEnabled = false
 
@@ -63,10 +64,39 @@ function Stats.End(Category)
 	local Instance = Data[Category]
 	assert(Instance ~= nil, "Tried to call Stats.End without properly calling Stats.Begin for category '" .. Category .. "'.")
 
-	Options = Options == nil and {} or Options
-	Options.Accumulate = Options.Accumulate == nil and false or Options.Accumulate
-
 	Instance.Time = Instance.Time + (love.timer.getTime() - Instance.StartTime)
+end
+
+function Stats.Push(Category)
+	if not Enabled then
+		return
+	end
+
+	local Instance = CreateCategory(Category)
+	Instance.CallCount = Instance.CallCount + 1
+
+	local Item = {}
+	Item.Category = Category
+	Item.StartTime = love.timer.getTime()
+
+	table.insert(Stack, 1, Item)
+end
+
+function Stats.Pop()
+	if not Enabled then
+		return
+	end
+
+	assert(#Stack > 0, "Unable to pop stat. No stats were pushed to the stack!")
+
+	local Item = Stack[1]
+	local Instance = Data[Item.Category]
+
+	assert(Instance ~= nil, "Tried to call Stats.Pop without properly calling Stats.Push for category '" .. Item.Category .. "'.")
+
+	Instance.Time = Instance.Time + (love.timer.getTime() - Item.StartTime)
+
+	table.remove(Stack, 1)
 end
 
 function Stats.GetTime(Category, Last)
@@ -103,6 +133,10 @@ function Stats.Reset()
 
 	if not Enabled then
 		return
+	end
+
+	if #Stack > 0 then
+		assert(false, "Stats stack is not empty! Stack item '" .. Stack[1].Category .. "' was not popped!")
 	end
 
 	for K, V in pairs(Data) do

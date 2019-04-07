@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
 local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Style = require(SLAB_PATH .. ".Style")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
@@ -328,6 +329,8 @@ function Window.Reset()
 end
 
 function Window.Begin(Id, Options)
+	Stats.Push('Window')
+
 	Options = Options == nil and {} or Options
 	Options.X = Options.X == nil and 50.0 or Options.X
 	Options.Y = Options.Y == nil and 50.0 or Options.Y
@@ -492,6 +495,8 @@ function Window.End()
 			Region.ApplyScissor()
 		end
 	end
+
+	Stats.Pop()
 end
 
 function Window.GetMousePosition()

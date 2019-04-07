@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
@@ -60,6 +61,8 @@ local function GetInstance(Id)
 end
 
 function Tree.Begin(Id, Options)
+	Stats.Push('Tree')
+
 	Options = Options == nil and {} or Options
 	Options.Label = Options.Label == nil and Id or Options.Label
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
@@ -158,6 +161,10 @@ function Tree.Begin(Id, Options)
 
 	Window.AddItem(X, Y, (WinW + WinX) - Instance.X, H, WinItemId)
 
+	if not Instance.IsOpen then
+		Stats.Pop()
+	end
+
 	return Instance.IsOpen
 end
 
@@ -169,6 +176,8 @@ function Tree.End()
 	else
 		Cursor.SetX(Cursor.GetAnchorX())
 	end
+
+	Stats.Pop()
 end
 
 return Tree
