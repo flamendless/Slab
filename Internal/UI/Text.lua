@@ -27,12 +27,15 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Text = {}
 
 function Text.Begin(Label, Options)
+	Stats.Begin('Text')
+
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
@@ -86,10 +89,14 @@ function Text.Begin(Label, Options)
 		Window.AddItem(X, Y, W + PadX, H, WinId)
 	end
 
+	Stats.End('Text')
+
 	return Result
 end
 
 function Text.BeginFormatted(Label, Options)
+	Stats.Begin('Textf')
+
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
 	Options.W = Options.W == nil and Window.GetWidth() or Options.W
@@ -108,6 +115,8 @@ function Text.BeginFormatted(Label, Options)
 
 	Window.ResetContentSize()
 	Window.AddItem(math.floor(X), math.floor(Y), Width, H)
+
+	Stats.End('Textf')
 end
 
 function Text.GetWidth(Label)

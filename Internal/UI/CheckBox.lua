@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
@@ -37,6 +38,8 @@ local CheckBox = {}
 local Radius = 8.0
 
 function CheckBox.Begin(Enabled, Label, Options)
+	Stats.Begin('CheckBox')
+
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.Id = Options.Id == nil and Label or Options.Id
@@ -83,6 +86,8 @@ function CheckBox.Begin(Enabled, Label, Options)
 	end
 
 	Window.AddItem(X, Y, W, H, Id)
+
+	Stats.End('CheckBox')
 
 	return Result
 end

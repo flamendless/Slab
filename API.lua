@@ -207,8 +207,9 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
-	Stats.BeginTime('Frame')
-	Stats.BeginTime('Update')
+	Stats.Reset()
+	Stats.Begin('Frame')
+	Stats.Begin('Update')
 
 	Mouse.Update()
 	Keyboard.Update()
@@ -223,7 +224,7 @@ function Slab.Update(dt)
 		end
 	end
 
-	Stats.EndTime('Update')
+	Stats.End('Update')
 end
 
 --[[
@@ -236,7 +237,7 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
-	Stats.BeginTime('Draw')
+	Stats.Begin('Draw')
 
 	Window.Validate()
 
@@ -251,8 +252,8 @@ function Slab.Draw()
 
 	DrawCommands.Execute()
 
-	Stats.EndTime('Draw')
-	Stats.EndTime('Frame')
+	Stats.End('Draw')
+	Stats.End('Frame')
 end
 
 --[[

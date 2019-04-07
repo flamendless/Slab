@@ -9,12 +9,15 @@ v0.3.0 RELEASE
 [Controls]: Rounding documentation.
 [Mouse]: API documentation.
 [Control]: API documentation on hover and click.
+[Slab Debug]: Documentation.
+[Stats]: Documentation.
 
 BUGS
 ==========
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
+[Mouse]: Setting cursor type causes hit on frame time.
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
@@ -45,10 +48,10 @@ Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
+[Separator]: Use window content width without borders for right end.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
-[Stats]: Option to accumulate time for categories.
-[Stats]: Keep track of number of calls for a category.
+[Stats]: Stack for nested calls such as Windows and Trees.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.

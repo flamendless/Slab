@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
@@ -52,6 +53,8 @@ local function GetInstance(Id)
 end
 
 function ComboBox.Begin(Id, Options)
+	Stats.Begin('ComboBox')
+
 	Options = Options ~= nil and Options or {}
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.W = Options.W == nil and MIN_WIDTH or Options.W
@@ -131,6 +134,8 @@ function ComboBox.Begin(Id, Options)
 			AutoSizeContent = true
 		})
 		Active = Instance
+	else
+		Stats.End('ComboBox')
 	end
 
 	return Instance.IsOpen
@@ -159,6 +164,8 @@ function ComboBox.End()
 		Cursor.SetY(Y)
 		Cursor.AdvanceY(H)
 	end
+
+	Stats.End('ComboBox')
 end
 
 return ComboBox

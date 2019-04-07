@@ -85,11 +85,24 @@ local function DrawCommands_Item(Root, Label)
 	end
 end
 
+local function PrintStatsCategory(Label, Category, Last)
+	Slab.Text(string.format("%s: %.5f %d", Label, Stats.GetTime(Category, Last), Stats.GetCallCount(Category, Last)))
+end
+
 local function DrawPerformance()
 	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance"})
-	Slab.Text(string.format("Frame Time: %.5f", Stats.GetTime('Frame')))
-	Slab.Text(string.format("Update Time: %.5f", Stats.GetTime('Update')))
-	Slab.Text(string.format("Draw Time: %.5f", Stats.GetTime('Draw')))
+	PrintStatsCategory("Frame Time", 'Frame', true)
+	PrintStatsCategory("Update Time", 'Update')
+	PrintStatsCategory("Draw Time", 'Draw', true)
+	Slab.Separator()
+	PrintStatsCategory("Button Time", 'Button')
+	PrintStatsCategory("Check Box Time", 'CheckBox')
+	PrintStatsCategory("Combo Box Time", 'ComboBox')
+	PrintStatsCategory("Image Time", 'Image')
+	PrintStatsCategory("Input Time", 'Input')
+	PrintStatsCategory("List Box Time", 'ListBox')
+	PrintStatsCategory("Text Time", 'Text')
+	PrintStatsCategory("Text Formatted Time", 'Textf')
 	Slab.EndWindow()
 end
 
@@ -187,6 +200,7 @@ function SlabDebug.Menu()
 
 		if Slab.MenuItemChecked("Performance", SlabDebug_Performance) then
 			SlabDebug_Performance = not SlabDebug_Performance
+			Stats.SetEnabled(SlabDebug_Performance)
 		end
 
 		Slab.EndMenu()

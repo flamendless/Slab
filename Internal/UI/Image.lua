@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
@@ -54,6 +55,8 @@ local function GetInstance(Id)
 end
 
 function Image.Begin(Id, Options)
+	Stats.Begin('Image')
+
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.Rotation = Options.Rotation == nil and 0 or Options.Rotation
@@ -124,6 +127,8 @@ function Image.Begin(Id, Options)
 	Cursor.AdvanceY(H)
 
 	Window.AddItem(X, Y, W, H, WinItemId)
+
+	Stats.End('Image')
 
 	return Result
 end

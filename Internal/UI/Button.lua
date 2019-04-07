@@ -28,6 +28,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
@@ -39,6 +40,8 @@ local MinWidth = 75.0
 local ClickedId = nil
 
 function Button.Begin(Label, Options)
+	Stats.Begin('Button')
+
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
@@ -92,6 +95,8 @@ function Button.Begin(Label, Options)
 	Cursor.AdvanceY(H)
 
 	Window.AddItem(X, Y, W, H, Id)
+
+	Stats.End('Button')
 
 	return Result
 end

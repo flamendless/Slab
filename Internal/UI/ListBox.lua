@@ -28,6 +28,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
@@ -70,6 +71,8 @@ local function GetInstance(Id)
 end
 
 function ListBox.Begin(Id, Options)
+	Stats.Begin('ListBox')
+
 	Options = Options == nil and {} or Options
 	Options.H = Options.H == nil and 150.0 or Options.H
 	Options.Clear = Options.Clear == nil and false or Options.Clear
@@ -193,6 +196,8 @@ function ListBox.End()
 	Cursor.AdvanceY(ActiveInstance.H)
 
 	ActiveInstance = nil
+
+	Stats.End('ListBox')
 end
 
 return ListBox

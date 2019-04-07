@@ -27,25 +27,94 @@ SOFTWARE.
 local Stats = {}
 
 local Data = {}
+local Enabled = false
+local QueueEnabled = false
 
-function Stats.BeginTime(Category)
+local function CreateCategory(Category)
 	if Data[Category] == nil then
-		Data[Category] = {}
-		Data[Category].StartTime = 0.0
-		Data[Category].Time = 0.0
+		local Instance = {}
+		Instance.StartTime = 0.0
+		Instance.Time = 0.0
+		Instance.CallCount = 0
+		Instance.LastTime = 0.0
+		Instance.LastCallCount = 0.0
+		Data[Category] = Instance
 	end
 
-	Data[Category].StartTime = love.timer.getTime()
+	return Data[Category]
 end
 
-function Stats.EndTime(Category)
-	assert(Data[Category] ~= nil, "Tried to call Stats.EndTime without properly calling Stats.BeginTime for category '" .. Category .. "'.")
-	Data[Category].Time = love.timer.getTime() - Data[Category].StartTime
+function Stats.Begin(Category)
+	if not Enabled then
+		return
+	end
+
+	local Instance = CreateCategory(Category)
+
+	Instance.StartTime = love.timer.getTime()
+	Instance.CallCount = Instance.CallCount + 1
 end
 
-function Stats.GetTime(Category)
-	assert(Data[Category] ~= nil, "Tried to call Stats.GetTime without properly calling Stats.BeginTime for category '" .. Category .. "'.")
-	return Data[Category].Time
+function Stats.End(Category)
+	if not Enabled then
+		return
+	end
+
+	local Instance = Data[Category]
+	assert(Instance ~= nil, "Tried to call Stats.End without properly calling Stats.Begin for category '" .. Category .. "'.")
+
+	Options = Options == nil and {} or Options
+	Options.Accumulate = Options.Accumulate == nil and false or Options.Accumulate
+
+	Instance.Time = Instance.Time + (love.timer.getTime() - Instance.StartTime)
+end
+
+function Stats.GetTime(Category, Last)
+	if not Enabled then
+		return 0.0
+	end
+
+	local Instance = Data[Category]
+	if Instance == nil then
+		return 0.0
+	end
+
+	return Last and Instance.LastTime or Instance.Time
+end
+
+function Stats.GetCallCount(Category, Last)
+	if not Enabled then
+		return 0
+	end
+
+	local Instance = Data[Category]
+	if Instance == nil then
+		return 0
+	end
+	
+	return Last and Instance.LastCallCount or Instance.CallCount
+end
+
+function Stats.Reset()
+	if QueueEnabled then
+		Enabled = true
+		QueueEnabled = false
+	end
+
+	if not Enabled then
+		return
+	end
+
+	for K, V in pairs(Data) do
+		V.LastTime = V.Time
+		V.LastCallCount = V.CallCount
+		V.CallCount = 0
+		V.Time = 0.0
+	end
+end
+
+function Stats.SetEnabled(IsEnabled)
+	QueueEnabled = IsEnabled
 end
 
 return Stats

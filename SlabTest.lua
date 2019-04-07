@@ -227,7 +227,6 @@ function SlabTest.Begin()
 	SlabTest.ResizableWindow()
 	SlabTest.TreeWindow()
 	SlabTest.GlobalContextMenu()
-	SlabDebug.Begin()
 	ResetLayout = false
 
 	if SlabTest_MessageBox then
@@ -250,6 +249,8 @@ function SlabTest.Begin()
 			SlabTest_FileDialog = false
 		end
 	end
+
+	SlabDebug.Begin()
 end
 
 return SlabTest

@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
@@ -288,6 +289,8 @@ end
 function Input.Begin(Id, Options)
 	assert(Id ~= nil, "Please pass a valid Id into Slab.Input.")
 
+	Stats.Begin('Input')
+
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
@@ -517,6 +520,8 @@ function Input.Begin(Id, Options)
 		Focused = nil
 		Region.ResetTransform(Instance.Id)
 	end
+
+	Stats.End('Input')
 
 	return Result
 end
