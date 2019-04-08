@@ -9,6 +9,7 @@ v0.3.0 RELEASE
 [Controls]: Rounding documentation.
 [Mouse]: API documentation.
 [Control]: API documentation on hover and click.
+[Separator]: API documentation for options.
 [Slab Debug]: Documentation.
 [Stats]: Documentation.
 
@@ -48,7 +49,7 @@ Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
-[Separator]: Use window content width without borders for right end.
+[Separator]: Option to change the line thickness.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
 Style: Light theme.

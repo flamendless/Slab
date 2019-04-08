@@ -534,10 +534,15 @@ end
 
 	This functions renders a separator line in the window.
 
+	Option: [Table] List of options for how this separator will be drawn.
+		IncludeBorders: [Boolean] Whether to extend the separator to include the window borders. This is false by default.
+		H: [Number] The height of the separator. This doesn't change the line thickness, rather, specifies the cursor advancement
+			in the Y direction.
+
 	Return: None.
 --]]
-function Slab.Separator()
-	Separator.Begin()
+function Slab.Separator(Options)
+	Separator.Begin(Options)
 end
 
 --[[

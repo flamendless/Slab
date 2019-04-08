@@ -32,14 +32,28 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 local Separator = {}
 local SIZE_Y = 4.0
 
-function Separator.Begin()
+function Separator.Begin(Options)
+	Options = Options == nil and {} or Options
+	Options.IncludeBorders = Options.IncludeBorders == nil and false or Options.IncludeBorders
+	Options.H = Options.H == nil and SIZE_Y or Options.H
+
 	local X, Y = Cursor.GetPosition()
-	local W = Window.GetWidth() - Window.GetBorder()
+	local W, H = 0.0, 0.0
 
-	DrawCommands.Line(X, Y + SIZE_Y * 0.5, X + W, Y + SIZE_Y * 0.5, 1.0, Style.SeparatorColor)
+	if Options.IncludeBorders then
+		local WinX, WinY, WinW, WinH = Window.GetBounds()
+		X = WinX
+		W = WinW
+	else
+		W, H = Window.GetBorderlessSize()
+	end
 
-	Cursor.SetItemBounds(X, Y, W, SIZE_Y)
-	Cursor.AdvanceY(SIZE_Y)
+	H = Options.H
+
+	DrawCommands.Line(X, Y + H * 0.5, X + W, Y + H * 0.5, 1.0, Style.SeparatorColor)
+
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
 end
 
 return Separator
