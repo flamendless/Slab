@@ -612,6 +612,7 @@ end
 		IsSelected: [Boolean] Forces the hover background to be rendered.
 		SelectOnHover: [Boolean] Returns true if the user is hovering over the hot zone of this text.
 		HoverColor: [Table] The color to render the background if the IsSelected option is true.
+		CenterX: [Boolean] Should the text be centered relative to the current active bounds.
 
 	Return: [Boolean] Returns true if SelectOnHover option is set to true. False otherwise.
 --]]

@@ -94,14 +94,14 @@ local function PrintStatsCategory(Label, Category, Last, AddSeparator)
 	Slab.EndColumn()
 
 	Slab.BeginColumn(2)
-	Slab.Text(string.format("%.5f", Stats.GetTime(Category, Last)))
+	Slab.Text(string.format("%.5f", Stats.GetTime(Category, Last)), {CenterX = true})
 	if AddSeparator then
 		Slab.Separator()
 	end
 	Slab.EndColumn()
 
 	Slab.BeginColumn(3)
-	Slab.Text(Stats.GetCallCount(Category, Last))
+	Slab.Text(Stats.GetCallCount(Category, Last), {CenterX = true})
 	if AddSeparator then
 		Slab.Separator()
 	end
@@ -111,17 +111,17 @@ end
 local function DrawPerformance()
 	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance", Columns = 3, AutoSizeWindow = false, W = 450.0, H = 350.0})
 	Slab.BeginColumn(1)
-	Slab.Text("Category")
+	Slab.Text("Category", {CenterX = true})
 	Slab.Separator()
 	Slab.EndColumn()
 
 	Slab.BeginColumn(2)
-	Slab.Text("Time")
+	Slab.Text("Time", {CenterX = true})
 	Slab.Separator()
 	Slab.EndColumn()
 
 	Slab.BeginColumn(3)
-	Slab.Text("Call Count")
+	Slab.Text("Call Count", {CenterX = true})
 	Slab.Separator()
 	Slab.EndColumn()
 

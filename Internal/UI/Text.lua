@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
@@ -41,6 +42,7 @@ function Text.Begin(Label, Options)
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
 	Options.AddItem = Options.AddItem == nil and true or Options.AddItem
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
+	Options.CenterX = Options.CenterX == nil and false or Options.CenterX
 
 	local X, Y = Cursor.GetPosition()
 	local W = Text.GetWidth(Label)
@@ -50,6 +52,10 @@ function Text.Begin(Label, Options)
 	local PadX = Options.Pad
 	local WinId = Window.GetItemId(Label)
 	local MouseX, MouseY = Window.GetMousePosition()
+
+	if Options.CenterX then
+		X = Layout.CenterX(W)
+	end
 
 	local IsObstructed = Window.IsObstructedAtMouse()
 

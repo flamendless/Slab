@@ -6,6 +6,7 @@ v0.3.0 RELEASE
 ==========
 [API]: Update version number.
 [Button]: ExpandW documentation.
+[Column]: Documentation.
 [Controls]: Rounding documentation.
 [Mouse]: API documentation.
 [Control]: API documentation on hover and click.
@@ -60,7 +61,6 @@ Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Text]: Tooltip support.
-[Text]: Center text support.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Lock mouse resize icon while resizing.

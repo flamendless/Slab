@@ -50,4 +50,11 @@ function Layout.AlignRight(W)
 	return Offset - W - RightPad
 end
 
+function Layout.CenterX(W)
+	local X, Y = Cursor.GetPosition()
+	local WinW, WinH = Window.GetBorderlessSize()
+
+	return X + (WinW * 0.5) - (W * 0.5)
+end
+
 return Layout
