@@ -85,16 +85,49 @@ local function DrawCommands_Item(Root, Label)
 	end
 end
 
-local function PrintStatsCategory(Label, Category, Last)
-	Slab.Text(string.format("%s: %.5f %d", Label, Stats.GetTime(Category, Last), Stats.GetCallCount(Category, Last)))
+local function PrintStatsCategory(Label, Category, Last, AddSeparator)
+	Slab.BeginColumn(1)
+	Slab.Text(Label)
+	if AddSeparator then
+		Slab.Separator()
+	end
+	Slab.EndColumn()
+
+	Slab.BeginColumn(2)
+	Slab.Text(string.format("%.5f", Stats.GetTime(Category, Last)))
+	if AddSeparator then
+		Slab.Separator()
+	end
+	Slab.EndColumn()
+
+	Slab.BeginColumn(3)
+	Slab.Text(Stats.GetCallCount(Category, Last))
+	if AddSeparator then
+		Slab.Separator()
+	end
+	Slab.EndColumn()
 end
 
 local function DrawPerformance()
-	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance"})
+	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance", Columns = 3, AutoSizeWindow = false, W = 450.0, H = 350.0})
+	Slab.BeginColumn(1)
+	Slab.Text("Category")
+	Slab.Separator()
+	Slab.EndColumn()
+
+	Slab.BeginColumn(2)
+	Slab.Text("Time")
+	Slab.Separator()
+	Slab.EndColumn()
+
+	Slab.BeginColumn(3)
+	Slab.Text("Call Count")
+	Slab.Separator()
+	Slab.EndColumn()
+
 	PrintStatsCategory("Frame Time", 'Frame', true)
 	PrintStatsCategory("Update Time", 'Update')
-	PrintStatsCategory("Draw Time", 'Draw', true)
-	Slab.Separator()
+	PrintStatsCategory("Draw Time", 'Draw', true, true)
 	PrintStatsCategory("Button Time", 'Button')
 	PrintStatsCategory("Check Box Time", 'CheckBox')
 	PrintStatsCategory("Combo Box Time", 'ComboBox')

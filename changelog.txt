@@ -12,6 +12,7 @@ v0.3.0 RELEASE
 [Separator]: API documentation for options.
 [Slab Debug]: Documentation.
 [Stats]: Documentation.
+[Wiki]: Update images.
 
 BUGS
 ==========
@@ -22,7 +23,7 @@ BUGS
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
-[Window]: Focused window flickers between multiple windows sometimes.
+[Window]: Focused window flickers between multiple windows sometimes. Seems to be related to hovering over combo box.
 
 TODO
 ==========
@@ -31,6 +32,8 @@ TODO
 [API]: Re-organize functions in categories and update comment.
 [Button]: Invisible button support.
 Color Picker: Initial implementation.
+[Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
+[Column]: Ability to start column on current cursor line position.
 Combo Box: Easy API with table of possible values.
 Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
@@ -57,9 +60,9 @@ Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Text]: Tooltip support.
+[Text]: Center text support.
 Window: Menu support.
 Window: Ids should be used as keys.
-Window: Column support.
 Window: Lock mouse resize icon while resizing.
 Window: Deprecate window bounds values and use region directly.
 Widgets: Track owning window's alpha channel.

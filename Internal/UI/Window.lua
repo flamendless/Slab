@@ -107,6 +107,8 @@ local function NewInstance(Id)
 	Instance.Layer = 'Normal'
 	Instance.StackIndex = 0
 	Instance.CanObstruct = true
+	Instance.Columns = nil
+	Instance.ActiveColumn = nil
 	return Instance
 end
 
@@ -278,6 +280,54 @@ local function UpdateSize(Instance, IsObstructed)
 	end
 end
 
+local function UpdateColumns(Instance, Count)
+	if Instance ~= nil and Count > 1 then
+		if Instance.Columns == nil or Count ~= #Instance.Columns then
+			Instance.Columns = {}
+			Instance.ActiveColumn = nil
+		end
+
+		local ColumnW = Instance.W / Count
+
+		for I = 1, Count, 1 do
+			if Instance.Columns[I] == nil then
+				Instance.Columns[I] = {}
+				Instance.Columns[I].Index = I
+			end
+
+			local Column = Instance.Columns[I]
+			Column.X = Instance.X + ColumnW * (I - 1)
+			Column.W = ColumnW
+			Column.CursorX = Column.X + Instance.Border
+			Column.CursorY = Instance.Y + Instance.Border
+		end
+	end
+end
+
+local function DrawColumns(Instance)
+	if Instance ~= nil and Instance.Columns ~= nil and #Instance.Columns > 1 then
+		local ColumnW = Instance.W / #Instance.Columns
+		local H = math.max(Instance.H, Instance.ContentH)
+
+		for I = 1, #Instance.Columns - 1, 1 do
+			local Column = Instance.Columns[I]
+			DrawCommands.Line(Column.X + Column.W, Instance.Y, Column.X + Column.W, Instance.Y + H, 1.0)
+		end
+	end
+end
+
+local function IsColumnRegionActive(Instance)
+	if Instance ~= nil and Instance.Columns ~= nil then
+		for I, Column in ipairs(Instance.Columns) do
+			if Region.IsActive(Instance.Id .. "_Column_" .. I) then
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
 function Window.Top()
 	return ActiveInstance
 end
@@ -358,6 +408,7 @@ function Window.Begin(Id, Options)
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
+	Options.Columns = Options.Columns == nil and 0 or Options.Columns
 
 	local Instance = GetInstance(Id)
 	table.insert(PendingStack, 1, Instance)
@@ -444,13 +495,14 @@ function Window.Begin(Id, Options)
 		PushToTop(ActiveInstance)
 	end
 
-	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance)
-
-	DrawCommands.SetLayer(ActiveInstance.Layer)
-
 	Cursor.SetPosition(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
+
+	UpdateSize(ActiveInstance, IsObstructed)
+	UpdateTitleBar(ActiveInstance)
+	UpdateColumns(ActiveInstance, Options.Columns)
+
+	DrawCommands.SetLayer(ActiveInstance.Layer)
 
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
@@ -483,6 +535,7 @@ end
 
 function Window.End()
 	if ActiveInstance ~= nil then
+		DrawColumns(ActiveInstance)
 		Region.End()
 		DrawCommands.End()
 		table.remove(PendingStack, 1)
@@ -565,11 +618,19 @@ function Window.GetBorderlessSize()
 	local W, H = 0.0, 0.0
 
 	if ActiveInstance ~= nil then
-		W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
-		H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
+		if ActiveInstance.ActiveColumn ~= nil then
+			W = ActiveInstance.ActiveColumn.W
+			H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
 
-		W = math.max(0.0, W - ActiveInstance.Border * 2.0)
-		H = math.max(0.0, H - ActiveInstance.Border * 2.0)
+			W = math.max(0.0, W - ActiveInstance.Border * 2.0)
+			H = math.max(0.0, H - ActiveInstance.Border * 2.0)
+		else
+			W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
+			H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
+
+			W = math.max(0.0, W - ActiveInstance.Border * 2.0)
+			H = math.max(0.0, H - ActiveInstance.Border * 2.0)
+		end
 	end
 
 	return W, H
@@ -604,7 +665,7 @@ end
 function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
 		ActiveInstance.LastItem = Id
-		if Region.IsActive(ActiveInstance.Id) then
+		if Region.IsActive(ActiveInstance.Id) or IsColumnRegionActive(ActiveInstance) then
 			if ActiveInstance.AutoSizeWindowW then
 				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
 			end
@@ -739,6 +800,37 @@ function Window.PushToTop(Id)
 	end
 end
 
+function Window.BeginColumn(Index)
+	if ActiveInstance ~= nil and ActiveInstance.Columns ~= nil then
+		assert(Index > 0 and Index <= #ActiveInstance.Columns, "Invalid index '" .. Index .. "' set for column. Window contains '" .. #ActiveInstance.Columns .. "' columns.")
+
+		ActiveInstance.ActiveColumn = ActiveInstance.Columns[Index]
+
+		Cursor.SetPosition(ActiveInstance.ActiveColumn.CursorX, ActiveInstance.ActiveColumn.CursorY)
+		Cursor.SetAnchor(ActiveInstance.ActiveColumn.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
+
+		Region.Begin(ActiveInstance.Id .. '_Column_' .. Index, {
+			X = ActiveInstance.ActiveColumn.X,
+			Y = ActiveInstance.Y,
+			W = ActiveInstance.ActiveColumn.W,
+			H = ActiveInstance.H,
+			NoOutline = true,
+			NoBackground = true,
+			Intersect = true,
+			IgnoreScroll = true
+		})
+	end
+end
+
+function Window.EndColumn()
+	if ActiveInstance ~= nil and ActiveInstance.ActiveColumn ~= nil then
+		Region.End()
+		Region.ApplyScissor()
+		ActiveInstance.ActiveColumn.CursorY = Cursor.GetY()
+		ActiveInstance.ActiveColumn = nil
+	end
+end
+
 function Window.GetLayer()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.Layer
@@ -777,9 +869,13 @@ function Window.GetInstanceInfo(Id)
 		table.insert(Result, "ContentH: " .. Instance.ContentH)
 		table.insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
 		table.insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
+		table.insert(Result, "DeltaContentW: " .. Instance.DeltaContentW)
+		table.insert(Result, "DeltaContentH: " .. Instance.DeltaContentH)
 		table.insert(Result, "Border: " .. Instance.Border)
 		table.insert(Result, "Layer: " .. Instance.Layer)
 		table.insert(Result, "Stack Index: " .. Instance.StackIndex)
+		table.insert(Result, "AutoSizeWindow: " .. tostring(Instance.AutoSizeWindow))
+		table.insert(Result, "AutoSizeContent: " .. tostring(Instance.AutoSizeContent))
 	end
 
 	return Result

@@ -69,22 +69,29 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Update
 		Draw
 		GetStyle
-		BeginWindow
-		EndWindow
-		GetWindowPosition
-		GetWindowSize
-		GetWindowContentSize
-		BeginMainMenuBar
-		EndMainMenuBar
-		BeginMenuBar
-		EndMenuBar
-		BeginMenu
-		EndMenu
-		BeginContextMenuItem
-		BeginContextMenuWindow
-		EndContextMenu
-		MenuItem
-		MenuItemChecked
+
+		Window:
+			BeginWindow
+			EndWindow
+			GetWindowPosition
+			GetWindowSize
+			GetWindowContentSize
+			BeginColumn
+			EndColumn
+
+		Menu:
+			BeginMainMenuBar
+			EndMainMenuBar
+			BeginMenuBar
+			EndMenuBar
+			BeginMenu
+			EndMenu
+			BeginContextMenuItem
+			BeginContextMenuWindow
+			EndContextMenu
+			MenuItem
+			MenuItemChecked
+
 		Separator
 		Button
 		Text
@@ -305,6 +312,7 @@ end
 			be: NW, NE, SW, SE, N, S, E, W
 		CanObstruct: [Boolean] Sets whether this window is considered for obstruction of other windows and their controls. The default value is true.
 		Rounding: [Number] Amount of rounding to apply to the corners of the window.
+		Columns: [Number] The number of columns for this window. Must be larger than 1 for columns to work properly.
 
 	Return: None
 --]]
@@ -355,6 +363,31 @@ end
 --]]
 function Slab.GetWindowContentSize()
 	return Window.GetContentSize()
+end
+
+--[[
+	BeginColumn
+
+	The start of a column. EndColumn must be called after a call to BeginColumn and all controls have been rendered.
+
+	Index: [Number] The index to the column to add controls to. This must be a valid column between 1 and the max column index
+		defined by the Columns option in BeginWindow.
+
+	Return: None.
+--]]
+function Slab.BeginColumn(Index)
+	Window.BeginColumn(Index)
+end
+
+--[[
+	EndColumn
+
+	The end of a column. Must be called after a BeginColumn call.
+
+	Return: None.
+--]]
+function Slab.EndColumn()
+	Window.EndColumn()
 end
 
 --[[
