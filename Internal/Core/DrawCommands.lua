@@ -45,7 +45,8 @@ local Types =
 	IntersectScissor = 11,
 	Cross = 12,
 	Image = 13,
-	SubImage = 14
+	SubImage = 14,
+	Circle = 15
 }
 
 local Layers =
@@ -174,6 +175,11 @@ local function DrawSubImage(Image)
 	love.graphics.draw(Image.Image, Image.Quad, Image.Transform)
 end
 
+local function DrawCircle(Circle)
+	love.graphics.setColor(Circle.Color)
+	love.graphics.circle(Circle.Mode, Circle.X, Circle.Y, Circle.Radius, Circle.Segments)
+end
+
 local function DrawElements(Elements)
 	for K, V in pairs(Elements) do
 		if V.Type == Types.Rect then
@@ -204,6 +210,8 @@ local function DrawElements(Elements)
 			DrawImage(V)
 		elseif V.Type == Types.SubImage then
 			DrawSubImage(V)
+		elseif V.Type == Types.Circle then
+			DrawCircle(V)
 		end
 	end
 end
@@ -452,6 +460,19 @@ function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, Sc
 	Item.Image = Image
 	Item.Quad = love.graphics.newQuad(SX, SY, SW, SH, Image:getWidth(), Image:getHeight())
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.Circle(Mode, X, Y, Radius, Color, Segments)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.Circle
+	Item.Mode = Mode
+	Item.X = X
+	Item.Y = Y
+	Item.Radius = Radius
+	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
+	Item.Segments = Segments and Segments or 48
 	table.insert(ActiveBatch.Elements, Item)
 end
 

@@ -41,6 +41,7 @@ local BasicWindow_Properties =
 	HasCollision = true,
 	Name = "Player Name"
 }
+local BasicWindow_RadioButton = 1
 
 local ResetLayout = false
 local ListBoxIndex = 1
@@ -97,6 +98,12 @@ function SlabTest.BasicWindow()
 	end
 
 	Slab.Properties(BasicWindow_Properties)
+
+	for I = 1, 4, 1 do
+		if Slab.RadioButton("Radio " .. I, {Index = I, SelectedIndex = BasicWindow_RadioButton}) then
+			BasicWindow_RadioButton = I
+		end
+	end
 
 	Slab.EndWindow()
 end

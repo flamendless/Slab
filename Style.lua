@@ -39,6 +39,7 @@ local Style =
 	WindowBackgroundColor = {0.2, 0.2, 0.2, 1.0},
 	WindowTitleFocusedColor = {0.26, 0.53, 0.96, 1.0},
 	ButtonColor = {0.55, 0.55, 0.55, 1.0},
+	RadioButtonSelectedColor = {0.2, 0.2, 0.2, 1.0},
 	ButtonHoveredColor = {0.7, 0.7, 0.7, 1.0},
 	ButtonPressedColor = {0.8, 0.8, 0.8, 1.0},
 	TextColor = {0.875, 0.875, 0.875, 1.0},

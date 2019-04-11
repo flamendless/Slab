@@ -8,8 +8,10 @@ v0.3.0 RELEASE
 [Button]: ExpandW documentation.
 [Column]: Documentation.
 [Controls]: Rounding documentation.
+[Controls]: API documentation on hover and click.
+[Love]: Test with packaged .love build.
 [Mouse]: API documentation.
-[Control]: API documentation on hover and click.
+[Radio Button]: Documentation.
 [Separator]: API documentation for options.
 [Slab Debug]: Documentation.
 [Stats]: Documentation.
@@ -17,6 +19,7 @@ v0.3.0 RELEASE
 
 BUGS
 ==========
+[Button]: Label should use the text control.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
@@ -49,7 +52,6 @@ Input: Multi-line input control.
 [Input]: Allow user to highlight text in read-only mode.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
-Radio Button: Initial implementation.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.

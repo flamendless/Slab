@@ -94,6 +94,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 		Separator
 		Button
+		RadioButton
 		Text
 		TextSelectable
 		Textf
@@ -594,6 +595,26 @@ end
 --]]
 function Slab.Button(Label, Options)
 	return Button.Begin(Label, Options)
+end
+
+--[[
+	RadioButton
+
+	Adds a radio button entry to the active window. The grouping of radio buttons is determined by the user. An Index can
+	be applied to the given radio button and a SelectedIndex can be passed in to determine if this specific radio button
+	is the selected one.
+
+	Label: [String] The label to display next to the button.
+	Options: [Table] List of options for how this radio button will behave.
+		Index: [Number] The index of this radio button. Will be 0 by default and not selectable. Assign an index to group the button.
+		SelectedIndex: [Number] The index of the radio button that is selected. If this equals the Index field, then this radio button
+			will be rendered as selected.
+		Tooltip: [String] The tooltip to display when the user hovers over the button or label.
+
+	Return: [Boolean] Returns true if the user clicks on this button.
+--]]
+function Slab.RadioButton(Label, Options)
+	return Button.BeginRadio(Label, Options)
 end
 
 --[[

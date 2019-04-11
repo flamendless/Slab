@@ -30,6 +30,7 @@ local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
+local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -37,6 +38,7 @@ local Button = {}
 
 local Pad = 10.0
 local MinWidth = 75.0
+local Radius = 8.0
 local ClickedId = nil
 
 function Button.Begin(Label, Options)
@@ -97,6 +99,75 @@ function Button.Begin(Label, Options)
 	Window.AddItem(X, Y, W, H, Id)
 
 	Stats.End('Button')
+
+	return Result
+end
+
+function Button.BeginRadio(Label, Options)
+	Stats.Begin('RadioButton')
+
+	Options = Options == nil and {} or Options
+	Options.Index = Options.Index == nil and 0 or Options.Index
+	Options.SelectedIndex = Options.SelectedIndex == nil and 0 or Options.SelectedIndex
+	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+
+	local Result = false
+	local Id = Window.GetItemId(Label)
+	local X, Y = Cursor.GetPosition()
+	local CenterX, CenterY = X + Radius, Y + Radius
+	local W, H = Radius * 2.0, Radius * 2.0
+	local IsObstructed = Window.IsObstructedAtMouse()
+	local Color = Style.ButtonColor
+	local MouseX, MouseY = Window.GetMousePosition()
+
+	local DX = MouseX - CenterX
+	local DY = MouseY - CenterY
+	local HoveredButton = not IsObstructed and (DX * DX) + (DY * DY) <= Radius * Radius
+	if HoveredButton then
+		Color = Style.ButtonHoveredColor
+
+		if ClickedId == Id then
+			Color = Style.ButtonPressedColor
+		end
+
+		if Mouse.IsClicked(1) then
+			ClickedId = Id
+		end
+
+		if Mouse.IsReleased(1) and ClickedId == Id then
+			Result = true
+			ClickedId = nil
+		end
+	end
+
+	DrawCommands.Circle('fill', CenterX, CenterY, Radius, Color)
+
+	if Options.Index > 0 and Options.Index == Options.SelectedIndex then
+		DrawCommands.Circle('fill', CenterX, CenterY, Radius * 0.7, Style.RadioButtonSelectedColor)
+	end
+
+	if Label ~= nil and Label ~= "" then
+		local CursorY = Cursor.GetY()
+		Cursor.AdvanceX(W)
+		Text.Begin(Label)
+
+		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
+		W = (ItemX + ItemW) - X
+		H = math.max(H, ItemH)
+		Cursor.SetY(CursorY)
+	end
+
+	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+		Tooltip.Begin(Options.Tooltip)
+		Window.SetHotItem(Id)
+	end
+
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
+
+	Window.AddItem(X, Y, W, H)
+
+	Stats.End('RadioButton')
 
 	return Result
 end
