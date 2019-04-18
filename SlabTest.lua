@@ -48,6 +48,7 @@ local ListBoxIndex = 1
 local SlabTest_MessageBox = false
 local SlabTest_FileDialog = false
 local SlabTest_FileDialogType = 'openfile'
+local SlabTest_ColorPicker = false
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -209,6 +210,10 @@ function SlabTest.MainMenuBar()
 				SlabTest_MessageBox = not SlabTest_MessageBox
 			end
 
+			if Slab.MenuItemChecked("Color Picker", SlabTest_ColorPicker) then
+				SlabTest_ColorPicker = not SlabTest_ColorPicker
+			end
+
 			Slab.EndMenu()
 		end
 
@@ -254,6 +259,14 @@ function SlabTest.Begin()
 				print("   " .. V)
 			end
 			SlabTest_FileDialog = false
+		end
+	end
+
+	if SlabTest_ColorPicker then
+		local Result = Slab.ColorPicker()
+
+		if Result.Button ~= "" then
+			SlabTest_ColorPicker = false
 		end
 	end
 

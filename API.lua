@@ -30,6 +30,7 @@ end
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
+local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
@@ -258,6 +259,7 @@ function Slab.Draw()
 		Button.ClearClicked()
 	end
 
+	ColorPicker.DrawCanvas()
 	DrawCommands.Execute()
 
 	Stats.End('Draw')
@@ -1143,6 +1145,23 @@ end
 --]]
 function Slab.FileDialog(Options)
 	return Dialog.FileDialog(Options)
+end
+
+--[[
+	ColorPicker
+
+	Displays a window to allow the user to pick a hue and saturation value of a color. This should be called every frame and the result
+	should be handled to stop displaying the color picker and store the resulting color.
+
+	Options: [Table] List of options that control the behavior of the color picker.
+		Color: [Table] The color to modify. This should be in the format of 0-1 for each color component (RGBA).
+
+	Return: [Table] Returns the button and color the user has selected.
+		Button: [String] The button the user clicked. Will either be OK or Cancel.
+		Color: [Table] The new color the user has chosen. This will always be returned.
+--]]
+function Slab.ColorPicker(Options)
+	return ColorPicker.Begin(Options)
 end
 
 --[[

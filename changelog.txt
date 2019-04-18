@@ -1,3 +1,9 @@
+COLOR PICKER
+==========
+Lock focus on saturation/tint quads even outside of bounds. Be sure to clamp values at 0 to size - 1.
+Update saturation/tint markers when changing RGB values.
+Add alpha bar.
+
 NEXT RELEASE
 ==========
 CC0 - license for UI image.
@@ -6,6 +12,7 @@ v0.3.0 RELEASE
 ==========
 [API]: Update version number.
 [Button]: ExpandW documentation.
+[Color Picker]: Documentation.
 [Column]: Documentation.
 [Controls]: Rounding documentation.
 [Controls]: API documentation on hover and click.
@@ -28,6 +35,7 @@ BUGS
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Focused window flickers between multiple windows sometimes. Seems to be related to hovering over combo box.
+[Window]: Clamp window moving to viewport.
 
 TODO
 ==========
@@ -35,7 +43,6 @@ TODO
 [API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
 [Button]: Invisible button support.
-Color Picker: Initial implementation.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
 [Column]: Ability to start column on current cursor line position.
 Combo Box: Easy API with table of possible values.
@@ -49,6 +56,7 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
 Input: Multi-line input control.
+[Input]: Min and max number values.
 [Input]: Allow user to highlight text in read-only mode.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
@@ -58,6 +66,7 @@ Region: Clamp position check with owning window's size.
 [Separator]: Option to change the line thickness.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
+[Stats]: Draw time draw command.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.

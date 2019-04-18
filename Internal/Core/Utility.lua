@@ -37,6 +37,62 @@ function Utility.MakeColor(Color)
 	return Copy
 end
 
+function Utility.HSVtoRGB(H, S, V)
+	if S == 0.0 then
+		return V, V, V
+	end
+
+	H = math.fmod(H, 1.0) / (60.0/360.0)
+	local I = math.floor(H)
+	local F = H - I
+	local P = V * (1.0 - S)
+	local Q = V * (1.0 - S * F)
+	local T = V * (1.0 - S * (1.0 - F))
+
+	local R, G, B = 0, 0, 0
+
+	if I == 0 then
+		R, G, B = V, T, P
+	elseif I == 1 then
+		R, G, B = Q, V, P
+	elseif I == 2 then
+		R, G, B = P, V, T
+	elseif I == 3 then
+		R, G, B = P, Q, V
+	elseif I == 4 then
+		R, G, B = T, P, V
+	else
+		R, G, B = V, P, Q
+	end
+
+	return R, G, B
+end
+
+function Utility.RGBtoHSV(R, G, B)
+	local K = 0.0
+
+	if G < B then
+		local T = G
+		G = B
+		B = T
+		K = -1.0
+	end
+
+	if R < G then
+		local T = R
+		R = G
+		G = T
+		K = -2.0 / 6.0 - K
+	end
+
+	local Chroma = R - (G < B and G or B)
+	local H = math.abs(K + (G - B) / (6.0 * Chroma + 1e-20))
+	local S = Chroma / (R + 1e-20)
+	local V = R
+
+	return H, S, V
+end
+
 function Utility.HasValue(Table, Value)
 	for I, V in ipairs(Table) do
 		if V == Value then

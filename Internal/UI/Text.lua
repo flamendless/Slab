@@ -129,4 +129,8 @@ function Text.GetWidth(Label)
 	return Style.Font:getWidth(Label)
 end
 
+function Text.GetSize(Label)
+	return Style.Font:getWidth(Label), Style.Font:getHeight()
+end
+
 return Text

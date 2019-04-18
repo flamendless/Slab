@@ -831,6 +831,25 @@ function Window.EndColumn()
 	end
 end
 
+function Window.GetLastVisibleTime(Id)
+	local Instance = ActiveInstance
+
+	if Id ~= nil then
+		for I, V in ipairs(Instances) do
+			if V.Id == Id then
+				Instance = V
+				break
+			end
+		end
+	end
+
+	if Instance ~= nil then
+		return Instance.LastVisibleTime
+	end
+
+	return 0.0
+end
+
 function Window.GetLayer()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.Layer

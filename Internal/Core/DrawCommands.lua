@@ -46,7 +46,8 @@ local Types =
 	Cross = 12,
 	Image = 13,
 	SubImage = 14,
-	Circle = 15
+	Circle = 15,
+	DrawCanvas = 16
 }
 
 local Layers =
@@ -212,6 +213,11 @@ local function DrawElements(Elements)
 			DrawSubImage(V)
 		elseif V.Type == Types.Circle then
 			DrawCircle(V)
+		elseif V.Type == Types.DrawCanvas then
+			love.graphics.setBlendMode('alpha', 'premultiplied')
+			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+			love.graphics.draw(V.Canvas, V.X, V.Y)
+			love.graphics.setBlendMode('alpha')
 		end
 	end
 end
@@ -472,7 +478,17 @@ function DrawCommands.Circle(Mode, X, Y, Radius, Color, Segments)
 	Item.Y = Y
 	Item.Radius = Radius
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	Item.Segments = Segments and Segments or 48
+	Item.Segments = Segments and Segments or 24
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.DrawCanvas(Canvas, X, Y)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.DrawCanvas
+	Item.Canvas = Canvas
+	Item.X = X
+	Item.Y = Y
 	table.insert(ActiveBatch.Elements, Item)
 end
 
