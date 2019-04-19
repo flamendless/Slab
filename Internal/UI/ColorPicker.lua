@@ -27,6 +27,7 @@ SOFTWARE.
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
@@ -50,6 +51,11 @@ local TintW = 30.0
 local TintH = SaturationSize
 local TintData = nil
 local TintFocused = false
+
+local AlphaMesh = nil
+local AlphaW = TintW
+local AlphaH = TintH
+local AlphaFocused = false
 
 local CurrentColor = {1.0, 1.0, 1.0, 1.0}
 local ColorH = 25.0
@@ -210,9 +216,42 @@ local function InitializeTintCanvas()
 	end
 end
 
+local function InitializeAlphaMesh()
+	if AlphaMesh == nil then
+		local Verts = {
+			{
+				0.0, 0.0,
+				0.0, 0.0,
+				1.0, 1.0, 1.0, 1.0
+			},
+			{
+				AlphaW, 0.0,
+				1.0, 0.0,
+				1.0, 1.0, 1.0, 1.0
+			},
+			{
+				AlphaW, AlphaH,
+				1.0, 1.0,
+				0.0, 0.0, 0.0, 1.0
+			},
+			{
+				0.0, AlphaH,
+				0.0, 1.0,
+				0.0, 0.0, 0.0, 1.0
+			}
+		}
+
+		AlphaMesh = love.graphics.newMesh(Verts)
+	end
+end
+
 function ColorPicker.Begin(Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
+
+	if AlphaMesh == nil then
+		InitializeAlphaMesh()
+	end
 
 	local DeltaVisibleTime = love.timer.getTime() - Window.GetLastVisibleTime('ColorPicker')
 	if DeltaVisibleTime > 1.0 then
@@ -248,13 +287,13 @@ function ColorPicker.Begin(Options)
 
 		if UpdateSaturation then
 			local CanvasX = math.max(MouseX - X, 0)
-			CanvasX = math.min(CanvasX, SaturationData:getWidth() - 1)
+			CanvasX = math.min(CanvasX, SaturationData:getWidth())
 
 			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, SaturationData:getHeight() - 1)
+			CanvasY = math.min(CanvasY, SaturationData:getHeight())
 
-			S = CanvasX / (SaturationData:getWidth() - 1)
-			V = 1 - (CanvasY / (SaturationData:getHeight() - 1))
+			S = CanvasX / SaturationData:getWidth()
+			V = 1 - (CanvasY / SaturationData:getHeight())
 
 			UpdateColor = true
 		end
@@ -284,9 +323,9 @@ function ColorPicker.Begin(Options)
 
 		if UpdateTint then
 			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, TintCanvas:getHeight() - 1)
+			CanvasY = math.min(CanvasY, TintCanvas:getHeight())
 
-			H = CanvasY / (TintCanvas:getHeight() - 1)
+			H = CanvasY / TintCanvas:getHeight()
 
 			UpdateColor = true
 		end
@@ -294,6 +333,35 @@ function ColorPicker.Begin(Options)
 		local TintY = H * (TintCanvas:getHeight() - 1)
 		DrawCommands.Line(X, Y + TintY, X + TintCanvas:getWidth(), Y + TintY, 2.0, {1.0, 1.0, 1.0, 1.0})
 
+		X = X + TintCanvas:getWidth() + Cursor.PadX()
+		DrawCommands.Mesh(AlphaMesh, X, Y)
+		Window.AddItem(X, Y, AlphaW, AlphaH)
+
+		local UpdateAlpha = false
+		if X <= MouseX and MouseX < X + AlphaW and Y <= MouseY and MouseY < Y + AlphaH then
+			if Mouse.IsClicked(1) then
+				AlphaFocused = true
+				UpdateAlpha = true
+			end
+		end
+
+		if AlphaFocused and Mouse.IsDragging(1) then
+			UpdateAlpha = true
+		end
+
+		if UpdateAlpha then
+			local CanvasY = math.max(MouseY - Y, 0)
+			CanvasY = math.min(CanvasY, AlphaH)
+
+			CurrentColor[4] = 1.0 - CanvasY / AlphaH
+
+			UpdateColor = true
+		end
+
+		local A = 1.0 - CurrentColor[4]
+		local AlphaY = A * AlphaH
+		DrawCommands.Line(X, Y + AlphaY, X + AlphaW, Y + AlphaY, 2.0, {A, A, A, 1.0})
+		
 		Y = Y + TintCanvas:getHeight() + Cursor.PadY()
 	end
 
@@ -305,11 +373,10 @@ function ColorPicker.Begin(Options)
 	local OffsetX = Text.GetWidth("##")
 	Cursor.AdvanceY(SaturationSize)
 	X, Y = Cursor.GetPosition()
-	local OldColor = {CurrentColor[1], CurrentColor[2], CurrentColor[3], CurrentColor[4]}
-	local R = tonumber(string.format("%.2f", CurrentColor[1]))
-	local G = tonumber(string.format("%.2f", CurrentColor[2]))
-	local B = tonumber(string.format("%.2f", CurrentColor[3]))
-	local A = tonumber(string.format("%.2f", CurrentColor[4]))
+	local R = CurrentColor[1]
+	local G = CurrentColor[2]
+	local B = CurrentColor[3]
+	local A = CurrentColor[4]
 
 	CurrentColor[1], R = InputColor("R", R, OffsetX)
 	CurrentColor[2], G = InputColor("G", G, OffsetX)
@@ -332,8 +399,15 @@ function ColorPicker.Begin(Options)
 	local ColorX = X + OffsetX
 
 	local ColorW = (WinX + WinW) - ColorX
+	Cursor.SetPosition(ColorX, Y)
+	Image.Begin('ColorPicker_CurrentAlpha', {
+		Path = SLAB_PATH .. "/Internal/Resources/Textures/Transparency.png",
+		SubW = ColorW,
+		SubH = ColorH,
+		WrapH = "repeat",
+		WrapV = "repeat"
+	})
 	DrawCommands.Rectangle('fill', ColorX, Y, ColorW, ColorH, CurrentColor, Style.ButtonRounding)
-	Window.AddItem(X, Y, ColorW, ColorH)
 
 	local LabelW, LabelH = Text.GetSize("New")
 	Cursor.SetPosition(ColorX - LabelW - Cursor.PadX(), Y + (ColorH * 0.5) - (LabelH * 0.5))
@@ -341,8 +415,15 @@ function ColorPicker.Begin(Options)
 
 	Y = Y + ColorH + Cursor.PadY()
 
+	Cursor.SetPosition(ColorX, Y)
+	Image.Begin('ColorPicker_CurrentAlpha', {
+		Path = SLAB_PATH .. "/Internal/Resources/Textures/Transparency.png",
+		SubW = ColorW,
+		SubH = ColorH,
+		WrapH = "repeat",
+		WrapV = "repeat"
+	})
 	DrawCommands.Rectangle('fill', ColorX, Y, ColorW, ColorH, Options.Color, Style.ButtonRounding)
-	Window.AddItem(X, Y, ColorW, ColorH)
 
 	local LabelW, LabelH = Text.GetSize("Old")
 	Cursor.SetPosition(ColorX - LabelW - Cursor.PadX(), Y + (ColorH * 0.5) - (LabelH * 0.5))
@@ -351,14 +432,16 @@ function ColorPicker.Begin(Options)
 	if Mouse.IsReleased(1) then
 		SaturationFocused = false
 		TintFocused = false
+		AlphaFocused = false
 	end
 
 	Cursor.SetPosition(InputX, InputY)
 	Cursor.NewLine()
 
-	local Result = {Button = "", Color = CurrentColor}
+	local Result = {Button = "", Color = Utility.MakeColor(CurrentColor)}
 	if Button.Begin("Cancel", {AlignRight = true}) then
 		Result.Button = "Cancel"
+		Result.Color = Utility.MakeColor(Options.Color)
 	end
 
 	Cursor.SameLine()

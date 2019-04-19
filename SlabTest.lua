@@ -49,6 +49,7 @@ local SlabTest_MessageBox = false
 local SlabTest_FileDialog = false
 local SlabTest_FileDialogType = 'openfile'
 local SlabTest_ColorPicker = false
+local SlabTest_ColorPicker_Color = {1.0, 1.0, 1.0, 1.0}
 
 function SlabTest.BasicWindow()
 	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
@@ -263,10 +264,14 @@ function SlabTest.Begin()
 	end
 
 	if SlabTest_ColorPicker then
-		local Result = Slab.ColorPicker()
+		local Result = Slab.ColorPicker({Color = SlabTest_ColorPicker_Color})
 
 		if Result.Button ~= "" then
 			SlabTest_ColorPicker = false
+
+			if Result.Button == "OK" then
+				SlabTest_ColorPicker_Color = Result.Color
+			end
 		end
 	end
 

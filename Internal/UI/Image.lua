@@ -39,6 +39,7 @@ local ImageCache = {}
 local function GetImage(Path)
 	if ImageCache[Path] == nil then
 		ImageCache[Path] = love.graphics.newImage(Path)
+		local WrapH, WrapV = ImageCache[Path]:getWrap()
 	end
 	return ImageCache[Path]
 end
@@ -70,6 +71,8 @@ function Image.Begin(Id, Options)
 	Options.SubY = Options.SubY == nil and 0.0 or Options.SubY
 	Options.SubW = Options.SubW == nil and 0.0 or Options.SubW
 	Options.SubH = Options.SubH == nil and 0.0 or Options.SubH
+	Options.WrapH = Options.WrapH == nil and "clamp" or Options.WrapH
+	Options.WrapV = Options.WrapV == nil and "clamp" or Options.WrapV
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -82,6 +85,8 @@ function Image.Begin(Id, Options)
 			Instance.Image = Options.Image
 		end
 	end
+
+	Instance.Image:setWrap(Options.WrapH, Options.WrapV)
 
 	local X, Y = Cursor.GetPosition()
 	local W = Instance.Image:getWidth() * Options.ScaleX

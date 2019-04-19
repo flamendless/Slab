@@ -47,7 +47,8 @@ local Types =
 	Image = 13,
 	SubImage = 14,
 	Circle = 15,
-	DrawCanvas = 16
+	DrawCanvas = 16,
+	Mesh = 17
 }
 
 local Layers =
@@ -218,6 +219,8 @@ local function DrawElements(Elements)
 			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 			love.graphics.draw(V.Canvas, V.X, V.Y)
 			love.graphics.setBlendMode('alpha')
+		elseif V.Type == Types.Mesh then
+			love.graphics.draw(V.Mesh, V.X, V.Y)
 		end
 	end
 end
@@ -487,6 +490,16 @@ function DrawCommands.DrawCanvas(Canvas, X, Y)
 	local Item = {}
 	Item.Type = Types.DrawCanvas
 	Item.Canvas = Canvas
+	Item.X = X
+	Item.Y = Y
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.Mesh(Mesh, X, Y)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.Mesh
+	Item.Mesh = Mesh
 	Item.X = X
 	Item.Y = Y
 	table.insert(ActiveBatch.Elements, Item)

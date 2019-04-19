@@ -1,13 +1,3 @@
-COLOR PICKER
-==========
-Lock focus on saturation/tint quads even outside of bounds. Be sure to clamp values at 0 to size - 1.
-Update saturation/tint markers when changing RGB values.
-Add alpha bar.
-
-NEXT RELEASE
-==========
-CC0 - license for UI image.
-
 v0.3.0 RELEASE
 ==========
 [API]: Update version number.
