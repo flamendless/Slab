@@ -10,6 +10,7 @@ v0.3.0 RELEASE
 [Mouse]: API documentation.
 [Radio Button]: Documentation.
 [Separator]: API documentation for options.
+[Shape]: Documentation.
 [Slab Debug]: Documentation.
 [Stats]: Documentation.
 [Wiki]: Update images.
@@ -54,6 +55,11 @@ Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
 [Separator]: Option to change the line thickness.
+[Shape]: Triangle.
+[Shape]: Circle.
+[Shape]: Line.
+[Shape]: Curve.
+[Shape]: Polygon.
 SlabDebug: Show image stats.
 [Slab Debug]: Style editor.
 [Stats]: Draw time draw command.

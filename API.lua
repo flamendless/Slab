@@ -44,6 +44,7 @@ local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
 local MenuBar = require(SLAB_PATH .. '.Internal.UI.MenuBar')
 local Separator = require(SLAB_PATH .. '.Internal.UI.Separator')
+local Shape = require(SLAB_PATH .. '.Internal.UI.Shape')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
@@ -142,6 +143,9 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Control:
 			IsControlHovered
 			IsControlClicked
+
+		Shape:
+			Rectangle
 --]]
 local Slab = {}
 
@@ -1273,6 +1277,26 @@ end
 --]]
 function Slab.IsControlClicked(Button)
 	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
+--[[
+	Rectangle
+
+	Draws a rectangle at the current cursor position for the active window.
+
+	Options: [Table] List of options that control how this rectangle is displayed.
+		Mode: [String] Whether this rectangle should be filled or outlines. The default value is 'fill'.
+		W: [Number] The width of the rectangle.
+		H: [Number] The height of the rectangle.
+		Color: [Table] The color to use for this rectangle.
+		Rounding: [Number] Amount of rounding to apply to each corner.
+		Outline: [Boolean] If the Mode option is 'fill', this option will allow an outline to be drawn.
+		OutlineColor: [Table] The color to use for the outline if requested.
+
+	Return: None.
+--]]
+function Slab.Rectangle(Options)
+	Shape.Rectangle(Options)
 end
 
 return Slab
