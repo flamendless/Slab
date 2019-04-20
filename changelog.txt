@@ -33,7 +33,7 @@ TODO
 [API]: Expose Keyboard functions.
 [API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
-[Button]: Invisible button support.
+[API]: Get/Set cursor padding.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
 [Column]: Ability to start column on current cursor line position.
 Combo Box: Easy API with table of possible values.

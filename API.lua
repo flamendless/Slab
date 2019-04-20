@@ -113,6 +113,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			SameLine
 			NewLine
 			SetCursorPos
+			GetCursorPos
 
 		Properties
 
@@ -596,6 +597,9 @@ end
 		AlignRight: [Boolean] Flag to push this button to the right side of the window.
 		ExpandW: [Boolean] Expands the button to fit the contents of the window.
 		Rounding: [Number] Amount of rounding to apply to the corners of the button.
+		Invisible: [Boolean] Don't render the button, but keep the behavior.
+		W: [Number] Override the width of the button.
+		H: [Number] Override the height of the button.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
@@ -933,6 +937,31 @@ function Slab.SetCursorPos(X, Y, Options)
 		Y = Y == nil and Cursor.GetY() - Cursor.GetAnchorY() or Y
 		Cursor.SetRelativePosition(X, Y)
 	end
+end
+
+--[[
+	GetCursorPos
+
+	Gets the cursor position. The default behavior is to get the cursor position relative to
+	the current window. The absolute position can be retrieved if the 'Absolute' option is set.
+
+	Options: [Table] List of options that control how the cursor position should be retrieved.
+		Absolute: [Boolean] If true, will return the cursor position in absolute coordinates.
+
+	Return: [Number], [Number] The X and Y coordinates of the cursor.
+--]]
+function Slab.GetCursorPos(Options)
+	Options = Options == nil and {} or Options
+	Options.Absolute = Options.Absolute == nil and false or Options.Absolute
+
+	local X, Y = Cursor.GetPosition()
+
+	if not Options.Absolute then
+		X = X - Cursor.GetAnchorX()
+		Y = Y - Cursor.GetAnchorY()
+	end
+
+	return X, Y
 end
 
 --[[

@@ -49,6 +49,9 @@ function Button.Begin(Label, Options)
 	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
 	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
 	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
+	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
+	Options.W = Options.W == nil and nil or Options.W
+	Options.H = Options.H == nil and nil or Options.H
 
 	local Id = Window.GetItemId(Label)
 	local X, Y = Cursor.GetPosition()
@@ -59,6 +62,14 @@ function Button.Begin(Label, Options)
 	if Options.ExpandW then
 		local RegionW, RegionH = Window.GetBorderlessSize()
 		W = RegionW
+	end
+
+	if Options.W ~= nil then
+		W = Options.W
+	end
+
+	if Options.H ~= nil then
+		H = Options.H
 	end
 
 	if Options.AlignRight then
@@ -90,8 +101,10 @@ function Button.Begin(Label, Options)
 
 	local LabelX = X + (W * 0.5) - (LabelW * 0.5)
 
-	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
-	DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5), nil, Style.Font)
+	if not Options.Invisible then
+		DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
+		DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5), nil, Style.Font)
+	end
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
