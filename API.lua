@@ -78,6 +78,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetWindowPosition
 			GetWindowSize
 			GetWindowContentSize
+			GetWindowActiveSize
 			BeginColumn
 			EndColumn
 
@@ -371,6 +372,18 @@ end
 --]]
 function Slab.GetWindowContentSize()
 	return Window.GetContentSize()
+end
+
+--[[
+	GetWindowActiveSize
+
+	Retrieves the active window's active size minus the borders. This could be the size of the window or
+	the size of the current column.
+
+	Return: [Number], [Number] The width and height of the window's active bounds.
+--]]
+function Slab.GetWindowActiveSize()
+	return Window.GetBorderlessSize()
 end
 
 --[[

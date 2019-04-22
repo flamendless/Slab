@@ -39,11 +39,15 @@ local SlabDebug_Windows = false
 local SlabDebug_Tooltip = false
 local SlabDebug_DrawCommands = false
 local SlabDebug_Performance = false
+local SlabDebug_StyleEditor = false
 
 local SlabDebug_Windows_Categories = {"Inspector", "Stack"}
 local SlabDebug_Windows_Category = "Inspector"
 
 local Selected_Window = ""
+
+local Style_EditingColor = nil
+local Style_ColorStore = nil
 
 local function Window_Inspector()
 	local Ids = Window.GetInstanceIds()
@@ -140,6 +144,90 @@ local function DrawPerformance()
 	PrintStatsCategory("Tree Time", 'Tree')
 	PrintStatsCategory("Window Time", 'Window')
 	Slab.EndWindow()
+end
+
+local function EditColor(Color)
+	Style_EditingColor = Color
+	Style_ColorStore = {Color[1], Color[2], Color[3], Color[4]}
+end
+
+local function DrawStyleColor(Label, Color)
+	local Style = Slab.GetStyle()
+	local H = Style.Font:getHeight()
+	local TextColor = Style.TextColor
+
+	if Style_EditingColor == Color then
+		TextColor = {1.0, 1.0, 0.0, 1.0}
+	end
+
+	Slab.BeginColumn(1)
+	Slab.Text(Label, {Color = TextColor})
+	Slab.EndColumn()
+
+	Slab.BeginColumn(2)
+	local ColW, ColH = Slab.GetWindowActiveSize()
+	local X, Y = Slab.GetCursorPos()
+	Slab.Rectangle({W = ColW, H = H, Color = Color, Outline = true})
+	Slab.SetCursorPos(X, Y)
+
+	if Slab.Button("", {Invisible = true, W = ColW, H = H}) then
+		EditColor(Color)
+	end
+	Slab.EndColumn()
+end
+
+local function DrawStyleValue(Label, Value)
+	local Style = Slab.GetStyle()
+
+	Slab.BeginColumn(1)
+	Slab.Text(Label)
+	Slab.EndColumn()
+
+	Slab.BeginColumn(2)
+	local W, H = Slab.GetWindowActiveSize()
+	if Slab.Input('SlabDebug_Style_' .. Label, {Text = Value, ReturnOnText = false, NumbersOnly = true, W = W}) then
+		Style[Label] = tonumber(Slab.GetInputText())
+	end
+	Slab.EndColumn()
+end
+
+local function DrawStyleEditor()
+	Slab.BeginWindow('SlabDebug_StyleEditor', {Title = "Style Editor", Columns = 2, AutoSizeWindow = false, AllowResize = true, W = 500.0, H = 400.0})
+
+	local Style = Slab.GetStyle()
+
+	for K, V in pairs(Style) do
+		if type(V) == "table" and K ~= "Font" then
+			DrawStyleColor(K, V)
+		end
+	end
+
+	for K, V in pairs(Style) do
+		if type(V) == "number" and K ~= "FontSize" then
+			DrawStyleValue(K, V)
+		end
+	end
+
+	Slab.EndWindow()
+
+	if Style_EditingColor ~= nil then
+		local Result = Slab.ColorPicker({Color = Style_ColorStore})
+		Style_EditingColor[1] = Result.Color[1]
+		Style_EditingColor[2] = Result.Color[2]
+		Style_EditingColor[3] = Result.Color[3]
+		Style_EditingColor[4] = Result.Color[4]
+
+		if Result.Button ~= "" then
+			if Result.Button == "Cancel" then
+				Style_EditingColor[1] = Style_ColorStore[1]
+				Style_EditingColor[2] = Style_ColorStore[2]
+				Style_EditingColor[3] = Style_ColorStore[3]
+				Style_EditingColor[4] = Style_ColorStore[4]
+			end
+
+			Style_EditingColor = nil
+		end
+	end
 end
 
 function SlabDebug.About()
@@ -239,6 +327,10 @@ function SlabDebug.Menu()
 			Stats.SetEnabled(SlabDebug_Performance)
 		end
 
+		if Slab.MenuItemChecked("Style Editor", SlabDebug_StyleEditor) then
+			SlabDebug_StyleEditor = not SlabDebug_StyleEditor
+		end
+
 		Slab.EndMenu()
 	end
 end
@@ -264,6 +356,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_Performance then
 		DrawPerformance()
+	end
+
+	if SlabDebug_StyleEditor then
+		DrawStyleEditor()
 	end
 end
 

@@ -2,6 +2,7 @@ v0.3.0 RELEASE
 ==========
 [API]: Update version number.
 [Button]: ExpandW documentation.
+[Button]: Invisible, W, H documentation.
 [Color Picker]: Documentation.
 [Column]: Documentation.
 [Controls]: Rounding documentation.
@@ -18,11 +19,13 @@ v0.3.0 RELEASE
 BUGS
 ==========
 [Button]: Label should use the text control.
+[Button]: Style editor color buttons pressed on release for odd reason. Investigate.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
 [Mouse]: Setting cursor type causes hit on frame time.
 [Slab Debug]: Window combo box being overlapped when initially opened.
+[Style]: Look into MenuHoveredColor and see if it is still needed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Focused window flickers between multiple windows sometimes. Seems to be related to hovering over combo box.
@@ -34,8 +37,10 @@ TODO
 [API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.
+[Color Picker]: Set initial position.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
 [Column]: Ability to start column on current cursor line position.
+[Column]: Move separator with mouse.
 Combo Box: Easy API with table of possible values.
 Context Menu: Investigate checking hot item and last item of window.
 Controls: Convert all window bounds check to use region.
@@ -45,6 +50,7 @@ Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
+[INI]: Load/save INI files.
 Input: Double click to select word.
 Input: Multi-line input control.
 [Input]: Min and max number values.
@@ -61,11 +67,12 @@ Region: Clamp position check with owning window's size.
 [Shape]: Curve.
 [Shape]: Polygon.
 SlabDebug: Show image stats.
-[Slab Debug]: Style editor.
 [Stats]: Draw time draw command.
 Style: Light theme.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
+[Style Editor]: Combo box for style selection.
+[Style Editor]: Serialize style to/from file.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Text]: Tooltip support.
 Window: Menu support.
