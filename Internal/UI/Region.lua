@@ -103,8 +103,8 @@ local function UpdateScrollBars(Instance, IsObstructed)
 		Instance.HoverScrollY = false
 	end
 
-	local IsMousePressed = Mouse.IsPressed(1)
 	local IsMouseReleased = Mouse.IsReleased(1)
+	local IsMouseClicked = Mouse.IsClicked(1)
 
 	local DeltaX, DeltaY = Mouse.GetDelta()
 
@@ -128,7 +128,7 @@ local function UpdateScrollBars(Instance, IsObstructed)
 			ScrollInstance = Instance
 		end
 
-		if ScrollInstance == nil and IsMousePressed and (Instance.HoverScrollX or Instance.HoverScrollY) then
+		if ScrollInstance == nil and IsMouseClicked and (Instance.HoverScrollX or Instance.HoverScrollY) then
 			ScrollInstance = Instance
 			ScrollInstance.IsScrollingX = Instance.HoverScrollX
 			ScrollInstance.IsScrollingY = Instance.HoverScrollY

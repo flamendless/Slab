@@ -332,7 +332,7 @@ function Window.Top()
 	return ActiveInstance
 end
 
-function Window.IsObstructed(X, Y)
+function Window.IsObstructed(X, Y, SkipScrollCheck)
 	if Region.IsScrolling() then
 		return true
 	end
@@ -349,7 +349,7 @@ function Window.IsObstructed(X, Y)
 
 			if Contains(V, X, Y) and V.CanObstruct then
 				if ActiveInstance == V then
-					if Region.IsHoverScrollBar(ActiveInstance.Id) then
+					if not SkipScrollCheck and Region.IsHoverScrollBar(ActiveInstance.Id) then
 						return true
 					end
 
@@ -490,7 +490,7 @@ function Window.Begin(Id, Options)
 	end
 
 	local MouseX, MouseY = Mouse.Position()
-	local IsObstructed = Window.IsObstructed(MouseX, MouseY)
+	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
 	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed then
 		PushToTop(ActiveInstance)
 	end

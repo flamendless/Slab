@@ -19,11 +19,11 @@ v0.3.0 RELEASE
 BUGS
 ==========
 [Button]: Label should use the text control.
-[Button]: Style editor color buttons pressed on release for odd reason. Investigate.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
 [Mouse]: Setting cursor type causes hit on frame time.
+[Scroll Bar]: Color flicker when clicking and releasing on scroll bar.
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Style]: Look into MenuHoveredColor and see if it is still needed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
