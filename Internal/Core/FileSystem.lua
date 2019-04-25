@@ -157,4 +157,33 @@ function FileSystem.GetRootDirectory(Path)
 	return Result
 end
 
+function FileSystem.GetSlabPath()
+	return love.filesystem.getRealDirectory(SLAB_PATH) .. "/" .. SLAB_PATH
+end
+
+function FileSystem.ReadContents(Path, IsBinary)
+	local Result = nil
+
+	local Mode = IsBinary and "rb" or "r"
+	local Handle, Error = io.open(Path, Mode)
+	if Handle ~= nil then
+		Result = Handle:read("*a")
+		Handle:close()
+	end
+
+	return Result, Error
+end
+
+function FileSystem.SaveContents(Path, Contents)
+	local Result = false
+	local Handle, Error = io.open(Path, "w")
+	if Handle ~= nil then
+		Handle:write(Contents)
+		Handle:close()
+		Result = true
+	end
+
+	return Result, Error
+end
+
 return FileSystem

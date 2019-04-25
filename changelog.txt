@@ -50,7 +50,6 @@ Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
-[INI]: Load/save INI files.
 Input: Double click to select word.
 Input: Multi-line input control.
 [Input]: Min and max number values.
