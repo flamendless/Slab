@@ -103,7 +103,11 @@ function Button.Begin(Label, Options)
 
 	if not Options.Invisible then
 		DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
-		DrawCommands.Print(Label, math.floor(LabelX), math.floor(Y) + math.floor(H * 0.5) - math.floor(FontHeight * 0.5), nil, Style.Font)
+		local X, Y = Cursor.GetPosition()
+		Cursor.SetX(math.floor(LabelX))
+		Cursor.SetY(math.floor(Y + (H * 0.5) - (FontHeight * 0.5)))
+		Text.Begin(Label)
+		Cursor.SetPosition(X, Y)
 	end
 
 	Cursor.SetItemBounds(X, Y, W, H)

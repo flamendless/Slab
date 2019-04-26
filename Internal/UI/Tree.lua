@@ -92,7 +92,7 @@ function Tree.Begin(Id, Options)
 	local IsHot = not IsObstructed and WinX <= TMouseX and TMouseX <= WinX + WinW and Y <= TMouseY and TMouseY <= Y + H and Region.Contains(MouseX, MouseY)
 
 	if IsHot or Options.IsSelected then
-		DrawCommands.Rectangle('fill', WinX, Y, WinW, H, Style.MenuHoveredColor)
+		DrawCommands.Rectangle('fill', WinX, Y, WinW, H, Style.TextHoverBgColor)
 	end
 
 	if IsHot then
@@ -112,7 +112,7 @@ function Tree.Begin(Id, Options)
 		end
 
 		local Dir = Instance.IsOpen and 'south' or 'east'
-		DrawCommands.Triangle('fill', TriX, TriY, Radius, Dir, {1.0, 1.0, 1.0, 1.0})
+		DrawCommands.Triangle('fill', TriX, TriY, Radius, Dir, Style.TextColor)
 	end
 
 	if not Instance.IsOpen and Instance.WasOpen then

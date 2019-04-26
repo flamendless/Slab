@@ -513,7 +513,7 @@ function Window.Begin(Id, Options)
 		end
 		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, Options.Rounding)
 		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, Options.Rounding)
-		DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY, nil, Style.Font)
+		DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY, Style.TextColor, Style.Font)
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
 	end
 
@@ -529,7 +529,8 @@ function Window.Begin(Id, Options)
 		MouseX = MouseX,
 		MouseY = MouseY,
 		ResetContent = ActiveInstance.HasResized,
-		Rounding = Options.Rounding
+		Rounding = Options.Rounding,
+		NoOutline = Options.NoOutline
 	})
 end
 

@@ -112,6 +112,20 @@ function Utility.Remove(Table, Value)
 	end
 end
 
+function Utility.Copy(A, B)
+	if type(A) ~= "table" or type(B) ~= "table" then
+		return
+	end
+
+	for K, V in pairs(A, B) do
+		local Other = B[K]
+
+		if Other ~= nil then
+			A[K] = Other
+		end
+	end
+end
+
 function Utility.IsWindows()
 	return love.system.getOS() == "Windows"
 end

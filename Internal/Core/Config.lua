@@ -172,6 +172,10 @@ local function DecodeLine(Line, Result)
 		local Value = string.sub(Line, Index + 1)
 		Value = string.gsub(Value, " ", "")
 
+		if string.sub(Value, #Value, #Value) == "," then
+			Value = string.sub(Value, 1, #Value - 1)
+		end
+
 		if Section ~= nil then
 			Section[Key] = DecodeValue(Value)
 		else
@@ -243,7 +247,7 @@ function Config.LoadFile(Path)
 	local Result = nil
 	local Contents, Error = FileSystem.ReadContents(Path)
 	if Contents ~= nil then
-		Result, Error = Config.Decode(Path)
+		Result, Error = Config.Decode(Contents)
 	end
 
 	return Result, Error

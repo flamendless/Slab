@@ -60,7 +60,7 @@ function Tooltip.Begin(Tip)
 	if AccumDisplayTime > TooltipTime then
 		local X, Y = Mouse.Position()
 		Alpha = math.min(Alpha + DeltaTime * 4.0, 1.0)
-		local BgColor = Utility.MakeColor(Style.TooltipBgColor)
+		local BgColor = Utility.MakeColor(Style.WindowBackgroundColor)
 		local TextColor = Utility.MakeColor(Style.TextColor)
 		BgColor[4] = Alpha
 		TextColor[4] = Alpha
@@ -78,7 +78,6 @@ function Tooltip.Begin(Tip)
 			AllowResize = false,
 			AllowFocus = false,
 			Layer = 'ContextMenu',
-			BgColor = BgColor,
 			ResetWindowSize = ResetSize,
 			CanObstruct = false
 		})

@@ -183,7 +183,7 @@ end
 	Return: None.
 --]]
 function Slab.Initialize(args)
-	Style.Initialize()
+	Style.API.Initialize()
 	love.handlers['textinput'] = TextInput
 	love.handlers['wheelmoved'] = WheelMoved
 end

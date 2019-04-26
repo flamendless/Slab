@@ -197,7 +197,7 @@ local function DrawStyleEditor()
 	local Style = Slab.GetStyle()
 
 	for K, V in pairs(Style) do
-		if type(V) == "table" and K ~= "Font" then
+		if type(V) == "table" and K ~= "Font" and K ~= "API" then
 			DrawStyleColor(K, V)
 		end
 	end

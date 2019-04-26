@@ -97,7 +97,7 @@ function Menu.BeginMenu(Label)
 	local Id = Window.GetId() .. "." .. Label
 	local Win = Window.Top()
 
-	local Options = {IsSelectable = true, SelectOnHover = true, HoverColor = Style.MenuHoveredColor, IsSelected = Win.Selected == Id}
+	local Options = {IsSelectable = true, SelectOnHover = true, IsSelected = Win.Selected == Id}
 
 	if IsMenuBar then
 		Options.IsSelectableTextOnly = true
@@ -139,7 +139,7 @@ function Menu.BeginMenu(Label)
 		local TriX = WinX + WinW - H * 0.75
 		local TriY = Y + H * 0.5
 		local Radius = H * 0.35
-		DrawCommands.Triangle('fill', TriX, TriY, Radius, 'east', {1.0, 1.0, 1.0, 1.0})
+		DrawCommands.Triangle('fill', TriX, TriY, Radius, 'east', Style.TextColor)
 
 		MenuX = X + WinW
 		MenuY = Y
@@ -188,7 +188,7 @@ function Menu.MenuItemChecked(Label, IsChecked)
 
 	if IsChecked then
 		local H = Style.Font:getHeight()
-		DrawCommands.Check(X + LeftPad * 0.5, Y + H * 0.5, CheckSize, Style.MenuCheckColor)
+		DrawCommands.Check(X + LeftPad * 0.5, Y + H * 0.5, CheckSize, Style.TextColor)
 	end
 
 	return Result

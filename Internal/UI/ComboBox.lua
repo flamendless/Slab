@@ -127,7 +127,6 @@ function ComboBox.Begin(Id, Options)
 			W = W,
 			H = Instance.WinH,
 			AllowResize = false,
-			BgColor = Style.ComboBoxDropDownBgColor,
 			AutoSizeWindow = false,
 			AllowFocus = false,
 			Layer = Window.GetLayer(),

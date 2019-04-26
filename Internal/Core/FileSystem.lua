@@ -161,6 +161,15 @@ function FileSystem.GetSlabPath()
 	return love.filesystem.getRealDirectory(SLAB_PATH) .. "/" .. SLAB_PATH
 end
 
+function FileSystem.RemoveExtension(Path)
+	local Result = Path
+	local Index = string.find(Result, ".", 1, true)
+	if Index ~= nil then
+		Result = string.sub(Result, 1, Index - 1)
+	end
+	return Result
+end
+
 function FileSystem.ReadContents(Path, IsBinary)
 	local Result = nil
 

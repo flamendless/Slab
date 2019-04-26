@@ -51,15 +51,15 @@ function CheckBox.Begin(Enabled, Label, Options)
 	local H = Radius * 2.0
 
 	local Result = false
-	local Color = Style.CheckBoxColor
+	local Color = Style.ButtonColor
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	local IsObstructed = Window.IsObstructedAtMouse()
 	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Color = Style.CheckBoxHoveredColor
+		Color = Style.ButtonHoveredColor
 
 		if Mouse.IsPressed(1) then
-			Color = Style.CheckBoxPressedColor
+			Color = Style.ButtonPressedColor
 		elseif Mouse.IsReleased(1) then
 			Result = true
 		end
@@ -67,7 +67,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 
 	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
 	if Enabled then
-		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0)
+		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
 	end
 	if Label ~= nil and Label ~= "" then
 		Cursor.AdvanceX(W + 2.0)
