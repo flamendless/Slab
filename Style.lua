@@ -31,6 +31,7 @@ local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 
 local API = {}
 local Styles = {}
+local CurrentStyle = ""
 
 local Style = 
 {
@@ -69,21 +70,28 @@ local Style =
 }
 
 function API.Initialize()
-	Style.Font = love.graphics.newFont(Style.FontSize)
-	Cursor.SetNewLineSize(Style.Font:getHeight())
-
 	local StylePath = "/Internal/Resources/Styles/"
 	local Path = FileSystem.GetSlabPath() .. StylePath
 	local Items = FileSystem.GetDirectoryItems(Path, {Files = true, Directories = false, Filter = "*.style"})
 
+	local StyleName = nil
 	for I, V in ipairs(Items) do
 		local LoadedStyle = API.LoadStyle(StylePath .. V)
 
 		if LoadedStyle ~= nil then
 			local Name = FileSystem.RemoveExtension(V)
 			Styles[Name] = LoadedStyle
+
+			if StyleName == nil then
+				StyleName = Name
+			end
 		end
 	end
+
+	API.SetStyle(StyleName)
+
+	Style.Font = love.graphics.newFont(Style.FontSize)
+	Cursor.SetNewLineSize(Style.Font:getHeight())
 end
 
 function API.LoadStyle(Path)
@@ -98,6 +106,7 @@ end
 function API.SetStyle(Name)
 	local Other = Styles[Name]
 	if Other ~= nil then
+		CurrentStyle = Name
 		for K, V in pairs(Style) do
 			local New = Other[K]
 			if New ~= nil then
@@ -111,6 +120,20 @@ function API.SetStyle(Name)
 	else
 		print("Style '" .. Name .. "' is not loaded.")
 	end
+end
+
+function API.GetStyleNames()
+	local Result = {}
+
+	for K, V in pairs(Styles) do
+		table.insert(Result, K)
+	end
+
+	return Result
+end
+
+function API.GetCurrentStyleName()
+	return CurrentStyle
 end
 
 return Style

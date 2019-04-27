@@ -69,11 +69,9 @@ function ComboBox.Begin(Id, Options)
 	local H = Style.Font:getHeight()
 	local Radius = H * 0.35
 	local InputBgColor = Style.ComboBoxColor
-	local DropDownX = X + W
 	local DropDownW = Radius * 4.0
+	local DropDownX = X + W - DropDownW
 	local DropDownColor = Style.ComboBoxDropDownColor
-
-	W = W + DropDownW
 
 	Instance.X = X
 	Instance.Y = Y
@@ -102,7 +100,7 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W, H = H, BgColor = InputBgColor, Rounding = Options.Rounding})
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W - DropDownW, H = H, BgColor = InputBgColor, Rounding = Options.Rounding})
 
 	Cursor.SameLine()
 

@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
+local Style = require(SLAB_PATH .. '.Style')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -195,6 +196,17 @@ local function DrawStyleEditor()
 	Slab.BeginWindow('SlabDebug_StyleEditor', {Title = "Style Editor", Columns = 2, AutoSizeWindow = false, AllowResize = true, W = 500.0, H = 400.0})
 
 	local Style = Slab.GetStyle()
+	local Names = Style.API.GetStyleNames()
+	local W, H = Slab.GetWindowActiveSize()
+	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {W = W, Selected = Style.API.GetCurrentStyleName()}) then
+		for I, V in ipairs(Names) do
+			if Slab.TextSelectable(V) then
+				Style.API.SetStyle(V)
+			end
+		end
+
+		Slab.EndComboBox()
+	end
 
 	for K, V in pairs(Style) do
 		if type(V) == "table" and K ~= "Font" and K ~= "API" then

@@ -109,6 +109,8 @@ local function NewInstance(Id)
 	Instance.CanObstruct = true
 	Instance.Columns = nil
 	Instance.ActiveColumn = nil
+	Instance.ColumnY = nil
+	Instance.ColumnH = nil
 	return Instance
 end
 
@@ -299,19 +301,18 @@ local function UpdateColumns(Instance, Count)
 			Column.X = Instance.X + ColumnW * (I - 1)
 			Column.W = ColumnW
 			Column.CursorX = Column.X + Instance.Border
-			Column.CursorY = Instance.Y + Instance.Border
+			Column.CursorY = nil
 		end
 	end
 end
 
 local function DrawColumns(Instance)
-	if Instance ~= nil and Instance.Columns ~= nil and #Instance.Columns > 1 then
+	if Instance ~= nil and Instance.Columns ~= nil and #Instance.Columns > 1 and Instance.ColumnY ~= nil and Instance.ColumnH ~= nil then
 		local ColumnW = Instance.W / #Instance.Columns
-		local H = math.max(Instance.H, Instance.ContentH)
 
 		for I = 1, #Instance.Columns - 1, 1 do
 			local Column = Instance.Columns[I]
-			DrawCommands.Line(Column.X + Column.W, Instance.Y, Column.X + Column.W, Instance.Y + H, 1.0)
+			DrawCommands.Line(Column.X + Column.W, Instance.ColumnY, Column.X + Column.W, Instance.ColumnY + Instance.ColumnH, 1.0)
 		end
 	end
 end
@@ -469,6 +470,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
+	ActiveInstance.ColumnY = nil
 
 	if ActiveInstance.StackIndex == 0 then
 		table.insert(Stack, 1, ActiveInstance)
@@ -805,16 +807,24 @@ function Window.BeginColumn(Index)
 	if ActiveInstance ~= nil and ActiveInstance.Columns ~= nil then
 		assert(Index > 0 and Index <= #ActiveInstance.Columns, "Invalid index '" .. Index .. "' set for column. Window contains '" .. #ActiveInstance.Columns .. "' columns.")
 
+		if ActiveInstance.ColumnY == nil then
+			ActiveInstance.ColumnY = Cursor.GetY() - Cursor.PadY()
+		end
+
 		ActiveInstance.ActiveColumn = ActiveInstance.Columns[Index]
 
+		if ActiveInstance.ActiveColumn.CursorY == nil then
+			ActiveInstance.ActiveColumn.CursorY = ActiveInstance.ColumnY + Cursor.PadY()
+		end
+
 		Cursor.SetPosition(ActiveInstance.ActiveColumn.CursorX, ActiveInstance.ActiveColumn.CursorY)
-		Cursor.SetAnchor(ActiveInstance.ActiveColumn.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
+		Cursor.SetAnchor(ActiveInstance.ActiveColumn.X + ActiveInstance.Border, ActiveInstance.ColumnY)
 
 		Region.Begin(ActiveInstance.Id .. '_Column_' .. Index, {
 			X = ActiveInstance.ActiveColumn.X,
-			Y = ActiveInstance.Y,
+			Y = ActiveInstance.ColumnY,
 			W = ActiveInstance.ActiveColumn.W,
-			H = ActiveInstance.H,
+			H = ActiveInstance.ColumnH,
 			NoOutline = true,
 			NoBackground = true,
 			Intersect = true,
@@ -829,6 +839,14 @@ function Window.EndColumn()
 		Region.ApplyScissor()
 		ActiveInstance.ActiveColumn.CursorY = Cursor.GetY()
 		ActiveInstance.ActiveColumn = nil
+
+		Cursor.SetX(ActiveInstance.X + ActiveInstance.Border)
+		Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
+
+		local H = Cursor.GetY() - ActiveInstance.ColumnY
+		if ActiveInstance.ColumnH == nil or H > ActiveInstance.ColumnH then
+			ActiveInstance.ColumnH = H
+		end
 	end
 end
 

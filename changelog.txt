@@ -14,6 +14,7 @@ v0.3.0 RELEASE
 [Shape]: Documentation.
 [Slab Debug]: Documentation.
 [Stats]: Documentation.
+[Style]: Documentation.
 [Wiki]: Update images.
 
 BUGS
@@ -38,7 +39,6 @@ TODO
 [API]: Get/Set cursor padding.
 [Color Picker]: Set initial position.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
-[Column]: Ability to start column on current cursor line position.
 [Column]: Move separator with mouse.
 Combo Box: Easy API with table of possible values.
 Context Menu: Investigate checking hot item and last item of window.
@@ -68,7 +68,6 @@ SlabDebug: Show image stats.
 [Stats]: Draw time draw command.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
-[Style Editor]: Combo box for style selection.
 [Style Editor]: Serialize style to/from file.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Text]: Tooltip support.
