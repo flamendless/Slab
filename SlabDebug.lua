@@ -49,6 +49,7 @@ local Selected_Window = ""
 
 local Style_EditingColor = nil
 local Style_ColorStore = nil
+local Style_FileDialog = nil
 
 local function Window_Inspector()
 	local Ids = Window.GetInstanceIds()
@@ -208,6 +209,24 @@ local function DrawStyleEditor()
 		Slab.EndComboBox()
 	end
 
+	if Slab.Button("New") then
+		Style_FileDialog = 'new'
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Load") then
+		Style_FileDialog = 'load'
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Save") then
+		Style.API.SaveCurrentStyle()
+	end
+
+	Slab.Separator()
+
 	for K, V in pairs(Style) do
 		if type(V) == "table" and K ~= "Font" and K ~= "API" then
 			DrawStyleColor(K, V)
@@ -230,6 +249,10 @@ local function DrawStyleEditor()
 		Style_EditingColor[4] = Result.Color[4]
 
 		if Result.Button ~= "" then
+			if Result.Button == "OK" then
+				Style.API.StoreCurrentStyle()
+			end
+
 			if Result.Button == "Cancel" then
 				Style_EditingColor[1] = Style_ColorStore[1]
 				Style_EditingColor[2] = Style_ColorStore[2]
@@ -238,6 +261,29 @@ local function DrawStyleEditor()
 			end
 
 			Style_EditingColor = nil
+		end
+	end
+
+	if Style_FileDialog ~= nil then
+		local Type = Style_FileDialog == 'new' and 'savefile' or Style_FileDialog == 'load' and 'openfile' or nil
+
+		if Type ~= nil then
+			local Path = love.filesystem.getRealDirectory(SLAB_PATH) .. "/" .. SLAB_PATH .. "Internal/Resources/Styles"
+			local Result = Slab.FileDialog({AllowMultiSelect = false, Directory = Path, Type = Type, Filters = {{"*.style", "Styles"}}})
+
+			if Result.Button ~= "" then
+				if Result.Button == "OK" then
+					if Style_FileDialog == 'new' then
+						Style.API.CopyCurrentStyle(Result.Files[1])
+					else
+						Style.API.LoadStyle(Result.Files[1], true)
+					end
+				end
+
+				Style_FileDialog = nil
+			end
+		else
+			Style_FileDialog = nil
 		end
 	end
 end

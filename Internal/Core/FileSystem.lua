@@ -122,7 +122,7 @@ function FileSystem.Parent(Path)
 	return Result
 end
 
-function FileSystem.GetBaseName(Path)
+function FileSystem.GetBaseName(Path, RemoveExtension)
 	if #Path > 0 then
 		while string.sub(Path, #Path) == "/" do
 			Path = string.sub(Path, 1, #Path - 1)
@@ -140,6 +140,10 @@ function FileSystem.GetBaseName(Path)
 
 	if Index > 1 then
 		Result = string.sub(Path, Index + 1)
+	end
+
+	if RemoveExtension then
+		Result = FileSystem.RemoveExtension(Result)
 	end
 
 	return Result

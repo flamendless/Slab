@@ -112,7 +112,7 @@ function Utility.Remove(Table, Value)
 	end
 end
 
-function Utility.Copy(A, B)
+function Utility.CopyValues(A, B)
 	if type(A) ~= "table" or type(B) ~= "table" then
 		return
 	end
@@ -121,9 +121,25 @@ function Utility.Copy(A, B)
 		local Other = B[K]
 
 		if Other ~= nil then
-			A[K] = Other
+			A[K] = Utility.Copy(Other)
 		end
 	end
+end
+
+function Utility.Copy(Original)
+	local Copy = nil
+
+	if type(Original) == "table" then
+		Copy = {}
+
+		for K, V in next, Original, nil do
+			Copy[Utility.Copy(K)] = Utility.Copy(V)
+		end
+	else
+		Copy = Original
+	end
+
+	return Copy
 end
 
 function Utility.IsWindows()

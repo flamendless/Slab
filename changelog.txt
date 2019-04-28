@@ -47,6 +47,8 @@ Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
+[Error]: Dialog that shows any error messages.
+[Error]: Show messages for deprecated API.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
@@ -68,7 +70,6 @@ SlabDebug: Show image stats.
 [Stats]: Draw time draw command.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
-[Style Editor]: Serialize style to/from file.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Text]: Tooltip support.
 Window: Menu support.

@@ -31,6 +31,7 @@ local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 
 local API = {}
 local Styles = {}
+local StylePaths = {}
 local CurrentStyle = ""
 
 local Style = 
@@ -76,11 +77,10 @@ function API.Initialize()
 
 	local StyleName = nil
 	for I, V in ipairs(Items) do
-		local LoadedStyle = API.LoadStyle(StylePath .. V)
+		local LoadedStyle = API.LoadStyle(Path .. V)
 
 		if LoadedStyle ~= nil then
 			local Name = FileSystem.RemoveExtension(V)
-			Styles[Name] = LoadedStyle
 
 			if StyleName == nil then
 				StyleName = Name
@@ -94,11 +94,18 @@ function API.Initialize()
 	Cursor.SetNewLineSize(Style.Font:getHeight())
 end
 
-function API.LoadStyle(Path)
-	local FullPath = FileSystem.GetSlabPath() .. Path
-	local Contents, Error = Config.LoadFile(FullPath)
-	if Contents == nil then
-		print("Failed to load style '" .. FileSystem.GetBaseName(Path) .. "'.\n" .. Error)
+function API.LoadStyle(Path, Set)
+	local Contents, Error = Config.LoadFile(Path)
+	if Contents ~= nil then
+		local Name = FileSystem.GetBaseName(Path, true)
+		Styles[Name] = Contents
+		StylePaths[Name] = Path
+
+		if Set then
+			API.SetStyle(Name)
+		end
+	else
+		print("Failed to load style '" .. Path .. "'.\n" .. Error)
 	end
 	return Contents
 end
@@ -111,7 +118,7 @@ function API.SetStyle(Name)
 			local New = Other[K]
 			if New ~= nil then
 				if type(V) == "table" then
-					Utility.Copy(Style[K], New)
+					Utility.CopyValues(Style[K], New)
 				else
 					Style[K] = New
 				end
@@ -134,6 +141,34 @@ end
 
 function API.GetCurrentStyleName()
 	return CurrentStyle
+end
+
+function API.CopyCurrentStyle(Path)
+	local NewStyle = Utility.Copy(Styles[CurrentStyle])
+	local Result, Error = Config.Save(Path, NewStyle)
+
+	if Result then
+		local NewStyleName = FileSystem.GetBaseName(Path, true)
+		Styles[NewStyleName] = NewStyle
+		StylePaths[NewStyleName] = Path
+		API.SetStyle(NewStyleName)
+	else
+		print("Failed to create new style at path '" .. Path "'. " .. Error)
+	end
+end
+
+function API.SaveCurrentStyle()
+	API.StoreCurrentStyle()
+	local Path = StylePaths[CurrentStyle]
+	local Settings = Styles[CurrentStyle]
+	local Result, Error = Config.Save(Path, Settings)
+	if not Result then
+		print("Failed to save style '" .. CurrentStyle .. "'. " .. Error)
+	end
+end
+
+function API.StoreCurrentStyle()
+	Utility.CopyValues(Styles[CurrentStyle], Style)
 end
 
 return Style
