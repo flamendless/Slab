@@ -20,6 +20,7 @@ v0.3.0 RELEASE
 BUGS
 ==========
 [Color Picker]: Incorrect color when using light style.
+[Column]: Y position not updated with scroll position.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
@@ -28,7 +29,6 @@ BUGS
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
-[Window]: Focused window flickers between multiple windows sometimes. Seems to be related to hovering over combo box.
 [Window]: Clamp window moving to viewport.
 
 TODO

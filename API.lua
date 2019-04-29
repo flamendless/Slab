@@ -156,6 +156,8 @@ local Version_Major = 0
 local Version_Minor = 2
 local Version_Revision = 0
 
+local FrameNumber = 0
+
 local function TextInput(Ch)
 	Input.Text(Ch)
 
@@ -222,6 +224,8 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
+	FrameNumber = FrameNumber + 1
+
 	Stats.Reset()
 	Stats.Begin('Frame')
 	Stats.Begin('Update')
@@ -231,6 +235,7 @@ function Slab.Update(dt)
 	Input.Update(dt)
 	DrawCommands.Reset()
 	Window.Reset()
+	Window.SetFrameNumber(FrameNumber)
 
 	if MenuState.IsOpened then
 		MenuState.WasOpened = MenuState.IsOpened

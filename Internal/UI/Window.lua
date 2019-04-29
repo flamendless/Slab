@@ -40,6 +40,7 @@ local Stack = {}
 local StackLockId = nil
 local PendingStack = {}
 local ActiveInstance = nil
+local CurrentFrameNumber = 0
 
 local SizerType =
 {
@@ -111,6 +112,7 @@ local function NewInstance(Id)
 	Instance.ActiveColumn = nil
 	Instance.ColumnY = nil
 	Instance.ColumnH = nil
+	Instance.FrameNumber = 0
 	return Instance
 end
 
@@ -333,6 +335,10 @@ function Window.Top()
 	return ActiveInstance
 end
 
+function Window.SetFrameNumber(FrameNumber)
+	CurrentFrameNumber = FrameNumber
+end
+
 function Window.IsObstructed(X, Y, SkipScrollCheck)
 	if Region.IsScrolling() then
 		return true
@@ -471,6 +477,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
 	ActiveInstance.ColumnY = nil
+	ActiveInstance.FrameNumber = CurrentFrameNumber
 
 	if ActiveInstance.StackIndex == 0 then
 		table.insert(Stack, 1, ActiveInstance)
@@ -768,11 +775,9 @@ function Window.Validate()
 		assert(false, "EndWindow was not called for: " .. PendingStack[1].Id)
 	end
 
-	local Time = love.timer.getTime()
-	local Delta = love.timer.getDelta()
 	local ShouldUpdate = false
 	for I = #Stack, 1, -1 do
-		if Time - Stack[I].LastVisibleTime > Delta then
+		if Stack[I].FrameNumber ~= CurrentFrameNumber then
 			Stack[I].StackIndex = 0
 			table.remove(Stack, I)
 			ShouldUpdate = true
