@@ -37,19 +37,14 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local ColorPicker = {}
 
-local SaturationCanvas = nil
 local SaturationMeshes = nil
 local SaturationSize = 200.0
 local SaturationStep = 5
-local SaturationData = nil
-local SaturationRender = false
 local SaturationFocused = false
 
-local TintCanvas = nil
 local TintMeshes = nil
 local TintW = 30.0
 local TintH = SaturationSize
-local TintData = nil
 local TintFocused = false
 
 local AlphaMesh = nil
@@ -79,7 +74,6 @@ end
 
 local function UpdateSaturationColors()
 	if SaturationMeshes ~= nil then
-		SaturationRender = true
 		local MeshIndex = 1
 		local Step = SaturationStep
 		local C00 = {1.0, 1.0, 1.0, 1.0}
@@ -118,10 +112,8 @@ local function UpdateSaturationColors()
 	end
 end
 
-local function InitializeSaturationCanvas()
-	if SaturationCanvas == nil then
-		SaturationCanvas = love.graphics.newCanvas(SaturationSize, SaturationSize)
-
+local function InitializeSaturationMeshes()
+	if SaturationMeshes == nil then
 		SaturationMeshes = {}
 		local Step = SaturationStep
 		local X, Y = 0.0, 0.0
@@ -136,15 +128,15 @@ local function InitializeSaturationCanvas()
 					},
 					{
 						X + Size, Y,
-						0.0, 0.0
+						1.0, 0.0
 					},
 					{
 						X + Size, Y + Size,
-						0.0, 0.0
+						1.0, 1.0
 					},
 					{
 						X, Y + Size,
-						0.0, 0.0
+						0.0, 1.0
 					}
 				}
 
@@ -162,10 +154,8 @@ local function InitializeSaturationCanvas()
 	UpdateSaturationColors()
 end
 
-local function InitializeTintCanvas()
-	if TintCanvas == nil then
-		TintCanvas = love.graphics.newCanvas(TintW, TintH)
-
+local function InitializeTintMeshes()
+	if TintMeshes == nil then
 		TintMeshes = {}
 		local Step = 6
 		local X, Y = 0.0, 0.0
@@ -249,6 +239,14 @@ function ColorPicker.Begin(Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
 
+	if SaturationMeshes == nil then
+		InitializeSaturationMeshes()
+	end
+
+	if TintMeshes == nil then
+		InitializeTintMeshes()
+	end
+
 	if AlphaMesh == nil then
 		InitializeAlphaMesh()
 	end
@@ -269,12 +267,15 @@ function ColorPicker.Begin(Options)
 	local H, S, V = Utility.RGBtoHSV(CurrentColor[1], CurrentColor[2], CurrentColor[3])
 	local UpdateColor = false
 
-	if SaturationCanvas ~= nil then
-		DrawCommands.DrawCanvas(SaturationCanvas, X, Y)
-		Window.AddItem(X, Y, SaturationCanvas:getWidth(), SaturationCanvas:getHeight())
+	if SaturationMeshes ~= nil then
+		for I, V in ipairs(SaturationMeshes) do
+			DrawCommands.Mesh(V, X, Y)
+		end
+
+		Window.AddItem(X, Y, SaturationSize, SaturationSize)
 
 		local UpdateSaturation = false
-		if X <= MouseX and MouseX < X + SaturationCanvas:getWidth() and Y <= MouseY and MouseY < Y + SaturationCanvas:getHeight() then
+		if X <= MouseX and MouseX < X + SaturationSize and Y <= MouseY and MouseY < Y + SaturationSize then
 			if Mouse.IsClicked(1) then
 				SaturationFocused = true
 				UpdateSaturation = true
@@ -287,30 +288,33 @@ function ColorPicker.Begin(Options)
 
 		if UpdateSaturation then
 			local CanvasX = math.max(MouseX - X, 0)
-			CanvasX = math.min(CanvasX, SaturationData:getWidth())
+			CanvasX = math.min(CanvasX, SaturationSize)
 
 			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, SaturationData:getHeight())
+			CanvasY = math.min(CanvasY, SaturationSize)
 
-			S = CanvasX / SaturationData:getWidth()
-			V = 1 - (CanvasY / SaturationData:getHeight())
+			S = CanvasX / SaturationSize
+			V = 1 - (CanvasY / SaturationSize)
 
 			UpdateColor = true
 		end
 
-		local SaturationX = S * (SaturationData:getWidth() - 1)
-		local SaturationY = (1.0 - V) * (SaturationData:getHeight() - 1)
+		local SaturationX = S * SaturationSize
+		local SaturationY = (1.0 - V) * SaturationSize
 		DrawCommands.Circle('line', X + SaturationX, Y + SaturationY, 4.0, {1.0, 1.0, 1.0, 1.0})
 
-		X = X + SaturationCanvas:getWidth() + Cursor.PadX()
+		X = X + SaturationSize + Cursor.PadX()
 	end
 
-	if TintCanvas ~= nil then
-		DrawCommands.DrawCanvas(TintCanvas, X, Y)
-		Window.AddItem(X, Y, TintCanvas:getWidth(), TintCanvas:getHeight())
+	if TintMeshes ~= nil then
+		for I, V in ipairs(TintMeshes) do
+			DrawCommands.Mesh(V, X, Y)
+		end
+
+		Window.AddItem(X, Y, TintW, TintH)
 
 		local UpdateTint = false
-		if X <= MouseX and MouseX < X + TintCanvas:getWidth() and Y <= MouseY and MouseY < Y + TintCanvas:getHeight() then
+		if X <= MouseX and MouseX < X + TintW and Y <= MouseY and MouseY < Y + TintH then
 			if Mouse.IsClicked(1) then
 				TintFocused = true
 				UpdateTint = true
@@ -323,17 +327,17 @@ function ColorPicker.Begin(Options)
 
 		if UpdateTint then
 			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, TintCanvas:getHeight())
+			CanvasY = math.min(CanvasY, TintH)
 
-			H = CanvasY / TintCanvas:getHeight()
+			H = CanvasY / TintH
 
 			UpdateColor = true
 		end
 
-		local TintY = H * (TintCanvas:getHeight() - 1)
-		DrawCommands.Line(X, Y + TintY, X + TintCanvas:getWidth(), Y + TintY, 2.0, {1.0, 1.0, 1.0, 1.0})
+		local TintY = H * TintH
+		DrawCommands.Line(X, Y + TintY, X + TintW, Y + TintY, 2.0, {1.0, 1.0, 1.0, 1.0})
 
-		X = X + TintCanvas:getWidth() + Cursor.PadX()
+		X = X + TintW + Cursor.PadX()
 		DrawCommands.Mesh(AlphaMesh, X, Y)
 		Window.AddItem(X, Y, AlphaW, AlphaH)
 
@@ -362,7 +366,7 @@ function ColorPicker.Begin(Options)
 		local AlphaY = A * AlphaH
 		DrawCommands.Line(X, Y + AlphaY, X + AlphaW, Y + AlphaY, 2.0, {A, A, A, 1.0})
 		
-		Y = Y + TintCanvas:getHeight() + Cursor.PadY()
+		Y = Y + AlphaH + Cursor.PadY()
 	end
 
 	if UpdateColor then
@@ -453,35 +457,6 @@ function ColorPicker.Begin(Options)
 	Window.End()
 
 	return Result
-end
-
-function ColorPicker.DrawCanvas()
-	if SaturationCanvas == nil then
-		InitializeSaturationCanvas()
-	end
-
-	if SaturationRender then
-		SaturationRender = false
-		love.graphics.setCanvas(SaturationCanvas)
-		for I, V in ipairs(SaturationMeshes) do
-			love.graphics.draw(V)
-		end
-		love.graphics.setCanvas()
-
-		SaturationData = SaturationCanvas:newImageData()
-	end
-
-	if TintCanvas == nil then
-		InitializeTintCanvas()
-
-		love.graphics.setCanvas(TintCanvas)
-		for I, V in ipairs(TintMeshes) do
-			love.graphics.draw(V)
-		end
-		love.graphics.setCanvas()
-
-		TintData = TintCanvas:newImageData()
-	end
 end
 
 return ColorPicker

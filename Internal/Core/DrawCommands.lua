@@ -220,6 +220,7 @@ local function DrawElements(Elements)
 			love.graphics.draw(V.Canvas, V.X, V.Y)
 			love.graphics.setBlendMode('alpha')
 		elseif V.Type == Types.Mesh then
+			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 			love.graphics.draw(V.Mesh, V.X, V.Y)
 		end
 	end

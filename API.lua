@@ -270,7 +270,6 @@ function Slab.Draw()
 		Button.ClearClicked()
 	end
 
-	ColorPicker.DrawCanvas()
 	DrawCommands.Execute()
 
 	Stats.End('Draw')

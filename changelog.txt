@@ -19,7 +19,6 @@ v0.3.0 RELEASE
 
 BUGS
 ==========
-[Color Picker]: Incorrect color when using light style.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
@@ -65,11 +64,13 @@ Region: Clamp position check with owning window's size.
 [Shape]: Line.
 [Shape]: Curve.
 [Shape]: Polygon.
+[Slab]: Store settings such as window positions and style.
 SlabDebug: Show image stats.
 [Stats]: Draw time draw command.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
+[Table]: Initial implementation.
 [Text]: Tooltip support.
 Window: Menu support.
 Window: Ids should be used as keys.
