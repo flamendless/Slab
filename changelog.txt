@@ -20,7 +20,6 @@ v0.3.0 RELEASE
 BUGS
 ==========
 [Color Picker]: Incorrect color when using light style.
-[Column]: Y position not updated with scroll position.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.

@@ -825,11 +825,14 @@ function Window.BeginColumn(Index)
 		Cursor.SetPosition(ActiveInstance.ActiveColumn.CursorX, ActiveInstance.ActiveColumn.CursorY)
 		Cursor.SetAnchor(ActiveInstance.ActiveColumn.X + ActiveInstance.Border, ActiveInstance.ColumnY)
 
+		local TX, TY = Window.TransformPoint(ActiveInstance.ActiveColumn.X, ActiveInstance.ColumnY)
 		Region.Begin(ActiveInstance.Id .. '_Column_' .. Index, {
 			X = ActiveInstance.ActiveColumn.X,
 			Y = ActiveInstance.ColumnY,
 			W = ActiveInstance.ActiveColumn.W,
 			H = ActiveInstance.ColumnH,
+			SX = TX,
+			SY = TY,
 			NoOutline = true,
 			NoBackground = true,
 			Intersect = true,
