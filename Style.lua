@@ -77,10 +77,14 @@ function API.Initialize()
 
 	local StyleName = nil
 	for I, V in ipairs(Items) do
-		local LoadedStyle = API.LoadStyle(Path .. V)
+		if string.find(V, Path, 1, true) == nil then
+			V = Path .. V
+		end
+
+		local LoadedStyle = API.LoadStyle(V)
 
 		if LoadedStyle ~= nil then
-			local Name = FileSystem.RemoveExtension(V)
+			local Name = FileSystem.GetBaseName(V, true)
 
 			if StyleName == nil then
 				StyleName = Name
@@ -88,7 +92,9 @@ function API.Initialize()
 		end
 	end
 
-	API.SetStyle(StyleName)
+	if not API.SetStyle("Dark") then
+		API.SetStyle(StyleName)
+	end
 
 	Style.Font = love.graphics.newFont(Style.FontSize)
 	Cursor.SetNewLineSize(Style.Font:getHeight())
@@ -124,9 +130,13 @@ function API.SetStyle(Name)
 				end
 			end
 		end
+
+		return true
 	else
 		print("Style '" .. Name .. "' is not loaded.")
 	end
+
+	return false
 end
 
 function API.GetStyleNames()
