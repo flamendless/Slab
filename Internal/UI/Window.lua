@@ -314,7 +314,7 @@ local function DrawColumns(Instance)
 
 		for I = 1, #Instance.Columns - 1, 1 do
 			local Column = Instance.Columns[I]
-			DrawCommands.Line(Column.X + Column.W, Instance.ColumnY, Column.X + Column.W, Instance.ColumnY + Instance.ColumnH, 1.0)
+			DrawCommands.Line(Column.X + Column.W, Instance.ColumnY + Cursor.PadY(), Column.X + Column.W, Instance.ColumnY + Instance.ColumnH - Cursor.PadY(), 1.0)
 		end
 	end
 end
@@ -494,7 +494,7 @@ function Window.Begin(Id, Options)
 		OffsetY = Style.Font:getHeight()
 		ActiveInstance.Y = ActiveInstance.Y + OffsetY
 
-		local TitleW = Style.Font:getWidth(ActiveInstance.Title)
+		local TitleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2.0
 		ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
 	end
 
@@ -522,7 +522,7 @@ function Window.Begin(Id, Options)
 		end
 		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, Options.Rounding)
 		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, Options.Rounding)
-		DrawCommands.Print(ActiveInstance.Title, TitleX, ActiveInstance.Y - OffsetY, Style.TextColor, Style.Font)
+		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
 	end
 

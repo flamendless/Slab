@@ -153,7 +153,7 @@ local Slab = {}
 
 -- Slab version numbers.
 local Version_Major = 0
-local Version_Minor = 2
+local Version_Minor = 3
 local Version_Revision = 0
 
 local FrameNumber = 0
@@ -888,6 +888,12 @@ end
 		SubY: [Number] The Y-coordinate used inside the given image.
 		SubW: [Number] The width used inside the given image.
 		SubH: [Number] The height used insided the given image.
+		WrapX: [String] The horizontal wrapping mode for this image. The available options are 'clamp', 'repeat', 
+			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
+			https://love2d.org/wiki/WrapMode.
+		WrapY: [String] The vertical wrapping mode for this image. The available options are 'clamp', 'repeat', 
+			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
+			https://love2d.org/wiki/WrapMode.
 
 	Return: [Boolean] Returns true if the mouse is hovering over the image or clicking on the image based on
 		ReturnOnHover or ReturnOnClick options.
@@ -1005,7 +1011,8 @@ function Slab.Properties(Table)
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
 				if Slab.Input(K, {Text = tostring(V), NumbersOnly = true, ReturnOnText = false}) then
-					Table[K] = tonumber(Slab.GetInputText())
+					local Result = tonumber(Slab.GetInputText())
+					Table[K] = Result == nil and 0 or Result
 				end
 			elseif Type == "string" then
 				Slab.Text(K .. ": ")

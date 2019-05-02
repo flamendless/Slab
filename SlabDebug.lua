@@ -300,6 +300,10 @@ function SlabDebug.About()
 	end
 end
 
+function SlabDebug.OpenAbout()
+	Slab.OpenDialog(SlabDebug_About)
+end
+
 function SlabDebug.Mouse()
 	Slab.BeginWindow('SlabDebug_Mouse', {Title = "Mouse"})
 	local X, Y = Mouse.Position()
@@ -358,10 +362,19 @@ function SlabDebug.DrawCommands()
 	Slab.EndWindow()
 end
 
+function SlabDebug.Performance()
+	Stats.SetEnabled(true)
+	DrawPerformance()
+end
+
+function SlabDebug.StyleEditor()
+	DrawStyleEditor()
+end
+
 function SlabDebug.Menu()
 	if Slab.BeginMenu("Debug") then
 		if Slab.MenuItem("About") then
-			Slab.OpenDialog(SlabDebug_About)
+			SlabDebug.OpenAbout()
 		end
 
 		if Slab.MenuItemChecked("Mouse", SlabDebug_Mouse) then
@@ -413,11 +426,11 @@ function SlabDebug.Begin()
 	end
 
 	if SlabDebug_Performance then
-		DrawPerformance()
+		SlabDebug.Performance()
 	end
 
 	if SlabDebug_StyleEditor then
-		DrawStyleEditor()
+		SlabDebug.StyleEditor()
 	end
 end
 

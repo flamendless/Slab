@@ -1,21 +1,11 @@
 v0.3.0 RELEASE
 ==========
-[API]: Update version number.
-[Button]: ExpandW documentation.
-[Button]: Invisible, W, H documentation.
-[Color Picker]: Documentation.
-[Column]: Documentation.
-[Controls]: Rounding documentation.
-[Controls]: API documentation on hover and click.
 [Love]: Test with packaged .love build.
-[Mouse]: API documentation.
-[Radio Button]: Documentation.
-[Separator]: API documentation for options.
+
+v0.4.0 RELEASE
+==========
 [Shape]: Documentation.
-[Slab Debug]: Documentation.
 [Stats]: Documentation.
-[Style]: Documentation.
-[Wiki]: Update images.
 
 BUGS
 ==========
@@ -25,6 +15,7 @@ BUGS
 [Mouse]: Setting cursor type causes hit on frame time.
 [Scroll Bar]: Color flicker when clicking and releasing on scroll bar.
 [Slab Debug]: Window combo box being overlapped when initially opened.
+[Tooltip]: Gains focus when displayed. Focus should not be allowed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Clamp window moving to viewport.
@@ -47,12 +38,14 @@ Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
 [Error]: Dialog that shows any error messages.
 [Error]: Show messages for deprecated API.
+[Graph]: Initial line graph implementation.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
 Input: Double click to select word.
 Input: Multi-line input control.
 [Input]: Min and max number values.
 [Input]: Allow user to highlight text in read-only mode.
+[Input]: Function to get input text as number providing nil checks in the function.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Region: Clamp position check with owning window's size.
@@ -64,11 +57,15 @@ Region: Clamp position check with owning window's size.
 [Shape]: Line.
 [Shape]: Curve.
 [Shape]: Polygon.
+[Shape]: Define rounding for each corner.
 [Slab]: Store settings such as window positions and style.
 SlabDebug: Show image stats.
+[SlabDebug]: Window management tools.
 [Stats]: Draw time draw command.
+[Stats]: Simple API access with list of stat names to display.
 Style: Push/Pop fonts.
 Style: Add documentation for each style property.
+[Style]: API documentation.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Table]: Initial implementation.
 [Text]: Tooltip support.
@@ -76,5 +73,7 @@ Window: Menu support.
 Window: Ids should be used as keys.
 Window: Lock mouse resize icon while resizing.
 Window: Deprecate window bounds values and use region directly.
+[Window]: Move default border size to Style.
+[Window]: Include border for title text width.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.
