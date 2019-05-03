@@ -123,27 +123,24 @@ function FileSystem.Parent(Path)
 end
 
 function FileSystem.GetBaseName(Path, RemoveExtension)
-	if #Path > 0 then
-		while string.sub(Path, #Path) == "/" do
-			Path = string.sub(Path, 1, #Path - 1)
-		end
-	end
+	local Result = string.match(Path, "^.+/(.+)$")
 
-	local Result = Path
-
-	local Index = 1
-	local I = Index
-	repeat
-		Index = I
-		I = string.find(Path, FileSystem.Separator(), Index + 1, true)
-	until I == nil
-
-	if Index > 1 then
-		Result = string.sub(Path, Index + 1)
+	if Result == nil then
+		Result = Path
 	end
 
 	if RemoveExtension then
 		Result = FileSystem.RemoveExtension(Result)
+	end
+
+	return Result
+end
+
+function FileSystem.GetDirectory(Path)
+	local Result = string.match(Path, "(.+)/")
+
+	if Result == nil then
+		Result = Path
 	end
 
 	return Result
@@ -162,15 +159,20 @@ function FileSystem.GetRootDirectory(Path)
 end
 
 function FileSystem.GetSlabPath()
-	return love.filesystem.getRealDirectory(SLAB_PATH) .. "/" .. SLAB_PATH
+	local Path = love.filesystem.getSource()
+	if not FileSystem.IsDirectory(Path) then
+		Path = love.filesystem.getSourceBaseDirectory()
+	end
+	return Path .. "/Slab"
 end
 
 function FileSystem.RemoveExtension(Path)
-	local Result = Path
-	local Index = string.find(Result, ".", 1, true)
-	if Index ~= nil then
-		Result = string.sub(Result, 1, Index - 1)
+	local Result = string.match(Path, "(.+)%.")
+
+	if Result == nil then
+		Result = Path
 	end
+
 	return Result
 end
 

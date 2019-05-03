@@ -243,9 +243,14 @@ function Config.Decode(Stream)
 	return Result, Error
 end
 
-function Config.LoadFile(Path)
+function Config.LoadFile(Path, UseLoveFS)
 	local Result = nil
-	local Contents, Error = FileSystem.ReadContents(Path)
+	local Contents, Error = nil, nil
+	if UseLoveFS then
+		Contents, Error = love.filesystem.read('string', Path)
+	else
+		Contents, Error = FileSystem.ReadContents(Path)
+	end
 	if Contents ~= nil then
 		Result, Error = Config.Decode(Contents)
 	end

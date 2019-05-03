@@ -32,6 +32,7 @@ local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local API = {}
 local Styles = {}
 local StylePaths = {}
+local DefaultStyles = {}
 local CurrentStyle = ""
 
 local Style = 
@@ -72,8 +73,9 @@ local Style =
 
 function API.Initialize()
 	local StylePath = "/Internal/Resources/Styles/"
-	local Path = FileSystem.GetSlabPath() .. StylePath
-	local Items = FileSystem.GetDirectoryItems(Path, {Files = true, Directories = false, Filter = "*.style"})
+	local Path = SLAB_PATH .. StylePath
+	-- Use love's filesystem functions to support both packaged and unpackaged builds
+	local Items = love.filesystem.getDirectoryItems(Path)
 
 	local StyleName = nil
 	for I, V in ipairs(Items) do
@@ -81,7 +83,7 @@ function API.Initialize()
 			V = Path .. V
 		end
 
-		local LoadedStyle = API.LoadStyle(V)
+		local LoadedStyle = API.LoadStyle(V, false, true)
 
 		if LoadedStyle ~= nil then
 			local Name = FileSystem.GetBaseName(V, true)
@@ -100,12 +102,15 @@ function API.Initialize()
 	Cursor.SetNewLineSize(Style.Font:getHeight())
 end
 
-function API.LoadStyle(Path, Set)
-	local Contents, Error = Config.LoadFile(Path)
+function API.LoadStyle(Path, Set, IsDefault)
+	local Contents, Error = Config.LoadFile(Path, IsDefault)
 	if Contents ~= nil then
 		local Name = FileSystem.GetBaseName(Path, true)
 		Styles[Name] = Contents
 		StylePaths[Name] = Path
+		if IsDefault then
+			table.insert(DefaultStyles, Name)
+		end
 
 		if Set then
 			API.SetStyle(Name)
@@ -117,6 +122,10 @@ function API.LoadStyle(Path, Set)
 end
 
 function API.SetStyle(Name)
+	if Name == nil then
+		return false
+	end
+
 	local Other = Styles[Name]
 	if Other ~= nil then
 		CurrentStyle = Name

@@ -1,6 +1,7 @@
 v0.3.0 RELEASE
 ==========
-[Love]: Test with packaged .love build.
+[Style Editor]: Prevent saving of default styles.
+[Button]: Disabled option.
 
 v0.4.0 RELEASE
 ==========
@@ -46,6 +47,7 @@ Input: Multi-line input control.
 [Input]: Min and max number values.
 [Input]: Allow user to highlight text in read-only mode.
 [Input]: Function to get input text as number providing nil checks in the function.
+[Input]: 'Delete' key with no selection should delete forward character.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Region: Clamp position check with owning window's size.
