@@ -55,9 +55,9 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 		end
 	else
 		if Options.Files and not Options.Directories then
-			Cmd = 'find ' .. Directory .. ' \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type f \\( -iname \\' .. Options.Filter .. ' \\)'
+			Cmd = 'find "' .. Directory .. '" \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type f \\( -iname \\' .. Options.Filter .. ' \\)'
 		elseif Options.Directories and not Options.Files then
-			Cmd = 'find ' .. Directory .. ' ! -path ' .. Directory .. ' \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type d'
+			Cmd = 'find "' .. Directory .. '" ! -path ' .. Directory .. ' \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type d'
 		else
 			Cmd = 'ls -1 ' .. Directory
 		end

@@ -1,6 +1,3 @@
-v0.3.0 RELEASE
-==========
-
 v0.4.0 RELEASE
 ==========
 [Shape]: Documentation.
@@ -8,6 +5,7 @@ v0.4.0 RELEASE
 
 BUGS
 ==========
+[File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
