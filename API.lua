@@ -617,6 +617,7 @@ end
 		Invisible: [Boolean] Don't render the button, but keep the behavior.
 		W: [Number] Override the width of the button.
 		H: [Number] Override the height of the button.
+		Disabled: [Boolean] If true, the button is not interactable by the user.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]

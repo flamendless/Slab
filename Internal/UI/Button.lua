@@ -52,12 +52,14 @@ function Button.Begin(Label, Options)
 	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
 	Options.W = Options.W == nil and nil or Options.W
 	Options.H = Options.H == nil and nil or Options.H
+	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
 
 	local Id = Window.GetItemId(Label)
 	local X, Y = Cursor.GetPosition()
 	local W, H = Button.GetSize(Label)
 	local LabelW = Style.Font:getWidth(Label)
 	local FontHeight = Style.Font:getHeight()
+	local TextColor = Options.Disabled and Style.ButtonDisabledTextColor or nil
 
 	if Options.ExpandW then
 		local RegionW, RegionH = Window.GetBorderlessSize()
@@ -81,21 +83,24 @@ function Button.Begin(Label, Options)
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Color = Style.ButtonHoveredColor
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(Id)
 
-		if ClickedId == Id then
-			Color = Style.ButtonPressedColor
-		end
+		if not Options.Disabled then
+			Color = Style.ButtonHoveredColor
 
-		if Mouse.IsClicked(1) then
-			ClickedId = Id
-		end
+			if ClickedId == Id then
+				Color = Style.ButtonPressedColor
+			end
 
-		if Mouse.IsReleased(1) and ClickedId == Id then
-			Result = true
-			ClickedId = nil
+			if Mouse.IsClicked(1) then
+				ClickedId = Id
+			end
+
+			if Mouse.IsReleased(1) and ClickedId == Id then
+				Result = true
+				ClickedId = nil
+			end
 		end
 	end
 
@@ -106,7 +111,7 @@ function Button.Begin(Label, Options)
 		local X, Y = Cursor.GetPosition()
 		Cursor.SetX(math.floor(LabelX))
 		Cursor.SetY(math.floor(Y + (H * 0.5) - (FontHeight * 0.5)))
-		Text.Begin(Label)
+		Text.Begin(Label, {Color = TextColor})
 		Cursor.SetPosition(X, Y)
 	end
 

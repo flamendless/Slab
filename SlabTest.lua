@@ -60,6 +60,9 @@ function SlabTest.BasicWindow()
 		-- Perform logic here when button is clicked
 	end
 
+	if Slab.Button("Disabled!", {Disabled = true}) then
+	end
+
 	if Slab.BeginContextMenuItem() then
 		Slab.MenuItem("Button Item 1")
 		Slab.MenuItem("Button Item 2")
