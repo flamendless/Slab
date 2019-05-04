@@ -142,6 +142,20 @@ function Utility.Copy(Original)
 	return Copy
 end
 
+function Utility.Contains(Table, Value)
+	if Table == nil then
+		return false
+	end
+
+	for I, V in ipairs(Table) do
+		if Value == V then
+			return true
+		end
+	end
+
+	return false
+end
+
 function Utility.IsWindows()
 	return love.system.getOS() == "Windows"
 end

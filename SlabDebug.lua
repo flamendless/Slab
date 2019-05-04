@@ -198,8 +198,9 @@ local function DrawStyleEditor()
 
 	local Style = Slab.GetStyle()
 	local Names = Style.API.GetStyleNames()
+	local CurrentStyle = Style.API.GetCurrentStyleName()
 	local W, H = Slab.GetWindowActiveSize()
-	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {W = W, Selected = Style.API.GetCurrentStyleName()}) then
+	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {W = W, Selected = CurrentStyle}) then
 		for I, V in ipairs(Names) do
 			if Slab.TextSelectable(V) then
 				Style.API.SetStyle(V)
@@ -221,7 +222,8 @@ local function DrawStyleEditor()
 
 	Slab.SameLine()
 
-	if Slab.Button("Save") then
+	local SaveDisabled = Style.API.IsDefaultStyle(CurrentStyle)
+	if Slab.Button("Save", {Disabled = SaveDisabled}) then
 		Style.API.SaveCurrentStyle()
 	end
 

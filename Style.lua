@@ -191,4 +191,8 @@ function API.StoreCurrentStyle()
 	Utility.CopyValues(Styles[CurrentStyle], Style)
 end
 
+function API.IsDefaultStyle(Name)
+	return Utility.Contains(DefaultStyles, Name)
+end
+
 return Style
