@@ -32,7 +32,7 @@ function love.draw()
 	Slab.Draw()
 end
 ```
-![](https://github.com/coding-jackalope/Slab/wiki/Images/Slab_Hello_World.gif)
+![](https://github.com/coding-jackalope/Slab/wiki/Images/Slab_HelloWorld.png)
 
 For more detailed information on usage of this library, refer to the [Wiki](https://github.com/coding-jackalope/Slab/wiki).
 
