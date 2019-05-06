@@ -103,9 +103,11 @@ end
 function Text.BeginFormatted(Label, Options)
 	Stats.Begin('Textf')
 
+	local WinW, WinH = Window.GetBorderlessSize()
+
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
-	Options.W = Options.W == nil and Window.GetWidth() or Options.W
+	Options.W = Options.W == nil and WinW or Options.W
 	Options.Align = Options.Align == nil and 'left' or Options.Align
 
 	local X, Y = Cursor.GetPosition()
