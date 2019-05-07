@@ -266,6 +266,8 @@ function Slab.Draw()
 		MenuBar.Clear()
 	end
 
+	Mouse.UpdateCursor()
+
 	if Mouse.IsReleased(1) then
 		Button.ClearClicked()
 	end

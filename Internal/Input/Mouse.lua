@@ -43,6 +43,8 @@ local State =
 
 local Cursors = nil
 local DoubleClickTime = 0.25
+local CurrentCursor = "arrow"
+local PendingCursor = ""
 
 local function UpdateClickTime(Button)
 	if Mouse.IsClicked(Button) then
@@ -122,18 +124,28 @@ function Mouse.SetCursor(Type)
 		return
 	end
 
-	if Type == 'arrow' then
-		love.mouse.setCursor(Cursors.Arrow)
-	elseif Type == 'sizewe' then
-		love.mouse.setCursor(Cursors.SizeWE)
-	elseif Type == 'sizens' then
-		love.mouse.setCursor(Cursors.SizeNS)
-	elseif Type == 'sizenesw' then
-		love.mouse.setCursor(Cursors.SizeNESW)
-	elseif Type == 'sizenwse' then
-		love.mouse.setCursor(Cursors.SizeNWSE)
-	elseif Type == 'ibeam' then
-		love.mouse.setCursor(Cursors.IBeam)
+	PendingCursor = Type
+end
+
+function Mouse.UpdateCursor()
+	if PendingCursor ~= "" and PendingCursor ~= CurrentCursor then
+		CurrentCursor = PendingCursor
+		PendingCursor = ""
+
+		local Type = CurrentCursor
+		if Type == 'arrow' then
+			love.mouse.setCursor(Cursors.Arrow)
+		elseif Type == 'sizewe' then
+			love.mouse.setCursor(Cursors.SizeWE)
+		elseif Type == 'sizens' then
+			love.mouse.setCursor(Cursors.SizeNS)
+		elseif Type == 'sizenesw' then
+			love.mouse.setCursor(Cursors.SizeNESW)
+		elseif Type == 'sizenwse' then
+			love.mouse.setCursor(Cursors.SizeNWSE)
+		elseif Type == 'ibeam' then
+			love.mouse.setCursor(Cursors.IBeam)
+		end
 	end
 end
 

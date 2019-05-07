@@ -1,7 +1,21 @@
 v0.4.0 RELEASE
 ==========
+[Shape]: Triangle.
+[Shape]: Circle.
+[Shape]: Line.
+[Shape]: Curve.
+[Shape]: Polygon.
+[Shape]: Define rounding for each corner.
 [Shape]: Documentation.
 [Stats]: Documentation.
+[Input]: Smarter cursor positioning with mouse. Properly place cursor on the left/right side of character.
+[Input]: Double click to select word.
+[Input]: Multi-line input control.
+[Input]: Min and max number values.
+[Input]: Allow user to highlight text in read-only mode.
+[Input]: Function to get input text as number providing nil checks in the function.
+[Input]: 'Delete' key with no selection should delete forward character.
+[Input]: Test with UTF-8 character set.
 
 BUGS
 ==========
@@ -9,13 +23,13 @@ BUGS
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
-[Mouse]: Setting cursor type causes hit on frame time.
 [Scroll Bar]: Color flicker when clicking and releasing on scroll bar.
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Tooltip]: Gains focus when displayed. Focus should not be allowed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Clamp window moving to viewport.
+[Window]: Negative size is allowed.
 
 TODO
 ==========
@@ -38,24 +52,12 @@ Dialog: Modal/Non-modal dialogs.
 [Graph]: Initial line graph implementation.
 Group: Initial implementation of grouping of controls. Controls with their options are stored
 	until grouping ends. Then position is calculated based on each control size.
-Input: Double click to select word.
-Input: Multi-line input control.
-[Input]: Min and max number values.
-[Input]: Allow user to highlight text in read-only mode.
-[Input]: Function to get input text as number providing nil checks in the function.
-[Input]: 'Delete' key with no selection should delete forward character.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
 [Separator]: Option to change the line thickness.
-[Shape]: Triangle.
-[Shape]: Circle.
-[Shape]: Line.
-[Shape]: Curve.
-[Shape]: Polygon.
-[Shape]: Define rounding for each corner.
 [Slab]: Store settings such as window positions and style.
 SlabDebug: Show image stats.
 [SlabDebug]: Window management tools.
