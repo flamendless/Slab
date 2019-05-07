@@ -247,6 +247,38 @@ local function UpdateSize(Instance, IsObstructed)
 		if Instance.SizerType ~= SizerType.None then
 			local DeltaX, DeltaY = Mouse.GetDelta()
 
+			if Instance.W <= Instance.Border then
+				if (Instance.SizerType == SizerType.W or
+					Instance.SizerType == SizerType.NW or
+					Instance.SizerType == SizerType.SW) and
+					DeltaX > 0.0 then
+					DeltaX = 0.0
+				end
+
+				if (Instance.SizerType == SizerType.E or
+					Instance.SizerType == SizerType.NE or
+					Instance.SizerType == SizerType.SE) and
+					DeltaX < 0.0 then
+					DeltaX = 0.0
+				end
+			end
+
+			if Instance.H <= Instance.Border then
+				if (Instance.SizerType == SizerType.N or
+					Instance.SizerType == SizerType.NW or
+					Instance.SizerType == SizerType.NE) and
+					DeltaY > 0.0 then
+					DeltaY = 0.0
+				end
+
+				if (Instance.SizerType == SizerType.S or
+					Instance.SizerType == SizerType.SE or
+					Instance.SizerType == SizerType.SW) and
+					DeltaY < 0.0 then
+					DeltaY = 0.0
+				end
+			end
+
 			if DeltaX ~= 0.0 or DeltaY ~= 0.0 then
 				Instance.HasResized = true
 				Instance.DeltaContentW = 0.0
@@ -254,28 +286,36 @@ local function UpdateSize(Instance, IsObstructed)
 			end
 
 			if Instance.SizerType == SizerType.N then
+				Mouse.SetCursor('sizens')
 				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
 				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
 			elseif Instance.SizerType == SizerType.E then
+				Mouse.SetCursor('sizewe')
 				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
 			elseif Instance.SizerType == SizerType.S then
+				Mouse.SetCursor('sizens')
 				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
 			elseif Instance.SizerType == SizerType.W then
+				Mouse.SetCursor('sizewe')
 				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
 				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
 			elseif Instance.SizerType == SizerType.NW then
+				Mouse.SetCursor('sizenwse')
 				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
 				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
 				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
 				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
 			elseif Instance.SizerType == SizerType.NE then
+				Mouse.SetCursor('sizenesw')
 				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
 				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
 				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
 			elseif Instance.SizerType == SizerType.SE then
+				Mouse.SetCursor('sizenwse')
 				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
 				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
 			elseif Instance.SizerType == SizerType.SW then
+				Mouse.SetCursor('sizenesw')
 				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
 				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
 				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
@@ -455,8 +495,8 @@ function Window.Begin(Id, Options)
 
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
 	ActiveInstance.Y = ActiveInstance.TitleDeltaY + Options.Y
-	ActiveInstance.W = ActiveInstance.SizeDeltaX + Options.W + Options.Border
-	ActiveInstance.H = ActiveInstance.SizeDeltaY + Options.H + Options.Border
+	ActiveInstance.W = math.max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
+	ActiveInstance.H = math.max(ActiveInstance.SizeDeltaY + Options.H + Options.Border, Options.Border)
 	ActiveInstance.ContentW = Options.ContentW
 	ActiveInstance.ContentH = Options.ContentH
 	ActiveInstance.BackgroundColor = Options.BgColor
@@ -494,8 +534,10 @@ function Window.Begin(Id, Options)
 		OffsetY = Style.Font:getHeight()
 		ActiveInstance.Y = ActiveInstance.Y + OffsetY
 
-		local TitleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2.0
-		ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
+		if Options.AutoSizeWindow then
+			local TitleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2.0
+			ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
+		end
 	end
 
 	local MouseX, MouseY = Mouse.Position()

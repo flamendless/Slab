@@ -16,6 +16,7 @@ v0.4.0 RELEASE
 [Input]: Function to get input text as number providing nil checks in the function.
 [Input]: 'Delete' key with no selection should delete forward character.
 [Input]: Test with UTF-8 character set.
+[Window]: Put title bar into its own region to prevent rendering text outside of window.
 
 BUGS
 ==========
@@ -29,7 +30,6 @@ BUGS
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Clamp window moving to viewport.
-[Window]: Negative size is allowed.
 
 TODO
 ==========
@@ -71,9 +71,7 @@ Style: Add documentation for each style property.
 [Text]: Tooltip support.
 Window: Menu support.
 Window: Ids should be used as keys.
-Window: Lock mouse resize icon while resizing.
 Window: Deprecate window bounds values and use region directly.
 [Window]: Move default border size to Style.
-[Window]: Include border for title text width.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.
