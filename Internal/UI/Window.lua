@@ -564,8 +564,19 @@ function Window.Begin(Id, Options)
 		end
 		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, Options.Rounding)
 		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, Options.Rounding)
-		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
+
+		Region.Begin(ActiveInstance.Id .. '_Title', {
+			X = ActiveInstance.X,
+			Y = ActiveInstance.Y - OffsetY,
+			W = ActiveInstance.W,
+			H = OffsetY,
+			NoBackground = true,
+			NoOutline = true,
+			IgnoreScroll = true
+		})
+		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
+		Region.End()
 	end
 
 	Region.Begin(ActiveInstance.Id, {

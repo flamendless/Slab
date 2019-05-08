@@ -16,7 +16,6 @@ v0.4.0 RELEASE
 [Input]: Function to get input text as number providing nil checks in the function.
 [Input]: 'Delete' key with no selection should delete forward character.
 [Input]: Test with UTF-8 character set.
-[Window]: Put title bar into its own region to prevent rendering text outside of window.
 
 BUGS
 ==========
