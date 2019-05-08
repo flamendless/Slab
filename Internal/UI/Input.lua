@@ -361,6 +361,7 @@ function Input.Begin(Id, Options)
 
 	if Instance == Focused then
 		local Back = false
+		local IgnoreBack = false
 		local ShouldDelete = false
 		local ShouldUpdateTransform = false
 
@@ -387,11 +388,21 @@ function Input.Begin(Id, Options)
 
 		if Keyboard.IsPressed('backspace') then
 			ShouldDelete = true
+			IgnoreBack = TextCursorAnchor ~= -1
+		end
+
+		if Keyboard.IsPressed('delete') then
+			ShouldDelete = true
+			if TextCursorAnchor == -1 then
+				TextCursorPos = TextCursorPos + 1
+			else
+				IgnoreBack = true
+			end
 		end
 
 		if ShouldDelete then
 			if DeleteSelection(Instance) then
-				Back = true
+				Back = not IgnoreBack
 			end
 		end
 
