@@ -99,4 +99,14 @@ function Keyboard.IsDown(Key)
 	return State.Pressed[Key] or love.keyboard.isDown(Key)
 end
 
+function Keyboard.Keys()
+	local Result = {}
+
+	for K, V in pairs(State.Pressed) do
+		table.insert(Result, K)
+	end
+
+	return Result
+end
+
 return Keyboard

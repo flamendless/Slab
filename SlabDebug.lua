@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Slab = require('Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -36,6 +37,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 local SlabDebug = {}
 local SlabDebug_About = 'SlabDebug_About'
 local SlabDebug_Mouse = false
+local SlabDebug_Keyboard = false
 local SlabDebug_Windows = false
 local SlabDebug_Tooltip = false
 local SlabDebug_DrawCommands = false
@@ -320,6 +322,23 @@ function SlabDebug.Mouse()
 	Slab.EndWindow()
 end
 
+function SlabDebug.Keyboard()
+	Slab.BeginWindow('SlabDebug_Keyboard', {Title = "Keyboard", Columns = 2})
+
+	local Keys = Keyboard.Keys()
+	for I, V in ipairs(Keys) do
+		Slab.BeginColumn(1)
+		Slab.Text(V)
+		Slab.EndColumn()
+
+		Slab.BeginColumn(2)
+		Slab.Text(tostring(Keyboard.IsDown(V)))
+		Slab.EndColumn()
+	end
+
+	Slab.EndWindow()
+end
+
 function SlabDebug.Windows()
 	Slab.BeginWindow('SlabDebug_Windows', {Title = "Windows"})
 
@@ -383,6 +402,10 @@ function SlabDebug.Menu()
 			SlabDebug_Mouse = not SlabDebug_Mouse
 		end
 
+		if Slab.MenuItemChecked("Keyboard", SlabDebug_Keyboard) then
+			SlabDebug_Keyboard = not SlabDebug_Keyboard
+		end
+
 		if Slab.MenuItemChecked("Windows", SlabDebug_Windows) then
 			SlabDebug_Windows = not SlabDebug_Windows
 		end
@@ -413,6 +436,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_Mouse then
 		SlabDebug.Mouse()
+	end
+
+	if SlabDebug_Keyboard then
+		SlabDebug.Keyboard()
 	end
 
 	if SlabDebug_Windows then
