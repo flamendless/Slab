@@ -32,7 +32,6 @@ BUGS
 
 TODO
 ==========
-[API]: Expose Keyboard functions.
 [API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.

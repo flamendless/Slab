@@ -146,6 +146,11 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			IsControlHovered
 			IsControlClicked
 
+		Keyboard:
+			IsKeyDown
+			IsKeyPressed
+			IsKeyReleased
+
 		Shape:
 			Rectangle
 --]]
@@ -1333,6 +1338,48 @@ end
 --]]
 function Slab.IsControlClicked(Button)
 	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
+--[[
+	IsKeyDown
+
+	Checks to see if a specific key is held down. The key should be one of the love defined KeyConstant which the list can
+	be found at https://love2d.org/wiki/KeyConstant.
+
+	Key: [String] A love defined key constant.
+
+	Return: [Boolean] True if the key is held down. False otherwise.
+--]]
+function Slab.IsKeyDown(Key)
+	return Keyboard.IsDown(Key)
+end
+
+--[[
+	IsKeyPressed
+
+	Checks to see if a specific key state went from up to down this frame. The key should be one of the love defined KeyConstant which the list can
+	be found at https://love2d.org/wiki/KeyConstant.
+
+	Key: [String] A love defined key constant.
+
+	Return: [Boolean] True if the key state went from up to down this frame. False otherwise.
+--]]
+function Slab.IsKeyPressed(Key)
+	return Keyboard.IsPressed(Key, true)
+end
+
+--[[
+	IsKeyPressed
+
+	Checks to see if a specific key state went from down to up this frame. The key should be one of the love defined KeyConstant which the list can
+	be found at https://love2d.org/wiki/KeyConstant.
+
+	Key: [String] A love defined key constant.
+
+	Return: [Boolean] True if the key state went from down to up this frame. False otherwise.
+--]]
+function Slab.IsKeyReleased(Key)
+	return Keyboard.IsReleased(Key)
 end
 
 --[[

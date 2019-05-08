@@ -32,7 +32,7 @@ local State =
 	WasPressed = {},
 	LastPressed = nil,
 	PressedTime = 0.0,
-	ShouldRepeat = false,
+	ShouldRepeat = false
 }
 
 local RepeatDelay = 0.6
@@ -84,8 +84,11 @@ function Keyboard.Update()
 	end
 end
 
-function Keyboard.IsPressed(Key)
+function Keyboard.IsPressed(Key, CancelRepeat)
 	InsertKey(Key)
+	if Key == State.LastPressed and CancelRepeat then
+		State.LastPressed = nil
+	end
 	return State.Pressed[Key] and not State.WasPressed[Key]
 end
 
