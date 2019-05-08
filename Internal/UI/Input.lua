@@ -170,6 +170,12 @@ local function GetTextCursorPos(Instance, X)
 			local Sub = string.sub(Instance.Text, 1, Offset)
 			local PosX = Style.Font:getWidth(Sub) + TEXT_CURSOR_PAD
 			if PosX > X then
+				local Char = string.sub(Instance.Text, Offset, Offset)
+				local CharX = PosX - X
+				local CharW = Style.Font:getWidth(Char)
+				if CharX < CharW * 0.5 then
+					Result = Result + 1
+				end
 				break
 			end
 			Result = I

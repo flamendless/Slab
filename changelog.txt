@@ -8,7 +8,6 @@ v0.4.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation.
 [Stats]: Documentation.
-[Input]: Smarter cursor positioning with mouse. Properly place cursor on the left/right side of character.
 [Input]: Double click to select word.
 [Input]: Multi-line input control.
 [Input]: Min and max number values.
