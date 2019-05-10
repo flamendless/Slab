@@ -1,6 +1,7 @@
 v0.4.0 RELEASE
 ==========
 [API]: Expose Stats interface.
+[Interaction]: Check Keyboard documentation.
 [Shape]: Triangle.
 [Shape]: Circle.
 [Shape]: Line.
@@ -10,12 +11,12 @@ v0.4.0 RELEASE
 [Shape]: Documentation.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
-[Input]: Double click to select word.
 [Input]: Multi-line input control.
 [Input]: Min and max number values.
 [Input]: Allow user to highlight text in read-only mode.
 [Input]: Function to get input text as number providing nil checks in the function.
 [Input]: Test with UTF-8 character set.
+[Input]: Support Ctrl key word skip on Windows. Currently works on Mac with Alt.
 
 BUGS
 ==========

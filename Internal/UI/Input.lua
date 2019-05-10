@@ -61,6 +61,17 @@ local function GetSelection(Instance)
 	return ""
 end
 
+local function GetCharacter(Instance, Index)
+	local Result = ""
+	if Instance ~= nil then
+		local Offset = UTF8.offset(Instance.Text, 0, Index)
+		if Offset ~= nil then
+			Result = string.sub(Instance.Text, Offset, Offset)
+		end
+	end
+	return Result
+end
+
 local function IsValidDigit(Instance, Ch)
 	if Instance ~= nil then
 		if Instance.NumbersOnly then
@@ -122,6 +133,37 @@ local function GetCursorXOffset(Instance)
 		end
 	end
 	return TEXT_CURSOR_PAD
+end
+
+local function SelectWord(Instance)
+	if Instance ~= nil then
+		local Filter = " "
+		local RawSearch = true
+		if GetCharacter(Instance, TextCursorPos) == " " then
+			if GetCharacter(Instance, TextCursorPos + 1) == " " then
+				Filter = "%S"
+				RawSearch = false
+			else
+				TextCursorPos = TextCursorPos + 1
+			end
+		end
+		TextCursorAnchor = 0
+		local I = 0
+		while I ~= nil and I + 1 < TextCursorPos do
+			I = string.find(Instance.Text, Filter, I + 1, RawSearch)
+			if I ~= nil and I < TextCursorPos then
+				TextCursorAnchor = I
+			else
+				break
+			end
+		end
+		I = string.find(Instance.Text, Filter, TextCursorPos + 1, RawSearch)
+		if I ~= nil then
+			TextCursorPos = I - 1
+		else
+			TextCursorPos = #Instance.Text
+		end
+	end
 end
 
 local function GetNextCursorPos(Instance, Left)
@@ -456,6 +498,14 @@ function Input.Begin(Id, Options)
 			if TextCursorAnchor == TextCursorPos then
 				TextCursorAnchor = -1
 			end
+		end
+
+		if Mouse.IsDoubleClicked(1) then
+			local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
+			local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
+			TextCursorPos = GetTextCursorPos(Instance, CX)
+			SelectWord(Instance)
+			DragSelect = false
 		end
 
 		if ShouldUpdateTransform then
