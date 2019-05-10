@@ -34,6 +34,7 @@ local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local UTF8 = require('utf8')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Input = {}
@@ -98,7 +99,7 @@ end
 
 local function IsCommandKeyDown()
 	local LKey, RKey = 'lctrl', 'rctrl'
-	if love.system.getOS() == "OS X" then
+	if Utility.IsOSX() then
 		LKey, RKey = 'lgui', 'rgui'
 	end
 	return Keyboard.IsDown(LKey) or Keyboard.IsDown(RKey)
@@ -106,7 +107,7 @@ end
 
 local function IsHomePressed()
 	local Result = false
-	if love.system.getOS() == "OS X" then
+	if Utility.IsOSX() then
 		Result = IsCommandKeyDown() and Keyboard.IsPressed('left')
 	else
 		Result = Keyboard.IsPressed('home')
@@ -116,10 +117,20 @@ end
 
 local function IsEndPressed()
 	local Result = false
-	if love.system.getOS() == "OS X" then
+	if Utility.IsOSX() then
 		Result = IsCommandKeyDown() and Keyboard.IsPressed('right')
 	else
 		Result = Keyboard.IsPressed('end')
+	end
+	return Result
+end
+
+local function IsNextSpaceDown()
+	local Result = false
+	if Utility.IsOSX() then
+		Result = Keyboard.IsDown('lalt') or Keyboard.IsDown('ralt')
+	else
+		Result = Keyboard.IsDown('lctrl') or Keyboard.IsDown('rctrl')
 	end
 	return Result
 end
@@ -169,7 +180,7 @@ end
 local function GetNextCursorPos(Instance, Left)
 	local Result = 0
 	if Instance ~= nil then
-		local NextSpace = Keyboard.IsDown('lalt') or Keyboard.IsDown('ralt')
+		local NextSpace = IsNextSpaceDown()
 
 		if NextSpace then
 			if Left then

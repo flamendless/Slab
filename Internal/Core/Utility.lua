@@ -160,4 +160,8 @@ function Utility.IsWindows()
 	return love.system.getOS() == "Windows"
 end
 
+function Utility.IsOSX()
+	return love.system.getOS() == "OS X"
+end
+
 return Utility
