@@ -19,6 +19,7 @@ v0.4.0 RELEASE
 
 BUGS
 ==========
+[Columns]: Input control doesn't render when multiple are declared in a single column.
 [File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
@@ -52,6 +53,7 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 	until grouping ends. Then position is calculated based on each control size.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
+[Menu]: Radio button like menu items.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
