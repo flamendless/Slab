@@ -158,7 +158,7 @@ local Slab = {}
 
 -- Slab version numbers.
 local Version_Major = 0
-local Version_Minor = 3
+local Version_Minor = 4
 local Version_Revision = 0
 
 local FrameNumber = 0
