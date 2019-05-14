@@ -50,7 +50,15 @@ local FocusToNext = false
 local LastText = ""
 
 local MIN_WIDTH = 150.0
-local TEXT_CURSOR_PAD = 3.0
+
+local function GetAlignmentOffset(Instance)
+	local Offset = 2.0
+	if Instance.Align == 'center' then
+		local TextW = Style.Font:getWidth(Instance.Text)
+		Offset = (Instance.W * 0.5) - (TextW * 0.5)
+	end
+	return Offset
+end
 
 local function GetSelection(Instance)
 	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
@@ -136,14 +144,15 @@ local function IsNextSpaceDown()
 end
 
 local function GetCursorXOffset(Instance)
+	local Result = GetAlignmentOffset(Instance)
 	if Instance ~= nil then
 		if TextCursorPos > 0 then
 			local Offset = UTF8.offset(Instance.Text, 0, TextCursorPos)
 			local Sub = string.sub(Instance.Text, 1, Offset)
-			return Style.Font:getWidth(Sub) + TEXT_CURSOR_PAD
+			Result = Style.Font:getWidth(Sub) + GetAlignmentOffset(Instance)
 		end
 	end
-	return TEXT_CURSOR_PAD
+	return Result
 end
 
 local function SelectWord(Instance)
@@ -218,15 +227,16 @@ end
 local function GetTextCursorPos(Instance, X)
 	local Result = 0
 	if Instance ~= nil then
+		X = X - GetAlignmentOffset(Instance)
 		for I = 1, #Instance.Text, 1 do
 			local Offset = UTF8.offset(Instance.Text, 0, I)
 			local Sub = string.sub(Instance.Text, 1, Offset)
-			local PosX = Style.Font:getWidth(Sub) + TEXT_CURSOR_PAD
+			local PosX = Style.Font:getWidth(Sub)
 			if PosX > X then
 				local Char = string.sub(Instance.Text, Offset, Offset)
 				local CharX = PosX - X
 				local CharW = Style.Font:getWidth(Char)
-				if CharX < CharW * 0.5 then
+				if CharX < CharW * 0.65 then
 					Result = Result + 1
 				end
 				break
@@ -244,16 +254,16 @@ local function UpdateTransform(Instance)
 		local W = TX + Instance.W
 
 		if Offset > W then
-			Region.Translate(Instance.Id, -(Offset - W + TEXT_CURSOR_PAD), 0.0)
+			Region.Translate(Instance.Id, -(Offset - W), 0.0)
 		elseif Offset < TX then
-			Region.Translate(Instance.Id, TX - Offset + TEXT_CURSOR_PAD, 0.0)
+			Region.Translate(Instance.Id, TX - Offset, 0.0)
 		end
 	end
 end
 
 local function DeleteSelection(Instance)
 	local Result = false
-	if Instance ~= nil and Instance.Text ~= "" then
+	if Instance ~= nil and Instance.Text ~= "" and not Instance.ReadOnly then
 		local Start = 0
 		local Min = 0
 		local Max = 0
@@ -314,8 +324,8 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 
 		local SubMin = string.sub(Instance.Text, 1, OffsetMin)
 		local SubMax = string.sub(Instance.Text, 1, OffsetMax)
-		local MinX = Style.Font:getWidth(SubMin) + 3.0
-		local MaxX = Style.Font:getWidth(SubMax) + 3.0
+		local MinX = Style.Font:getWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
+		local MaxX = Style.Font:getWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
 
 		DrawCommands.Rectangle('fill', X + MinX, Y, MaxX - MinX, H, Color)
 	end
@@ -360,11 +370,13 @@ function Input.Begin(Id, Options)
 	Options.W = Options.W == nil and nil or Options.W
 	Options.H = Options.H == nil and nil or Options.H
 	Options.ReadOnly = Options.ReadOnly == nil and false or Options.ReadOnly
-	Options.Align = Options.Align == nil and 'center' or Options.Align
+	Options.Align = Options.Align == nil and nil or Options.Align
 	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
 
 	local Instance = GetInstance(Window.GetId() .. "." .. Id)
 	Instance.NumbersOnly = Options.NumbersOnly
+	Instance.ReadOnly = Options.ReadOnly
+	Instance.Align = Options.Align
 	local WinItemId = Window.GetItemId(Id)
 	if Focused ~= Instance then
 		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
@@ -386,7 +398,7 @@ function Input.Begin(Id, Options)
 		Window.SetHotItem(WinItemId)
 	end
 
-	local CheckFocus = Mouse.IsClicked(1) and not Options.ReadOnly
+	local CheckFocus = Mouse.IsClicked(1)
 
 	local FocusedThisFrame = false
 	local ClearFocus = false
@@ -410,6 +422,14 @@ function Input.Begin(Id, Options)
 
 	if LastFocused == Instance then
 		LastFocused = nil
+	end
+
+	if Instance.Align == nil then
+		Instance.Align = Instance == Focused and 'left' or 'center'
+
+		if Instance.ReadOnly then
+			Instance.Align = 'center'
+		end
 	end
 
 	if Instance == Focused then
@@ -546,7 +566,7 @@ function Input.Begin(Id, Options)
 		end
 	end
 
-	if Instance == Focused then
+	if Instance == Focused and not Instance.ReadOnly then
 		Options.BgColor = Style.InputEditBgColor
 	end
 
@@ -568,12 +588,7 @@ function Input.Begin(Id, Options)
 		DrawCursor(Instance, X, Y, W, H)
 	end
 	if Instance.Text ~= "" then
-		if Instance == Focused or Options.Align == 'left' then
-			Cursor.SetPosition(X + 2.0, Y)
-		else
-			local TextW = Style.Font:getWidth(Instance.Text)
-			Cursor.SetPosition(X + (W * 0.5) - (TextW * 0.5), Y)
-		end
+		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
 		Text.Begin(Instance.Text, {AddItem = false})
 	end
 	Region.End()
@@ -605,7 +620,7 @@ function Input.Begin(Id, Options)
 end
 
 function Input.Text(Ch)
-	if Focused ~= nil then
+	if Focused ~= nil and not Focused.ReadOnly then
 		if not IsValidDigit(Focused, Ch) then
 			return
 		end
