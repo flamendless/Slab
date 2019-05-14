@@ -19,7 +19,6 @@ v0.4.0 RELEASE
 
 BUGS
 ==========
-[Columns]: Input control doesn't render when multiple are declared in a single column.
 [File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.

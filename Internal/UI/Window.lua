@@ -888,7 +888,6 @@ function Window.BeginColumn(Index)
 			SY = TY,
 			NoOutline = true,
 			NoBackground = true,
-			Intersect = true,
 			IgnoreScroll = true
 		})
 	end
