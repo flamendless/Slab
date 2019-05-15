@@ -118,6 +118,12 @@ local function IsValidDigit(Instance, Ch)
 				return true
 			end
 
+			if Ch == "-" then
+				if TextCursorAnchor == 0 or TextCursorPos == 0 or #Instance.Text == 0 then
+					return true
+				end
+			end
+
 			if Ch == "." then
 				local Selected = GetSelection(Instance)
 				if Selected ~= nil and string.find(Selected, ".", 1, true) ~= nil then
