@@ -11,9 +11,9 @@ v0.4.0 RELEASE
 [Shape]: Documentation.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
+[Input]: Check documentation.
 [Input]: Multi-line input control.
 [Input]: Min and max number values.
-[Input]: Function to get input text as number providing nil checks in the function.
 [Input]: Test with UTF-8 character set.
 [Input]: Reset input transform when losing all focus.
 

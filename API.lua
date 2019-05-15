@@ -104,6 +104,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		CheckBox
 		Input
 		GetInputText
+		GetInputNumber
 		BeginTree
 		EndTree
 		BeginComboBox
@@ -789,6 +790,22 @@ function Slab.GetInputText()
 end
 
 --[[
+	GetInputNumber
+
+	Retrieves the text entered into the focused input box and attempts to conver the text into a number. Will always return a valid
+	number.
+
+	Return: [Number] Returns the text entered into the focused input box as a number.
+--]]
+function Slab.GetInputNumber()
+	local Result = tonumber(Input.GetText())
+	if Result == nil then
+		Result = 0
+	end
+	return Result
+end
+
+--[[
 	BeginTree
 
 	This function will render a tree item with an optional label. The tree can be expanded or collapsed based on whether
@@ -1019,8 +1036,7 @@ function Slab.Properties(Table)
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
 				if Slab.Input(K, {Text = tostring(V), NumbersOnly = true, ReturnOnText = false}) then
-					local Result = tonumber(Slab.GetInputText())
-					Table[K] = Result == nil and 0 or Result
+					Table[K] = Slab.GetInputNumber()
 				end
 			elseif Type == "string" then
 				Slab.Text(K .. ": ")
