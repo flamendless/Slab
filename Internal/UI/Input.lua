@@ -51,6 +51,36 @@ local LastText = ""
 
 local MIN_WIDTH = 150.0
 
+local function ValidateNumber(Instance)
+	local Result = false
+
+	if Instance ~= nil and Instance.NumbersOnly and Instance.Text ~= "" then
+		if string.sub(Instance.Text, #Instance.Text, #Instance.Text) == "." then
+			return
+		end
+
+		local Value = tonumber(Instance.Text)
+		if Value == nil then
+			Value = 0.0
+		end
+
+		local OldValue = Value
+
+		if Instance.MinNumber ~= nil then
+			Value = math.max(Value, Instance.MinNumber)
+		end
+		if Instance.MaxNumber ~= nil then
+			Value = math.min(Value, Instance.MaxNumber)
+		end
+
+		Result = OldValue ~= Value
+
+		Instance.Text = tostring(Value)
+	end
+
+	return Result
+end
+
 local function GetAlignmentOffset(Instance)
 	local Offset = 2.0
 	if Instance.Align == 'center' then
@@ -372,14 +402,31 @@ function Input.Begin(Id, Options)
 	Options.ReadOnly = Options.ReadOnly == nil and false or Options.ReadOnly
 	Options.Align = Options.Align == nil and nil or Options.Align
 	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
+	Options.MinNumber = Options.MinNumber == nil and nil or Options.MinNumber
+	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
+
+	if type(Options.MinNumber) ~= "number" then
+		Options.MinNumber = nil
+	end
+
+	if type(Options.MaxNumber) ~= "number" then
+		Options.MaxNumber = nil
+	end
 
 	local Instance = GetInstance(Window.GetId() .. "." .. Id)
 	Instance.NumbersOnly = Options.NumbersOnly
 	Instance.ReadOnly = Options.ReadOnly
 	Instance.Align = Options.Align
+	Instance.MinNumber = Options.MinNumber
+	Instance.MaxNumber = Options.MaxNumber
 	local WinItemId = Window.GetItemId(Id)
 	if Focused ~= Instance then
 		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
+	end
+
+	if Instance.MinNumber ~= nil and Instance.MaxNumber ~= nil then
+		assert(Instance.MinNumber < Instance.MaxNumber, 
+			"Invalid MinNumber and MaxNumber passed to Input control '" .. Instance.Id .. "'. MinNumber: " .. Instance.MinNumber .. " MaxNumber: " .. Instance.MaxNumber)
 	end
 
 	local X, Y = Cursor.GetPosition()
@@ -561,8 +608,9 @@ function Input.Begin(Id, Options)
 			TextCursorAnchor = -1
 		end
 	else
-		if Instance.NumbersOnly and (Instance.Text == "" or Instance.Text == ".") then
-			Instance.Text = "0"
+		Result = ValidateNumber(Instance)
+		if Result then
+			LastText = Instance.Text
 		end
 	end
 

@@ -30,7 +30,7 @@ local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
 local SlabTest = {}
 
 local BasicWindow_Input = "This is some text!"
-local BasicWindow_Input_Numbers = ""
+local BasicWindow_Input_Numbers = 0
 local BasicWindow_CheckBox = false
 local BasicWindow_Options = {"Apple", "Banana", "Orange", "Pear", "Lemon"}
 local BasicWindow_Options_Selected = ""
@@ -74,8 +74,8 @@ function SlabTest.BasicWindow()
 		BasicWindow_Input = Slab.GetInputText()
 	end
 
-	if Slab.Input('BasicWindow_Numbers', {Text = BasicWindow_Input_Numbers, NumbersOnly = true}) then
-		BasicWindow_Input_Numbers = Slab.GetInputText()
+	if Slab.Input('BasicWindow_Numbers', {Text = tostring(BasicWindow_Input_Numbers), NumbersOnly = true, MinNumber = 100}) then
+		BasicWindow_Input_Numbers = Slab.GetInputNumber()
 	end
 
 	Slab.Separator()

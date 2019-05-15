@@ -769,6 +769,8 @@ end
 			left: Aligns the text to the left. This will be set when this Input is focused.
 			center: Aligns the text in the center. This is the default for when the text is not focused.
 		Rounding: [Number] Amount of rounding to apply to the corners of the input box.
+		MinNumber: [Number] The minimum value that can be entered into this input box. Only valid when NumbersOnly is true.
+		MaxNumber: [Number] The maximum value that can be entered into this input box. Only valid when NumbersOnly is true.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
