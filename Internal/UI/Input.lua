@@ -460,6 +460,7 @@ function Input.Begin(Id, Options)
 			FocusedThisFrame = Focused ~= Instance
 			Focused = Instance
 		elseif Instance == Focused then
+			ClearFocus = true
 			Focused = nil
 		end
 	end
@@ -656,13 +657,7 @@ function Input.Begin(Id, Options)
 	Window.AddItem(X, Y, W, H, WinItemId)
 
 	if ClearFocus then
-		if Instance.NumbersOnly then
-			local Value = tonumber(Instance.Text)
-			if Value ~= nil then
-				Instance.Text = tostring(Value)
-			end
-		end
-
+		ValidateNumber(Instance)
 		LastText = Instance.Text
 		Focused = nil
 		Region.ResetTransform(Instance.Id)

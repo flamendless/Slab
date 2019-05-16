@@ -14,7 +14,6 @@ v0.4.0 RELEASE
 [Input]: Check documentation.
 [Input]: Multi-line input control.
 [Input]: Test with UTF-8 character set.
-[Input]: Reset input transform when losing all focus.
 
 BUGS
 ==========
