@@ -12,8 +12,10 @@ v0.4.0 RELEASE
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 [Input]: Check documentation.
-[Input]: Multi-line input control.
 [Input]: Test with UTF-8 character set.
+[Input]: Drag select word versus character.
+[Input]: Auto-grow control with MulitLine.
+[Slab Debug]: Window with button to open/save a file with input text edit.
 
 BUGS
 ==========

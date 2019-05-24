@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Slab = require('Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
@@ -43,6 +44,7 @@ local SlabDebug_Tooltip = false
 local SlabDebug_DrawCommands = false
 local SlabDebug_Performance = false
 local SlabDebug_StyleEditor = false
+local SlabDebug_Input = false
 
 local SlabDebug_Windows_Categories = {"Inspector", "Stack"}
 local SlabDebug_Windows_Category = "Inspector"
@@ -392,6 +394,27 @@ function SlabDebug.StyleEditor()
 	DrawStyleEditor()
 end
 
+function SlabDebug.Input()
+	Slab.BeginWindow('SlabDebug_Input', {Title = "Input"})
+
+	local Info = Input.GetDebugInfo()
+	Slab.Text("Focused: " .. Info['Focused'])
+	Slab.Text("Cursor Position: " .. Info['CursorPos'])
+	Slab.Text("Character: " .. Info['Character'])
+	Slab.Text("Line Position: " .. Info['LineCursorPos'])
+	Slab.Text("Line Number: " .. Info['LineNumber'])
+
+	local Lines = Info['Lines']
+	if Lines ~= nil then
+		Slab.Text("Lines (" .. #Lines .. "):")
+		for I, V in ipairs(Lines) do
+			Slab.Text("   " .. I .. ": " .. V)
+		end
+	end
+
+	Slab.EndWindow()
+end
+
 function SlabDebug.Menu()
 	if Slab.BeginMenu("Debug") then
 		if Slab.MenuItem("About") then
@@ -427,6 +450,10 @@ function SlabDebug.Menu()
 			SlabDebug_StyleEditor = not SlabDebug_StyleEditor
 		end
 
+		if Slab.MenuItemChecked("Input", SlabDebug_Input) then
+			SlabDebug_Input = not SlabDebug_Input
+		end
+
 		Slab.EndMenu()
 	end
 end
@@ -460,6 +487,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_StyleEditor then
 		SlabDebug.StyleEditor()
+	end
+
+	if SlabDebug_Input then
+		SlabDebug.Input()
 	end
 end
 

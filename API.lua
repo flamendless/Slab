@@ -771,6 +771,10 @@ end
 		Rounding: [Number] Amount of rounding to apply to the corners of the input box.
 		MinNumber: [Number] The minimum value that can be entered into this input box. Only valid when NumbersOnly is true.
 		MaxNumber: [Number] The maximum value that can be entered into this input box. Only valid when NumbersOnly is true.
+		MultiLine: [Boolean] Determines whether this input control should support multiple lines. If this is true, then the
+			SelectOnFocus flag will be false. The given text will also be sanitized to remove controls characters such as
+			'\r'. Also, the text will be left aligned.
+		MultiLineW: [Number] The width for which the lines of text should be wrapped at.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.

@@ -42,6 +42,8 @@ local Instances = {}
 local Focused = nil
 local LastFocused = nil
 local TextCursorPos = 0
+local TextCursorPosLine = 0
+local TextCursorPosLineNumber = 1
 local TextCursorAnchor = -1
 local TextCursorAlpha = 0.0
 local FadeIn = true
@@ -50,6 +52,122 @@ local FocusToNext = false
 local LastText = ""
 
 local MIN_WIDTH = 150.0
+
+local function SanitizeText(Data)
+	local Result = false
+
+	if Data ~= nil then
+		local Count = 0
+		Data, Count = string.gsub(Data, "\r", "")
+		Result = Count > 0
+	end
+
+	return Data, Result
+end
+
+local function GetDisplayCharacter(Data, Pos)
+	local Result = ''
+
+	if Data ~= nil and Pos > 0 then
+		local Offset = UTF8.offset(Data, 0, Pos)
+		Result = string.sub(Data, Offset, Offset)
+
+		if Result == nil then
+			Result = 'nil'
+		end
+	end
+
+	if Result == '\n' then
+		Result = "\\n"
+	end
+
+	return Result
+end
+
+local function UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
+	if Instance ~= nil and Instance.Lines ~= nil and TextCursorPos ~= PreviousTextCursorPos then
+		local Count = 0
+		local Start = 0
+		for I, V in ipairs(Instance.Lines) do
+			local Length = #V
+			Count = Count + Length
+			if TextCursorPos < Count then
+				TextCursorPosLine = TextCursorPos - Start
+				TextCursorPosLineNumber = I
+				break
+			elseif TextCursorPos == Count and TextCursorPos == #Instance.Text then
+				TextCursorPosLine = #V
+				TextCursorPosLineNumber = I
+				break
+			end
+			Start = Start + Length
+		end
+	end
+end
+
+local function MoveToHome(Instance)
+	if Instance ~= nil then
+		if Instance.Lines ~= nil and TextCursorPosLineNumber > 1 then
+			TextCursorPosLine = 0
+			local Count = 0
+			local Start = 0
+			for I, V in ipairs(Instance.Lines) do
+				Count = Count + #V
+				if I == TextCursorPosLineNumber then
+					TextCursorPos = Start
+					break
+				end
+				Start = Start + #V
+			end
+		else
+			TextCursorPos = 0
+		end
+	end
+end
+
+local function MoveToEnd(Instance)
+	if Instance ~= nil then
+		if Instance.Lines ~= nil then
+			local Count = 0
+			for I, V in ipairs(Instance.Lines) do
+				Count = Count + #V
+				if I == TextCursorPosLineNumber then
+					TextCursorPos = Count - 1
+					TextCursorPosLine = #V
+
+					if I == #Instance.Lines then
+						TextCursorPos = Count
+					end
+					break
+				end
+			end
+		else
+			TextCursorPos = #Instance.Text
+		end
+	end
+end
+
+local function MoveCursorVertical(Instance, MoveDown)
+	if Instance ~= nil and Instance.Lines ~= nil then
+		if MoveDown then
+			TextCursorPosLineNumber = math.min(TextCursorPosLineNumber + 1, #Instance.Lines)
+		else
+			TextCursorPosLineNumber = math.max(1, TextCursorPosLineNumber - 1)
+		end
+		TextCursorPosLine = math.min(TextCursorPosLine, #Instance.Lines[TextCursorPosLineNumber])
+		if string.sub(Instance.Lines[TextCursorPosLineNumber], TextCursorPosLine, TextCursorPosLine) == '\n' then
+			TextCursorPosLine = TextCursorPosLine - 1
+		end
+		local Start = 0
+		for I, V in ipairs(Instance.Lines) do
+			if I == TextCursorPosLineNumber then
+				TextCursorPos = Start + TextCursorPosLine
+				break
+			end
+			Start = Start + #V
+		end
+	end
+end
 
 local function ValidateNumber(Instance)
 	local Result = false
@@ -84,7 +202,7 @@ end
 local function GetAlignmentOffset(Instance)
 	local Offset = 2.0
 	if Instance.Align == 'center' then
-		local TextW = Style.Font:getWidth(Instance.Text)
+		local TextW = Text.GetWidth(Instance.Text)
 		Offset = (Instance.W * 0.5) - (TextW * 0.5)
 	end
 	return Offset
@@ -185,20 +303,39 @@ local function GetCursorXOffset(Instance)
 		if TextCursorPos > 0 then
 			local Offset = UTF8.offset(Instance.Text, 0, TextCursorPos)
 			local Sub = string.sub(Instance.Text, 1, Offset)
-			Result = Style.Font:getWidth(Sub) + GetAlignmentOffset(Instance)
+			Result = Text.GetWidth(Sub) + GetAlignmentOffset(Instance)
 		end
 	end
 	return Result
 end
 
+local function GetCursorPos(Instance)
+	local X, Y = GetAlignmentOffset(Instance), 0.0
+
+	if Instance ~= nil then
+		local Data = Instance.Text
+		local CursorPos = TextCursorPos
+		if Instance.Lines ~= nil then
+			Data = Instance.Lines[TextCursorPosLineNumber]
+			CursorPos = TextCursorPosLine
+			Y = Text.GetHeight() * (TextCursorPosLineNumber - 1)
+		end
+		if CursorPos > 0 then
+			local Offset = UTF8.offset(Data, 0, CursorPos)
+			local Sub = string.sub(Data, 1, Offset)
+			X = X + Text.GetWidth(Sub)
+		end
+	end
+
+	return X, Y
+end
+
 local function SelectWord(Instance)
 	if Instance ~= nil then
-		local Filter = " "
-		local RawSearch = true
+		local Filter = "%s"
 		if GetCharacter(Instance, TextCursorPos) == " " then
 			if GetCharacter(Instance, TextCursorPos + 1) == " " then
 				Filter = "%S"
-				RawSearch = false
 			else
 				TextCursorPos = TextCursorPos + 1
 			end
@@ -206,14 +343,14 @@ local function SelectWord(Instance)
 		TextCursorAnchor = 0
 		local I = 0
 		while I ~= nil and I + 1 < TextCursorPos do
-			I = string.find(Instance.Text, Filter, I + 1, RawSearch)
+			I = string.find(Instance.Text, Filter, I + 1)
 			if I ~= nil and I < TextCursorPos then
 				TextCursorAnchor = I
 			else
 				break
 			end
 		end
-		I = string.find(Instance.Text, Filter, TextCursorPos + 1, RawSearch)
+		I = string.find(Instance.Text, Filter, TextCursorPos + 1)
 		if I ~= nil then
 			TextCursorPos = I - 1
 		else
@@ -260,25 +397,62 @@ local function GetNextCursorPos(Instance, Left)
 	return Result
 end
 
-local function GetTextCursorPos(Instance, X)
+local function GetCursorPosLine(Instance, Line, X)
+	local Result = 0
+	if Instance ~= nil and Line ~= "" then
+		if Text.GetWidth(Line) < X then
+			Result = #Line
+			if string.find(Line, "\n") ~= nil then
+				Result = #Line - 1
+			end
+		else
+			X = X - GetAlignmentOffset(Instance)
+			for I = 1, #Line, 1 do
+				local Offset = UTF8.offset(Line, 0, I)
+				local Sub = string.sub(Line, 1, Offset)
+				local PosX = Text.GetWidth(Sub)
+				if PosX > X then
+					local Char = string.sub(Line, Offset, Offset)
+					local CharX = PosX - X
+					local CharW = Text.GetWidth(Char)
+					if CharX < CharW * 0.65 then
+						Result = Result + 1
+					end
+					break
+				end
+				Result = I
+			end
+		end
+	end
+	return Result
+end
+
+local function GetTextCursorPos(Instance, X, Y)
 	local Result = 0
 	if Instance ~= nil then
-		X = X - GetAlignmentOffset(Instance)
-		for I = 1, #Instance.Text, 1 do
-			local Offset = UTF8.offset(Instance.Text, 0, I)
-			local Sub = string.sub(Instance.Text, 1, Offset)
-			local PosX = Style.Font:getWidth(Sub)
-			if PosX > X then
-				local Char = string.sub(Instance.Text, Offset, Offset)
-				local CharX = PosX - X
-				local CharW = Style.Font:getWidth(Char)
-				if CharX < CharW * 0.65 then
-					Result = Result + 1
+		local Line = Instance.Text
+		local Start = 0
+
+		if Instance.Lines ~= nil then
+			local H = Text.GetHeight()
+			local LineNumber = 1
+			local Found = false
+			for I, V in ipairs(Instance.Lines) do
+				if Y <= H then
+					Line = V
+					Found = true
+					break
 				end
-				break
+				H = H + Text.GetHeight()
+				Start = Start + #V
 			end
-			Result = I
+
+			if not Found then
+				Line = Instance.Lines[#Instance.Lines]
+			end
 		end
+
+		Result = math.min(Start + GetCursorPosLine(Instance, Line, X), #Instance.Text)
 	end
 	return Result
 end
@@ -351,26 +525,66 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
 		local Min = math.min(TextCursorAnchor, TextCursorPos)
 		local Max = math.max(TextCursorAnchor, TextCursorPos)
+		H = Text.GetHeight()
 
-		local OffsetMin = UTF8.offset(Instance.Text, 1, math.max(Min, 1))
-		local OffsetMax = UTF8.offset(Instance.Text, 1, Max)
-		if Min == 0 then
-			OffsetMin = 0
+		if Instance.Lines ~= nil then
+			local Count = 0
+			local Start = 0
+			local OffsetMin = 0
+			local OffsetMax = 0
+			local OffsetY = 0
+			for I, V in ipairs(Instance.Lines) do
+				Count = Count + #V
+				if Min < Count then
+					if Min > Start then
+						OffsetMin = UTF8.offset(V, 0, math.max(Min - Start, 1))
+					else
+						OffsetMin = 0
+					end
+
+					if Max < Count then
+						OffsetMax = UTF8.offset(V, 0, math.max(Max - Start, 1))
+					else
+						OffsetMax = UTF8.offset(V, 0, #V)
+					end
+
+					local SubMin = string.sub(V, 0, OffsetMin)
+					local SubMax = string.sub(V, 0, OffsetMax)
+					local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
+					local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
+
+					DrawCommands.Rectangle('fill', X + MinX, Y + OffsetY, MaxX - MinX, H, Color)
+				end
+
+				if Max <= Count then
+					break
+				end
+				Start = Start + #V
+				OffsetY = OffsetY + H
+			end
+		else
+			local OffsetMin = UTF8.offset(Instance.Text, 0, math.max(Min, 1))
+			local OffsetMax = UTF8.offset(Instance.Text, 0, Max)
+			if Min == 0 then
+				OffsetMin = 0
+			end
+
+			local SubMin = string.sub(Instance.Text, 0, OffsetMin)
+			local SubMax = string.sub(Instance.Text, 0, OffsetMax)
+			local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
+			local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
+
+			DrawCommands.Rectangle('fill', X + MinX, Y, MaxX - MinX, H, Color)
 		end
-
-		local SubMin = string.sub(Instance.Text, 1, OffsetMin)
-		local SubMax = string.sub(Instance.Text, 1, OffsetMax)
-		local MinX = Style.Font:getWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
-		local MaxX = Style.Font:getWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
-
-		DrawCommands.Rectangle('fill', X + MinX, Y, MaxX - MinX, H, Color)
 	end
 end
 
 local function DrawCursor(Instance, X, Y, W, H)
 	if Instance ~= nil then
-		local CX = X + GetCursorXOffset(Instance)
-		local CY = Y
+		local CX, CY = GetCursorPos(Instance)
+		local CX = X + CX
+		local CY = Y + CY
+		H = Text.GetHeight()
 
 		DrawCommands.Line(CX, CY, CX, CY + H, 1.0, {0.0, 0.0, 0.0, TextCursorAlpha})
 	end
@@ -387,6 +601,11 @@ local function GetInstance(Id)
 	Instance.Text = ""
 	Instance.TextChanged = false
 	Instance.NumbersOnly = true
+	Instance.ReadOnly = false
+	Instance.Align = 'left'
+	Instance.MinNumber = nil
+	Instance.MaxNumber = nil
+	Instance.Lines = nil
 	table.insert(Instances, Instance)
 	return Instance
 end
@@ -410,6 +629,8 @@ function Input.Begin(Id, Options)
 	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
 	Options.MinNumber = Options.MinNumber == nil and nil or Options.MinNumber
 	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
+	Options.MultiLine = Options.MultiLine == nil and false or Options.MultiLine
+	Options.MultiLineW = Options.MultiLineW == nil and nil or Options.MultiLineW
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -426,6 +647,7 @@ function Input.Begin(Id, Options)
 	Instance.MinNumber = Options.MinNumber
 	Instance.MaxNumber = Options.MaxNumber
 	local WinItemId = Window.GetItemId(Id)
+
 	if Focused ~= Instance then
 		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
 	end
@@ -436,22 +658,43 @@ function Input.Begin(Id, Options)
 	end
 
 	local X, Y = Cursor.GetPosition()
-	local H = Options.H == nil and Input.GetHeight() or Options.H
+	local H = Options.H == nil and Text.GetHeight() or Options.H
 	local W = Options.W == nil and MIN_WIDTH or Options.W
+	local ContentW, ContentH = 0.0, 0.0
 	local Result = false
 
 	Instance.W = W
 
-	local MouseX, MouseY = Window.GetMousePosition()
-	local Hovered = not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
+	if Options.MultiLine then
+		Options.SelectOnFocus = false
+		local WasSanitized = false
+		Options.Text, WasSanitized = SanitizeText(Options.Text)
+		if WasSanitized then
+			Result = true
+			LastText = Options.Text
+		end
 
-	if Hovered then
+		ContentW, ContentH = Text.GetSizeWrap(Instance.Text, Options.MultiLineW)
+	end
+
+	if Instance.Lines == nil then
+		if Options.MultiLine then
+			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
+		end
+	end
+
+	local IsObstructed = Window.IsObstructedAtMouse()
+	local MouseX, MouseY = Window.GetMousePosition()
+	local Hovered = not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
+	local HoveredScrollBar = Region.IsHoverScrollBar(Instance.Id) or Region.IsScrolling()
+
+	if Hovered and not HoveredScrollBar then
 		Mouse.SetCursor('ibeam')
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
 	end
 
-	local CheckFocus = Mouse.IsClicked(1)
+	local CheckFocus = Mouse.IsClicked(1) and not HoveredScrollBar
 
 	local FocusedThisFrame = false
 	local ClearFocus = false
@@ -472,6 +715,8 @@ function Input.Begin(Id, Options)
 		FocusToNext = false
 		TextCursorAnchor = -1
 		TextCursorPos = 0
+		TextCursorPosLine = 0
+		TextCursorPosLineNumber = 1
 	end
 
 	if LastFocused == Instance then
@@ -484,6 +729,10 @@ function Input.Begin(Id, Options)
 		if Instance.ReadOnly then
 			Instance.Align = 'center'
 		end
+
+		if Options.MultiLine then
+			Instance.Align = 'left'
+		end
 	end
 
 	if Instance == Focused then
@@ -491,6 +740,7 @@ function Input.Begin(Id, Options)
 		local IgnoreBack = false
 		local ShouldDelete = false
 		local ShouldUpdateTransform = false
+		local PreviousTextCursorPos = TextCursorPos
 
 		if IsCommandKeyDown() then
 			if Keyboard.IsPressed('x') or Keyboard.IsPressed('c') then
@@ -543,12 +793,12 @@ function Input.Begin(Id, Options)
 		end
 
 		if IsHomePressed() then
-			TextCursorPos = 0
+			MoveToHome(Instance)
 			ShouldUpdateTransform = true
 		end
 
 		if IsEndPressed() then
-			TextCursorPos = #Instance.Text
+			MoveToEnd(Instance)
 			ShouldUpdateTransform = true
 		end
 
@@ -561,6 +811,15 @@ function Input.Begin(Id, Options)
 			ShouldUpdateTransform = true
 		end
 
+		if Keyboard.IsPressed('up') then
+			MoveCursorVertical(Instance, false)
+			ShouldUpdateTransform = true
+		end
+		if Keyboard.IsPressed('down') then
+			MoveCursorVertical(Instance, true)
+			ShouldUpdateTransform = true
+		end
+
 		if CheckFocus or DragSelect then
 			if FocusedThisFrame and Options.SelectOnFocus and Instance.Text ~= "" then
 				TextCursorAnchor = 0
@@ -568,7 +827,7 @@ function Input.Begin(Id, Options)
 			else
 				local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
 				local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
-				TextCursorPos = GetTextCursorPos(Instance, CX)
+				TextCursorPos = GetTextCursorPos(Instance, CX, CY)
 				if Mouse.IsClicked(1) then
 					TextCursorAnchor = TextCursorPos
 					DragSelect = true
@@ -588,7 +847,7 @@ function Input.Begin(Id, Options)
 		if Mouse.IsDoubleClicked(1) then
 			local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
 			local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
-			TextCursorPos = GetTextCursorPos(Instance, CX)
+			TextCursorPos = GetTextCursorPos(Instance, CX, CY)
 			SelectWord(Instance)
 			DragSelect = false
 		end
@@ -600,7 +859,11 @@ function Input.Begin(Id, Options)
 
 		if Keyboard.IsPressed('return') then
 			Result = true
-			ClearFocus = true
+			if Options.MultiLine then
+				Input.Text('\n')
+			else
+				ClearFocus = true
+			end
 		end
 
 		if Instance.TextChanged or Back then
@@ -609,19 +872,27 @@ function Input.Begin(Id, Options)
 			end
 
 			Instance.TextChanged = false
+			PreviousTextCursorPos = -1
 		end
 
 		if ClearAnchor then
 			TextCursorAnchor = -1
 		end
-	else
-		Result = ValidateNumber(Instance)
+
 		if Result then
+			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
+		end
+
+		UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
+	else
+		local WasValidated = ValidateNumber(Instance)
+		if WasValidated then
+			Result = true
 			LastText = Instance.Text
 		end
 	end
 
-	if Instance == Focused and not Instance.ReadOnly then
+	if (Instance == Focused and not Instance.ReadOnly) or Options.MultiLine then
 		Options.BgColor = Style.InputEditBgColor
 	end
 
@@ -631,12 +902,17 @@ function Input.Begin(Id, Options)
 		Y = Y,
 		W = W,
 		H = H,
+		ContentW = ContentW + 4.0,
+		ContentH = ContentH,
 		BgColor = Options.BgColor,
 		SX = TX,
 		SY = TY,
+		MouseX = MouseX,
+		MouseY = MouseY,
 		Intersect = true,
-		IgnoreScroll = true,
-		Rounding = Options.Rounding
+		IgnoreScroll = not Options.MultiLine,
+		Rounding = Options.Rounding,
+		IsObstructed = IsObstructed
 	})
 	if Instance == Focused then
 		DrawSelection(Instance, X, Y, W, H, Options.SelectColor)
@@ -644,7 +920,12 @@ function Input.Begin(Id, Options)
 	end
 	if Instance.Text ~= "" then
 		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
-		Text.Begin(Instance.Text, {AddItem = false})
+
+		if Options.MultiLine then
+			Text.BeginFormatted(Instance.Text, {W = Options.MultiLineW})
+		else
+			Text.Begin(Instance.Text, {AddItem = false})
+		end
 	end
 	Region.End()
 	Region.ApplyScissor()
@@ -718,8 +999,17 @@ function Input.GetText()
 	return LastText
 end
 
-function Input.GetHeight()
-	return Style.Font:getHeight()
+function Input.GetDebugInfo()
+	local Info = {}
+
+	Info['Focused'] = Focused ~= nil and Focused.Id or 'nil'
+	Info['CursorPos'] = TextCursorPos
+	Info['Character'] = Focused ~= nil and GetDisplayCharacter(Focused.Text, TextCursorPos) or ''
+	Info['LineCursorPos'] = TextCursorPosLine
+	Info['LineNumber'] = TextCursorPosLineNumber
+	Info['Lines'] = Focused ~= nil and Focused.Lines or nil
+
+	return Info
 end
 
 return Input

@@ -131,8 +131,39 @@ function Text.GetWidth(Label)
 	return Style.Font:getWidth(Label)
 end
 
+function Text.GetHeight()
+	return Style.Font:getHeight()
+end
+
 function Text.GetSize(Label)
 	return Style.Font:getWidth(Label), Style.Font:getHeight()
+end
+
+function Text.GetSizeWrap(Label, Width)
+	local W, Lines = Style.Font:getWrap(Label, Width)
+	return W, #Lines * Text.GetHeight()
+end
+
+function Text.GetLines(Label, Width)
+	local W, Lines = Style.Font:getWrap(Label, Width)
+
+	for I, V in ipairs(Lines) do
+		if #V == 0 then
+			Lines[I] = "\n"
+		else
+			local Index = string.find(Label, V)
+
+			if Index ~= nil then
+				local End = math.min(Index + #V, #Label)
+				local Ch = string.sub(Label, End, End)
+				if Ch == '\n' then
+					Lines[I] = Lines[I] .. "\n"
+				end
+			end
+		end
+	end
+
+	return Lines
 end
 
 return Text
