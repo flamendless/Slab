@@ -467,7 +467,7 @@ function Dialog.FileDialog(Options)
 		local WinW, WinH = Window.GetSize()
 		local ButtonW, ButtonH = Button.GetSize("OK")
 		local ExplorerW = 150.0
-		local ListH = WinH - Input.GetHeight() - ButtonH * 3.0 - Cursor.PadY() * 2.0
+		local ListH = WinH - Text.GetHeight() - ButtonH * 3.0 - Cursor.PadY() * 2.0
 		local PrevAnchorX = Cursor.GetAnchorX()
 
 		Text.Begin(ActiveInstance.Directory)

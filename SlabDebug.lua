@@ -45,6 +45,10 @@ local SlabDebug_DrawCommands = false
 local SlabDebug_Performance = false
 local SlabDebug_StyleEditor = false
 local SlabDebug_Input = false
+local SlabDebug_MultiLine = false
+local SlabDebug_MultiLine_FileDialog = false
+local SlabDebug_MultiLine_FileName = ""
+local SlabDebug_MultiLine_Contents = ""
 
 local SlabDebug_Windows_Categories = {"Inspector", "Stack"}
 local SlabDebug_Windows_Category = "Inspector"
@@ -415,6 +419,53 @@ function SlabDebug.Input()
 	Slab.EndWindow()
 end
 
+function SlabDebug.MultiLine()
+	Slab.BeginWindow('SlabDebug_MultiLine', {Title = "Multi-Line Input"})
+
+	if Slab.Button("Load") then
+		SlabDebug_MultiLine_FileDialog = true
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Save", {Disabled = SlabDebug_MultiLine_FileName == ""}) then
+		local Handle, Error = io.open(SlabDebug_MultiLine_FileName, "w")
+
+		if Handle ~= nil then
+			Handle:write(SlabDebug_MultiLine_Contents)
+			Handle:close()
+		end
+	end
+
+	Slab.Separator()
+
+	Slab.Text("File: " .. SlabDebug_MultiLine_FileName)
+
+	if Slab.Input('SlabDebug_MultiLine', {MultiLine = true, Text = SlabDebug_MultiLine_Contents, W = 500.0, H = 500.0}) then
+		SlabDebug_MultiLine_Contents = Slab.GetInputText()
+	end
+
+	Slab.EndWindow()
+
+	if SlabDebug_MultiLine_FileDialog then
+		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = 'openfile'})
+
+		if Result.Button ~= "" then
+			SlabDebug_MultiLine_FileDialog = false
+
+			if Result.Button == "OK" then
+				SlabDebug_MultiLine_FileName = Result.Files[1]
+				local Handle, Error = io.open(SlabDebug_MultiLine_FileName, "r")
+
+				if Handle ~= nil then
+					SlabDebug_MultiLine_Contents = Handle:read("*a")
+					Handle:close()
+				end
+			end
+		end
+	end
+end
+
 function SlabDebug.Menu()
 	if Slab.BeginMenu("Debug") then
 		if Slab.MenuItem("About") then
@@ -454,6 +505,10 @@ function SlabDebug.Menu()
 			SlabDebug_Input = not SlabDebug_Input
 		end
 
+		if Slab.MenuItemChecked("Multi-Line", SlabDebug_MultiLine) then
+			SlabDebug_MultiLine = not SlabDebug_MultiLine
+		end
+
 		Slab.EndMenu()
 	end
 end
@@ -491,6 +546,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_Input then
 		SlabDebug.Input()
+	end
+
+	if SlabDebug_MultiLine then
+		SlabDebug.MultiLine()
 	end
 end
 

@@ -433,7 +433,7 @@ local function GetTextCursorPos(Instance, X, Y)
 		local Line = Instance.Text
 		local Start = 0
 
-		if Instance.Lines ~= nil then
+		if Instance.Lines ~= nil and #Instance.Lines > 0 then
 			local H = Text.GetHeight()
 			local LineNumber = 1
 			local Found = false
@@ -630,7 +630,7 @@ function Input.Begin(Id, Options)
 	Options.MinNumber = Options.MinNumber == nil and nil or Options.MinNumber
 	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
 	Options.MultiLine = Options.MultiLine == nil and false or Options.MultiLine
-	Options.MultiLineW = Options.MultiLineW == nil and nil or Options.MultiLineW
+	Options.MultiLineW = Options.MultiLineW == nil and math.huge or Options.MultiLineW
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -649,6 +649,10 @@ function Input.Begin(Id, Options)
 	local WinItemId = Window.GetItemId(Id)
 
 	if Focused ~= Instance then
+		if Options.MultiLine and #Options.Text ~= #Instance.Text then
+			Instance.Lines = nil
+		end
+
 		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
 	end
 
@@ -677,7 +681,7 @@ function Input.Begin(Id, Options)
 		ContentW, ContentH = Text.GetSizeWrap(Instance.Text, Options.MultiLineW)
 	end
 
-	if Instance.Lines == nil then
+	if Instance.Lines == nil and Instance.Text ~= "" then
 		if Options.MultiLine then
 			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
 		end

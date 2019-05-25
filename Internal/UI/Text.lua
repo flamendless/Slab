@@ -147,20 +147,20 @@ end
 function Text.GetLines(Label, Width)
 	local W, Lines = Style.Font:getWrap(Label, Width)
 
+	local Start = 0
 	for I, V in ipairs(Lines) do
 		if #V == 0 then
 			Lines[I] = "\n"
 		else
-			local Index = string.find(Label, V)
+			local Offset = Start + #V + 1
+			local Ch = string.sub(Label, Offset, Offset)
 
-			if Index ~= nil then
-				local End = math.min(Index + #V, #Label)
-				local Ch = string.sub(Label, End, End)
-				if Ch == '\n' then
-					Lines[I] = Lines[I] .. "\n"
-				end
+			if Ch == '\n' then
+				Lines[I] = Lines[I] .. "\n"
 			end
 		end
+
+		Start = Start + #Lines[I]
 	end
 
 	return Lines
