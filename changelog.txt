@@ -16,6 +16,7 @@ v0.4.0 RELEASE
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
 [Input]: Fix newline character with a single line.
+[Input]: Update transform when cursor is moving.
 
 BUGS
 ==========

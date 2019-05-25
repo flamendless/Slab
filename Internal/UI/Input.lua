@@ -369,7 +369,7 @@ local function GetNextCursorPos(Instance, Left)
 				Result = 0
 				local I = 0
 				while I ~= nil and I + 1 < TextCursorPos do
-					I = string.find(Instance.Text, " ", I + 1, true)
+					I = string.find(Instance.Text, "%s", I + 1)
 					if I ~= nil and I < TextCursorPos then
 						Result = I
 					else
@@ -377,7 +377,7 @@ local function GetNextCursorPos(Instance, Left)
 					end
 				end
 			else
-				local I = string.find(Instance.Text, " ", TextCursorPos + 1, true)
+				local I = string.find(Instance.Text, "%s", TextCursorPos + 1)
 				if I ~= nil then
 					Result = I
 				else
