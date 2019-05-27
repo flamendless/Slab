@@ -50,6 +50,7 @@ local FadeIn = true
 local DragSelect = false
 local FocusToNext = false
 local LastText = ""
+local Pad = Region.GetScrollPad() + Region.GetScrollBarSize()
 
 local MIN_WIDTH = 150.0
 
@@ -85,22 +86,29 @@ local function GetDisplayCharacter(Data, Pos)
 end
 
 local function UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
-	if Instance ~= nil and Instance.Lines ~= nil and TextCursorPos ~= PreviousTextCursorPos then
-		local Count = 0
-		local Start = 0
-		for I, V in ipairs(Instance.Lines) do
-			local Length = #V
-			Count = Count + Length
-			if TextCursorPos < Count then
-				TextCursorPosLine = TextCursorPos - Start
-				TextCursorPosLineNumber = I
-				break
-			elseif TextCursorPos == Count and TextCursorPos == #Instance.Text then
-				TextCursorPosLine = #V
-				TextCursorPosLineNumber = I
-				break
+	if Instance ~= nil then
+		if Instance.Lines ~= nil then
+			if TextCursorPos ~= PreviousTextCursorPos then
+				local Count = 0
+				local Start = 0
+				for I, V in ipairs(Instance.Lines) do
+					local Length = #V
+					Count = Count + Length
+					if TextCursorPos < Count then
+						TextCursorPosLine = TextCursorPos - Start
+						TextCursorPosLineNumber = I
+						break
+					elseif TextCursorPos == Count and TextCursorPos == #Instance.Text then
+						TextCursorPosLine = #V
+						TextCursorPosLineNumber = I
+						break
+					end
+					Start = Start + Length
+				end
 			end
-			Start = Start + Length
+		else
+			TextCursorPosLine = TextCursorPos
+			TextCursorPosLineNumber = 1
 		end
 	end
 end
@@ -314,12 +322,11 @@ local function GetCursorPos(Instance)
 
 	if Instance ~= nil then
 		local Data = Instance.Text
-		local CursorPos = TextCursorPos
 		if Instance.Lines ~= nil then
 			Data = Instance.Lines[TextCursorPosLineNumber]
-			CursorPos = TextCursorPosLine
 			Y = Text.GetHeight() * (TextCursorPosLineNumber - 1)
 		end
+		local CursorPos = math.min(TextCursorPosLine, #Data)
 		if CursorPos > 0 then
 			local Offset = UTF8.offset(Data, 0, CursorPos)
 			local Sub = string.sub(Data, 1, Offset)
@@ -459,15 +466,37 @@ end
 
 local function UpdateTransform(Instance)
 	if Instance ~= nil then
-		local Offset = GetCursorXOffset(Instance)
-		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
-		local W = TX + Instance.W
+		local X, Y = GetCursorPos(Instance)
 
-		if Offset > W then
-			Region.Translate(Instance.Id, -(Offset - W), 0.0)
-		elseif Offset < TX then
-			Region.Translate(Instance.Id, TX - Offset, 0.0)
+		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
+		local W = TX + Instance.W - Region.GetScrollPad() - Region.GetScrollBarSize()
+		local H = TY + Instance.H
+
+		if Instance.H > Text.GetHeight() then
+			H = H - Region.GetScrollPad() - Region.GetScrollBarSize()
 		end
+
+		local NewX = 0.0
+		if TextCursorPosLine == 0 then
+			NewX = TX
+		elseif X > W then
+			NewX = -(X - W)
+		elseif X < TX then
+			NewX = TX - X
+		end
+
+		local NewY = 0.0
+		if TextCursorPosLineNumber == 1 then
+			NewY = TY
+		elseif Y > H then
+			NewY = -(Y - H)
+		elseif Y < TY then
+			NewY = TY - Y
+		end
+
+		--print(string.format("X: %d Y: %d TX: %.2f TY: %.2f NewX: %.2f NewY: %.2f", X, Y, TX, TY, NewX, NewY))
+
+		Region.Translate(Instance.Id, NewX, NewY)
 	end
 end
 
@@ -668,6 +697,7 @@ function Input.Begin(Id, Options)
 	local Result = false
 
 	Instance.W = W
+	Instance.H = H
 
 	if Options.MultiLine then
 		Options.SelectOnFocus = false
@@ -856,11 +886,6 @@ function Input.Begin(Id, Options)
 			DragSelect = false
 		end
 
-		if ShouldUpdateTransform then
-			ClearAnchor = not IsShiftDown
-			UpdateTransform(Instance)
-		end
-
 		if Keyboard.IsPressed('return') then
 			Result = true
 			if Options.MultiLine then
@@ -879,15 +904,20 @@ function Input.Begin(Id, Options)
 			PreviousTextCursorPos = -1
 		end
 
-		if ClearAnchor then
-			TextCursorAnchor = -1
-		end
-
 		if Result then
 			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
 		end
 
 		UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
+
+		if ShouldUpdateTransform then
+			ClearAnchor = not IsShiftDown
+			UpdateTransform(Instance)
+		end
+
+		if ClearAnchor then
+			TextCursorAnchor = -1
+		end
 	else
 		local WasValidated = ValidateNumber(Instance)
 		if WasValidated then
@@ -906,8 +936,8 @@ function Input.Begin(Id, Options)
 		Y = Y,
 		W = W,
 		H = H,
-		ContentW = ContentW + 4.0,
-		ContentH = ContentH,
+		ContentW = ContentW + Pad,
+		ContentH = ContentH + Pad,
 		BgColor = Options.BgColor,
 		SX = TX,
 		SY = TY,
@@ -945,7 +975,10 @@ function Input.Begin(Id, Options)
 		ValidateNumber(Instance)
 		LastText = Instance.Text
 		Focused = nil
-		Region.ResetTransform(Instance.Id)
+
+		if not Options.MultiLine then
+			Region.ResetTransform(Instance.Id)
+		end
 	end
 
 	Stats.End('Input')

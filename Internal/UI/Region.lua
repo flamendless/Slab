@@ -357,6 +357,22 @@ function Region.Translate(Id, X, Y)
 	local Instance = GetInstance(Id)
 	if Instance ~= nil then
 		Instance.Transform:translate(X, Y)
+
+		if not Instance.IgnoreScroll then
+			if X ~= 0.0 then
+				local XSize = Instance.W - GetXScrollSize(Instance)
+
+				Instance.ScrollPosX = math.max(Instance.ScrollPosX - X, 0.0)
+				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
+			end
+
+			if Y ~= 0.0 then
+				local YSize = Instance.H - GetYScrollSize(Instance)
+
+				Instance.ScrollPosY = math.max(Instance.ScrollPosY - Y, 0.0)
+				Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
+			end
+		end
 	end
 end
 
@@ -380,6 +396,8 @@ function Region.ResetTransform(Id)
 	local Instance = GetInstance(Id)
 	if Instance ~= nil then
 		Instance.Transform:reset()
+		Instance.ScrollPosX = 0.0
+		Instance.ScrollPosY = 0.0
 	end
 end
 
@@ -440,6 +458,10 @@ end
 
 function Region.GetScrollPad()
 	return ScrollPad
+end
+
+function Region.GetScrollBarSize()
+	return ScrollBarSize
 end
 
 function Region.WheelMoved(X, Y)
