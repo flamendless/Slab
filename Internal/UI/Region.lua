@@ -189,7 +189,7 @@ local function UpdateScrollBars(Instance, IsObstructed)
 
 	local TX = math.max(Instance.ContentW - Instance.W, 0.0) * -XRatio
 	local TY = math.max(Instance.ContentH - Instance.H, 0.0) * -YRatio
-	Instance.Transform:setTransformation(TX, TY)
+	Instance.Transform:setTransformation(math.floor(TX), math.floor(TY))
 end
 
 local function DrawScrollBars(Instance)

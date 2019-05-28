@@ -16,7 +16,6 @@ v0.4.0 RELEASE
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
 [Input]: Fix newline character with a single line.
-[Region]: Request to floor all translations.
 
 BUGS
 ==========

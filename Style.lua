@@ -59,7 +59,7 @@ local Style =
 	ComboBoxDropDownHoveredColor = {0.55, 0.55, 0.55, 1.0},
 	ComboBoxArrowColor = {1.0, 1.0, 1.0, 1.0},
 	InputBgColor = {0.4, 0.4, 0.4, 1.0},
-	InputEditBgColor = {0.5, 0.5, 0.5, 1.0},
+	InputEditBgColor = {0.6, 0.6, 0.6, 1.0},
 	InputSelectColor = {0.14, 0.29, 0.53, 0.4},
 
 	WindowRounding = 2.0,
