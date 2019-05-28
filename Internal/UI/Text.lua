@@ -163,6 +163,10 @@ function Text.GetLines(Label, Width)
 		Start = Start + #Lines[I]
 	end
 
+	if string.sub(Label, #Label, #Label) == '\n' then
+		table.insert(Lines, "")
+	end
+
 	return Lines
 end
 

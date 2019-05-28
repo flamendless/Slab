@@ -91,19 +91,22 @@ local function UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
 			if TextCursorPos ~= PreviousTextCursorPos then
 				local Count = 0
 				local Start = 0
+				local Found = false
 				for I, V in ipairs(Instance.Lines) do
 					local Length = #V
 					Count = Count + Length
 					if TextCursorPos < Count then
 						TextCursorPosLine = TextCursorPos - Start
 						TextCursorPosLineNumber = I
-						break
-					elseif TextCursorPos == Count and TextCursorPos == #Instance.Text then
-						TextCursorPosLine = #V
-						TextCursorPosLineNumber = I
+						Found = true
 						break
 					end
 					Start = Start + Length
+				end
+
+				if not Found then
+					TextCursorPosLine = #Instance.Lines[#Instance.Lines]
+					TextCursorPosLineNumber = #Instance.Lines
 				end
 			end
 		else
@@ -208,7 +211,7 @@ local function ValidateNumber(Instance)
 end
 
 local function GetAlignmentOffset(Instance)
-	local Offset = 2.0
+	local Offset = 6.0
 	if Instance.Align == 'center' then
 		local TextW = Text.GetWidth(Instance.Text)
 		Offset = (Instance.W * 0.5) - (TextW * 0.5)

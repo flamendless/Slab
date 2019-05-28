@@ -15,7 +15,7 @@ v0.4.0 RELEASE
 [Input]: Test with UTF-8 character set.
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
-[Input]: Fix newline character with a single line.
+[Input]: Support PgUp, PgDown.
 
 BUGS
 ==========
