@@ -212,9 +212,11 @@ end
 
 local function GetAlignmentOffset(Instance)
 	local Offset = 6.0
-	if Instance.Align == 'center' then
-		local TextW = Text.GetWidth(Instance.Text)
-		Offset = (Instance.W * 0.5) - (TextW * 0.5)
+	if Instance ~= nil then
+		if Instance.Align == 'center' then
+			local TextW = Text.GetWidth(Instance.Text)
+			Offset = (Instance.W * 0.5) - (TextW * 0.5)
+		end
 	end
 	return Offset
 end
@@ -467,6 +469,23 @@ local function GetTextCursorPos(Instance, X, Y)
 	return Result
 end
 
+local function MoveCursorPage(Instance, PageDown)
+	if Instance ~= nil then
+		local PageH = Instance.H - Text.GetHeight()
+		local PageY = PageDown and PageH or 0.0
+		local X, Y = GetCursorPos(Instance)
+		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, PageY)
+		local NextY = 0.0
+		if PageDown then
+			NextY = TY + PageH
+		else
+			NextY = math.max(TY - PageH, 0.0)
+		end
+
+		TextCursorPos = GetTextCursorPos(Instance, 0.0, NextY)
+	end
+end
+
 local function UpdateTransform(Instance)
 	if Instance ~= nil then
 		local X, Y = GetCursorPos(Instance)
@@ -496,8 +515,6 @@ local function UpdateTransform(Instance)
 		elseif Y < TY then
 			NewY = TY - Y
 		end
-
-		--print(string.format("X: %d Y: %d TX: %.2f TY: %.2f NewX: %.2f NewY: %.2f", X, Y, TX, TY, NewX, NewY))
 
 		Region.Translate(Instance.Id, NewX, NewY)
 	end
@@ -857,6 +874,15 @@ function Input.Begin(Id, Options)
 			ShouldUpdateTransform = true
 		end
 
+		if Keyboard.IsPressed('pageup') then
+			MoveCursorPage(Instance, false)
+			ShouldUpdateTransform = true
+		end
+		if Keyboard.IsPressed('pagedown') then
+			MoveCursorPage(Instance, true)
+			ShouldUpdateTransform = true
+		end
+
 		if CheckFocus or DragSelect then
 			if FocusedThisFrame and Options.SelectOnFocus and Instance.Text ~= "" then
 				TextCursorAnchor = 0
@@ -1041,8 +1067,17 @@ end
 
 function Input.GetDebugInfo()
 	local Info = {}
+	local X, Y = GetCursorPos(Focused)
+
+	if Focused ~= nil then
+		Region.InverseTransform(Focused.Id, X, Y)
+	end
 
 	Info['Focused'] = Focused ~= nil and Focused.Id or 'nil'
+	Info['Width'] = Focused ~= nil and Focused.W or 0
+	Info['Height'] = Focused ~= nil and Focused.H or 0
+	Info['CursorX'] = X
+	Info['CursorY'] = Y
 	Info['CursorPos'] = TextCursorPos
 	Info['Character'] = Focused ~= nil and GetDisplayCharacter(Focused.Text, TextCursorPos) or ''
 	Info['LineCursorPos'] = TextCursorPosLine

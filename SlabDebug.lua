@@ -40,6 +40,7 @@ local SlabDebug_About = 'SlabDebug_About'
 local SlabDebug_Mouse = false
 local SlabDebug_Keyboard = false
 local SlabDebug_Windows = false
+local SlabDebug_Regions = false
 local SlabDebug_Tooltip = false
 local SlabDebug_DrawCommands = false
 local SlabDebug_Performance = false
@@ -52,6 +53,7 @@ local SlabDebug_MultiLine_Contents = ""
 
 local SlabDebug_Windows_Categories = {"Inspector", "Stack"}
 local SlabDebug_Windows_Category = "Inspector"
+local SlabDebug_Regions_Selected = ""
 
 local Selected_Window = ""
 
@@ -367,6 +369,27 @@ function SlabDebug.Windows()
 	Slab.EndWindow()
 end
 
+function SlabDebug.Regions()
+	Slab.BeginWindow('SlabDebug_Regions', {Title = "Regions"})
+
+	local Ids = Region.GetInstanceIds()
+	if Slab.BeginComboBox('SlabDebug_Regions_Ids', {Selected = SlabDebug_Regions_Selected}) then
+		for I, V in ipairs(Ids) do
+			if Slab.TextSelectable(V) then
+				SlabDebug_Regions_Selected = V
+			end
+		end
+		Slab.EndComboBox()
+	end
+
+	local Info = Region.GetDebugInfo(SlabDebug_Regions_Selected)
+	for I, V in ipairs(Info) do
+		Slab.Text(V)
+	end
+
+	Slab.EndWindow()
+end
+
 function SlabDebug.Tooltip()
 	Slab.BeginWindow('SlabDebug_Tooltip', {Title = "Tooltip"})
 
@@ -403,6 +426,10 @@ function SlabDebug.Input()
 
 	local Info = Input.GetDebugInfo()
 	Slab.Text("Focused: " .. Info['Focused'])
+	Slab.Text("Width: " .. Info['Width'])
+	Slab.Text("Height: " .. Info['Height'])
+	Slab.Text("Cursor X: " .. Info['CursorX'])
+	Slab.Text("Cursor Y: " .. Info['CursorY'])
 	Slab.Text("Cursor Position: " .. Info['CursorPos'])
 	Slab.Text("Character: " .. Info['Character'])
 	Slab.Text("Line Position: " .. Info['LineCursorPos'])
@@ -410,16 +437,19 @@ function SlabDebug.Input()
 
 	local Lines = Info['Lines']
 	if Lines ~= nil then
-		Slab.Text("Lines (" .. #Lines .. "):")
-		for I, V in ipairs(Lines) do
-			Slab.Text("   " .. I .. ": " .. V)
-		end
+		Slab.Text("Lines: " .. #Lines)
 	end
 
 	Slab.EndWindow()
 end
 
 function SlabDebug.MultiLine()
+	if SlabDebug_MultiLine_Contents == "" then
+		for I = 1, 1300, 1 do
+			SlabDebug_MultiLine_Contents = SlabDebug_MultiLine_Contents .. string.format("This is line %d\n", I)
+		end
+	end
+
 	Slab.BeginWindow('SlabDebug_MultiLine', {Title = "Multi-Line Input"})
 
 	if Slab.Button("Load") then
@@ -484,6 +514,10 @@ function SlabDebug.Menu()
 			SlabDebug_Windows = not SlabDebug_Windows
 		end
 
+		if Slab.MenuItemChecked("Regions", SlabDebug_Regions) then
+			SlabDebug_Regions = not SlabDebug_Regions
+		end
+
 		if Slab.MenuItemChecked("Tooltip", SlabDebug_Tooltip) then
 			SlabDebug_Tooltip = not SlabDebug_Tooltip
 		end
@@ -526,6 +560,10 @@ function SlabDebug.Begin()
 
 	if SlabDebug_Windows then
 		SlabDebug.Windows()
+	end
+
+	if SlabDebug_Regions then
+		SlabDebug.Regions()
 	end
 
 	if SlabDebug_Tooltip then

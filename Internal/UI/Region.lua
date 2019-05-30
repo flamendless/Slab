@@ -357,19 +357,24 @@ function Region.Translate(Id, X, Y)
 	local Instance = GetInstance(Id)
 	if Instance ~= nil then
 		Instance.Transform:translate(X, Y)
+		local TX, TY = Instance.Transform:inverseTransformPoint(0, 0)
 
 		if not Instance.IgnoreScroll then
-			if X ~= 0.0 then
+			if X ~= 0.0 and Instance.HasScrollX then
 				local XSize = Instance.W - GetXScrollSize(Instance)
+				local ContentW = Instance.ContentW - Instance.W
 
-				Instance.ScrollPosX = math.max(Instance.ScrollPosX - X, 0.0)
+				Instance.ScrollPosX = (TX / ContentW) * XSize
+				Instance.ScrollPosX = math.max(Instance.ScrollPosX, 0.0)
 				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
 			end
 
-			if Y ~= 0.0 then
+			if Y ~= 0.0 and Instance.HasScrollY then
 				local YSize = Instance.H - GetYScrollSize(Instance)
+				local ContentH = Instance.ContentH - Instance.H
 
-				Instance.ScrollPosY = math.max(Instance.ScrollPosY - Y, 0.0)
+				Instance.ScrollPosY = (TY / ContentH) * YSize
+				Instance.ScrollPosY = math.max(Instance.ScrollPosY, 0.0)
 				Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
 			end
 		end
@@ -479,6 +484,40 @@ function Region.GetHotInstanceId()
 	end
 
 	return ''
+end
+
+function Region.GetInstanceIds()
+	local Result = {}
+
+	for K, V in pairs(Instances) do
+		table.insert(Result, K)
+	end
+
+	return Result
+end
+
+function Region.GetDebugInfo(Id)
+	local Result = {}
+	local Instance = nil
+
+	for K, V in pairs(Instances) do
+		if K == Id then
+			Instance = V
+			break
+		end
+	end
+
+	if Instance ~= nil then
+		table.insert(Result, "Id: " .. Instance.Id)
+		table.insert(Result, "ScrollPosX: " .. Instance.ScrollPosX)
+		table.insert(Result, "ScrollPosY: " .. Instance.ScrollPosY)
+
+		local TX, TY = Instance.Transform:inverseTransformPoint(0, 0)
+		table.insert(Result, "TX: " .. TX)
+		table.insert(Result, "TY: " .. TY)
+	end
+
+	return Result
 end
 
 return Region
