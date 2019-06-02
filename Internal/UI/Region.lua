@@ -364,6 +364,10 @@ function Region.Translate(Id, X, Y)
 				local XSize = Instance.W - GetXScrollSize(Instance)
 				local ContentW = Instance.ContentW - Instance.W
 
+				if Instance.HasScrollY then
+					XSize = XSize - ScrollPad - ScrollBarSize
+				end
+
 				Instance.ScrollPosX = (TX / ContentW) * XSize
 				Instance.ScrollPosX = math.max(Instance.ScrollPosX, 0.0)
 				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
@@ -371,6 +375,11 @@ function Region.Translate(Id, X, Y)
 
 			if Y ~= 0.0 and Instance.HasScrollY then
 				local YSize = Instance.H - GetYScrollSize(Instance)
+
+				if Instance.HasScrollX then
+					YSize = YSize - ScrollPad - ScrollBarSize
+				end
+
 				local ContentH = Instance.ContentH - Instance.H
 
 				Instance.ScrollPosY = (TY / ContentH) * YSize
@@ -414,7 +423,7 @@ function Region.IsActive(Id)
 end
 
 function Region.AddItem(X, Y, W, H)
-	if ActiveInstance ~= nil then
+	if ActiveInstance ~= nil and ActiveInstance.AutoSizeContent then
 		local NewW = X + W - ActiveInstance.X
 		local NewH = Y + H - ActiveInstance.Y
 		ActiveInstance.ContentW = math.max(ActiveInstance.ContentW, NewW)
@@ -509,12 +518,18 @@ function Region.GetDebugInfo(Id)
 
 	if Instance ~= nil then
 		table.insert(Result, "Id: " .. Instance.Id)
+		table.insert(Result, "W: " .. Instance.W)
+		table.insert(Result, "H: " .. Instance.H)
+		table.insert(Result, "ContentW: " .. Instance.ContentW)
+		table.insert(Result, "ContentH: " .. Instance.ContentH)
 		table.insert(Result, "ScrollPosX: " .. Instance.ScrollPosX)
 		table.insert(Result, "ScrollPosY: " .. Instance.ScrollPosY)
 
-		local TX, TY = Instance.Transform:inverseTransformPoint(0, 0)
+		local TX, TY = Instance.Transform:transformPoint(0, 0)
 		table.insert(Result, "TX: " .. TX)
 		table.insert(Result, "TY: " .. TY)
+		table.insert(Result, "Max TX: " .. Instance.ContentW - Instance.W)
+		table.insert(Result, "Max TY: " .. Instance.ContentH - Instance.H)
 	end
 
 	return Result

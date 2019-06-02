@@ -1,7 +1,15 @@
 v0.4.0 RELEASE
 ==========
-[API]: Expose Stats interface.
+[File Dialog]: Fix scroll bar in folder navigation region.
 [Interaction]: Check Keyboard documentation.
+[Input]: Check documentation.
+[Input]: Test with UTF-8 character set.
+[Input]: Drag select word versus character.
+[Input]: Auto-grow control with MulitLine.
+
+v0.5.0 RELEASE
+==========
+[API]: Expose Stats interface.
 [Shape]: Triangle.
 [Shape]: Circle.
 [Shape]: Line.
@@ -11,11 +19,6 @@ v0.4.0 RELEASE
 [Shape]: Documentation.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
-[Input]: Check documentation.
-[Input]: Test with UTF-8 character set.
-[Input]: Drag select word versus character.
-[Input]: Auto-grow control with MulitLine.
-[Input]: Text not rendering with lines > 1300.
 
 BUGS
 ==========
@@ -68,6 +71,7 @@ Style: Add documentation for each style property.
 [Tab]: Initial implementation of a container holding Window instances with tabs for each.
 [Table]: Initial implementation.
 [Text]: Tooltip support.
+[Text]: Stats for text objects.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Deprecate window bounds values and use region directly.

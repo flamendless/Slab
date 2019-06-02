@@ -444,12 +444,6 @@ function SlabDebug.Input()
 end
 
 function SlabDebug.MultiLine()
-	if SlabDebug_MultiLine_Contents == "" then
-		for I = 1, 1300, 1 do
-			SlabDebug_MultiLine_Contents = SlabDebug_MultiLine_Contents .. string.format("This is line %d\n", I)
-		end
-	end
-
 	Slab.BeginWindow('SlabDebug_MultiLine', {Title = "Multi-Line Input"})
 
 	if Slab.Button("Load") then

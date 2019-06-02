@@ -113,7 +113,6 @@ function Text.BeginFormatted(Label, Options)
 	local X, Y = Cursor.GetPosition()
 
 	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Options.W, Options.Align, Options.Color, Style.Font)
-	PendingText = {}
 
 	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
 	local H = #Wrapped * Style.Font:getHeight()
@@ -125,6 +124,24 @@ function Text.BeginFormatted(Label, Options)
 	Window.AddItem(math.floor(X), math.floor(Y), Width, H)
 
 	Stats.End('Textf')
+end
+
+function Text.BeginObject(Object, Options)
+	local WinW, WinH = Window.GetBorderlessSize()
+
+	Options = Options == nil and {} or Options
+	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
+
+	local X, Y = Cursor.GetPosition()
+	local W, H = Object:getDimensions()
+
+	DrawCommands.Text(Object, math.floor(X), math.floor(Y), Options.Color)
+
+	Cursor.SetItemBounds(math.floor(X), math.floor(Y), W, H)
+	Cursor.AdvanceY(Y)
+
+	Window.ResetContentSize()
+	Window.AddItem(math.floor(X), math.floor(Y), W, H)
 end
 
 function Text.GetWidth(Label)
@@ -168,6 +185,10 @@ function Text.GetLines(Label, Width)
 	end
 
 	return Lines
+end
+
+function Text.CreateObject()
+	return love.graphics.newText(Style.Font)
 end
 
 return Text

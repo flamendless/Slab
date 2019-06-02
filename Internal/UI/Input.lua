@@ -655,6 +655,7 @@ local function GetInstance(Id)
 	Instance.MinNumber = nil
 	Instance.MaxNumber = nil
 	Instance.Lines = nil
+	Instance.TextObject = nil
 	table.insert(Instances, Instance)
 	return Instance
 end
@@ -697,6 +698,18 @@ function Input.Begin(Id, Options)
 	Instance.MaxNumber = Options.MaxNumber
 	local WinItemId = Window.GetItemId(Id)
 
+	if Instance.Align == nil then
+		Instance.Align = Instance == Focused and 'left' or 'center'
+
+		if Instance.ReadOnly then
+			Instance.Align = 'center'
+		end
+
+		if Options.MultiLine then
+			Instance.Align = 'left'
+		end
+	end
+
 	if Focused ~= Instance then
 		if Options.MultiLine and #Options.Text ~= #Instance.Text then
 			Instance.Lines = nil
@@ -733,7 +746,12 @@ function Input.Begin(Id, Options)
 
 	if Instance.Lines == nil and Instance.Text ~= "" then
 		if Options.MultiLine then
+			if Instance.TextObject == nil then
+				Instance.TextObject = love.graphics.newText(Style.Font)
+			end
 			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
+			ContentH = #Instance.Lines * Text.GetHeight()
+			Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
 		end
 	end
 
@@ -775,18 +793,6 @@ function Input.Begin(Id, Options)
 
 	if LastFocused == Instance then
 		LastFocused = nil
-	end
-
-	if Instance.Align == nil then
-		Instance.Align = Instance == Focused and 'left' or 'center'
-
-		if Instance.ReadOnly then
-			Instance.Align = 'center'
-		end
-
-		if Options.MultiLine then
-			Instance.Align = 'left'
-		end
 	end
 
 	if Instance == Focused then
@@ -934,7 +940,13 @@ function Input.Begin(Id, Options)
 		end
 
 		if Result then
-			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
+			if Options.MultiLine then
+				Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
+
+				if Instance.TextObject ~= nil then
+					Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
+				end
+			end
 		end
 
 		UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
@@ -975,7 +987,8 @@ function Input.Begin(Id, Options)
 		Intersect = true,
 		IgnoreScroll = not Options.MultiLine,
 		Rounding = Options.Rounding,
-		IsObstructed = IsObstructed
+		IsObstructed = IsObstructed,
+		AutoSizeContent = false
 	})
 	if Instance == Focused then
 		DrawSelection(Instance, X, Y, W, H, Options.SelectColor)
@@ -984,8 +997,8 @@ function Input.Begin(Id, Options)
 	if Instance.Text ~= "" then
 		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
 
-		if Options.MultiLine then
-			Text.BeginFormatted(Instance.Text, {W = Options.MultiLineW})
+		if Instance.TextObject ~= nil then
+			Text.BeginObject(Instance.TextObject)
 		else
 			Text.Begin(Instance.Text, {AddItem = false})
 		end

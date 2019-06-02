@@ -48,7 +48,8 @@ local Types =
 	SubImage = 14,
 	Circle = 15,
 	DrawCanvas = 16,
-	Mesh = 17
+	Mesh = 17,
+	TextObject = 18
 }
 
 local Layers =
@@ -151,6 +152,11 @@ local function DrawTextFormatted(Text)
 	love.graphics.printf(Text.Text, Text.X, Text.Y, Text.W, Text.Align)
 end
 
+local function DrawTextObject(Text)
+	love.graphics.setColor(Text.Color)
+	love.graphics.draw(Text.Text, Text.X, Text.Y)
+end
+
 local function DrawLine(Line)
 	love.graphics.setColor(Line.Color)
 	local LineW = love.graphics.getLineWidth()
@@ -222,6 +228,8 @@ local function DrawElements(Elements)
 		elseif V.Type == Types.Mesh then
 			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
 			love.graphics.draw(V.Mesh, V.X, V.Y)
+		elseif V.Type == Types.TextObject then
+			DrawTextObject(V)
 		end
 	end
 end
@@ -503,6 +511,17 @@ function DrawCommands.Mesh(Mesh, X, Y)
 	Item.Mesh = Mesh
 	Item.X = X
 	Item.Y = Y
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.Text(Text, X, Y)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.TextObject
+	Item.Text = Text
+	Item.X = X
+	Item.Y = Y
+	Item.Color = {0, 0, 0, 1}
 	table.insert(ActiveBatch.Elements, Item)
 end
 
