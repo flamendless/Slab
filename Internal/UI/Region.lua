@@ -256,6 +256,7 @@ local function GetInstance(Id)
 		Instance.ScrollAlphaX = 0.0
 		Instance.ScrollAlphaY = 0.0
 		Instance.Intersect = false
+		Instance.AutoSizeContent = false
 		Instance.Transform = love.math.newTransform()
 		Instance.Transform:reset()
 		Instances[Id] = Instance
@@ -296,6 +297,7 @@ function Region.Begin(Id, Options)
 	Instance.IgnoreScroll = Options.IgnoreScroll
 	Instance.MouseX = Options.MouseX
 	Instance.MouseY = Options.MouseY
+	Instance.AutoSizeContent = Options.AutoSizeContent
 
 	if Options.ResetContent then
 		Instance.ContentW = 0.0
