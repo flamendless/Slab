@@ -184,6 +184,10 @@ function Text.GetLines(Label, Width)
 		table.insert(Lines, "")
 	end
 
+	if #Lines == 0 then
+		table.insert(Lines, "")
+	end
+
 	return Lines
 end
 
