@@ -70,8 +70,8 @@ local function GetDisplayCharacter(Data, Pos)
 	local Result = ''
 
 	if Data ~= nil and Pos > 0 then
-		local Offset = UTF8.offset(Data, 0, Pos)
-		Result = string.sub(Data, Offset, Offset)
+		local Offset = UTF8.offset(Data, -1, Pos + 1)
+		Result = string.sub(Data, Offset, Pos)
 
 		if Result == nil then
 			Result = 'nil'
@@ -93,7 +93,7 @@ local function UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
 				local Start = 0
 				local Found = false
 				for I, V in ipairs(Instance.Lines) do
-					local Length = #V
+					local Length = string.len(V)
 					Count = Count + Length
 					if TextCursorPos < Count then
 						TextCursorPosLine = TextCursorPos - Start
@@ -231,13 +231,14 @@ local function GetSelection(Instance)
 	return ""
 end
 
-local function GetCharacter(Instance, Index)
+local function GetCharacter(Data, Index, Forward)
 	local Result = ""
-	if Instance ~= nil then
-		local Offset = UTF8.offset(Instance.Text, 0, Index)
-		if Offset ~= nil then
-			Result = string.sub(Instance.Text, Offset, Offset)
-		end
+	if Forward then
+		local Sub = string.sub(Data, Index + 1)
+		Result = string.match(Sub, "[%z\1-\127\194-\244][\128-\191]*")
+	else
+		local Sub = string.sub(Data, 1, Index)
+		Result = string.match(Sub, "[^\128-\191][\128-\191]*$")
 	end
 	return Result
 end
@@ -314,8 +315,7 @@ local function GetCursorXOffset(Instance)
 	local Result = GetAlignmentOffset(Instance)
 	if Instance ~= nil then
 		if TextCursorPos > 0 then
-			local Offset = UTF8.offset(Instance.Text, 0, TextCursorPos)
-			local Sub = string.sub(Instance.Text, 1, Offset)
+			local Sub = string.sub(Instance.Text, 1, TextCursorPos)
 			Result = Text.GetWidth(Sub) + GetAlignmentOffset(Instance)
 		end
 	end
@@ -331,10 +331,9 @@ local function GetCursorPos(Instance)
 			Data = Instance.Lines[TextCursorPosLineNumber]
 			Y = Text.GetHeight() * (TextCursorPosLineNumber - 1)
 		end
-		local CursorPos = math.min(TextCursorPosLine, #Data)
+		local CursorPos = math.min(TextCursorPosLine, string.len(Data))
 		if CursorPos > 0 then
-			local Offset = UTF8.offset(Data, 0, CursorPos)
-			local Sub = string.sub(Data, 1, Offset)
+			local Sub = string.sub(Data, 0, CursorPos)
 			X = X + Text.GetWidth(Sub)
 		end
 	end
@@ -345,8 +344,8 @@ end
 local function SelectWord(Instance)
 	if Instance ~= nil then
 		local Filter = "%s"
-		if GetCharacter(Instance, TextCursorPos) == " " then
-			if GetCharacter(Instance, TextCursorPos + 1) == " " then
+		if GetCharacter(Instance.Text, TextCursorPos) == " " then
+			if GetCharacter(Instance.Text, TextCursorPos + 1) == " " then
 				Filter = "%S"
 			else
 				TextCursorPos = TextCursorPos + 1
@@ -398,13 +397,21 @@ local function GetNextCursorPos(Instance, Left)
 			end
 		else
 			if Left then
-				Result = TextCursorPos - 1
+				local Ch = GetCharacter(Instance.Text, TextCursorPos)
+				if Ch ~= nil then
+					Result = TextCursorPos - string.len(Ch)
+				end
 			else
-				Result = TextCursorPos + 1
+				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
+				if Ch ~= nil then
+					Result = TextCursorPos + string.len(Ch)
+				else
+					Result = TextCursorPos
+				end
 			end
 		end
 		Result = math.max(0, Result)
-		Result = math.min(Result, #Instance.Text)
+		Result = math.min(Result, string.len(Instance.Text))
 	end
 	return Result
 end
@@ -413,26 +420,32 @@ local function GetCursorPosLine(Instance, Line, X)
 	local Result = 0
 	if Instance ~= nil and Line ~= "" then
 		if Text.GetWidth(Line) < X then
-			Result = #Line
+			Result = string.len(Line)
 			if string.find(Line, "\n") ~= nil then
-				Result = #Line - 1
+				Result = string.len(Line) - 1
 			end
 		else
 			X = X - GetAlignmentOffset(Instance)
-			for I = 1, #Line, 1 do
-				local Offset = UTF8.offset(Line, 0, I)
-				local Sub = string.sub(Line, 1, Offset)
+			local PosX = X
+			local Index = 0
+			local Sub = ""
+			while Index <= string.len(Line) do
+				local Ch = GetCharacter(Line, Index, true)
+				if Ch == nil then
+					break
+				end
+				Index = Index + string.len(Ch)
+				Sub = Sub .. Ch
 				local PosX = Text.GetWidth(Sub)
 				if PosX > X then
-					local Char = string.sub(Line, Offset, Offset)
 					local CharX = PosX - X
-					local CharW = Text.GetWidth(Char)
+					local CharW = Text.GetWidth(Ch)
 					if CharX < CharW * 0.65 then
-						Result = Result + 1
+						Result = Result + string.len(Ch)
 					end
 					break
 				end
-				Result = I
+				Result = Index
 			end
 		end
 	end
@@ -521,53 +534,51 @@ local function UpdateTransform(Instance)
 end
 
 local function DeleteSelection(Instance)
-	local Result = false
 	if Instance ~= nil and Instance.Text ~= "" and not Instance.ReadOnly then
 		local Start = 0
 		local Min = 0
 		local Max = 0
 
 		if TextCursorAnchor ~= -1 then
-			Min = math.min(TextCursorAnchor, TextCursorPos) + 1
+			Min = math.min(TextCursorAnchor, TextCursorPos)
 			Max = math.max(TextCursorAnchor, TextCursorPos) + 1
-
-			if Min == 1 then
-				Start = #Instance.Text + 1
-			end
-
-			Result = true
 		else
 			if TextCursorPos == 0 then
-				return Result
+				return false
 			end
 
-			Min = TextCursorPos
-			Max = TextCursorPos + 1
-
-			if Min == 1 then
-				Start = #Instance.Text + 1
-				Max = Min + 1
+			local NewTextCursorPos = TextCursorPos
+			local Ch = GetCharacter(Instance.Text, TextCursorPos)
+			if Ch ~= nil then
+				Min = TextCursorPos - string.len(Ch)
+				NewTextCursorPos = Min
 			end
 
-			Result = true
+			Ch = GetCharacter(Instance.Text, TextCursorPos, true)
+			if Ch ~= nil then
+				Max = TextCursorPos + 1
+			else
+				Max = string.len(Instance.Text) + 1
+			end
+
+			TextCursorPos = NewTextCursorPos
 		end
 
-		local OffsetMin = UTF8.offset(Instance.Text, -1, math.max(Min, 1))
-		local OffsetMax = UTF8.offset(Instance.Text,  1, Max)
+		local Left = string.sub(Instance.Text, 1, Min)
+		local Right = string.sub(Instance.Text, Max)
+		Instance.Text = Left .. Right
 
-		Instance.Text = string.sub(Instance.Text, Start, OffsetMin) .. string.sub(Instance.Text, OffsetMax)
+		TextCursorPos = string.len(Left)
 
-		if Result then
-			if TextCursorAnchor ~= -1 then
-				TextCursorPos = math.min(TextCursorAnchor, TextCursorPos)
-			end
-			TextCursorPos = math.max(0, TextCursorPos)
-			TextCursorPos = math.min(TextCursorPos, #Instance.Text + 1)
+		if TextCursorAnchor ~= -1 then
+			TextCursorPos = math.min(TextCursorAnchor, TextCursorPos)
 		end
+		TextCursorPos = math.max(0, TextCursorPos)
+		TextCursorPos = math.min(TextCursorPos, string.len(Instance.Text))
 
 		TextCursorAnchor = -1
 	end
-	return Result
+	return true
 end
 
 local function DrawSelection(Instance, X, Y, W, H, Color)
@@ -583,22 +594,22 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 			local OffsetMax = 0
 			local OffsetY = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + #V
+				Count = Count + string.len(V)
 				if Min < Count then
 					if Min > Start then
-						OffsetMin = UTF8.offset(V, 0, math.max(Min - Start, 1))
+						OffsetMin = math.max(Min - Start, 1)
 					else
 						OffsetMin = 0
 					end
 
 					if Max < Count then
-						OffsetMax = UTF8.offset(V, 0, math.max(Max - Start, 1))
+						OffsetMax = math.max(Max - Start, 1)
 					else
-						OffsetMax = UTF8.offset(V, 0, #V)
+						OffsetMax = string.len(V)
 					end
 
-					local SubMin = string.sub(V, 0, OffsetMin)
-					local SubMax = string.sub(V, 0, OffsetMax)
+					local SubMin = string.sub(V, 1, OffsetMin)
+					local SubMax = string.sub(V, 1, OffsetMax)
 					local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
 					local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
 
@@ -608,18 +619,12 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 				if Max <= Count then
 					break
 				end
-				Start = Start + #V
+				Start = Start + string.len(V)
 				OffsetY = OffsetY + H
 			end
 		else
-			local OffsetMin = UTF8.offset(Instance.Text, 0, math.max(Min, 1))
-			local OffsetMax = UTF8.offset(Instance.Text, 0, Max)
-			if Min == 0 then
-				OffsetMin = 0
-			end
-
-			local SubMin = string.sub(Instance.Text, 0, OffsetMin)
-			local SubMax = string.sub(Instance.Text, 0, OffsetMax)
+			local SubMin = string.sub(Instance.Text, 1, Min)
+			local SubMax = string.sub(Instance.Text, 1, Max)
 			local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
 			local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
 
@@ -839,7 +844,7 @@ function Input.Begin(Id, Options)
 
 		if ShouldDelete then
 			if DeleteSelection(Instance) then
-				Back = not IgnoreBack
+				Instance.TextChanged = true
 			end
 		end
 
@@ -1029,6 +1034,11 @@ function Input.Begin(Id, Options)
 end
 
 function Input.Text(Ch)
+	if not Style.Font:hasGlyphs(Ch) then
+		print("Glyph for character '" .. Ch .. "' does not exist.")
+		return
+	end
+
 	if Focused ~= nil and not Focused.ReadOnly then
 		if not IsValidDigit(Focused, Ch) then
 			return
@@ -1042,15 +1052,12 @@ function Input.Text(Ch)
 			Focused.Text = Ch .. Focused.Text
 		else
 			local Temp = Focused.Text
-			local LOffset = UTF8.offset(Temp, 1, TextCursorPos)
-			local ROffset = UTF8.offset(Temp, 2, TextCursorPos)
-
-			Focused.Text = string.sub(Temp, 1, LOffset)
-			Focused.Text = Focused.Text .. Ch
-			Focused.Text = Focused.Text .. string.sub(Temp, ROffset)
+			local Left = string.sub(Temp, 0, TextCursorPos)
+			local Right = string.sub(Temp, TextCursorPos + 1)
+			Focused.Text = Left .. Ch .. Right
 		end
 
-		TextCursorPos = math.min(TextCursorPos + 1, #Focused.Text)
+		TextCursorPos = math.min(TextCursorPos + string.len(Ch), string.len(Focused.Text))
 		TextCursorAnchor = -1
 		UpdateTransform(Focused)
 		Focused.TextChanged = true
