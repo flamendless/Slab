@@ -573,7 +573,9 @@ function Window.Begin(Id, Options)
 			H = OffsetY,
 			NoBackground = true,
 			NoOutline = true,
-			IgnoreScroll = true
+			IgnoreScroll = true,
+			MouseX = MouseX,
+			MouseY = MouseY
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 		Region.End()

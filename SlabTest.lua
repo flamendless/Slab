@@ -110,6 +110,8 @@ function SlabTest.BasicWindow()
 		end
 	end
 
+	Slab.Text("Is Void Hovered: " .. tostring(Slab.IsVoidHovered()))
+
 	Slab.EndWindow()
 end
 

@@ -133,16 +133,6 @@ local function UpdateScrollBars(Instance, IsObstructed)
 			ScrollInstance.IsScrollingX = Instance.HoverScrollX
 			ScrollInstance.IsScrollingY = Instance.HoverScrollY
 		end
-
-		if ScrollInstance == nil then
-			HotInstance = Instance
-		else
-			HotInstance = ScrollInstance
-		end
-	end
-
-	if HotInstance == Instance and not Contains(Instance, X, Y) then
-		HotInstance = nil
 	end
 
 	if ScrollInstance == Instance and IsMouseReleased then
@@ -313,6 +303,18 @@ function Region.Begin(Id, Options)
 	table.insert(Stack, 1, ActiveInstance)
 
 	UpdateScrollBars(Instance, Options.IsObstructed)
+
+	if HotInstance == Instance and not Contains(Instance, Instance.MouseX, Instance.MouseY) then
+		HotInstance = nil
+	end
+
+	if not IsObstructed and Contains(Instance, Instance.MouseX, Instance.MouseY) or (Instance.HoverScrollX or Instance.HoverScrollY) then
+		if ScrollInstance == nil then
+			HotInstance = Instance
+		else
+			HotInstance = ScrollInstance
+		end
+	end
 
 	if not Options.NoBackground then
 		DrawCommands.Rectangle('fill', Instance.X, Instance.Y, Instance.W, Instance.H, Options.BgColor, Options.Rounding)

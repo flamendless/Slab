@@ -43,6 +43,7 @@ local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
 local MenuBar = require(SLAB_PATH .. '.Internal.UI.MenuBar')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Separator = require(SLAB_PATH .. '.Internal.UI.Separator')
 local Shape = require(SLAB_PATH .. '.Internal.UI.Shape')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -146,6 +147,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Control:
 			IsControlHovered
 			IsControlClicked
+			IsVoidHovered
+			IsVoidClicked
 
 		Keyboard:
 			IsKeyDown
@@ -1360,6 +1363,30 @@ end
 --]]
 function Slab.IsControlClicked(Button)
 	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
+--[[
+	IsVoidHovered
+
+	Checks to see if any non-Slab area of the viewport is hovered.
+
+	Return: [Boolean] True if any non-Slab area of the viewport is hovered. False otherwise.
+--]]
+function Slab.IsVoidHovered()
+	return Region.GetHotInstanceId() == '' and not Region.IsScrolling()
+end
+
+--[[
+	IsVoidClicked
+
+	Checks to see if any non-Slab area of the viewport is clicked.
+
+	Button: [Number] The button to check for. The valid numbers are: 1 - Left, 2 - Right, 3 - Middle.
+
+	Return: [Boolean] True if any non-Slab area of the viewport is clicked. False otherwise.
+--]]
+function Slab.IsVoidClicked(Button)
+	return Slab.IsMouseClicked(Button) and Slab.IsVoidHovered()
 end
 
 --[[
