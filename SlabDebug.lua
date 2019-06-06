@@ -322,6 +322,10 @@ function SlabDebug.Mouse()
 	Slab.Text("X: " .. X)
 	Slab.Text("Y: " .. Y)
 
+	local DeltaX, DeltaY = Mouse.GetDelta()
+	Slab.Text("Delta X: " .. DeltaX)
+	Slab.Text("Delta Y: " .. DeltaY)
+
 	for I = 1, 3, 1 do
 		Slab.Text("Button " .. I .. ": " .. (Mouse.IsPressed(I) and "Pressed" or "Released"))
 	end

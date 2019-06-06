@@ -4,7 +4,6 @@ v0.4.0 RELEASE
 [Input]: Check documentation.
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
-[Text]: Check for IsControl* functions.
 
 v0.5.0 RELEASE
 ==========
