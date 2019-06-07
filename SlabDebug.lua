@@ -437,7 +437,9 @@ function SlabDebug.Input()
 	Slab.Text("Cursor Position: " .. Info['CursorPos'])
 	Slab.Text("Character: " .. Info['Character'])
 	Slab.Text("Line Position: " .. Info['LineCursorPos'])
+	Slab.Text("Line Position Max: " .. Info['LineCursorPosMax'])
 	Slab.Text("Line Number: " .. Info['LineNumber'])
+	Slab.Text("Line Length: " .. Info['LineLength'])
 
 	local Lines = Info['Lines']
 	if Lines ~= nil then

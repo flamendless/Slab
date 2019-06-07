@@ -43,6 +43,7 @@ local Focused = nil
 local LastFocused = nil
 local TextCursorPos = 0
 local TextCursorPosLine = 0
+local TextCursorPosLineMax = 0
 local TextCursorPosLineNumber = 1
 local TextCursorAnchor = -1
 local TextCursorAlpha = 0.0
@@ -85,34 +86,33 @@ local function GetDisplayCharacter(Data, Pos)
 	return Result
 end
 
-local function UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
+local function UpdateMultiLinePosition(Instance)
 	if Instance ~= nil then
 		if Instance.Lines ~= nil then
-			if TextCursorPos ~= PreviousTextCursorPos then
-				local Count = 0
-				local Start = 0
-				local Found = false
-				for I, V in ipairs(Instance.Lines) do
-					local Length = string.len(V)
-					Count = Count + Length
-					if TextCursorPos < Count then
-						TextCursorPosLine = TextCursorPos - Start
-						TextCursorPosLineNumber = I
-						Found = true
-						break
-					end
-					Start = Start + Length
+			local Count = 0
+			local Start = 0
+			local Found = false
+			for I, V in ipairs(Instance.Lines) do
+				local Length = string.len(V)
+				Count = Count + Length
+				if TextCursorPos < Count then
+					TextCursorPosLine = TextCursorPos - Start
+					TextCursorPosLineNumber = I
+					Found = true
+					break
 				end
+				Start = Start + Length
+			end
 
-				if not Found then
-					TextCursorPosLine = #Instance.Lines[#Instance.Lines]
-					TextCursorPosLineNumber = #Instance.Lines
-				end
+			if not Found then
+				TextCursorPosLine = string.len(Instance.Lines[#Instance.Lines])
+				TextCursorPosLineNumber = #Instance.Lines
 			end
 		else
 			TextCursorPosLine = TextCursorPos
 			TextCursorPosLineNumber = 1
 		end
+		TextCursorPosLineMax = TextCursorPosLine
 	end
 end
 
@@ -133,6 +133,7 @@ local function MoveToHome(Instance)
 		else
 			TextCursorPos = 0
 		end
+		UpdateMultiLinePosition(Instance)
 	end
 end
 
@@ -155,28 +156,7 @@ local function MoveToEnd(Instance)
 		else
 			TextCursorPos = #Instance.Text
 		end
-	end
-end
-
-local function MoveCursorVertical(Instance, MoveDown)
-	if Instance ~= nil and Instance.Lines ~= nil then
-		if MoveDown then
-			TextCursorPosLineNumber = math.min(TextCursorPosLineNumber + 1, #Instance.Lines)
-		else
-			TextCursorPosLineNumber = math.max(1, TextCursorPosLineNumber - 1)
-		end
-		TextCursorPosLine = math.min(TextCursorPosLine, #Instance.Lines[TextCursorPosLineNumber])
-		if string.sub(Instance.Lines[TextCursorPosLineNumber], TextCursorPosLine, TextCursorPosLine) == '\n' then
-			TextCursorPosLine = TextCursorPosLine - 1
-		end
-		local Start = 0
-		for I, V in ipairs(Instance.Lines) do
-			if I == TextCursorPosLineNumber then
-				TextCursorPos = Start + TextCursorPosLine
-				break
-			end
-			Start = Start + #V
-		end
+		UpdateMultiLinePosition(Instance)
 	end
 end
 
@@ -235,12 +215,45 @@ local function GetCharacter(Data, Index, Forward)
 	local Result = ""
 	if Forward then
 		local Sub = string.sub(Data, Index + 1)
-		Result = string.match(Sub, "[%z\1-\127\194-\244][\128-\191]*")
+		Result = string.match(Sub, "[%z\1-\127\194-\244%s][\128-\191]*")
 	else
 		local Sub = string.sub(Data, 1, Index)
-		Result = string.match(Sub, "[^\128-\191][\128-\191]*$")
+		Result = string.match(Sub, "[%z\1-\127\194-\244%s][\128-\191]*$")
 	end
 	return Result
+end
+
+local function MoveCursorVertical(Instance, MoveDown)
+	if Instance ~= nil and Instance.Lines ~= nil then
+		local OldLineNumber = TextCursorPosLineNumber
+		if MoveDown then
+			TextCursorPosLineNumber = math.min(TextCursorPosLineNumber + 1, #Instance.Lines)
+		else
+			TextCursorPosLineNumber = math.max(1, TextCursorPosLineNumber - 1)
+		end
+		local Line = Instance.Lines[TextCursorPosLineNumber]
+		if OldLineNumber == TextCursorPosLineNumber then
+			TextCursorPosLine = MoveDown and string.len(Line) or 0
+		else
+			if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= string.len(Line) then
+				TextCursorPosLine = string.len(Line)
+			else
+				TextCursorPosLine = math.min(string.len(Line), TextCursorPosLineMax + 1)
+				local Ch = GetCharacter(Line, TextCursorPosLine)
+				if Ch ~= nil then
+					TextCursorPosLine = TextCursorPosLine - string.len(Ch)
+				end
+			end
+		end
+		local Start = 0
+		for I, V in ipairs(Instance.Lines) do
+			if I == TextCursorPosLineNumber then
+				TextCursorPos = Start + TextCursorPosLine
+				break
+			end
+			Start = Start + string.len(V)
+		end
+	end
 end
 
 local function IsValidDigit(Instance, Ch)
@@ -367,6 +380,7 @@ local function SelectWord(Instance)
 		else
 			TextCursorPos = #Instance.Text
 		end
+		UpdateMultiLinePosition(Instance)
 	end
 end
 
@@ -496,6 +510,7 @@ local function MoveCursorPage(Instance, PageDown)
 		end
 
 		TextCursorPos = GetTextCursorPos(Instance, 0.0, NextY)
+		UpdateMultiLinePosition(Instance)
 	end
 end
 
@@ -577,6 +592,7 @@ local function DeleteSelection(Instance)
 		TextCursorPos = math.min(TextCursorPos, string.len(Instance.Text))
 
 		TextCursorAnchor = -1
+		UpdateMultiLinePosition(Instance)
 	end
 	return true
 end
@@ -834,11 +850,15 @@ function Input.Begin(Id, Options)
 		end
 
 		if Keyboard.IsPressed('delete') then
-			ShouldDelete = true
 			if TextCursorAnchor == -1 then
-				TextCursorPos = TextCursorPos + 1
+				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
+				if Ch ~= nil then
+					TextCursorPos = TextCursorPos + string.len(Ch)
+					ShouldDelete = true
+				end
 			else
 				IgnoreBack = true
+				ShouldDelete = true
 			end
 		end
 
@@ -870,10 +890,12 @@ function Input.Begin(Id, Options)
 		if Keyboard.IsPressed('left') or Back then
 			TextCursorPos = GetNextCursorPos(Instance, true)
 			ShouldUpdateTransform = true
+			UpdateMultiLinePosition(Instance)
 		end
 		if Keyboard.IsPressed('right') then
 			TextCursorPos = GetNextCursorPos(Instance, false)
 			ShouldUpdateTransform = true
+			UpdateMultiLinePosition(Instance)
 		end
 
 		if Keyboard.IsPressed('up') then
@@ -908,6 +930,7 @@ function Input.Begin(Id, Options)
 				end
 				ShouldUpdateTransform = true
 				IsShiftDown = true
+				UpdateMultiLinePosition(Instance)
 			end
 		end
 
@@ -953,8 +976,6 @@ function Input.Begin(Id, Options)
 				end
 			end
 		end
-
-		UpdateMultiLinePosition(Instance, PreviousTextCursorPos)
 
 		if ShouldUpdateTransform then
 			ClearAnchor = not IsShiftDown
@@ -1059,6 +1080,7 @@ function Input.Text(Ch)
 
 		TextCursorPos = math.min(TextCursorPos + string.len(Ch), string.len(Focused.Text))
 		TextCursorAnchor = -1
+		UpdateMultiLinePosition(Instance)
 		UpdateTransform(Focused)
 		Focused.TextChanged = true
 	end
@@ -1101,7 +1123,9 @@ function Input.GetDebugInfo()
 	Info['CursorPos'] = TextCursorPos
 	Info['Character'] = Focused ~= nil and GetDisplayCharacter(Focused.Text, TextCursorPos) or ''
 	Info['LineCursorPos'] = TextCursorPosLine
+	Info['LineCursorPosMax'] = TextCursorPosLineMax
 	Info['LineNumber'] = TextCursorPosLineNumber
+	Info['LineLength'] = (Focused ~= nil and Focused.Lines ~= nil) and string.len(Focused.Lines[TextCursorPosLineNumber]) or 0
 	Info['Lines'] = Focused ~= nil and Focused.Lines or nil
 
 	return Info
