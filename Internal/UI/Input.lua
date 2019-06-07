@@ -717,6 +717,8 @@ function Input.Begin(Id, Options)
 	Instance.Align = Options.Align
 	Instance.MinNumber = Options.MinNumber
 	Instance.MaxNumber = Options.MaxNumber
+	Instance.MultiLine = Options.MultiLine
+	Instance.MultiLineW = Options.MultiLineW
 	local WinItemId = Window.GetItemId(Id)
 
 	if Instance.Align == nil then
@@ -840,8 +842,12 @@ function Input.Begin(Id, Options)
 		end
 
 		if Keyboard.IsPressed('tab') then
-			LastFocused = Instance
-			FocusToNext = true
+			if Options.MultiLine then
+				Input.Text('\t')
+			else
+				LastFocused = Instance
+				FocusToNext = true
+			end
 		end
 
 		if Keyboard.IsPressed('backspace') then
@@ -1055,7 +1061,7 @@ function Input.Begin(Id, Options)
 end
 
 function Input.Text(Ch)
-	if not Style.Font:hasGlyphs(Ch) then
+	if not Style.Font:hasGlyphs(Ch) and Ch ~= '\n' and Ch ~= '\t' then
 		print("Glyph for character '" .. Ch .. "' does not exist.")
 		return
 	end
@@ -1080,7 +1086,10 @@ function Input.Text(Ch)
 
 		TextCursorPos = math.min(TextCursorPos + string.len(Ch), string.len(Focused.Text))
 		TextCursorAnchor = -1
-		UpdateMultiLinePosition(Instance)
+		if Focused.MultiLine then
+			Focused.Lines = Text.GetLines(Focused.Text, Focused.MultiLineW)
+			UpdateMultiLinePosition(Focused)
+		end
 		UpdateTransform(Focused)
 		Focused.TextChanged = true
 	end
