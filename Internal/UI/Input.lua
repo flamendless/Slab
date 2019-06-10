@@ -86,6 +86,18 @@ local function GetDisplayCharacter(Data, Pos)
 	return Result
 end
 
+local function GetCharacter(Data, Index, Forward)
+	local Result = ""
+	if Forward then
+		local Sub = string.sub(Data, Index + 1)
+		Result = string.match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*")
+	else
+		local Sub = string.sub(Data, 1, Index)
+		Result = string.match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*$")
+	end
+	return Result
+end
+
 local function UpdateMultiLinePosition(Instance)
 	if Instance ~= nil then
 		if Instance.Lines ~= nil then
@@ -123,12 +135,12 @@ local function MoveToHome(Instance)
 			local Count = 0
 			local Start = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + #V
+				Count = Count + string.len(V)
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Start
 					break
 				end
-				Start = Start + #V
+				Start = Start + string.len(V)
 			end
 		else
 			TextCursorPos = 0
@@ -142,11 +154,10 @@ local function MoveToEnd(Instance)
 		if Instance.Lines ~= nil then
 			local Count = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + #V
+				Count = Count + string.len(V)
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Count - 1
-					TextCursorPosLine = #V
-
+					
 					if I == #Instance.Lines then
 						TextCursorPos = Count
 					end
@@ -209,18 +220,6 @@ local function GetSelection(Instance)
 		return string.sub(Instance.Text, Min, Max)
 	end
 	return ""
-end
-
-local function GetCharacter(Data, Index, Forward)
-	local Result = ""
-	if Forward then
-		local Sub = string.sub(Data, Index + 1)
-		Result = string.match(Sub, "[%z\1-\127\194-\244%s][\128-\191]*")
-	else
-		local Sub = string.sub(Data, 1, Index)
-		Result = string.match(Sub, "[%z\1-\127\194-\244%s][\128-\191]*$")
-	end
-	return Result
 end
 
 local function MoveCursorVertical(Instance, MoveDown)
@@ -883,22 +882,26 @@ function Input.Begin(Id, Options)
 			end
 		end
 
+		local HomePressed, EndPressed = false, false
+
 		if IsHomePressed() then
 			MoveToHome(Instance)
 			ShouldUpdateTransform = true
+			HomePressed = true
 		end
 
 		if IsEndPressed() then
 			MoveToEnd(Instance)
 			ShouldUpdateTransform = true
+			EndPressed = true
 		end
 
-		if Keyboard.IsPressed('left') or Back then
+		if not HomePressed and (Keyboard.IsPressed('left') or Back) then
 			TextCursorPos = GetNextCursorPos(Instance, true)
 			ShouldUpdateTransform = true
 			UpdateMultiLinePosition(Instance)
 		end
-		if Keyboard.IsPressed('right') then
+		if not EndPressed and Keyboard.IsPressed('right') then
 			TextCursorPos = GetNextCursorPos(Instance, false)
 			ShouldUpdateTransform = true
 			UpdateMultiLinePosition(Instance)
@@ -969,18 +972,18 @@ function Input.Begin(Id, Options)
 				Result = true
 			end
 
-			Instance.TextChanged = false
-			PreviousTextCursorPos = -1
-		end
-
-		if Result then
 			if Options.MultiLine then
 				Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
 
 				if Instance.TextObject ~= nil then
 					Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
 				end
+
+				UpdateMultiLinePosition(Instance)
 			end
+
+			Instance.TextChanged = false
+			PreviousTextCursorPos = -1
 		end
 
 		if ShouldUpdateTransform then
@@ -1086,10 +1089,6 @@ function Input.Text(Ch)
 
 		TextCursorPos = math.min(TextCursorPos + string.len(Ch), string.len(Focused.Text))
 		TextCursorAnchor = -1
-		if Focused.MultiLine then
-			Focused.Lines = Text.GetLines(Focused.Text, Focused.MultiLineW)
-			UpdateMultiLinePosition(Focused)
-		end
 		UpdateTransform(Focused)
 		Focused.TextChanged = true
 	end
