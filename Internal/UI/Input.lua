@@ -1064,11 +1064,6 @@ function Input.Begin(Id, Options)
 end
 
 function Input.Text(Ch)
-	if not Style.Font:hasGlyphs(Ch) and Ch ~= '\n' and Ch ~= '\t' then
-		print("Glyph for character '" .. Ch .. "' does not exist.")
-		return
-	end
-
 	if Focused ~= nil and not Focused.ReadOnly then
 		if not IsValidDigit(Focused, Ch) then
 			return
