@@ -42,6 +42,7 @@ local BasicWindow_Properties =
 	Name = "Player Name"
 }
 local BasicWindow_RadioButton = 1
+local BasicWindow_MultiLine = "This is a\nmulti-line input\ncontrol."
 
 local ResetLayout = false
 local ListBoxIndex = 1
@@ -76,6 +77,10 @@ function SlabTest.BasicWindow()
 
 	if Slab.Input('BasicWindow_Numbers', {Text = tostring(BasicWindow_Input_Numbers), NumbersOnly = true, MinNumber = 100}) then
 		BasicWindow_Input_Numbers = Slab.GetInputNumber()
+	end
+
+	if Slab.Input('BasicWindow_MultiLine', {Text = BasicWindow_MultiLine, MultiLine = true, H = 150.0}) then
+		BasicWindow_MultiLine = Slab.GetInputText()
 	end
 
 	Slab.Separator()
