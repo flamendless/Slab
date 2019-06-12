@@ -939,8 +939,8 @@ function Input.Begin(Id, Options)
 				end
 				ShouldUpdateTransform = true
 				IsShiftDown = true
-				UpdateMultiLinePosition(Instance)
 			end
+			UpdateMultiLinePosition(Instance)
 		end
 
 		if Mouse.IsReleased(1) then
@@ -978,9 +978,9 @@ function Input.Begin(Id, Options)
 				if Instance.TextObject ~= nil then
 					Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
 				end
-
-				UpdateMultiLinePosition(Instance)
 			end
+
+			UpdateMultiLinePosition(Instance)
 
 			Instance.TextChanged = false
 			PreviousTextCursorPos = -1
