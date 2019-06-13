@@ -1437,7 +1437,7 @@ end
 	Draws a rectangle at the current cursor position for the active window.
 
 	Options: [Table] List of options that control how this rectangle is displayed.
-		Mode: [String] Whether this rectangle should be filled or outlines. The default value is 'fill'.
+		Mode: [String] Whether this rectangle should be filled or outlined. The default value is 'fill'.
 		W: [Number] The width of the rectangle.
 		H: [Number] The height of the rectangle.
 		Color: [Table] The color to use for this rectangle.
@@ -1449,6 +1449,23 @@ end
 --]]
 function Slab.Rectangle(Options)
 	Shape.Rectangle(Options)
+end
+
+--[[
+	Circle
+
+	Draws a circle at the current cursor position plus the radius for the active window.
+
+	Options: [Table] List of options that control how this circle is displayed.
+		Mode: [String] Whether this circle should be filled or outlined. The default value is 'fill'.
+		Radius: [Number] The size of the circle.
+		Color: [Table] The color to use for the circle.
+		Segments: [Number] The number of segments used for drawing the circle.
+
+	Return: None.
+--]]
+function Slab.Circle(Options)
+	Shape.Circle(Options)
 end
 
 return Slab

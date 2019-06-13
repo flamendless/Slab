@@ -51,4 +51,21 @@ function Shape.Rectangle(Options)
 	Cursor.AdvanceY(Options.H)
 end
 
+function Shape.Circle(Options)
+	Options = Options == nil and {} or Options
+	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
+	Options.Radius = Options.Radius == nil and 12.0 or Options.Radius
+	Options.Color = Options.Color == nil and nil or Options.Color
+	Options.Segments = Options.Segments == nil and nil or Options.Segments
+
+	local X, Y = Cursor.GetPosition()
+	local CenterX = X + Options.Radius
+	local CenterY = Y + Options.Radius
+	local Diameter = Options.Radius * 2.0
+
+	DrawCommands.Circle(Options.Mode, CenterX, CenterY, Options.Radius, Options.Color, Options.Segments)
+	Window.AddItem(X, Y, Diameter, Diameter)
+	Cursor.AdvanceY(Diameter)
+end
+
 return Shape

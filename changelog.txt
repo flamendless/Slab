@@ -2,17 +2,19 @@ v0.5.0 RELEASE
 ==========
 [API]: Expose Stats interface.
 [Shape]: Triangle.
-[Shape]: Circle.
 [Shape]: Line.
 [Shape]: Curve.
 [Shape]: Polygon.
 [Shape]: Define rounding for each corner.
-[Shape]: Documentation.
+[Shape]: Documentation for Rectangle.
+[Shape]: Documentation for Circle.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 
 BUGS
 ==========
+[Combo Box]: Selectable text not expanding to full width of window.
+[File Dialog]: Excess right border.
 [File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
@@ -46,6 +48,7 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 	until grouping ends. Then position is calculated based on each control size.
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
+[Input]: Colored text.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 [Menu]: Radio button like menu items.

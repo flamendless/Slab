@@ -449,8 +449,8 @@ function Window.Begin(Id, Options)
 	Options.AutoSizeContent = Options.AutoSizeContent == nil and true or Options.AutoSizeContent
 	Options.Layer = Options.Layer == nil and 'Normal' or Options.Layer
 	Options.ResetPosition = Options.ResetPosition == nil and false or Options.ResetPosition
-	Options.ResetSize = Options.ResetSize == nil and false or Options.ResetSize
-	Options.ResetContent = Options.ResetContent == nil and false or Options.ResetContent
+	Options.ResetSize = Options.ResetSize == nil and Options.AutoSizeWindow or Options.ResetSize
+	Options.ResetContent = Options.ResetContent == nil and Options.AutoSizeContent or Options.ResetContent
 	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
@@ -465,11 +465,6 @@ function Window.Begin(Id, Options)
 	end
 
 	ActiveInstance = Instance
-	if Options.ResetWindowSize then
-		ActiveInstance.SizeDeltaX = 0.0
-		ActiveInstance.SizeDeltaY = 0.0
-	end
-
 	if Options.AutoSizeWindowW then
 		Options.W = 0.0
 	end
@@ -481,16 +476,6 @@ function Window.Begin(Id, Options)
 	if Options.ResetPosition or Options.ResetLayout then
 		ActiveInstance.TitleDeltaX = 0.0
 		ActiveInstance.TitleDeltaY = 0.0
-	end
-
-	if Options.ResetSize or Options.ResetLayout then
-		ActiveInstance.SizeDeltaX = 0.0
-		ActiveInstance.SizeDeltaY = 0.0
-	end
-
-	if Options.ResetContent or Options.ResetLayout then
-		ActiveInstance.DeltaContentW = 0.0
-		ActiveInstance.DeltaContentH = 0.0
 	end
 
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
@@ -596,6 +581,16 @@ function Window.Begin(Id, Options)
 		Rounding = Options.Rounding,
 		NoOutline = Options.NoOutline
 	})
+
+	if Options.ResetSize or Options.ResetLayout then
+		ActiveInstance.SizeDeltaX = 0.0
+		ActiveInstance.SizeDeltaY = 0.0
+	end
+
+	if Options.ResetContent or Options.ResetLayout then
+		ActiveInstance.DeltaContentW = 0.0
+		ActiveInstance.DeltaContentH = 0.0
+	end
 end
 
 function Window.End()
