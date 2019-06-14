@@ -157,6 +157,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 		Shape:
 			Rectangle
+			Circle
+			Triangle
 --]]
 local Slab = {}
 
@@ -1466,6 +1468,23 @@ end
 --]]
 function Slab.Circle(Options)
 	Shape.Circle(Options)
+end
+
+--[[
+	Triangle
+
+	Draws a triangle at the current cursor position plus the radius for the active window.
+
+	Option: [Table] List of options that control how this triangle is displayed.
+		Mode: [String] Whether this triangle should be filled or outlined. The default value is 'fill'.
+		Radius: [Number] The distance from the center of the triangle.
+		Rotation: [Number] The rotation of the triangle in degrees.
+		Color: [Table] The color to use for the triangle.
+
+	Return: None.
+--]]
+function Slab.Triangle(Options)
+	Shape.Triangle(Options)
 end
 
 return Slab

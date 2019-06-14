@@ -139,7 +139,7 @@ function Menu.BeginMenu(Label)
 		local TriX = WinX + WinW - H * 0.75
 		local TriY = Y + H * 0.5
 		local Radius = H * 0.35
-		DrawCommands.Triangle('fill', TriX, TriY, Radius, 'east', Style.TextColor)
+		DrawCommands.Triangle('fill', TriX, TriY, Radius, 90, Style.TextColor)
 
 		MenuX = X + WinW
 		MenuY = Y

@@ -85,47 +85,37 @@ local function DrawRect(Rect)
 	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
 end
 
-local function GetTriangleVertices(X, Y, Radius, Direction)
+local function GetTriangleVertices(X, Y, Radius, Rotation)
 	local Result = {}
 
-	if Direction == 'north' then
-		Result = 
-		{
-			X, Y - Radius,
-			X - Radius, Y + Radius,
-			X + Radius, Y + Radius
-		}
-	elseif Direction == 'east' then
-		Result = 
-		{
-			X + Radius, Y,
-			X - Radius, Y - Radius,
-			X - Radius, Y + Radius
-		}
-	elseif Direction == 'south' then
-		Result = 
-		{
-			X, Y + Radius,
-			X + Radius, Y - Radius,
-			X - Radius, Y - Radius
-		}
-	elseif Direction == 'west' then
-		Result = 
-		{
-			X - Radius, Y,
-			X + Radius, Y + Radius,
-			X + Radius, Y - Radius
-		}
-	else
-		assert(false, "Invalid direction given: " .. Direction)
-	end
+	local Radians = math.rad(Rotation)
 
+	local X1, Y1 = 0, -Radius
+	local X2, Y2 = -Radius, Radius
+	local X3, Y3 = Radius, Radius
+
+	local PX1 = X1 * math.cos(Radians) - Y1 * math.sin(Radians)
+	local PY1 = Y1 * math.cos(Radians) + X1 * math.sin(Radians)
+
+	local PX2 = X2 * math.cos(Radians) - Y2 * math.sin(Radians)
+	local PY2 = Y2 * math.cos(Radians) + X2 * math.sin(Radians)
+
+	local PX3 = X3 * math.cos(Radians) - Y3 * math.sin(Radians)
+	local PY3 = Y3 * math.cos(Radians) + X3 * math.sin(Radians)
+
+	Result =
+	{
+		X + PX1, Y + PY1,
+		X + PX2, Y + PY2,
+		X + PX3, Y + PY3
+	}
+	
 	return Result
 end
 
 local function DrawTriangle(Triangle)
 	love.graphics.setColor(Triangle.Color)
-	local Vertices = GetTriangleVertices(Triangle.X, Triangle.Y, Triangle.Radius, Triangle.Direction)
+	local Vertices = GetTriangleVertices(Triangle.X, Triangle.Y, Triangle.Radius, Triangle.Rotation)
 	love.graphics.polygon(Triangle.Mode, Vertices)
 end
 
@@ -332,7 +322,7 @@ function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius)
 	table.insert(ActiveBatch.Elements, Item)
 end
 
-function DrawCommands.Triangle(Mode, X, Y, Radius, Direction, Color)
+function DrawCommands.Triangle(Mode, X, Y, Radius, Rotation, Color)
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.Triangle
@@ -340,7 +330,7 @@ function DrawCommands.Triangle(Mode, X, Y, Radius, Direction, Color)
 	Item.X = X
 	Item.Y = Y
 	Item.Radius = Radius
-	Item.Direction = Direction
+	Item.Rotation = Rotation
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
 	table.insert(ActiveBatch.Elements, Item)
 end

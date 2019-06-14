@@ -111,7 +111,7 @@ function Tree.Begin(Id, Options)
 			end
 		end
 
-		local Dir = Instance.IsOpen and 'south' or 'east'
+		local Dir = Instance.IsOpen and 180 or 90
 		DrawCommands.Triangle('fill', TriX, TriY, Radius, Dir, Style.TextColor)
 	end
 

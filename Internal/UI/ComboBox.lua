@@ -105,7 +105,7 @@ function ComboBox.Begin(Id, Options)
 	Cursor.SameLine()
 
 	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor, Options.Rounding)
-	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 'south', Style.ComboBoxArrowColor)
+	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 180, Style.ComboBoxArrowColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
