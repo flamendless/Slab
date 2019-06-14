@@ -60,7 +60,7 @@ local function InputColor(Component, Value, OffsetX)
 	Text.Begin(string.format("%s ", Component))
 	Cursor.SameLine()
 	Cursor.SetRelativeX(OffsetX)
-	if Input.Begin('ColorPicker_' .. Component, {W = 40.0, NumbersOnly = true, Text = math.ceil(Value * 255), ReturnOnText = false}) then
+	if Input.Begin('ColorPicker_' .. Component, {W = 40.0, NumbersOnly = true, Text = tostring(math.ceil(Value * 255)), ReturnOnText = false}) then
 		local NewValue = tonumber(Input.GetText())
 		if NewValue ~= nil then
 			NewValue = math.max(NewValue, 0)

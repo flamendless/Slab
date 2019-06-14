@@ -197,8 +197,8 @@ local function DrawStyleValue(Label, Value)
 
 	Slab.BeginColumn(2)
 	local W, H = Slab.GetWindowActiveSize()
-	if Slab.Input('SlabDebug_Style_' .. Label, {Text = Value, ReturnOnText = false, NumbersOnly = true, W = W}) then
-		Style[Label] = tonumber(Slab.GetInputText())
+	if Slab.Input('SlabDebug_Style_' .. Label, {Text = tostring(Value), ReturnOnText = false, NumbersOnly = true, W = W}) then
+		Style[Label] = Slab.GetInputNumber()
 	end
 	Slab.EndColumn()
 end

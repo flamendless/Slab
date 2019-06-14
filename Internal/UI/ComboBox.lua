@@ -46,6 +46,7 @@ local function GetInstance(Id)
 		local Instance = {}
 		Instance.IsOpen = false
 		Instance.WasOpened = false
+		Instance.WinW = 0.0
 		Instance.WinH = 0.0
 		Instances[Id] = Instance
 	end
@@ -122,7 +123,7 @@ function ComboBox.Begin(Id, Options)
 		{
 			X = X - 1.0,
 			Y = Y + H,
-			W = W,
+			W = math.max(W, Instance.WinW),
 			H = Instance.WinH,
 			AllowResize = false,
 			AutoSizeWindow = false,
@@ -147,6 +148,7 @@ function ComboBox.End()
 		Y, H = Active.Y, Active.H
 		local ContentW, ContentH = Window.GetContentSize()
 		Active.WinH = ContentH
+		Active.WinW = math.max(ContentW, Active.W)
 		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
 			Active.IsOpen = false
 			Active = nil
