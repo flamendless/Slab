@@ -40,6 +40,8 @@ local Radius = 8.0
 function CheckBox.Begin(Enabled, Label, Options)
 	Stats.Begin('CheckBox')
 
+	Label = Label == nil and "" or Label
+
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.Id = Options.Id == nil and Label or Options.Id
@@ -69,7 +71,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	if Enabled then
 		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
 	end
-	if Label ~= nil and Label ~= "" then
+	if Label ~= "" then
 		Cursor.AdvanceX(W + 2.0)
 		Text.Begin(Label)
 

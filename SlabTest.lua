@@ -199,6 +199,27 @@ local function DrawText()
 	Slab.Text("Centered Text", {CenterX = true})
 end
 
+local DrawCheckBox_Checked = false
+local DrawCheckBox_Checked_NoLabel = false
+
+local function DrawCheckBox()
+	Slab.Textf(
+		"Check boxes are controls that will display an empty box with an optional label. The function will " ..
+		"return true if the user has clicked on the box. The code is then responsible for updating the checked " ..
+		"flag to be passed back into the function.")
+
+	Slab.NewLine()
+	if Slab.CheckBox(DrawCheckBox_Checked, "Check Box") then
+		DrawCheckBox_Checked = not DrawCheckBox_Checked
+	end
+
+	Slab.NewLine()
+	Slab.Text("A check box with no label.")
+	if Slab.CheckBox(DrawCheckBox_Checked_NoLabel) then
+		DrawCheckBox_Checked_NoLabel = not DrawCheckBox_Checked_NoLabel
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -218,7 +239,8 @@ end
 local Categories = {
 	{"Overview", DrawOverview},
 	{"Buttons", DrawButtons},
-	{"Text", DrawText}
+	{"Text", DrawText},
+	{"Check Box", DrawCheckBox}
 }
 
 local Selected = nil
