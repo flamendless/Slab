@@ -7,6 +7,22 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
+[Slab Test]: Text examples.
+[Slab Test]: Check box examples.
+[Slab Test]: Radio Button examples.
+[Slab Test]: Menu examples.
+[Slab Test]: Context menu examples.
+[Slab Test]: Input examples.
+[Slab Test]: Combo box examples.
+[Slab Test]: Image examples.
+[Slab Test]: Cursor examples.
+[Slab Test]: List box examples.
+[Slab Test]: Dialog examples.
+[Slab Test]: Interaction examples.
+[Slab Test]: Control/Void examples.
+[Slab Test]: Shape examples.
+[Slab Test]: Window examples.
+[Slab Test]: Tree examples.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 

@@ -29,200 +29,103 @@ local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
 
 local SlabTest = {}
 
-local BasicWindow_Input = "This is some text!"
-local BasicWindow_Input_Numbers = 0
-local BasicWindow_CheckBox = false
-local BasicWindow_Options = {"Apple", "Banana", "Orange", "Pear", "Lemon"}
-local BasicWindow_Options_Selected = ""
-local BasicWindow_Properties =
-{
-	X = 100.0,
-	Y = 100.0,
-	HasCollision = true,
-	Name = "Player Name"
-}
-local BasicWindow_RadioButton = 1
-local BasicWindow_MultiLine = "This is a\nmulti-line input\ncontrol."
+local function DrawOverview()
+	Slab.Textf(
+		"Slab is an immediate mode GUI toolkit for the Love 2D framework. This library " ..
+		"is designed to allow users to easily add this library to their existing Love 2D projects and " ..
+		"quickly create tools to enable them to iterate on their ideas quickly. The user should be able " ..
+		"to utilize this library with minimal integration steps and is completely written in Lua and utilizes " ..
+		"the Love 2D API. No compiled binaries are required and the user will have access to the source so " ..
+		"that they may make adjustments that meet the needs of their own projects and tools. Refer to main.lua " ..
+		"and SlabTest.lua for example usage of this library.\n\n" ..
+		"This window will demonstrate the usage of the Slab library and give an overview of all the supported controls " ..
+		"and features.\n\n" ..
+		"The current version of Slab is: " .. Slab.GetVersion())
+end
 
-local ResetLayout = false
-local ListBoxIndex = 1
-local SlabTest_MessageBox = false
-local SlabTest_FileDialog = false
-local SlabTest_FileDialogType = 'openfile'
-local SlabTest_ColorPicker = false
-local SlabTest_ColorPicker_Color = {1.0, 1.0, 1.0, 1.0}
+local DrawButtons_NumClicked = 0
+local DrawButtons_NumClicked_Invisible = 0
+local DrawButtons_Enabled = false
+local DrawButtons_Hovered = false
 
-function SlabTest.BasicWindow()
-	Slab.BeginWindow('SlabTest_Basic', {Title = "Basic Window", X = 100.0, Y = 100.0, ResetLayout = ResetLayout})
+local function DrawButtons()
+	Slab.Textf("Buttons are simple controls which respond to a user's left mouse click. Buttons will simply return true when they are clicked.")
 
-	Slab.Text("Hello World!")
+	Slab.NewLine()
 
-	if Slab.Button("Button!") then
-		-- Perform logic here when button is clicked
+	if Slab.Button("Button") then
+		DrawButtons_NumClicked = DrawButtons_NumClicked + 1
 	end
 
-	if Slab.Button("Disabled!", {Disabled = true}) then
-	end
+	Slab.SameLine()
+	Slab.Text("You have clicked this button " .. DrawButtons_NumClicked .. " time(s).")
 
-	if Slab.BeginContextMenuItem() then
-		Slab.MenuItem("Button Item 1")
-		Slab.MenuItem("Button Item 2")
-
-		Slab.EndContextMenu()
-	end
-
-	if Slab.Input('BasicWindow_Name', {Text = BasicWindow_Input}) then
-		BasicWindow_Input = Slab.GetInputText()
-	end
-
-	if Slab.Input('BasicWindow_Numbers', {Text = tostring(BasicWindow_Input_Numbers), NumbersOnly = true, MinNumber = 100}) then
-		BasicWindow_Input_Numbers = Slab.GetInputNumber()
-	end
-
-	if Slab.Input('BasicWindow_MultiLine', {Text = BasicWindow_MultiLine, MultiLine = true, H = 150.0}) then
-		BasicWindow_MultiLine = Slab.GetInputText()
-	end
-
+	Slab.NewLine()
 	Slab.Separator()
 
-	if Slab.CheckBox(BasicWindow_CheckBox, "Check Box") then
-		BasicWindow_CheckBox = not BasicWindow_CheckBox
-	end
+	Slab.Textf("Buttons can be tested for mouse hover with the call to Slab.IsControlHovered right after declaring the button.")
+	Slab.Button(DrawButtons_Hovered and "Hovered" or "Not Hovered", {W = 100})
+	DrawButtons_Hovered = Slab.IsControlHovered()
 
-	if Slab.BeginComboBox('BasicWindow_Fruits', {Selected = BasicWindow_Options_Selected}) then
-		for K, V in pairs(BasicWindow_Options) do
-			if Slab.TextSelectable(V) then
-				BasicWindow_Options_Selected = V
-			end
-		end
-
-		Slab.EndComboBox()
-	end
-
-	if Slab.BeginContextMenuWindow() then
-		Slab.MenuItem("BasicWindow Item 1")
-		Slab.MenuItem("BasicWindow Item 2")
-		Slab.MenuItem("BasicWindow Item 3")
-
-		Slab.EndContextMenu()
-	end
-
-	Slab.Properties(BasicWindow_Properties)
-
-	for I = 1, 4, 1 do
-		if Slab.RadioButton("Radio " .. I, {Index = I, SelectedIndex = BasicWindow_RadioButton}) then
-			BasicWindow_RadioButton = I
-		end
-	end
-
-	Slab.Text("Is Void Hovered: " .. tostring(Slab.IsVoidHovered()))
-
-	Slab.EndWindow()
-end
-
-function SlabTest.ResizableWindow()
-	Slab.BeginWindow('SlabTest_Resizable', {Title = "Resizable Window", X = 350.0, Y = 100.0, AutoSizeWindow = false, ResetLayout = ResetLayout})
-	Slab.Textf("This is a resizable window. This text will automatically wrap based on the window's dimensions.")
 	Slab.NewLine()
-	Slab.Textf("There is a new line separating these two texts.")
-	Slab.EndWindow()
-end
+	Slab.Separator()
 
-function SlabTest.TreeWindow()
-	Slab.BeginWindow('SlabTest_Tree', {Title = "Tree Window", X = 600.0, Y = 100.0, AutoSizeWindow = false, ResetLayout = ResetLayout})
-	
-	if Slab.BeginTree('SlabTest_TreeRoot1', {Label = "Can be opened within rect", IconPath = SLAB_PATH .. "/Internal/Resources/Textures/Folder.png"}) then
-		Slab.BeginTree('SlabTest_Child1_Leaf', {Label = "Leaf 1", IsLeaf = true})
+	Slab.Textf(
+		"Buttons can be aligned to fit on the right side of the of window. When multiple buttons are declared with this " ..
+		"option set along with Slab.SameLine call, each button will be moved over to make room for the new aligned button.")
 
-		if Slab.BeginTree('SlabTest_Child1', {Label = "Child 1"}) then
-			Slab.BeginTree('SlabTest_Child1_Leaf1', {Label = "Leaf 2", IsLeaf = true})
-			Slab.BeginTree('SlabTest_Child1_Leaf2', {Label = "Leaf 3", IsLeaf = true})
+	Slab.Button("Cancel", {AlignRight = true})
+	Slab.SameLine()
+	Slab.Button("OK", {AlignRight = true})
 
-			Slab.EndTree()
-		end
+	Slab.NewLine()
+	Slab.Separator()
 
-		Slab.EndTree()
+	Slab.Textf("Buttons can be set to expand to the size of the window.")
+	Slab.Button("Expanded Button", {ExpandW = true})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Buttons can have a custom width and height.")
+	Slab.Button("Square", {W = 75, H = 75})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Buttons can also be invisible. Below is a rectangle with an invisible button so that the designer can " ..
+		"implement a custom button but still rely on the button behavior. Below is a custom rectangle drawn with an " ..
+		"invisible button drawn at the same location.")
+	local X, Y = Slab.GetCursorPos()
+	Slab.Rectangle({Mode = 'line', W = 50.0, H = 50.0, Color = {1, 1, 1, 1}})
+	Slab.SetCursorPos(X, Y)
+
+	if Slab.Button("", {Invisible = true, W = 50.0, H = 50.0}) then
+		DrawButtons_NumClicked_Invisible = DrawButtons_NumClicked_Invisible + 1
 	end
-	if Slab.BeginTree('SlabTest_TreeRoot2', {Label = "Only opened with arrow.", OpenWithHighlight = false}) then
-		Slab.BeginTree('SlabTest_Child1_leaf', {Label = "Leaf 1", IsLeaf = true})
-		Slab.EndTree()
-	end
-	
-	local Path = "/Internal/Resources/Textures/power.png"
-	local ImageOptions =
-	{
-		Path = SLAB_PATH .. Path,
-		Scale = 0.5,
-		Color = {1.0, 0.0, 0.0, 1.0},
-		ReturnOnClick = true,
-		Tooltip = "This is a sample image."
-	}
 
-	if Slab.Image('SlabTest_Image', ImageOptions) then
-		-- Perform logic when clicked
+	Slab.SameLine({CenterY = true})
+	Slab.Text("Invisible button has been clicked " .. DrawButtons_NumClicked_Invisible .. " time(s).")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Buttons can also be disabled. Click the button below to toggle the status of the neighboring button.")
+
+	if Slab.Button("Toggle") then
+		DrawButtons_Enabled = not DrawButtons_Enabled
 	end
-	
-	Slab.BeginListBox('SlabTest_ListBox')
-	for I = 1, 10, 1 do
-		Slab.BeginListBoxItem('Item ' .. I, {Selected = I == ListBoxIndex})
-		Slab.Text("Item " .. I)
-		if Slab.IsListBoxItemClicked() then
-			ListBoxIndex = I
-		end
-		Slab.EndListBoxItem()
-	end
-	Slab.EndListBox()
-	Slab.Text("After List Box")
-	Slab.EndWindow()
+
+	Slab.SameLine()
+	Slab.Button(DrawButtons_Enabled and "Enabled" or "Disabled", {Disabled = not DrawButtons_Enabled})
 end
 
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
-			if Slab.BeginMenu("New") then
-				if Slab.MenuItem("File") then
-					-- Create a new file.
-				end
-
-				if Slab.MenuItem("Project") then
-					-- Create a new project.
-				end
-
-				Slab.EndMenu()
-			end
-
-			if Slab.MenuItem("Open") then
-				SlabTest_FileDialog = true
-				SlabTest_FileDialogType = 'openfile'
-			end
-
-			if Slab.MenuItem("Save") then
-				SlabTest_FileDialog = true
-				SlabTest_FileDialogType = 'savefile'
-			end
-
-			Slab.MenuItem("Save As")
-
-			Slab.Separator()
-
 			if Slab.MenuItem("Quit") then
 				love.event.quit()
-			end
-
-			Slab.EndMenu()
-		end
-
-		if Slab.BeginMenu("Windows") then
-			if Slab.MenuItem("Reset Layout") then
-				ResetLayout = true
-			end
-
-			if Slab.MenuItemChecked("Message Box", SlabTest_MessageBox) then
-				SlabTest_MessageBox = not SlabTest_MessageBox
-			end
-
-			if Slab.MenuItemChecked("Color Picker", SlabTest_ColorPicker) then
-				SlabTest_ColorPicker = not SlabTest_ColorPicker
 			end
 
 			Slab.EndMenu()
@@ -234,56 +137,41 @@ function SlabTest.MainMenuBar()
 	end
 end
 
-function SlabTest.GlobalContextMenu()
-	if Slab.BeginContextMenuWindow() then
-		Slab.MenuItem("Global Item 1")
-		Slab.MenuItem("Global Item 2")
-		Slab.MenuItem("Global Item 3")
+local Categories = {
+	{"Overview", DrawOverview},
+	{"Buttons", DrawButtons}
+}
 
-		Slab.EndContextMenu()
-	end
-end
+local Selected = nil
 
 function SlabTest.Begin()
 	SlabTest.MainMenuBar()
-	SlabTest.BasicWindow()
-	SlabTest.ResizableWindow()
-	SlabTest.TreeWindow()
-	SlabTest.GlobalContextMenu()
-	ResetLayout = false
 
-	if SlabTest_MessageBox then
-		local Result = Slab.MessageBox("Test", "This is a test message box.")
-
-		if Result ~= "" then
-			SlabTest_MessageBox = false
-		end
+	if Selected == nil then
+		Selected = Categories[1]
 	end
 
-	if SlabTest_FileDialog then
-		local Result = Slab.FileDialog({Type = SlabTest_FileDialogType, Filters = {{"*.*", "All Files"}, {"*.lua", "Lua Files"}, {"*.txt", "Text Files"}}})
+	Slab.BeginWindow('Main', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
 
-		if Result.Button ~= "" then
-			print("Button: " .. Result.Button)
-			print("Files: " .. #Result.Files)
-			for I, V in ipairs(Result.Files) do
-				print("   " .. V)
-			end
-			SlabTest_FileDialog = false
-		end
-	end
+	local W, H = Slab.GetWindowActiveSize()
 
-	if SlabTest_ColorPicker then
-		local Result = Slab.ColorPicker({Color = SlabTest_ColorPicker_Color})
-
-		if Result.Button ~= "" then
-			SlabTest_ColorPicker = false
-
-			if Result.Button == "OK" then
-				SlabTest_ColorPicker_Color = Result.Color
+	if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
+		for I, V in ipairs(Categories) do
+			if Slab.TextSelectable(V[1]) then
+				Selected = Categories[I]
 			end
 		end
+
+		Slab.EndComboBox()
 	end
+
+	Slab.Separator()
+
+	if Selected ~= nil and Selected[2] ~= nil then
+		Selected[2]()
+	end
+
+	Slab.EndWindow()
 
 	SlabDebug.Begin()
 end
