@@ -8,7 +8,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Radio Button examples.
 [Slab Test]: Menu examples.
 [Slab Test]: Context menu examples.
 [Slab Test]: Input examples.

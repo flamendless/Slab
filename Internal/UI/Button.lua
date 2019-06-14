@@ -128,6 +128,8 @@ end
 function Button.BeginRadio(Label, Options)
 	Stats.Begin('RadioButton')
 
+	Label = Label == nil and "" or Label
+
 	Options = Options == nil and {} or Options
 	Options.Index = Options.Index == nil and 0 or Options.Index
 	Options.SelectedIndex = Options.SelectedIndex == nil and 0 or Options.SelectedIndex
@@ -168,7 +170,7 @@ function Button.BeginRadio(Label, Options)
 		DrawCommands.Circle('fill', CenterX, CenterY, Radius * 0.7, Style.RadioButtonSelectedColor)
 	end
 
-	if Label ~= nil and Label ~= "" then
+	if Label ~= "" then
 		local CursorY = Cursor.GetY()
 		Cursor.AdvanceX(W)
 		Text.Begin(Label)

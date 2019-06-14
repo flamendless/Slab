@@ -220,6 +220,19 @@ local function DrawCheckBox()
 	end
 end
 
+local DrawRadioButton_Selected = 1
+
+local function DrawRadioButton()
+	Slab.Textf("Radio buttons offer the user to select one option from a list of options.")
+
+	Slab.NewLine()
+	for I = 1, 5, 1 do
+		if Slab.RadioButton("Option " .. I, {Index = I, SelectedIndex = DrawRadioButton_Selected}) then
+			DrawRadioButton_Selected = I
+		end
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -240,7 +253,8 @@ local Categories = {
 	{"Overview", DrawOverview},
 	{"Buttons", DrawButtons},
 	{"Text", DrawText},
-	{"Check Box", DrawCheckBox}
+	{"Check Box", DrawCheckBox},
+	{"Radio Button", DrawRadioButton}
 }
 
 local Selected = nil
