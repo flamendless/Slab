@@ -121,6 +121,84 @@ local function DrawButtons()
 	Slab.Button(DrawButtons_Enabled and "Enabled" or "Disabled", {Disabled = not DrawButtons_Enabled})
 end
 
+local DrawText_Width = 450.0
+local DrawText_Alignment = {'left', 'center', 'right', 'justify'}
+local DrawText_Alignment_Selected = 'left'
+local DrawText_NumClicked = 0
+local DrawText_NumClicked_TextOnly = 0
+
+local function DrawText()
+	Slab.Textf("Text controls displays text on the current window. Slab currently offers three ways to control the text.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Text("The most basic text control is Slab.Text.")
+	Slab.Text("The color of the text can be controlled with the 'Color' option.", {Color = {0, 1, 0, 1}})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Text can be formatted using the Slab.Textf API. Formatted text will wrap the text based on the 'W' option. " ..
+		"If the 'W' option is not specified, the window's width will be used as the width. Formatted text also has an " ..
+		"alignment option.")
+
+	Slab.NewLine()
+	Slab.Text("Width")
+	Slab.SameLine()
+	if Slab.Input('DrawText_Width', {Text = tostring(DrawText_Width), NumbersOnly = true, ReturnOnText = false}) then
+		DrawText_Width = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Alignment")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawText_Alignment', {Selected = DrawText_Alignment_Selected}) then
+		for I, V in ipairs(DrawText_Alignment) do
+			if Slab.TextSelectable(V) then
+				DrawText_Alignment_Selected = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.Textf(
+		"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore " ..
+		"et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " ..
+		"aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " ..
+		"dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui " ..
+		"officia deserunt mollit anim id est laborum.", {W = DrawText_Width, Align = DrawText_Alignment_Selected})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Text can also be interacted with using the Slab.TextSelectable function. A background will be " ..
+		"rendered when the mouse is hovered over the text and the function will return true when clicked on. " ..
+		"The selectable area expands to the width of the window by default. This can be changed to just the text " ..
+		"with the 'IsSelectableTextOnly' option.")
+
+	Slab.NewLine()
+	if Slab.TextSelectable("This text has been clicked " .. DrawText_NumClicked .. " time(s).") then
+		DrawText_NumClicked = DrawText_NumClicked + 1
+	end
+
+	Slab.NewLine()
+	if Slab.TextSelectable("This text has been clicked " .. DrawText_NumClicked_TextOnly .. " time(s).", {IsSelectableTextOnly = true}) then
+		DrawText_NumClicked_TextOnly = DrawText_NumClicked_TextOnly + 1
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Text can also be centered horizontally within the bounds of the window.")
+
+	Slab.NewLine()
+	Slab.Text("Centered Text", {CenterX = true})
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -139,7 +217,8 @@ end
 
 local Categories = {
 	{"Overview", DrawOverview},
-	{"Buttons", DrawButtons}
+	{"Buttons", DrawButtons},
+	{"Text", DrawText}
 }
 
 local Selected = nil

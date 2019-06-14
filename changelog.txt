@@ -7,7 +7,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Text examples.
 [Slab Test]: Check box examples.
 [Slab Test]: Radio Button examples.
 [Slab Test]: Menu examples.
@@ -23,6 +22,7 @@ v0.5.0 RELEASE
 [Slab Test]: Shape examples.
 [Slab Test]: Window examples.
 [Slab Test]: Tree examples.
+[Slab Test]: Window columns.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 
@@ -83,6 +83,7 @@ Style: Add documentation for each style property.
 [Table]: Initial implementation.
 [Text]: Tooltip support.
 [Text]: Stats for text objects.
+[Text]: Deprecate SelectOnHover option.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Deprecate window bounds values and use region directly.
