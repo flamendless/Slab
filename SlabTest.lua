@@ -233,6 +233,116 @@ local function DrawRadioButton()
 	end
 end
 
+local DrawMenus_Window_Selected = "Right click and select an option."
+local DrawMenus_Control_Selected = "Right click and select an option from a control."
+local DrawMenus_CheckBox = false
+local DrawMenus_ComboBox = {"Apple", "Banana", "Pear", "Orange", "Lemon"}
+local DrawMenus_ComboBox_Selected = "Apple"
+
+local function DrawContextMenuItem(Label)
+	if Slab.BeginContextMenuItem() then
+		for I = 1, 5, 1 do
+			local MenuLabel = Label .. " Option " .. I
+			if Slab.MenuItem(MenuLabel) then
+				DrawMenus_Control_Selected = MenuLabel
+			end
+		end
+
+		Slab.EndContextMenu()
+	end
+end
+
+local function DrawMenus()
+	Slab.Textf(
+		"Menus are windows that allow users to make a selection from a list of items. " ..
+		"Below are descriptions of the various menus and how they can be utilized.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The main menu bar is rendered at the top of the window with menu items being added " ..
+		"from left to right. When a menu item is clicked, a context menu is opened below the " ..
+		"selected item. Creating the main menu bar can open anywhere in the code after the " ..
+		"Slab.Update call. These functions should not be called within a BeginWindow/EndWindow " ..
+		"call.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Context menus are menus which are rendered above all other controls to allow the user to make a selection " ..
+		"out of a list of items. These can be opened up through the menu bar, or through a right-click " ..
+		"action from the user on a given window or control. Menus and menu items make up the context menu " ..
+		"and menus can be nested to allow a tree options to be displayed.")
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"Controls can have their own context menus. Right-click on each control to open up the menu " ..
+		"and select an option.")
+
+	Slab.NewLine()
+	Slab.Text(DrawMenus_Control_Selected)
+	Slab.NewLine()
+
+	Slab.Button("Button")
+	DrawContextMenuItem("Button")
+
+	Slab.Text("Text")
+	DrawContextMenuItem("Text")
+
+	if Slab.CheckBox(DrawMenus_CheckBox, "Check Box") then
+		DrawMenus_CheckBox = not DrawMenus_CheckBox
+	end
+	DrawContextMenuItem("Check Box")
+
+	Slab.Input('DrawMenus_Input')
+	DrawContextMenuItem("Input")
+
+	if Slab.BeginComboBox('DrawMenus_ComboBox', {Selected = DrawMenus_ComboBox_Selected}) then
+		for I, V in ipairs(DrawMenus_ComboBox) do
+			if Slab.TextSelectable(V) then
+				DrawMenus_Window_Selected = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+	DrawContextMenuItem("Combo Box")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Right-clicking anywhere within this window will open up a context menu. Note that BeginContextMenuWindow " ..
+		"must come after all BeginContextMenuItem calls.")
+
+	Slab.NewLine()
+
+	Slab.Textf(DrawMenus_Window_Selected)
+
+	if Slab.BeginContextMenuWindow() then
+		if Slab.BeginMenu("Window Menu 1") then
+			for I = 1, 5, 1 do
+				if Slab.MenuItem("Sub Window Option " .. I) then
+					DrawMenus_Window_Selected = "Sub Window Option " .. I .. " selected."
+				end
+			end
+
+			Slab.EndMenu()
+		end
+
+		for I = 1, 5, 1 do
+			if Slab.MenuItem("Window Option " .. I) then
+				DrawMenus_Window_Selected = "Window Option " .. I .. " selected."
+			end
+		end
+
+		Slab.EndContextMenu()
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -254,7 +364,8 @@ local Categories = {
 	{"Buttons", DrawButtons},
 	{"Text", DrawText},
 	{"Check Box", DrawCheckBox},
-	{"Radio Button", DrawRadioButton}
+	{"Radio Button", DrawRadioButton},
+	{"Menus", DrawMenus}
 }
 
 local Selected = nil

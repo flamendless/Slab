@@ -8,8 +8,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Menu examples.
-[Slab Test]: Context menu examples.
 [Slab Test]: Input examples.
 [Slab Test]: Combo box examples.
 [Slab Test]: Image examples.
@@ -83,6 +81,7 @@ Style: Add documentation for each style property.
 [Text]: Tooltip support.
 [Text]: Stats for text objects.
 [Text]: Deprecate SelectOnHover option.
+[Tree]: Fix for BeginContextMenuItem for root and children items.
 Window: Menu support.
 Window: Ids should be used as keys.
 Window: Deprecate window bounds values and use region directly.
