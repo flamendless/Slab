@@ -9,7 +9,6 @@ v0.5.0 RELEASE
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
 [Slab Test]: Input examples.
-[Slab Test]: Combo box examples.
 [Slab Test]: Image examples.
 [Slab Test]: Cursor examples.
 [Slab Test]: List box examples.

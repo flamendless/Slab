@@ -343,6 +343,46 @@ local function DrawMenus()
 	end
 end
 
+local DrawComboBox_Options = {"England", "France", "Germany", "USA", "Canada", "Mexico", "Japan", "South Korea", "China", "Russia", "India"}
+local DrawComboBox_Selected = "USA"
+local DrawComboBox_Selected_Width = "USA"
+
+local function DrawComboBox()
+	Slab.Textf(
+		"A combo box allows the user to select a single item from a list and display the selected item " ..
+		"in the combo box. The list is only visible when the user is interacting with the control.")
+
+	Slab.NewLine()
+
+	if Slab.BeginComboBox('DrawComboBox_One', {Selected = DrawComboBox_Selected}) then
+		for I, V in ipairs(DrawComboBox_Options) do
+			if Slab.TextSelectable(V) then
+				DrawComboBox_Selected = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("A combo box's width can be modified with the 'W' option.")
+
+	Slab.NewLine()
+
+	local W, H = Slab.GetWindowActiveSize()
+	if Slab.BeginComboBox('DrawComboBox_Two', {Selected = DrawComboBox_Selected_Width, W = W}) then
+		for I, V in ipairs(DrawComboBox_Options) do
+			if Slab.TextSelectable(V) then
+				DrawComboBox_Selected_Width = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -365,7 +405,8 @@ local Categories = {
 	{"Text", DrawText},
 	{"Check Box", DrawCheckBox},
 	{"Radio Button", DrawRadioButton},
-	{"Menus", DrawMenus}
+	{"Menus", DrawMenus},
+	{"Combo Box", DrawComboBox}
 }
 
 local Selected = nil
