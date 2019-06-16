@@ -39,8 +39,17 @@ local function DrawOverview()
 		"that they may make adjustments that meet the needs of their own projects and tools. Refer to main.lua " ..
 		"and SlabTest.lua for example usage of this library.\n\n" ..
 		"This window will demonstrate the usage of the Slab library and give an overview of all the supported controls " ..
-		"and features.\n\n" ..
-		"The current version of Slab is: " .. Slab.GetVersion())
+		"and features.")
+
+	Slab.NewLine()
+
+	Slab.Text("The current version of Slab is: ")
+	Slab.SameLine()
+	Slab.Text(Slab.GetVersion(), {Color = {0, 1, 0, 1}})
+
+	Slab.Text("The current verion of LÖVE is: ")
+	Slab.SameLine()
+	Slab.Text(Slab.GetLoveVersion(), {Color = {0, 1, 0, 1}})
 end
 
 local DrawButtons_NumClicked = 0

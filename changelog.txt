@@ -1,7 +1,6 @@
 v0.5.0 RELEASE
 ==========
 [API]: Expose Stats interface.
-[API]: Update version number.
 [Shape]: Line.
 [Shape]: Curve.
 [Shape]: Polygon.
