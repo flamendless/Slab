@@ -717,6 +717,11 @@ function Input.Begin(Id, Options)
 	Instance.MinNumber = Options.MinNumber
 	Instance.MaxNumber = Options.MaxNumber
 	Instance.MultiLine = Options.MultiLine
+
+	if Instance.MultiLineW ~= Options.MultiLineW then
+		Instance.Lines = nil
+	end
+
 	Instance.MultiLineW = Options.MultiLineW
 	local WinItemId = Window.GetItemId(Id)
 

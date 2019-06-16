@@ -47,7 +47,7 @@ local function DrawOverview()
 	Slab.SameLine()
 	Slab.Text(Slab.GetVersion(), {Color = {0, 1, 0, 1}})
 
-	Slab.Text("The current verion of LÖVE is: ")
+	Slab.Text("The current version of LÖVE is: ")
 	Slab.SameLine()
 	Slab.Text(Slab.GetLoveVersion(), {Color = {0, 1, 0, 1}})
 end
@@ -392,6 +392,86 @@ local function DrawComboBox()
 	end
 end
 
+local DrawInput_Basic = "Hello World"
+local DrawInput_Basic_Return = "Hello World"
+local DrawInput_Basic_Numbers = 0
+local DrawInput_Basic_Numbers_Clamped = 0.5
+local DrawInput_MultiLine = 
+[[
+function Foo()
+	print("Bar")
+end
+
+The quick brown fox jumped over the lazy dog.]]
+local DrawInput_MultiLine_Width = math.huge
+
+local function DrawInput()
+	Slab.Textf(
+		"The input control allows the user to enter in text into an input box. This control is similar " ..
+		"to input boxes found in other applications.")
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"The first example is very simple. An Input control is declared and the resulting text is captured if " ..
+		"the function returns true. By default, the function will return true on any text that is entered.")
+
+	if Slab.Input('DrawInput_Basic', {Text = DrawInput_Basic}) then
+		DrawInput_Basic = Slab.GetInputText()
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"The return behavior can be modified so that the function will only return true if the Enter/Return " ..
+		"key is pressed. If the control loses focus without the Enter/Return key pressed, then the text will " ..
+		"revert back to what it was before.")
+
+	if Slab.Input('DrawInput_Basic_Return', {Text = DrawInput_Basic_Return, ReturnOnText = false}) then
+		DrawInput_Basic_Return = Slab.GetInputText()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Input controls can be configured to only take numeric values.")
+
+	if Slab.Input('DrawInput_Basic_Numbers', {Text = tostring(DrawInput_Basic_Numbers), NumbersOnly = true}) then
+		DrawInput_Basic_Numbers = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"These numeric controls can also have min and/or max values set. Below is an example where the " ..
+		"numeric input control is clamped from 0.0 to 1.0.")
+
+	if Slab.Input('DrawInput_Basic_Numbers_Clamped', {Text = tostring(DrawInput_Basic_Numbers_Clamped), NumbersOnly = true, MinNumber = 0.0, MaxNumber = 1.0}) then
+		DrawInput_Basic_Numbers_Clamped = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Input controls also allow for multi-line editing using the MultiLine option. The default text wrapping " ..
+		"option is set to math.huge, but this can be modified with the MultiLineW option. The example below demonstrates " ..
+		"how to set up a multi-line input control and shows how the size of the control can be modified.")
+
+	Slab.NewLine()
+	Slab.Text("MultiLineW")
+	Slab.SameLine()
+	if Slab.Input('DrawInput_MultiLine_Width', {Text = tostring(DrawInput_MultiLine_Width), NumbersOnly = true, ReturnOnText = false}) then
+		DrawInput_MultiLine_Width = Slab.GetInputNumber()
+	end
+
+	local W, H = Slab.GetWindowActiveSize()
+
+	if Slab.Input('DrawInput_MultiLine', {Text = DrawInput_MultiLine, MultiLine = true, MultiLineW = DrawInput_MultiLine_Width, W = W, H = 150.0}) then
+		DrawInput_MultiLine = Slab.GetInputText()
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -415,7 +495,8 @@ local Categories = {
 	{"Check Box", DrawCheckBox},
 	{"Radio Button", DrawRadioButton},
 	{"Menus", DrawMenus},
-	{"Combo Box", DrawComboBox}
+	{"Combo Box", DrawComboBox},
+	{"Input", DrawInput}
 }
 
 local Selected = nil
