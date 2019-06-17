@@ -142,11 +142,13 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			IsMouseDoubleClicked
 			IsMouseDragging
 			GetMousePosition
+			GetMousePositionWindow
 			GetMouseDelta
 
 		Control:
 			IsControlHovered
 			IsControlClicked
+			GetControlSize
 			IsVoidHovered
 			IsVoidClicked
 
@@ -918,8 +920,6 @@ end
 		ScaleX: [Number] The scale value to apply to the X axis.
 		ScaleY: [Number] The scale value to apply to the Y axis.
 		Color: [Table] The color to use when rendering this image.
-		ReturnOnHover: [Boolean] Returns true when the mouse is hovered over the image.
-		ReturnOnClick: [Boolean] Returns true when the mouse is released over the image.
 		SubX: [Number] The X-coordinate used inside the given image.
 		SubY: [Number] The Y-coordinate used inside the given image.
 		SubW: [Number] The width used inside the given image.
@@ -931,8 +931,7 @@ end
 			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
 
-	Return: [Boolean] Returns true if the mouse is hovering over the image or clicking on the image based on
-		ReturnOnHover or ReturnOnClick options.
+	Return: None.
 --]]
 function Slab.Image(Id, Options)
 	return Image.Begin(Id, Options)
@@ -1333,6 +1332,18 @@ function Slab.GetMousePosition()
 end
 
 --[[
+	GetMousePositionWindow
+
+	Retrieves the current mouse position within the current window. This position will include any transformations 
+	added to the window such as scrolling.
+
+	Return: [Number], [Number] The X and Y coordinates of the mouse position within the window.
+--]]
+function Slab.GetMousePositionWindow()
+	return Window.GetMousePosition()
+end
+
+--[[
 	GetMouseDelta
 
 	Retrieves the change in mouse coordinates from the last frame.
@@ -1365,6 +1376,18 @@ end
 --]]
 function Slab.IsControlClicked(Button)
 	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
+--[[
+	GetControlSize
+
+	Retrieves the last declared control's size.
+
+	Return: [Number], [Number] The width and height of the last control declared.
+--]]
+function Slab.GetControlSize()
+	local X, Y, W, H = Cursor.GetItemBounds()
+	return W, H
 end
 
 --[[

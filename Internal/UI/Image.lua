@@ -65,8 +65,6 @@ function Image.Begin(Id, Options)
 	Options.ScaleX = Options.ScaleX == nil and Options.Scale or Options.ScaleX
 	Options.ScaleY = Options.ScaleY == nil and Options.Scale or Options.ScaleY
 	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
-	Options.ReturnOnHover = Options.ReturnOnHover == nil and false or Options.ReturnOnHover
-	Options.ReturnOnClick = Options.ReturnOnClick == nil and false or Options.ReturnOnClick
 	Options.SubX = Options.SubX == nil and 0.0 or Options.SubX
 	Options.SubY = Options.SubY == nil and 0.0 or Options.SubY
 	Options.SubW = Options.SubW == nil and 0.0 or Options.SubW
@@ -91,7 +89,6 @@ function Image.Begin(Id, Options)
 	local X, Y = Cursor.GetPosition()
 	local W = Instance.Image:getWidth() * Options.ScaleX
 	local H = Instance.Image:getHeight() * Options.ScaleY
-	local Result = false
 	local MouseX, MouseY = Window.GetMousePosition()
 
 	local UseSubImage = false
@@ -102,13 +99,8 @@ function Image.Begin(Id, Options)
 	end
 
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Result = Options.ReturnOnHover
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(WinItemId)
-
-		if Mouse.IsReleased(1) and Options.ReturnOnClick then
-			Result = true
-		end
 	end
 
 	if UseSubImage then
@@ -134,8 +126,6 @@ function Image.Begin(Id, Options)
 	Window.AddItem(X, Y, W, H, WinItemId)
 
 	Stats.End('Image')
-
-	return Result
 end
 
 return Image

@@ -472,6 +472,148 @@ local function DrawInput()
 	end
 end
 
+local DrawImage_Path = SLAB_PATH .. "/Internal/Resources/Textures/power.png"
+local DrawImage_Path_Icons = SLAB_PATH .. "/Internal/Resources/Textures/gameicons.png"
+local DrawImage_Color = {1, 0, 0, 1}
+local DrawImage_Color_Edit = false
+local DrawImage_Scale = 1.0
+local DrawImage_Scale_X = 1.0
+local DrawImage_Scale_Y = 1.0
+local DrawImage_Power = false
+local DrawImage_Power_Hovered = false
+local DrawImage_Power_On = {0, 1, 0, 1}
+local DrawImage_Power_Off = {1, 0, 0, 1}
+local DrawImage_Icon_X = 0
+local DrawImage_Icon_Y = 0
+local DrawImage_Icon_Move = false
+
+local function DrawImage()
+	Slab.Textf(
+		"Images can be drawn within windows and react to user interaction. A path to an image can be specified through the options of " ..
+		"the Image function. If this is done, Slab will manage the image resource and will use the path as a key to the resource.")
+
+	Slab.Image('DrawImage_Basic', {Path = DrawImage_Path})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"An image's color can be modified with the 'Color' option.")
+
+	if Slab.Button("Change Color") then
+		DrawImage_Color_Edit = true
+	end
+
+	if DrawImage_Color_Edit then
+		local Result = Slab.ColorPicker({Color = DrawImage_Color})
+
+		if Result.Button ~= "" then
+			DrawImage_Color_Edit = false
+
+			if Result.Button == "OK" then
+				DrawImage_Color = Result.Color
+			end
+		end
+	end
+
+	Slab.Image('DrawImage_Color', {Path = DrawImage_Path, Color = DrawImage_Color})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"There is an option to modify the scale of an image. The scale can both be affected " ..
+		"on the X or Y axis.")
+
+	Slab.Text("Scale")
+	Slab.SameLine()
+	if Slab.Input('DrawImage_Scale', {Text = tostring(DrawImage_Scale), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+		DrawImage_Scale = Slab.GetInputNumber()
+		DrawImage_Scale_X = DrawImage_Scale
+		DrawImage_Scale_Y = DrawImage_Scale
+	end
+
+	Slab.SameLine({Pad = 6.0})
+	Slab.Text("Scale X")
+	Slab.SameLine()
+	if Slab.Input('DrawImage_Scale_X', {Text = tostring(DrawImage_Scale_X), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+		DrawImage_Scale_X = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine({Pad = 6.0})
+	Slab.Text("Scale Y")
+	Slab.SameLine()
+	if Slab.Input('DrawImage_Scale_Y', {Text = tostring(DrawImage_Scale_Y), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+		DrawImage_Scale_Y = Slab.GetInputNumber()
+	end
+
+	Slab.Image('DrawImage_Scale', {Path = DrawImage_Path, ScaleX = DrawImage_Scale_X, ScaleY = DrawImage_Scale_Y})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Images can also have interactions through the control API. The left image will change when the mouse is hovered " ..
+		"while the right image will change on click.")
+
+	Slab.Image('DrawImage_Hover', {Path = DrawImage_Path, Color = DrawImage_Power_Hovered and DrawImage_Power_On or DrawImage_Power_Off})
+	DrawImage_Power_Hovered = Slab.IsControlHovered()
+
+	Slab.SameLine({Pad = 12.0})
+	Slab.Image('DrawImage_Click', {Path = DrawImage_Path, Color = DrawImage_Power and DrawImage_Power_On or DrawImage_Power_Off})
+	if Slab.IsControlClicked() then
+		DrawImage_Power = not DrawImage_Power
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"A sub region can be defined to draw a section of an image.")
+
+	local X, Y = Slab.GetCursorPos()
+	local AbsX, AbsY = Slab.GetCursorPos({Absolute = true})
+	Slab.Image('DrawImage_Icons', {Path = DrawImage_Path_Icons})
+	if Slab.IsControlClicked() then
+		local MouseX, MouseY = Slab.GetMousePositionWindow()
+		local Left = AbsX + DrawImage_Icon_X
+		local Right = Left + 50.0
+		local Top = AbsY + DrawImage_Icon_Y
+		local Bottom = Top + 50.0
+		if Left <= MouseX and MouseX <= Right and
+			Top <= MouseY and MouseY <= Bottom then
+			DrawImage_Icon_Move = true
+		end
+	end
+
+	if Slab.IsMouseReleased() then
+		DrawImage_Icon_Move = false
+	end
+
+	local W, H = Slab.GetControlSize()
+
+	if DrawImage_Icon_Move then
+		local DeltaX, DeltaY = Slab.GetMouseDelta()
+		DrawImage_Icon_X = math.max(DrawImage_Icon_X + DeltaX, 0.0)
+		DrawImage_Icon_X = math.min(DrawImage_Icon_X, W - 50.0)
+
+		DrawImage_Icon_Y = math.max(DrawImage_Icon_Y + DeltaY, 0.0)
+		DrawImage_Icon_Y = math.min(DrawImage_Icon_Y, H - 50.0)
+	end
+
+	Slab.SetCursorPos(X + DrawImage_Icon_X, Y + DrawImage_Icon_Y)
+	Slab.Rectangle({Mode = 'line', Color = {0, 0, 0, 1}, W = 50.0, H = 50.0})
+
+	Slab.SetCursorPos(X + W + 12.0, Y)
+	Slab.Image('DrawImage_Icons_Region', {
+		Path = DrawImage_Path_Icons,
+		SubX = DrawImage_Icon_X,
+		SubY = DrawImage_Icon_Y,
+		SubW = 50.0,
+		SubH = 50.0
+	})
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -496,7 +638,8 @@ local Categories = {
 	{"Radio Button", DrawRadioButton},
 	{"Menus", DrawMenus},
 	{"Combo Box", DrawComboBox},
-	{"Input", DrawInput}
+	{"Input", DrawInput},
+	{"Image", DrawImage}
 }
 
 local Selected = nil

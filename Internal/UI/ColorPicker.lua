@@ -260,6 +260,7 @@ function ColorPicker.Begin(Options)
 		UpdateSaturationColors()
 	end
 
+	local CursorX, CursorY = Cursor.GetPosition()
 	Window.Begin('ColorPicker', {Title = "Color Picker"})
 
 	local X, Y = Cursor.GetPosition()
@@ -455,6 +456,8 @@ function ColorPicker.Begin(Options)
 	end
 
 	Window.End()
+
+	Cursor.SetPosition(CursorX, CursorY)
 
 	return Result
 end
