@@ -614,6 +614,133 @@ local function DrawImage()
 	})
 end
 
+local DrawCursor_NewLines = 1
+local DrawCursor_SameLinePad = 4.0
+local DrawCursor_X = nil
+local DrawCursor_Y = nil
+
+local function DrawCursor()
+	Slab.Textf(
+		"Slab offers a way to manage the drawing of controls through the cursor. Whenever a control is used, the cursor is "..
+		"automatically advanced based on the size of the control. By default, cursors are advanced vertically downward based " ..
+		"on the control's height. However, functions are provided to move the cursor back up to the previous line or create " ..
+		"an empty line to advance the cursor downward.")
+
+	for I = 1, DrawCursor_NewLines, 1 do
+		Slab.NewLine()
+	end
+
+	Slab.Textf(
+		"There is a new line between this text and the above description. Modify the number of new lines using the " ..
+		"input box below.")
+	if Slab.Input('DrawCursor_NewLines', {Text = tostring(DrawCursor_NewLines), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+		DrawCursor_NewLines = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Using the SameLine function, controls can be layed out on a single line with additional padding. Below are two buttons on " ..
+		"the same line with some padding. Use the input field below to modify the padding.")
+	Slab.Button("One")
+	Slab.SameLine({Pad = DrawCursor_SameLinePad})
+	Slab.Button("Two")
+	if Slab.Input('DrawCursor_SameLinePad', {Text = tostring(DrawCursor_SameLinePad), NumbersOnly = true, ReturnOnText = false}) then
+		DrawCursor_SameLinePad = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"The SameLine function can also vertically center the next item based on the previous control. This is useful for labeling " ..
+		"items that are much bigger than the text such as images.")
+	Slab.Image('DrawCursor_Image', {Path = DrawImage_Path})
+	Slab.SameLine({CenterY = true})
+	Slab.Text("This text is centered with respect to the previous image.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Slab offers functions to retrieve and set the cursor position. The GetCursorPos function will return the cursor position " ..
+		"relative to the current window. An option can be passed to retrieve the absolute position of the cursor with respect " ..
+		"to the viewport.")
+
+	local X, Y = Slab.GetCursorPos()
+	Slab.Text("Cursor X: " .. X)
+	Slab.SameLine()
+	Slab.Text("Cursor Y: " .. Y)
+
+	local AbsX, AbsY = Slab.GetCursorPos({Absolute = true})
+	Slab.Text("Absolute X: " .. AbsX)
+	Slab.SameLine()
+	Slab.Text("Absolute Y: " .. AbsY)
+
+	if DrawCursor_X == nil then
+		DrawCursor_X, DrawCursor_Y = Slab.GetCursorPos()
+	end
+
+	if Slab.Input('DrawCursor_X', {Text = tostring(DrawCursor_X), NumbersOnly = true, ReturnOnText = false}) then
+		DrawCursor_X = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+
+	if Slab.Input('DrawCursor_Y', {Text = tostring(DrawCursor_Y), NumbersOnly = true, ReturnOnText = false}) then
+		DrawCursor_Y = Slab.GetInputNumber()
+	end
+
+	Slab.SetCursorPos(DrawCursor_X, DrawCursor_Y + 30.0)
+	Slab.Text("Use the input fields to move this text.")
+end
+
+local DrawListBox_Basic_Selected = 1
+local DrawListBox_Advanced_Selected = 1
+
+local function DrawListBox()
+	Slab.Textf(
+		"A list box is a scrollable region that contains a list of elements that a user can interact with. The API is flexible " ..
+		"so that each element in the list can be rendered in any way desired. Below are a few examples on different ways a list " ..
+		"box can be used.")
+
+	Slab.NewLine()
+
+	Slab.BeginListBox('DrawListBox_Basic')
+	for I = 1, 10, 1 do
+		Slab.BeginListBoxItem('DrawListBox_Basic_Item_' .. I, {Selected = I == DrawListBox_Basic_Selected})
+		Slab.Text("List Box Item " .. I)
+		if Slab.IsListBoxItemClicked() then
+			DrawListBox_Basic_Selected = I
+		end
+		Slab.EndListBoxItem()
+	end
+	Slab.EndListBox()
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Each list box can contain more than just text. Below is an example of list items with a triangle and a label.")
+
+	Slab.NewLine()
+
+	Slab.BeginListBox('DrawListBox_Advanced')
+	local Rotation = 0
+	for I = 1, 4, 1 do
+		Slab.BeginListBoxItem('DrawListBox_Advanced_Item_' .. I, {Selected = I == DrawListBox_Advanced_Selected})
+		Slab.Triangle({Radius = 24.0, Rotation = Rotation})
+		Slab.SameLine({CenterY = true})
+		Slab.Text("Triangle " .. I)
+		if Slab.IsListBoxItemClicked() then
+			DrawListBox_Advanced_Selected = I
+		end
+		Slab.EndListBoxItem()
+		Rotation = Rotation + 90
+	end
+	Slab.EndListBox()
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -639,7 +766,9 @@ local Categories = {
 	{"Menus", DrawMenus},
 	{"Combo Box", DrawComboBox},
 	{"Input", DrawInput},
-	{"Image", DrawImage}
+	{"Image", DrawImage},
+	{"Cursor", DrawCursor},
+	{"List Box", DrawListBox}
 }
 
 local Selected = nil

@@ -48,6 +48,7 @@ function Shape.Rectangle(Options)
 
 	DrawCommands.Rectangle(Options.Mode, X, Y, Options.W, Options.H, Options.Color, Options.Rounding)
 	Window.AddItem(X, Y, Options.W, Options.H)
+	Cursor.SetItemBounds(X, Y, Options.W, Options.H)
 	Cursor.AdvanceY(Options.H)
 end
 
@@ -65,6 +66,7 @@ function Shape.Circle(Options)
 
 	DrawCommands.Circle(Options.Mode, CenterX, CenterY, Options.Radius, Options.Color, Options.Segments)
 	Window.AddItem(X, Y, Diameter, Diameter)
+	Cursor.SetItemBounds(X, Y, Diameter, Diameter)
 	Cursor.AdvanceY(Diameter)
 end
 
@@ -82,6 +84,7 @@ function Shape.Triangle(Options)
 
 	DrawCommands.Triangle(Options.Mode, CenterX, CenterY, Options.Radius, Options.Rotation, Options.Color)
 	Window.AddItem(X, Y, Diameter, Diameter)
+	Cursor.SetItemBounds(X, Y, Diameter, Diameter)
 	Cursor.AdvanceY(Diameter)
 end
 
