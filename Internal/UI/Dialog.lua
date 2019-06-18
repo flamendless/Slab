@@ -595,7 +595,6 @@ function Dialog.FileDialog(Options)
 			Dialog.Close()
 		end
 
-
 		Dialog.End()
 	end
 	return Result

@@ -820,6 +820,116 @@ local function DrawTree()
 	end
 end
 
+local DrawDialog_MessageBox = false
+local DrawDialog_MessageBox_Title = "Message Box"
+local DrawDialog_MessageBox_Message = "This is a message."
+local DrawDialog_FileDialog = ''
+local DrawDialog_FileDialog_Result = ""
+
+local function DrawDialog()
+	Slab.Textf(
+		"Dialog boxes are windows that rendered on top of everything else. These windows will consume input from all other windows " ..
+		"and controls. These are useful for forcing users to interact with a window of importance, such as message boxes and " ..
+		"file dialogs.")
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"By clicking the button below, an example of a simple dialog box will be rendered.")
+	if Slab.Button("Open Basic Dialog") then
+		Slab.OpenDialog('DrawDialog_Basic')
+	end
+
+	if Slab.BeginDialog('DrawDialog_Basic', {Title = "Basic Dialog"}) then
+		Slab.Text("This is a basic dialog box.")
+
+		if Slab.Button("Close") then
+			Slab.CloseDialog()
+		end
+
+		Slab.EndDialog()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Slab offers support for common dialog boxes such as message boxes. To display a message box, Slab.MessageBox must be called every " ..
+		"frame. The buttons to be drawn must be passed in through the Buttons option. Once the user has made a selection, the button that was " ..
+		"clicked is returned and the program can handle the response accordingly.")
+
+	Slab.NewLine()
+
+	Slab.Text("Title")
+	Slab.SameLine()
+	if Slab.Input('DrawDialog_MessageBox_Title', {Text = DrawDialog_MessageBox_Title}) then
+		DrawDialog_MessageBox_Title = Slab.GetInputText()
+	end
+
+	Slab.NewLine()
+
+	Slab.Text("Message")
+	if Slab.Input('DrawDialog_MessageBox_Message', {Text = DrawDialog_MessageBox_Message, MultiLine = true, H = 75}) then
+		DrawDialog_MessageBox_Message = Slab.GetInputText()
+	end
+
+	Slab.NewLine()
+
+	if Slab.Button("Show Message Box") then
+		DrawDialog_MessageBox = true
+	end
+
+	if DrawDialog_MessageBox then
+		local Result = Slab.MessageBox(DrawDialog_MessageBox_Title, DrawDialog_MessageBox_Message, {Buttons = {"OK"}})
+
+		if Result ~= "" then
+			DrawDialog_MessageBox = false
+		end
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Slab offers a file dialog box so that user can select to open or save a file. This behaves similar to file dialogs found on " ..
+		"various operating systems. Files can be filtered and a starting directory can be set. There are options for the user to select " ..
+		"a single item or multiple items. As with the message box, the FileDialog option must be called every frame and the user response " ..
+		"must be handled by the program.")
+
+	Slab.NewLine()
+
+	if Slab.Button("Open File") then
+		DrawDialog_FileDialog = 'openfile'
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Open Directory") then
+		DrawDialog_FileDialog = 'opendirectory'
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Save File") then
+		DrawDialog_FileDialog = 'savefile'
+	end
+
+	if DrawDialog_FileDialog ~= '' then
+		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = DrawDialog_FileDialog})
+
+		if Result.Button ~= "" then
+			DrawDialog_FileDialog = ''
+
+			if Result.Button == "OK" then
+				DrawDialog_FileDialog_Result = Result.Files[1]
+			end
+		end
+	end
+
+	Slab.Textf(
+		"Selected file: " .. DrawDialog_FileDialog_Result)
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -848,7 +958,8 @@ local Categories = {
 	{"Image", DrawImage},
 	{"Cursor", DrawCursor},
 	{"List Box", DrawListBox},
-	{"Tree", DrawTree}
+	{"Tree", DrawTree},
+	{"Dialog", DrawDialog}
 }
 
 local Selected = nil

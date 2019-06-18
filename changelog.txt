@@ -7,7 +7,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Dialog examples.
 [Slab Test]: Interaction examples.
 [Slab Test]: Control/Void examples.
 [Slab Test]: Shape examples.

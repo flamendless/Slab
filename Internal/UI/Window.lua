@@ -113,6 +113,8 @@ local function NewInstance(Id)
 	Instance.ColumnY = nil
 	Instance.ColumnH = nil
 	Instance.FrameNumber = 0
+	Instance.LastCursorX = 0
+	Instance.LastCursorY = 0
 	return Instance
 end
 
@@ -531,6 +533,7 @@ function Window.Begin(Id, Options)
 		PushToTop(ActiveInstance)
 	end
 
+	Instance.LastCursorX, Instance.LastCursorY = Cursor.GetPosition()
 	Cursor.SetPosition(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
@@ -600,6 +603,7 @@ function Window.End()
 		DrawCommands.End()
 		table.remove(PendingStack, 1)
 
+		Cursor.SetPosition(ActiveInstance.LastCursorX, ActiveInstance.LastCursorY)
 		ActiveInstance = nil
 		if #PendingStack > 0 then
 			ActiveInstance = PendingStack[1]
