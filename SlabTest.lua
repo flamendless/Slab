@@ -741,6 +741,85 @@ local function DrawListBox()
 	Slab.EndListBox()
 end
 
+local DrawTree_Icon_Path = SLAB_PATH .. "/Internal/Resources/Textures/Folder.png"
+local DrawTree_Opened_Selected = 1
+
+local function DrawTree()
+	Slab.Textf(
+		"Trees allow data to be viewed in a hierarchy. Trees can also contain leaf nodes which have no children.")
+
+	Slab.NewLine()
+
+	if Slab.BeginTree('DrawTree_Root', {Label = "Root"}) then
+		if Slab.BeginTree('DrawTree_Child_1', {Label = "Child 1"}) then
+			Slab.BeginTree('DrawTree_Child_1_Leaf_1', {Label = "Leaf 1", IsLeaf = true})
+			Slab.EndTree()
+		end
+
+		Slab.BeginTree('DrawTree_Leaf_1', {Label = "Leaf 2", IsLeaf = true})
+
+		Slab.EndTree()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The hot zone of a tree item starts at the expander and extends to the width of the window's content. " ..
+		"This can be configured to only allow the tree item to be opened/closed with the expander.")
+
+	Slab.NewLine()
+
+	if Slab.BeginTree('DrawTree_Root_NoHighlight', {Label = "Root", OpenWithHighlight = false}) then
+		Slab.BeginTree('DrawTree_Leaf', {Label = "Leaf", IsLeaf = true})
+		Slab.EndTree()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Tree items can have an icon associated with them. A loaded Image object or path to an image can be " ..
+		"specified.")
+
+	Slab.NewLine()
+
+	if Slab.BeginTree('DrawTree_Root_Icon', {Label = "Folder", IconPath = DrawTree_Icon_Path}) then
+		Slab.BeginTree('DrawTree_Item_1', {Label = "Item 1", IsLeaf = true})
+		Slab.BeginTree('DrawTree_Item_2', {Label = "Item 2", IsLeaf = true})
+
+		if Slab.BeginTree('DrawTree_Child_1', {Label = "Folder", IconPath = DrawTree_Icon_Path}) then
+			Slab.BeginTree('DrawTree_Item_3', {Label = "Item 3", IsLeaf = true})
+			Slab.BeginTree('DrawTree_Item_4', {Label = "Item 4", IsLeaf = true})
+
+			Slab.EndTree()
+		end
+
+		Slab.EndTree()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"A tree item can be specified to be forced open with the IsOpen option as shown in the example below. The example " ..
+		"also shows how tree items can have the selection rectangle permanently rendered.")
+
+	Slab.NewLine()
+
+	if Slab.BeginTree('DrawTree_Root_Opened', {Label = "Root", IsOpen = true}) then
+		for I = 1, 5, 1 do
+			Slab.BeginTree('DrawTree_Item_' .. I, {Label = "Item " .. I, IsLeaf = true, IsSelected = I == DrawTree_Opened_Selected})
+
+			if Slab.IsControlClicked() then
+				DrawTree_Opened_Selected = I
+			end
+		end
+
+		Slab.EndTree()
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -768,7 +847,8 @@ local Categories = {
 	{"Input", DrawInput},
 	{"Image", DrawImage},
 	{"Cursor", DrawCursor},
-	{"List Box", DrawListBox}
+	{"List Box", DrawListBox},
+	{"Tree", DrawTree}
 }
 
 local Selected = nil

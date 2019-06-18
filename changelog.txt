@@ -12,7 +12,6 @@ v0.5.0 RELEASE
 [Slab Test]: Control/Void examples.
 [Slab Test]: Shape examples.
 [Slab Test]: Window examples.
-[Slab Test]: Tree examples.
 [Slab Test]: Window columns.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
