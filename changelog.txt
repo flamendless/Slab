@@ -7,8 +7,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Interaction examples.
-[Slab Test]: Control/Void examples.
 [Slab Test]: Shape examples.
 [Slab Test]: Window examples.
 [Slab Test]: Window columns.
@@ -53,6 +51,7 @@ Group: Initial implementation of grouping of controls. Controls with their optio
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
 [Input]: Colored text.
+[Keyboard]: Option to specify key as scan code.
 License: Show license for Kenney.nl assets.
 Main Menu Bar: Assert if called within a window context.
 [Menu]: Radio button like menu items.
@@ -73,6 +72,7 @@ Style: Add documentation for each style property.
 [Text]: Tooltip support.
 [Text]: Stats for text objects.
 [Text]: Deprecate SelectOnHover option.
+[Text]: Support for HTTP link.
 [Tree]: Fix for BeginContextMenuItem for root and children items.
 Window: Menu support.
 Window: Ids should be used as keys.

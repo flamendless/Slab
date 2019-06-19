@@ -31,11 +31,11 @@ local SlabTest = {}
 
 local function DrawOverview()
 	Slab.Textf(
-		"Slab is an immediate mode GUI toolkit for the Love 2D framework. This library " ..
-		"is designed to allow users to easily add this library to their existing Love 2D projects and " ..
+		"Slab is an immediate mode GUI toolkit for the LÖVE 2D framework. This library " ..
+		"is designed to allow users to easily add this library to their existing LÖVE 2D projects and " ..
 		"quickly create tools to enable them to iterate on their ideas quickly. The user should be able " ..
 		"to utilize this library with minimal integration steps and is completely written in Lua and utilizes " ..
-		"the Love 2D API. No compiled binaries are required and the user will have access to the source so " ..
+		"the LÖVE 2D API. No compiled binaries are required and the user will have access to the source so " ..
 		"that they may make adjustments that meet the needs of their own projects and tools. Refer to main.lua " ..
 		"and SlabTest.lua for example usage of this library.\n\n" ..
 		"This window will demonstrate the usage of the Slab library and give an overview of all the supported controls " ..
@@ -569,7 +569,7 @@ local function DrawImage()
 	Slab.Separator()
 
 	Slab.Textf(
-		"A sub region can be defined to draw a section of an image.")
+		"A sub region can be defined to draw a section of an image. Move the rectangle around and observe the image on the right.")
 
 	local X, Y = Slab.GetCursorPos()
 	local AbsX, AbsY = Slab.GetCursorPos({Absolute = true})
@@ -930,6 +930,177 @@ local function DrawDialog()
 		"Selected file: " .. DrawDialog_FileDialog_Result)
 end
 
+local DrawInteraction_MouseClicked_Left = 0
+local DrawInteraction_MouseClicked_Right = 0
+local DrawInteraction_MouseClicked_Middle = 0
+local DrawInteraction_MouseReleased_Left = 0
+local DrawInteraction_MouseReleased_Right = 0
+local DrawInteraction_MouseReleased_Middle = 0
+local DrawInteraction_MouseDoubleClicked_Left = 0
+local DrawInteraction_MouseDoubleClicked_Right = 0
+local DrawInteraction_MouseDoubleClicked_Middle = 0
+local DrawInteraction_MouseVoidClicked_Left = 0
+local DrawInteraction_KeyPressed_A = 0
+local DrawInteraction_KeyPressed_S = 0
+local DrawInteraction_KeyPressed_D = 0
+local DrawInteraction_KeyPressed_F = 0
+local DrawInteraction_KeyReleased_A = 0
+local DrawInteraction_KeyReleased_S = 0
+local DrawInteraction_KeyReleased_D = 0
+local DrawInteraction_KeyReleased_F = 0
+
+local function DrawInteraction()
+	Slab.Textf(
+		"Slab offers functions to query the user's input on a given frame. There are also functions to query for input on the most " ..
+		"recently declared control. This can allow the implementation to use custom logic for controls to create custom behaviors.")
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"Below are functions that query the state of the mouse. The IsMouseDown checks to see if a specific button is down on that " ..
+		"frame. The IsMouseClicked will check to see if the state of a button went from up to down on that frame and the IsMouseReleased " ..
+		"function checks to see if a button went from down to up on that frame.")
+
+	local Left = Slab.IsMouseDown(1)
+	local Right = Slab.IsMouseDown(2)
+	local Middle = Slab.IsMouseDown(3)
+
+	Slab.NewLine()
+
+	Slab.Text("Left")
+	Slab.SameLine()
+	Slab.Text(Left and "Down" or "Up")
+
+	Slab.Text("Right")
+	Slab.SameLine()
+	Slab.Text(Right and "Down" or "Up")
+
+	Slab.Text("Middle")
+	Slab.SameLine()
+	Slab.Text(Middle and "Down" or "Up")
+
+	Slab.NewLine()
+
+	if Slab.IsMouseClicked(1) then DrawInteraction_MouseClicked_Left = DrawInteraction_MouseClicked_Left + 1 end
+	if Slab.IsMouseClicked(2) then DrawInteraction_MouseClicked_Right = DrawInteraction_MouseClicked_Right + 1 end
+	if Slab.IsMouseClicked(3) then DrawInteraction_MouseClicked_Middle = DrawInteraction_MouseClicked_Middle + 1 end
+
+	if Slab.IsMouseReleased(1) then DrawInteraction_MouseReleased_Left = DrawInteraction_MouseReleased_Left + 1 end
+	if Slab.IsMouseReleased(2) then DrawInteraction_MouseReleased_Right = DrawInteraction_MouseReleased_Right + 1 end
+	if Slab.IsMouseReleased(3) then DrawInteraction_MouseReleased_Middle = DrawInteraction_MouseReleased_Middle + 1 end
+
+	Slab.Text("Left Clicked: " .. DrawInteraction_MouseClicked_Left)
+	Slab.SameLine()
+	Slab.Text("Released: " .. DrawInteraction_MouseReleased_Left)
+
+	Slab.Text("Right Clicked: " .. DrawInteraction_MouseClicked_Right)
+	Slab.SameLine()
+	Slab.Text("Released: " .. DrawInteraction_MouseReleased_Right)
+
+	Slab.Text("Middle Clicked: " .. DrawInteraction_MouseClicked_Middle)
+	Slab.SameLine()
+	Slab.Text("Released: " .. DrawInteraction_MouseReleased_Middle)
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"Slab offers functions to detect if the mouse was double-clicked or if a mouse button is being dragged.")
+
+	Slab.NewLine()
+
+	if Slab.IsMouseDoubleClicked(1) then DrawInteraction_MouseDoubleClicked_Left = DrawInteraction_MouseDoubleClicked_Left + 1 end
+	if Slab.IsMouseDoubleClicked(2) then DrawInteraction_MouseDoubleClicked_Right = DrawInteraction_MouseDoubleClicked_Right + 1 end
+	if Slab.IsMouseDoubleClicked(3) then DrawInteraction_MouseDoubleClicked_Middle = DrawInteraction_MouseDoubleClicked_Middle + 1 end
+
+	Slab.Text("Left Double Clicked: " .. DrawInteraction_MouseDoubleClicked_Left)
+	Slab.Text("Right Double Clicked: " .. DrawInteraction_MouseDoubleClicked_Right)
+	Slab.Text("Middle Double Clicked: " .. DrawInteraction_MouseDoubleClicked_Middle)
+
+	Slab.NewLine()
+
+	local LeftDrag = Slab.IsMouseDragging(1)
+	local RightDrag = Slab.IsMouseDragging(2)
+	local MiddleDrag = Slab.IsMouseDragging(3)
+
+	Slab.Text("Left Drag: " .. tostring(LeftDrag))
+	Slab.Text("Right Drag: " .. tostring(RightDrag))
+	Slab.Text("Middle Drag: " .. tostring(MiddleDrag))
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"The mouse position relative to the viewport and relative to the current window can also be queried. Slab also offers retrieving " ..
+		"the mouse delta.")
+
+	Slab.NewLine()
+
+	local X, Y = Slab.GetMousePosition()
+	local WinX, WinY = Slab.GetMousePositionWindow()
+	local DeltaX, DeltaY = Slab.GetMouseDelta()
+
+	Slab.Text("X: " .. X .. " Y: " .. Y)
+	Slab.Text("Window X: " .. WinX .. " Window Y: " .. WinY)
+	Slab.Text("Delta X: " .. DeltaX .. " Delta Y: " .. DeltaY)
+
+	Slab.Textf(
+		"Slab also offers functions to test if the user is interacting with the non-UI layer. The IsVoidHovered and IsVoidClicked " ..
+		"behave the same way as IsControlHovered and IsControlClicked except will only return true when it is in a non-UI area.")
+
+	Slab.NewLine()
+
+	if Slab.IsVoidClicked(1) then
+		DrawInteraction_MouseVoidClicked_Left = DrawInteraction_MouseVoidClicked_Left + 1
+	end
+
+	local IsVoidHovered = Slab.IsVoidHovered()
+
+	Slab.Text("Left Void Clicked: " .. DrawInteraction_MouseVoidClicked_Left)
+	Slab.Text("Is Void Hovered: " .. tostring(IsVoidHovered))
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Slab offers functions to check for the state of a specific keyboard key. The key code to use are the ones defined by LÖVE " ..
+		"which can be found on the wiki. Below we will check for the key states of the A, S, D, F keys.")
+
+	Slab.NewLine()
+
+	local IsDown_A = Slab.IsKeyDown('a')
+	local IsDown_S = Slab.IsKeyDown('s')
+	local IsDown_D = Slab.IsKeyDown('d')
+	local IsDown_F = Slab.IsKeyDown('f')
+
+	if Slab.IsKeyPressed('a') then DrawInteraction_KeyPressed_A = DrawInteraction_KeyPressed_A + 1 end
+	if Slab.IsKeyPressed('s') then DrawInteraction_KeyPressed_S = DrawInteraction_KeyPressed_S + 1 end
+	if Slab.IsKeyPressed('d') then DrawInteraction_KeyPressed_D = DrawInteraction_KeyPressed_D + 1 end
+	if Slab.IsKeyPressed('f') then DrawInteraction_KeyPressed_F = DrawInteraction_KeyPressed_F + 1 end
+
+	if Slab.IsKeyReleased('a') then DrawInteraction_KeyReleased_A = DrawInteraction_KeyReleased_A + 1 end
+	if Slab.IsKeyReleased('s') then DrawInteraction_KeyReleased_S = DrawInteraction_KeyReleased_S + 1 end
+	if Slab.IsKeyReleased('d') then DrawInteraction_KeyReleased_D = DrawInteraction_KeyReleased_D + 1 end
+	if Slab.IsKeyReleased('f') then DrawInteraction_KeyReleased_F = DrawInteraction_KeyReleased_F + 1 end
+
+	Slab.Text("A Down: " .. tostring(IsDown_A))
+	Slab.Text("S Down: " .. tostring(IsDown_S))
+	Slab.Text("D Down: " .. tostring(IsDown_D))
+	Slab.Text("F Down: " .. tostring(IsDown_F))
+
+	Slab.NewLine()
+
+	Slab.Text("A Pressed: " .. DrawInteraction_KeyPressed_A)
+	Slab.Text("S Pressed: " .. DrawInteraction_KeyPressed_S)
+	Slab.Text("D Pressed: " .. DrawInteraction_KeyPressed_D)
+	Slab.Text("F Pressed: " .. DrawInteraction_KeyPressed_F)
+
+	Slab.NewLine()
+
+	Slab.Text("A Released: " .. DrawInteraction_KeyReleased_A)
+	Slab.Text("S Released: " .. DrawInteraction_KeyReleased_S)
+	Slab.Text("D Released: " .. DrawInteraction_KeyReleased_D)
+	Slab.Text("F Released: " .. DrawInteraction_KeyReleased_F)
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -959,7 +1130,8 @@ local Categories = {
 	{"Cursor", DrawCursor},
 	{"List Box", DrawListBox},
 	{"Tree", DrawTree},
-	{"Dialog", DrawDialog}
+	{"Dialog", DrawDialog},
+	{"Interaction", DrawInteraction}
 }
 
 local Selected = nil
