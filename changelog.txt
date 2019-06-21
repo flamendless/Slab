@@ -7,7 +7,6 @@ v0.5.0 RELEASE
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
-[Slab Test]: Shape examples.
 [Slab Test]: Window examples.
 [Slab Test]: Window columns.
 [Stats]: Documentation.

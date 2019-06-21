@@ -1101,6 +1101,118 @@ local function DrawInteraction()
 	Slab.Text("F Released: " .. DrawInteraction_KeyReleased_F)
 end
 
+local DrawShapes_Rectangle_Color = {1, 0, 0, 1}
+local DrawShapes_Rectangle_ChangeColor = false
+local DrawShapes_Circle_Radius = 32.0
+local DrawShapes_Circle_Segments = 24
+local DrawShapes_Circle_Mode = 'fill'
+local DrawShapes_Triangle_Radius = 32.0
+local DrawShapes_Triangle_Rotation = 0
+local DrawShapes_Triangle_Mode = 'fill'
+local DrawShapes_Modes = {'fill', 'line'}
+
+local function DrawShapes()
+	Slab.Textf(
+		"Slab offers functions to draw basic shapes to the window. These shapes can complement the controls provided by Slab.")
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"Below is an invisible button combined with a rectangle. Click on the rectangle to change the color.")
+
+	local X, Y = Slab.GetCursorPos()
+	Slab.Rectangle({W = 150, H = 25, Color = DrawShapes_Rectangle_Color})
+	Slab.SetCursorPos(X, Y)
+	if Slab.Button("", {W = 150, H = 25, Invisible = true}) then
+		DrawShapes_Rectangle_ChangeColor = true
+	end
+
+	if DrawShapes_Rectangle_ChangeColor then
+		local Result = Slab.ColorPicker({Color = DrawShapes_Rectangle_Color})
+
+		if Result.Button ~= "" then
+			DrawShapes_Rectangle_ChangeColor = false
+
+			if Result.Button == "OK" then
+				DrawShapes_Rectangle_Color = Result.Color
+			end
+		end
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Circles are drawn by defining a radius. Along with the color the number of segments can be set as well.")
+
+	Slab.NewLine()
+
+	Slab.Text("Radius")
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Circle_Radius', {Text = tostring(DrawShapes_Circle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawShapes_Circle_Radius = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Segments")
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Circle_Segments', {Text = tostring(DrawShapes_Circle_Segments), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawShapes_Circle_Segments = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Mode")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawShapes_Circle_Mode', {Selected = DrawShapes_Circle_Mode}) then
+		for I, V in ipairs(DrawShapes_Modes) do
+			if Slab.TextSelectable(V) then
+				DrawShapes_Circle_Mode = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.Circle({Radius = DrawShapes_Circle_Radius, Segments = DrawShapes_Circle_Segments, Color = {1, 1, 1, 1}, Mode = DrawShapes_Circle_Mode})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Triangles are drawn by defining a radius, which is the length from the center of the triangle to the 3 points. A rotation in degrees " ..
+		"can be specified to rotate the triangle.")
+
+	Slab.NewLine()
+
+	Slab.Text("Radius")
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Triangle_Radius', {Text = tostring(DrawShapes_Triangle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawShapes_Triangle_Radius = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Rotation")
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Triangle_Rotation', {Text = tostring(DrawShapes_Triangle_Rotation), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawShapes_Triangle_Rotation = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Mode")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawShapes_Triangle_Mode', {Selected = DrawShapes_Triangle_Mode}) then
+		for I, V in ipairs(DrawShapes_Modes) do
+			if Slab.TextSelectable(V) then
+				DrawShapes_Triangle_Mode = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.Triangle({Radius = DrawShapes_Triangle_Radius, Rotation = DrawShapes_Triangle_Rotation, Color = {0, 1, 0, 1}, Mode = DrawShapes_Triangle_Mode})
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -1131,7 +1243,8 @@ local Categories = {
 	{"List Box", DrawListBox},
 	{"Tree", DrawTree},
 	{"Dialog", DrawDialog},
-	{"Interaction", DrawInteraction}
+	{"Interaction", DrawInteraction},
+	{"Shapes", DrawShapes}
 }
 
 local Selected = nil
