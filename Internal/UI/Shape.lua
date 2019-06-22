@@ -88,4 +88,19 @@ function Shape.Triangle(Options)
 	Cursor.AdvanceY(Diameter)
 end
 
+function Shape.Line(X2, Y2, Options)
+	Options = Options == nil and {} or Options
+	Options.Width = Options.Width == nil and 1.0 or Options.Width
+	Options.Color = Options.Color == nil and nil or Options.Color
+
+	local X, Y = Cursor.GetPosition()
+	local W, H = math.abs(X2 - X), math.abs(Y2 - Y)
+	H = math.max(H, Options.Width)
+
+	DrawCommands.Line(X, Y, X2, Y2, Options.Width, Options.Color)
+	Window.AddItem(X, Y, W, H)
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
+end
+
 return Shape

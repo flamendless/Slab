@@ -1110,6 +1110,7 @@ local DrawShapes_Triangle_Radius = 32.0
 local DrawShapes_Triangle_Rotation = 0
 local DrawShapes_Triangle_Mode = 'fill'
 local DrawShapes_Modes = {'fill', 'line'}
+local DrawShapes_Line_Width = 1.0
 
 local function DrawShapes()
 	Slab.Textf(
@@ -1211,6 +1212,27 @@ local function DrawShapes()
 	end
 
 	Slab.Triangle({Radius = DrawShapes_Triangle_Radius, Rotation = DrawShapes_Triangle_Rotation, Color = {0, 1, 0, 1}, Mode = DrawShapes_Triangle_Mode})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Lines are defined by two points. The function only takes in a single point which defines the end point while the start point is defined by the current " ..
+		"cursor position. Both the line width and color can be defined.")
+
+	Slab.NewLine()
+
+	Slab.Text("Width")
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Line_Width', {Text = tostring(DrawShapes_Line_Width), NumbersOnly = true, ReturnOnText = false, MinNumber = 1.0}) then
+		DrawShapes_Line_Width = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+
+	X, Y = Slab.GetCursorPos({Absolute = true})
+	local WinW, WinH = Slab.GetWindowActiveSize()
+	Slab.Line(X + WinW * 0.5, Y, {Width = DrawShapes_Line_Width, Color = {1, 1, 0, 1}})
 end
 
 function SlabTest.MainMenuBar()

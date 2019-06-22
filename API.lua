@@ -161,6 +161,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			Rectangle
 			Circle
 			Triangle
+			Line
 --]]
 local Slab = {}
 
@@ -1508,6 +1509,21 @@ end
 --]]
 function Slab.Triangle(Options)
 	Shape.Triangle(Options)
+end
+
+--[[
+	Line
+
+	Draws a line starting at the current cursor position and going to the defined points in this function.
+
+	Option: [Table] List of options that control how this line is displayed.
+		Width: [Number] How thick the line should be.
+		Color: [Table] The color to use for the line.
+
+	Return: None.
+--]]
+function Slab.Line(X2, Y2, Options)
+	Shape.Line(X2, Y2, Options)
 end
 
 return Slab
