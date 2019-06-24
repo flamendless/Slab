@@ -1235,6 +1235,257 @@ local function DrawShapes()
 	Slab.Line(X + WinW * 0.5, Y, {Width = DrawShapes_Line_Width, Color = {1, 1, 0, 1}})
 end
 
+local DrawWindow_X = 900
+local DrawWindow_Y = 100
+local DrawWindow_W = 200
+local DrawWindow_H = 200
+local DrawWindow_Title = "Example"
+local DrawWindow_ResetLayout = false
+local DrawWindow_ResetSize = false
+local DrawWindow_AutoSizeWindow = true
+local DrawWindow_AllowResize = true
+local DrawWindow_AllowMove = true
+local DrawWindow_AllowFocus = true
+local DrawWindow_Border = 4.0
+local DrawWindow_BgColor = nil
+local DrawWindow_BgColor_ChangeColor = false
+local DrawWindow_NoOutline = false
+local DrawWindow_SizerFilter = {}
+local DrawWindow_SizerFiltersOptions = {
+	N = true,
+	S = true,
+	E = true,
+	W = true,
+	NW = true,
+	NE = true,
+	SW = true,
+	SE = true,
+}
+
+local function DrawWindow_SizerCheckBox(Key)
+	if Slab.CheckBox(DrawWindow_SizerFiltersOptions[Key], Key) then
+		DrawWindow_SizerFiltersOptions[Key] = not DrawWindow_SizerFiltersOptions[Key]
+	end
+end
+
+local function DrawWindow()
+	Slab.Textf(
+		"Windows are the basis for which all controls are rendered on and for all user interactions to occur. This area will contain information on the " ..
+		"various options that a window can take and what their expected behaviors will be. The window rendered to the right of this window will be affected " ..
+		"by the changes to the various parameters.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The title of the window can be customized. If no title exists, then the title bar is not rendered and the window can not be moved. There is also an " ..
+		"option, AllowMove, to disable movement even with the title bar.")
+
+	Slab.NewLine()
+
+	Slab.Text("Title")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_Title', {Text = DrawWindow_Title, ReturnOnText = false}) then
+		DrawWindow_Title = Slab.GetInputText()
+	end
+
+	Slab.SameLine()
+	if Slab.CheckBox(DrawWindow_AllowMove, "Allow Move") then
+		DrawWindow_AllowMove = not DrawWindow_AllowMove
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The default position of the window can be set with the X and Y options. The window can be moved from this position but the parameter values stay the same " ..
+		"as the window keeps track of any delta changes from the starting position. The window can be reset to the default position as described later on below.")
+
+	Slab.NewLine()
+
+	Slab.Text("X")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_X', {Text = tostring(DrawWindow_X), NumbersOnly = true, ReturnOnText = false}) then
+		DrawWindow_X = Slab.GetInputNumber()
+		DrawWindow_ResetLayout = true
+	end
+
+	Slab.SameLine()
+	Slab.Text("Y")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_Y', {Text = tostring(DrawWindow_Y), NumbersOnly = true, ReturnOnText = false}) then
+		DrawWindow_Y = Slab.GetInputNumber()
+		DrawWindow_ResetLayout = true
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The size of the window can be specified. However, windows by default are set to auto size with the AutoSizeWindow option, which resizes the window only when " ..
+		"controls are added to the window. If this option is disabled, then the W and H parameters will be applied to the window.\n" ..
+		"Similar to the window position, the window's size delta changes are stored by the window. The window's size can be reset to the default with the ResetSize " ..
+		"option.")
+
+	Slab.NewLine()
+
+	Slab.Text("W")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_W', {Text = tostring(DrawWindow_W), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+		DrawWindow_W = Slab.GetInputNumber()
+		DrawWindow_ResetSize = true
+	end
+
+	Slab.SameLine()
+	Slab.Text("H")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_H', {Text = tostring(DrawWindow_H), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+		DrawWindow_H = Slab.GetInputNumber()
+		DrawWindow_ResetSize = true
+	end
+
+	if Slab.CheckBox(DrawWindow_AutoSizeWindow, "Auto Size Window") then
+		DrawWindow_AutoSizeWindow = not DrawWindow_AutoSizeWindow
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Windows can be resized onluy if the AutoSizeWindow option is set false. By default, all sides and corners of a window can be resized, but this can be " ..
+		"modified by specifying which directions are allowed to be resized. There is also an option to completely disable resizing with the AllowResize option. " ..
+		"Below is a list of options that are available.")
+
+	Slab.NewLine()
+
+	if Slab.CheckBox(DrawWindow_AllowResize, "Allow Resize") then
+		DrawWindow_AllowResize = not DrawWindow_AllowResize
+	end
+
+	DrawWindow_SizerCheckBox('N')
+	DrawWindow_SizerCheckBox('S')
+	DrawWindow_SizerCheckBox('E')
+	DrawWindow_SizerCheckBox('W')
+	DrawWindow_SizerCheckBox('NW')
+	DrawWindow_SizerCheckBox('NE')
+	DrawWindow_SizerCheckBox('SW')
+	DrawWindow_SizerCheckBox('SE')
+
+	local FalseCount = 0
+	DrawWindow_SizerFilter = {}
+	for K, V in pairs(DrawWindow_SizerFiltersOptions) do
+		if V then
+			table.insert(DrawWindow_SizerFilter, K)
+		else
+			FalseCount = FalseCount + 1
+		end
+	end
+
+	if FalseCount == 0 then
+		DrawWindow_SizerFilter = {}
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Windows gain focus when the user clicks within the region of the window. When the window gains focus, it is brought to the top of the window stack. " ..
+		"Through the AllowFocus option, a window may have this behavior turned off.")
+
+	Slab.NewLine()
+
+	if Slab.CheckBox(DrawWindow_AllowFocus, "Allow Focus") then
+		DrawWindow_AllowFocus = not DrawWindow_AllowFocus
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Windows have a border defined which is how much space there is between the edges of the window and the contents of the window.")
+
+	Slab.NewLine()
+
+	Slab.Text("Border")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_Border', {Text = tostring(DrawWindow_Border), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+		DrawWindow_Border = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The ResetSize and ResetLayout options for windows will reset any delta changes to a window's position or size. It is recommended to only pass " ..
+		"in true for these options on a single frame if resetting the position or size is desired.")
+
+	Slab.NewLine()
+
+	if Slab.Button("Reset Layout") then
+		DrawWindow_ResetLayout = true
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Reset Size") then
+		DrawWindow_ResetSize = true
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The background color of the window can be modified. Along with modifying the color, the outline of the window can be set to drawn or hidden." ..
+		"Hiding the outline and setting the background to be transparent will make only the controls be rendered within the window.")
+
+	if DrawWindow_BgColor == nil then
+		DrawWindow_BgColor = Slab.GetStyle().WindowBackgroundColor
+	end
+
+	if Slab.Button("Change Backgound Color") then
+		DrawWindow_BgColor_ChangeColor = true
+	end
+
+	if Slab.CheckBox(DrawWindow_NoOutline, "No Outline") then
+		DrawWindow_NoOutline = not DrawWindow_NoOutline
+	end
+
+	if DrawWindow_BgColor_ChangeColor then
+		local Result = Slab.ColorPicker({Color = DrawWindow_BgColor})
+
+		if Result.Button ~= "" then
+			DrawWindow_BgColor_ChangeColor = false
+
+			if Result.Button == "OK" then
+				DrawWindow_BgColor = Result.Color
+			end
+		end
+	end
+
+	Slab.BeginWindow('DrawWindow_Example', {
+		Title = DrawWindow_Title, 
+		X = DrawWindow_X,
+		Y = DrawWindow_Y,
+		W = DrawWindow_W,
+		H = DrawWindow_H,
+		ResetLayout = DrawWindow_ResetLayout,
+		ResetSize = DrawWindow_ResetSize,
+		AutoSizeWindow = DrawWindow_AutoSizeWindow,
+		SizerFilter = DrawWindow_SizerFilter,
+		AllowResize = DrawWindow_AllowResize,
+		AllowMove = DrawWindow_AllowMove,
+		AllowFocus = DrawWindow_AllowFocus,
+		Border = DrawWindow_Border,
+		BgColor = DrawWindow_BgColor,
+		NoOutline = DrawWindow_NoOutline
+	})
+	Slab.Text("Hello World")
+	Slab.EndWindow()
+
+	DrawWindow_ResetLayout = false
+	DrawWindow_ResetSize = false
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -1253,6 +1504,7 @@ end
 
 local Categories = {
 	{"Overview", DrawOverview},
+	{"Window", DrawWindow},
 	{"Buttons", DrawButtons},
 	{"Text", DrawText},
 	{"Check Box", DrawCheckBox},

@@ -8,8 +8,8 @@ v0.5.0 RELEASE
 [Shape]: Documentation for Circle.
 [Shape]: Documentation for Triangle.
 [Shape]: Documentation for Line.
-[Slab Test]: Window examples.
 [Slab Test]: Window columns.
+[Slab Test]: Tooltip examples.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 
@@ -25,7 +25,6 @@ BUGS
 [Slab Debug]: Window combo box being overlapped when initially opened.
 [Tooltip]: Gains focus when displayed. Focus should not be allowed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
-[Window]: Auto size windows not being reset if contents are smaller in new frames.
 [Window]: Clamp window moving to viewport.
 
 TODO
@@ -78,5 +77,6 @@ Window: Menu support.
 Window: Ids should be used as keys.
 Window: Deprecate window bounds values and use region directly.
 [Window]: Move default border size to Style.
+[Window]: Allow arrow key movements of window if option is set.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.

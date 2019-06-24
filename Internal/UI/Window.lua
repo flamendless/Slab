@@ -480,6 +480,14 @@ function Window.Begin(Id, Options)
 		ActiveInstance.TitleDeltaY = 0.0
 	end
 
+	if ActiveInstance.AutoSizeWindow ~= Options.AutoSizeWindow and Options.AutoSizeWindow then
+		Options.ResetSize = true
+	end
+
+	if ActiveInstance.Border ~= Options.Border then
+		Options.ResetSize = true
+	end
+
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
 	ActiveInstance.Y = ActiveInstance.TitleDeltaY + Options.Y
 	ActiveInstance.W = math.max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
@@ -574,8 +582,8 @@ function Window.Begin(Id, Options)
 		Y = ActiveInstance.Y,
 		W = ActiveInstance.W,
 		H = ActiveInstance.H,
-		ContentW = ActiveInstance.ContentW,
-		ContentH = ActiveInstance.ContentH,
+		ContentW = ActiveInstance.ContentW + ActiveInstance.Border,
+		ContentH = ActiveInstance.ContentH + ActiveInstance.Border,
 		BgColor = ActiveInstance.BackgroundColor,
 		IsObstructed = IsObstructed,
 		MouseX = MouseX,
@@ -585,7 +593,7 @@ function Window.Begin(Id, Options)
 		NoOutline = Options.NoOutline
 	})
 
-	if Options.ResetSize or Options.ResetLayout then
+	if Options.ResetSize then
 		ActiveInstance.SizeDeltaX = 0.0
 		ActiveInstance.SizeDeltaY = 0.0
 	end
