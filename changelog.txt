@@ -9,7 +9,6 @@ v0.5.0 RELEASE
 [Shape]: Documentation for Triangle.
 [Shape]: Documentation for Line.
 [Slab Test]: Window columns.
-[Slab Test]: Tooltip examples.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 
@@ -29,6 +28,7 @@ BUGS
 
 TODO
 ==========
+[Animation]: Initial animation support.
 [API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.

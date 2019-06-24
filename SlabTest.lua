@@ -1486,6 +1486,66 @@ local function DrawWindow()
 	DrawWindow_ResetSize = false
 end
 
+local DrawTooltip_CheckBox = false
+local DrawTooltip_Radio = 1
+local DrawTooltip_ComboBox_Items = {"Button", "Check Box", "Combo Box", "Image", "Input", "Text", "Tree"}
+local DrawTooltip_ComboBox_Selected = "Button"
+local DrawTooltip_Image = SLAB_PATH .. "/Internal/Resources/Textures/power.png"
+local DrawTooltip_Input = "This is an input box."
+
+local function DrawTooltip()
+	Slab.Textf(
+		"Slab offers tooltips to be rendered when the user has hovered over the control for a period of time. Not all controls are currently supported, " ..
+		"and this window will show examples for tooltips on the supported controls.")
+
+	Slab.NewLine()
+
+	Slab.Button("Button", {Tooltip = "This is a button."})
+
+	Slab.NewLine()
+	
+	if Slab.CheckBox(DrawTooltip_CheckBox, "Check Box", {Tooltip = "This is a check box."}) then
+		DrawTooltip_CheckBox = not DrawTooltip_CheckBox
+	end
+
+	Slab.NewLine()
+
+	for I = 1, 3, 1 do
+		if Slab.RadioButton("Radio " .. I, {SelectedIndex = DrawTooltip_Radio, Index = I, Tooltip = "This is radio button " .. I}) then
+			DrawTooltip_Radio = I
+		end
+	end
+
+	Slab.NewLine()
+
+	if Slab.BeginComboBox('DrawTooltip_ComboBox', {Selected = DrawTooltip_ComboBox_Selected, Tooltip = "This is a combo box."}) then
+		for I, V in ipairs(DrawTooltip_ComboBox_Items) do
+			if Slab.TextSelectable(V) then
+				DrawTooltip_ComboBox_Selected = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.NewLine()
+
+	Slab.Image('DrawTooltip_Image', {Path = DrawTooltip_Image, Tooltip = "This is an image."})
+
+	Slab.NewLine()
+
+	if Slab.Input('DrawTooltip_Input', {Text = DrawTooltip_Input, Tooltip = DrawTooltip_Input}) then
+		DrawTooltip_Input = Slab.GetInputText()
+	end
+
+	Slab.NewLine()
+
+	if Slab.BeginTree('DrawTooltip_Tree_Root', {Label = "Root", Tooltip = "This is the root tree item."}) then
+		Slab.BeginTree('DrawTooltip_Tree_Child', {Label = "Child", Tooltip = "This is the child tree item.", IsLeaf = true})
+		Slab.EndTree()
+	end
+end
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
@@ -1518,7 +1578,8 @@ local Categories = {
 	{"Tree", DrawTree},
 	{"Dialog", DrawDialog},
 	{"Interaction", DrawInteraction},
-	{"Shapes", DrawShapes}
+	{"Shapes", DrawShapes},
+	{"Tooltips", DrawTooltip}
 }
 
 local Selected = nil
