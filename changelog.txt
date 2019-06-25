@@ -8,7 +8,6 @@ v0.5.0 RELEASE
 [Shape]: Documentation for Circle.
 [Shape]: Documentation for Triangle.
 [Shape]: Documentation for Line.
-[Slab Test]: Window columns.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 

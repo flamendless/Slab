@@ -897,7 +897,8 @@ function Window.BeginColumn(Index)
 			SY = TY,
 			NoOutline = true,
 			NoBackground = true,
-			IgnoreScroll = true
+			IgnoreScroll = true,
+			Intersect = true
 		})
 	end
 end
