@@ -149,6 +149,10 @@ function Cursor.GetItemBounds()
 	return State.ItemX, State.ItemY, State.ItemW, State.ItemH
 end
 
+function Cursor.IsInItemBounds(X, Y)
+	return State.ItemX <= X and X <= State.ItemX + State.ItemW and State.ItemY <= Y and Y <= State.ItemY + State.ItemH
+end
+
 function Cursor.SameLine(Options)
 	Options = Options == nil and {} or Options
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad

@@ -1111,6 +1111,9 @@ local DrawShapes_Triangle_Rotation = 0
 local DrawShapes_Triangle_Mode = 'fill'
 local DrawShapes_Modes = {'fill', 'line'}
 local DrawShapes_Line_Width = 1.0
+local DrawShapes_Curve = {0, 0, 150, 150, 300, 0}
+local DrawShapes_ControlPoint_Size = 7.5
+local DrawShapes_ControlPoint_Index = 0
 
 local function DrawShapes()
 	Slab.Textf(
@@ -1233,6 +1236,48 @@ local function DrawShapes()
 	X, Y = Slab.GetCursorPos({Absolute = true})
 	local WinW, WinH = Slab.GetWindowActiveSize()
 	Slab.Line(X + WinW * 0.5, Y, {Width = DrawShapes_Line_Width, Color = {1, 1, 0, 1}})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Bezier curves can be defined through a set of points and added to a Slab window. The points given must be in local space. Slab will translate the " ..
+		"curve to the current cursor position. Along with the ability to draw the curve, Slab offers functions to query information about the curve, such as " ..
+		"the number of control points defined, the position of a control point, and the ability to evaluate the position of a curve given a Time value. " ..
+		"There is also a function to evaluate the curve with the current X mouse position.")
+
+	Slab.NewLine()
+
+	Slab.Curve(DrawShapes_Curve)
+
+	local EvalX, EvalY = Slab.EvaluateCurveMouse()
+	Slab.SetCursorPos(EvalX, EvalY, {Absolute = true})
+	Slab.Circle({Color = {1, 1, 1, 1}, Radius = DrawShapes_ControlPoint_Size * 0.5})
+
+	local HalfSize = DrawShapes_ControlPoint_Size * 0.5
+	for I = 1, Slab.GetCurveControlPointCount(), 1 do
+		local PX, PY = Slab.GetCurveControlPoint(I)
+
+		Slab.SetCursorPos(PX - HalfSize, PY - HalfSize, {Absolute = true})
+		Slab.Rectangle({W = DrawShapes_ControlPoint_Size, H = DrawShapes_ControlPoint_Size, Color = {1, 1, 1, 1}})
+
+		if Slab.IsControlClicked() then
+			DrawShapes_ControlPoint_Index = I
+		end
+	end
+
+	if DrawShapes_ControlPoint_Index > 0 and Slab.IsMouseDragging() then
+		local DeltaX, DeltaY = Slab.GetMouseDelta()
+		local P2 = DrawShapes_ControlPoint_Index * 2
+		local P1 = P2 - 1
+
+		DrawShapes_Curve[P1] = DrawShapes_Curve[P1] + DeltaX
+		DrawShapes_Curve[P2] = DrawShapes_Curve[P2] + DeltaY
+	end
+
+	if Slab.IsMouseReleased() then
+		DrawShapes_ControlPoint_Index = 0
+	end
 end
 
 local DrawWindow_X = 900

@@ -162,6 +162,11 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			Circle
 			Triangle
 			Line
+			Curve
+			GetCurveControlPointCount
+			GetCurveControlPoint
+			EvaluateCurve
+			EvaluateCurveMouse
 --]]
 local Slab = {}
 
@@ -1363,7 +1368,14 @@ end
 	Return: [Boolean] True if the last control is hovered, false otherwise.
 --]]
 function Slab.IsControlHovered()
-	return Window.IsItemHot()
+	local Result = Window.IsItemHot()
+
+	if not Result then
+		local X, Y = Slab.GetMousePositionWindow()
+		Result = Cursor.IsInItemBounds(X, Y)
+	end
+
+	return Result
 end
 
 --[[
@@ -1524,6 +1536,79 @@ end
 --]]
 function Slab.Line(X2, Y2, Options)
 	Shape.Line(X2, Y2, Options)
+end
+
+--[[
+	Curve
+
+	Draws a bezier curve with the given points as control points. The points should be defined in local space. Slab will translate the curve to the
+	current cursor position. There should two or more points defined for a proper curve.
+
+	Points: [Table] List of points to define the control points of the curve.
+	Options: [Table] List of options that control how this curve is displayed.
+		Color: [Table] The color to use for this curve.
+		Depth: [Number] The number of recursive subdivision steps to use when rendering the curve. If nil, the default LÖVE 2D value is used which is 5.
+
+	Return: None.
+--]]
+function Slab.Curve(Points, Options)
+	Shape.Curve(Points, Options)
+end
+
+--[[
+	GetCurveControlPointCount
+
+	Returns the number of control points defined with the last call to Curve.
+
+	Return: [Number] The number of control points defined for the previous curve.
+--]]
+function Slab.GetCurveControlPointCount()
+	return Shape.GetCurveControlPointCount()
+end
+
+--[[
+	GetCurveControlPoint
+
+	Returns the translated point for the given control point index.
+
+	Index: [Number] The index of the control point to retrieve.
+
+	Return: [Number], [Number] The translated X, Y coordinates of the given control point.
+--]]
+function Slab.GetCurveControlPoint(Index)
+	return Shape.GetCurveControlPoint(Index)
+end
+
+--[[
+	EvaluateCurve
+
+	Returns the point at the given time. The time value should be between 0 and 1 inclusive.
+
+	Time: [Number] The time on the curve between 0 and 1.
+
+	Return: [Number], [Number] The X and Y coordinates at the given time on the curve.
+--]]
+function Slab.EvaluateCurve(Time)
+	return Shape.EvaluateCurve(Time)
+end
+
+--[[
+	EvaluateCurveMouse
+
+	Returns the point on the curve at the given X-coordinate of the mouse relative to the end points of the curve.
+
+	Return: [Number], [Number] The X and Y coordinates at the given X mouse position on the curve.
+--]]
+function Slab.EvaluateCurveMouse()
+	local X1, Y1 = Slab.GetCurveControlPoint(1)
+	local X2, Y2 = Slab.GetCurveControlPoint(Slab.GetCurveControlPointCount())
+	local Left = math.min(X1, X2)
+	local W = math.abs(X2 - X1)
+	local X, Y = Slab.GetMousePositionWindow()
+	local Offset = math.max(X - Left, 0.0)
+	Offset = math.min(Offset, W)
+
+	return Slab.EvaluateCurve(Offset / W)
 end
 
 return Slab

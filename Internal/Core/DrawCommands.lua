@@ -49,7 +49,8 @@ local Types =
 	Circle = 15,
 	DrawCanvas = 16,
 	Mesh = 17,
-	TextObject = 18
+	TextObject = 18,
+	Curve = 19
 }
 
 local Layers =
@@ -178,6 +179,11 @@ local function DrawCircle(Circle)
 	love.graphics.circle(Circle.Mode, Circle.X, Circle.Y, Circle.Radius, Circle.Segments)
 end
 
+local function DrawCurve(Curve)
+	love.graphics.setColor(Curve.Color)
+	love.graphics.line(Curve.Points)
+end
+
 local function DrawElements(Elements)
 	for K, V in pairs(Elements) do
 		if V.Type == Types.Rect then
@@ -220,6 +226,8 @@ local function DrawElements(Elements)
 			love.graphics.draw(V.Mesh, V.X, V.Y)
 		elseif V.Type == Types.TextObject then
 			DrawTextObject(V)
+		elseif V.Type == Types.Curve then
+			DrawCurve(V)
 		end
 	end
 end
@@ -512,6 +520,15 @@ function DrawCommands.Text(Text, X, Y)
 	Item.X = X
 	Item.Y = Y
 	Item.Color = {0, 0, 0, 1}
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.Curve(Points, Color)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.Curve
+	Item.Points = Points
+	Item.Color = Color ~= nil and Color or {0, 0, 0, 1}
 	table.insert(ActiveBatch.Elements, Item)
 end
 

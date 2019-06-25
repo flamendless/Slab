@@ -29,6 +29,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Shape = {}
+local Curve = nil
 
 function Shape.Rectangle(Options)
 	Options = Options == nil and {} or Options
@@ -101,6 +102,60 @@ function Shape.Line(X2, Y2, Options)
 	Window.AddItem(X, Y, W, H)
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
+end
+
+function Shape.Curve(Points, Options)
+	Options = Options == nil and {} or Options
+	Options.Color = Options.Color == nil and nil or Options.Color
+	Options.Depth = Options.Depth == nil and nil or Options.Depth
+
+	local X, Y = Cursor.GetPosition()
+
+	Curve = love.math.newBezierCurve(Points)
+	Curve:translate(X, Y)
+
+	local MinX, MinY = X, Y
+	local MaxX, MaxY = 0, 0
+	for I = 1, Curve:getControlPointCount(), 1 do
+		local PX, PY = Curve:getControlPoint(I)
+		MinX = math.min(MinX, PX)
+		MinY = math.min(MinY, PY)
+
+		MaxX = math.max(MaxX, PX)
+		MaxY = math.max(MaxY, PY)
+	end
+
+	local W = MaxX - MinX
+	local H = MaxY - MinY
+
+	DrawCommands.Curve(Curve:render(Options.Depth), Options.Color)
+	Window.AddItem(MinX, MinY, W, H)
+	Cursor.SetItemBounds(MinX, MinY, W, H)
+	Cursor.AdvanceY(H)
+end
+
+function Shape.GetCurveControlPointCount()
+	if Curve ~= nil then
+		return Curve:getControlPointCount()
+	end
+
+	return 0
+end
+
+function Shape.GetCurveControlPoint(Index)
+	if Curve ~= nil then
+		return Curve:getControlPoint(Index)
+	end
+
+	return 0, 0
+end
+
+function Shape.EvaluateCurve(Time)
+	if Curve ~= nil then
+		return Curve:evaluate(Time)
+	end
+
+	return 0.0, 0.0
 end
 
 return Shape

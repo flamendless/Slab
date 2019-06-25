@@ -794,7 +794,7 @@ function Window.GetHotItem()
 end
 
 function Window.IsItemHot()
-	if ActiveInstance ~= nil then
+	if ActiveInstance ~= nil and ActiveInstance.LastItem ~= nil then
 		return ActiveInstance.HotItem == ActiveInstance.LastItem
 	end
 	return false
