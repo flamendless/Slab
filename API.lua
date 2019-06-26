@@ -1569,27 +1569,33 @@ end
 --[[
 	GetCurveControlPoint
 
-	Returns the translated point for the given control point index.
+	Returns the point for the given control point index. This point by default will be in local space defined by the points given in the Curve function.
+	The translated position can be requested by setting the LocalSpace option to false.
 
 	Index: [Number] The index of the control point to retrieve.
+	Options: [Table] A list of options that control what is returned by this function.
+		LocalSpace: [Boolean] Returns either the translated or untranslated control point. This is true by default.
 
 	Return: [Number], [Number] The translated X, Y coordinates of the given control point.
 --]]
-function Slab.GetCurveControlPoint(Index)
-	return Shape.GetCurveControlPoint(Index)
+function Slab.GetCurveControlPoint(Index, Options)
+	return Shape.GetCurveControlPoint(Index, Options)
 end
 
 --[[
 	EvaluateCurve
 
-	Returns the point at the given time. The time value should be between 0 and 1 inclusive.
+	Returns the point at the given time. The time value should be between 0 and 1 inclusive. The point returned will be in local space. For the translated
+	position, set the LocalSpace option to false.
 
 	Time: [Number] The time on the curve between 0 and 1.
+	Options: [Table] A list of options that control what is returned by this function.
+		LocalSpace: [Boolean] Returnes either the translated or untranslated control point. This is true by default.
 
 	Return: [Number], [Number] The X and Y coordinates at the given time on the curve.
 --]]
-function Slab.EvaluateCurve(Time)
-	return Shape.EvaluateCurve(Time)
+function Slab.EvaluateCurve(Time, Options)
+	return Shape.EvaluateCurve(Time, Options)
 end
 
 --[[
@@ -1597,18 +1603,21 @@ end
 
 	Returns the point on the curve at the given X-coordinate of the mouse relative to the end points of the curve.
 
+	Options: [Table] A list of options that control what is returned by this function.
+		Refer to the documentation for EvaluateCurve for the list of options.
+
 	Return: [Number], [Number] The X and Y coordinates at the given X mouse position on the curve.
 --]]
-function Slab.EvaluateCurveMouse()
-	local X1, Y1 = Slab.GetCurveControlPoint(1)
-	local X2, Y2 = Slab.GetCurveControlPoint(Slab.GetCurveControlPointCount())
+function Slab.EvaluateCurveMouse(Options)
+	local X1, Y1 = Slab.GetCurveControlPoint(1, {LocalSpace = false})
+	local X2, Y2 = Slab.GetCurveControlPoint(Slab.GetCurveControlPointCount(), {LocalSpace = false})
 	local Left = math.min(X1, X2)
 	local W = math.abs(X2 - X1)
 	local X, Y = Slab.GetMousePositionWindow()
 	local Offset = math.max(X - Left, 0.0)
 	Offset = math.min(Offset, W)
 
-	return Slab.EvaluateCurve(Offset / W)
+	return Slab.EvaluateCurve(Offset / W, Options)
 end
 
 return Slab

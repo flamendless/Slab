@@ -1250,13 +1250,17 @@ local function DrawShapes()
 
 	Slab.Curve(DrawShapes_Curve)
 
+	Slab.SameLine({CenterY = true, Pad = 16})
 	local EvalX, EvalY = Slab.EvaluateCurveMouse()
+	Slab.Text(string.format("X: %.2f Y: %.2f", EvalX, EvalY))
+
+	EvalX, EvalY = Slab.EvaluateCurveMouse({LocalSpace = false})
 	Slab.SetCursorPos(EvalX, EvalY, {Absolute = true})
 	Slab.Circle({Color = {1, 1, 1, 1}, Radius = DrawShapes_ControlPoint_Size * 0.5})
 
 	local HalfSize = DrawShapes_ControlPoint_Size * 0.5
 	for I = 1, Slab.GetCurveControlPointCount(), 1 do
-		local PX, PY = Slab.GetCurveControlPoint(I)
+		local PX, PY = Slab.GetCurveControlPoint(I, {LocalSpace = false})
 
 		Slab.SetCursorPos(PX - HalfSize, PY - HalfSize, {Absolute = true})
 		Slab.Rectangle({W = DrawShapes_ControlPoint_Size, H = DrawShapes_ControlPoint_Size, Color = {1, 1, 1, 1}})

@@ -30,6 +30,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Shape = {}
 local Curve = nil
+local CurveX, CurveY = 0, 0
 
 function Shape.Rectangle(Options)
 	Options = Options == nil and {} or Options
@@ -109,12 +110,12 @@ function Shape.Curve(Points, Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Depth = Options.Depth == nil and nil or Options.Depth
 
-	local X, Y = Cursor.GetPosition()
+	CurveX, CurveY = Cursor.GetPosition()
 
 	Curve = love.math.newBezierCurve(Points)
-	Curve:translate(X, Y)
+	Curve:translate(CurveX, CurveY)
 
-	local MinX, MinY = X, Y
+	local MinX, MinY = CurveX, CurveY
 	local MaxX, MaxY = 0, 0
 	for I = 1, Curve:getControlPointCount(), 1 do
 		local PX, PY = Curve:getControlPoint(I)
@@ -125,8 +126,8 @@ function Shape.Curve(Points, Options)
 		MaxY = math.max(MaxY, PY)
 	end
 
-	local W = MaxX - MinX
-	local H = MaxY - MinY
+	local W = math.abs(MaxX - MinX)
+	local H = math.abs(MaxY - MinY)
 
 	DrawCommands.Curve(Curve:render(Options.Depth), Options.Color)
 	Window.AddItem(MinX, MinY, W, H)
@@ -142,20 +143,44 @@ function Shape.GetCurveControlPointCount()
 	return 0
 end
 
-function Shape.GetCurveControlPoint(Index)
+function Shape.GetCurveControlPoint(Index, Options)
+	Options = Options == nil and {} or Options
+	Options.LocalSpace = Options.LocalSpace == nil and true or Options.LocalSpace
+
+	local X, Y = 0, 0
 	if Curve ~= nil then
-		return Curve:getControlPoint(Index)
+		if Options.LocalSpace then
+			Curve:translate(-CurveX, -CurveY)
+		end
+
+		X, Y = Curve:getControlPoint(Index)
+
+		if Options.LocalSpace then
+			Curve:translate(CurveX, CurveY)
+		end
 	end
 
-	return 0, 0
+	return X, Y
 end
 
-function Shape.EvaluateCurve(Time)
+function Shape.EvaluateCurve(Time, Options)
+	Options = Options == nil and {} or Options
+	Options.LocalSpace = Options.LocalSpace == nil and true or Options.LocalSpace
+
+	local X, Y = 0, 0
 	if Curve ~= nil then
-		return Curve:evaluate(Time)
+		if Options.LocalSpace then
+			Curve:translate(-CurveX, -CurveY)
+		end
+
+		X, Y = Curve:evaluate(Time)
+
+		if Options.LocalSpace then
+			Curve:translate(CurveX, CurveY)
+		end
 	end
 
-	return 0.0, 0.0
+	return X, Y
 end
 
 return Shape
