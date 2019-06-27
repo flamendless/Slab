@@ -1,7 +1,6 @@
 v0.5.0 RELEASE
 ==========
 [API]: Expose Stats interface.
-[Shape]: Polygon.
 [Shape]: Define rounding for each corner.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.

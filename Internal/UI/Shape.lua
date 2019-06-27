@@ -183,4 +183,34 @@ function Shape.EvaluateCurve(Time, Options)
 	return X, Y
 end
 
+function Shape.Polygon(Points, Options)
+	Options = Options == nil and {} or Options
+	Options.Color = Options.Color == nil and nil or Options.Color
+	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
+
+	local X, Y = Cursor.GetPosition()
+	local MinX, MinY = math.huge, math.huge
+	local MaxX, MaxY = 0, 0
+	local Verts = {}
+
+	for I = 1, #Points, 2 do
+		table.insert(Verts, Points[I] + X)
+		table.insert(Verts, Points[I+1] + Y)
+
+		MinX = math.min(MinX, Verts[I])
+		MinY = math.min(MinY, Verts[I+1])
+
+		MaxX = math.max(MaxX, Verts[I])
+		MaxY = math.max(MaxY, Verts[I+1])
+	end
+
+	local W = math.abs(MaxX - MinX)
+	local H = math.abs(MaxY - MinY)
+
+	DrawCommands.Polygon(Options.Mode, Verts, Options.Color)
+	Window.AddItem(MinX, MinY, W, H)
+	Cursor.SetItemBounds(MinX, MinY, W, H)
+	Cursor.AdvanceY(H)
+end
+
 return Shape

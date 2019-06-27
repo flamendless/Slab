@@ -167,6 +167,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetCurveControlPoint
 			EvaluateCurve
 			EvaluateCurveMouse
+			Polygon
 --]]
 local Slab = {}
 
@@ -1618,6 +1619,22 @@ function Slab.EvaluateCurveMouse(Options)
 	Offset = math.min(Offset, W)
 
 	return Slab.EvaluateCurve(Offset / W, Options)
+end
+
+--[[
+	Polygon
+
+	Renders a polygon with the given points. The points should be defined in local space. Slab will translate the position to the current cursor position.
+
+	Points: [Table] List of points that define this polygon.
+	Options: [Table] List of options that control how this polygon is drawn.
+		Color: [Table] The color to render this polygon.
+		Mode: [String] Whether to use 'fill' or 'line' to draw this polygon. The default is 'fill'.
+
+	Return: None.
+--]]
+function Slab.Polygon(Points, Options)
+	Shape.Polygon(Points, Options)
 end
 
 return Slab

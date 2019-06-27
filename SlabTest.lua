@@ -1114,6 +1114,8 @@ local DrawShapes_Line_Width = 1.0
 local DrawShapes_Curve = {0, 0, 150, 150, 300, 0}
 local DrawShapes_ControlPoint_Size = 7.5
 local DrawShapes_ControlPoint_Index = 0
+local DrawShapes_Polygon = {10, 10, 150, 25, 175, 75, 50, 125}
+local DrawShapes_Polygon_Mode = 'fill'
 
 local function DrawShapes()
 	Slab.Textf(
@@ -1249,6 +1251,7 @@ local function DrawShapes()
 	Slab.NewLine()
 
 	Slab.Curve(DrawShapes_Curve)
+	X, Y = Slab.GetCursorPos({Absolute = true})
 
 	Slab.SameLine({CenterY = true, Pad = 16})
 	local EvalX, EvalY = Slab.EvaluateCurveMouse()
@@ -1282,6 +1285,31 @@ local function DrawShapes()
 	if Slab.IsMouseReleased() then
 		DrawShapes_ControlPoint_Index = 0
 	end
+
+	Slab.SetCursorPos(X, Y, {Absolute = true})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Polygons can be drawn by passing in a list of points into the Polygon function. The points, like the curve, should be defined in local space. Slab will " ..
+		"then translate the points to the current cursor position.")
+
+	Slab.NewLine()
+
+	Slab.Text("Mode")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawShapes_Polygon_Mode', {Selected = DrawShapes_Polygon_Mode}) then
+		for I, V in ipairs(DrawShapes_Modes) do
+			if Slab.TextSelectable(V) then
+				DrawShapes_Polygon_Mode = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.Polygon(DrawShapes_Polygon, {Color = {0, 0, 1, 1}, Mode = DrawShapes_Polygon_Mode})
 end
 
 local DrawWindow_X = 900

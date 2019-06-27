@@ -50,7 +50,8 @@ local Types =
 	DrawCanvas = 16,
 	Mesh = 17,
 	TextObject = 18,
-	Curve = 19
+	Curve = 19,
+	Polygon = 20
 }
 
 local Layers =
@@ -184,6 +185,11 @@ local function DrawCurve(Curve)
 	love.graphics.line(Curve.Points)
 end
 
+local function DrawPolygon(Polygon)
+	love.graphics.setColor(Polygon.Color)
+	love.graphics.polygon(Polygon.Mode, Polygon.Points)
+end
+
 local function DrawElements(Elements)
 	for K, V in pairs(Elements) do
 		if V.Type == Types.Rect then
@@ -228,6 +234,8 @@ local function DrawElements(Elements)
 			DrawTextObject(V)
 		elseif V.Type == Types.Curve then
 			DrawCurve(V)
+		elseif V.Type == Types.Polygon then
+			DrawPolygon(V)
 		end
 	end
 end
@@ -527,6 +535,16 @@ function DrawCommands.Curve(Points, Color)
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.Curve
+	Item.Points = Points
+	Item.Color = Color ~= nil and Color or {0, 0, 0, 1}
+	table.insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.Polygon(Mode, Points, Color)
+	AssertActiveBatch()
+	local Item = {}
+	Item.Type = Types.Polygon
+	Item.Mode = Mode
 	Item.Points = Points
 	Item.Color = Color ~= nil and Color or {0, 0, 0, 1}
 	table.insert(ActiveBatch.Elements, Item)

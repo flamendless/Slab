@@ -118,11 +118,13 @@ function ComboBox.Begin(Id, Options)
 
 	Window.AddItem(X, Y, W, H, WinItemId)
 
+	local WinX, WinY = Window.TransformPoint(X, Y)
+
 	if Instance.IsOpen then
 		Window.Begin(Id .. '_combobox',
 		{
-			X = X - 1.0,
-			Y = Y + H,
+			X = WinX - 1.0,
+			Y = WinY + H,
 			W = math.max(W, Instance.WinW),
 			H = Instance.WinH,
 			AllowResize = false,
