@@ -1103,6 +1103,7 @@ end
 
 local DrawShapes_Rectangle_Color = {1, 0, 0, 1}
 local DrawShapes_Rectangle_ChangeColor = false
+local DrawShapes_Rectangle_Rounding = {0, 0, 2.0, 2.0}
 local DrawShapes_Circle_Radius = 32.0
 local DrawShapes_Circle_Segments = 24
 local DrawShapes_Circle_Mode = 'fill'
@@ -1116,6 +1117,14 @@ local DrawShapes_ControlPoint_Size = 7.5
 local DrawShapes_ControlPoint_Index = 0
 local DrawShapes_Polygon = {10, 10, 150, 25, 175, 75, 50, 125}
 local DrawShapes_Polygon_Mode = 'fill'
+
+local function DrawShapes_Rectangle_Rounding_Input(Corner, Index)
+	Slab.Text(Corner)
+	Slab.SameLine()
+	if Slab.Input('DrawShapes_Rectangle_Rounding_' .. Corner, {Text = tostring(DrawShapes_Rectangle_Rounding[Index]), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawShapes_Rectangle_Rounding[Index] = Slab.GetInputNumber()
+	end
+end
 
 local function DrawShapes()
 	Slab.Textf(
@@ -1144,6 +1153,24 @@ local function DrawShapes()
 			end
 		end
 	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"Rectangle corner rounding can be defined in multiple ways. The rounding option can take a single number, which will apply rounding to all corners. The option " ..
+		"can also accept a table, with each index affecting a single corner. The order this happens in is top left, top right, bottom right, and bottom left.")
+
+	Slab.NewLine()
+
+	DrawShapes_Rectangle_Rounding_Input('TL', 1)
+	Slab.SameLine()
+	DrawShapes_Rectangle_Rounding_Input('TR', 2)
+	Slab.SameLine()
+	DrawShapes_Rectangle_Rounding_Input('BR', 3)
+	Slab.SameLine()
+	DrawShapes_Rectangle_Rounding_Input('BL', 4)
+
+	Slab.Rectangle({W = 150.0, H = 75.0, Rounding = DrawShapes_Rectangle_Rounding, Outline = true, Color = {0, 1, 0, 1}})
 
 	Slab.NewLine()
 	Slab.Separator()

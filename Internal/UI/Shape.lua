@@ -32,6 +32,22 @@ local Shape = {}
 local Curve = nil
 local CurveX, CurveY = 0, 0
 
+local function AddArc(Verts, X, Y, Radius, Angle1, Angle2, Segments)
+	if Radius == 0 then
+		table.insert(Verts, X)
+		table.insert(Verts, Y)
+		return
+	end
+
+	local Step = (Angle2 - Angle1) / Segments
+
+	for Theta = Angle1, Angle2, Step do
+		local Radians = math.rad(Theta)
+		table.insert(Verts, math.sin(Radians) * Radius + X)
+		table.insert(Verts, math.cos(Radians) * Radius + Y)
+	end
+end
+
 function Shape.Rectangle(Options)
 	Options = Options == nil and {} or Options
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
@@ -41,17 +57,43 @@ function Shape.Rectangle(Options)
 	Options.Rounding = Options.Rounding == nil and 2.0 or Options.Rounding
 	Options.Outline = Options.Outline == nil and false or Options.Outline
 	Options.OutlineColor = Options.OutlineColor == nil and {0.0, 0.0, 0.0, 1.0} or Options.OutlineColor
+	Options.Segments = Options.Segments == nil and 10 or Options.Segments
 
 	local X, Y = Cursor.GetPosition()
+	local W = Options.W
+	local H = Options.H
+	local Rounding = {}
 
-	if Options.Outline and Options.Mode == 'fill' then
-		DrawCommands.Rectangle('line', X, Y, Options.W, Options.H, Options.OutlineColor, Options.Rounding)
+	if type(Options.Rounding) == 'table' then
+		Rounding = Options.Rounding
+	else
+		for I = 1, 4, 1 do
+			table.insert(Rounding, Options.Rounding)
+		end
 	end
 
-	DrawCommands.Rectangle(Options.Mode, X, Y, Options.W, Options.H, Options.Color, Options.Rounding)
-	Window.AddItem(X, Y, Options.W, Options.H)
-	Cursor.SetItemBounds(X, Y, Options.W, Options.H)
-	Cursor.AdvanceY(Options.H)
+	local Verts = {}
+	local TL = Rounding[1]
+	local TR = Rounding[2]
+	local BR = Rounding[3]
+	local BL = Rounding[4]
+
+	TL = TL == nil and 0 or TL
+	TR = TR == nil and 0 or TR
+	BR = BR == nil and 0 or BR
+	BL = BL == nil and 0 or BL
+
+	AddArc(Verts, W - BR, H - BR, BR, 0, 90, Options.Segments)
+	AddArc(Verts, W - TR, TR, TR, 90, 180, Options.Segments)
+	AddArc(Verts, TL, TL, TL, 180, 270, Options.Segments)
+	AddArc(Verts, BL, H - BL, BL, 270, 360, Options.Segments)
+
+	if Options.Outline and Options.Mode == 'fill' then
+		Shape.Polygon(Verts, {Mode = 'line', Color = Options.OutlineColor})
+		Cursor.SetPosition(X, Y)
+	end
+
+	Shape.Polygon(Verts, {Mode = Options.Mode, Color = Options.Color})
 end
 
 function Shape.Circle(Options)

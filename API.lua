@@ -1480,7 +1480,9 @@ end
 		W: [Number] The width of the rectangle.
 		H: [Number] The height of the rectangle.
 		Color: [Table] The color to use for this rectangle.
-		Rounding: [Number] Amount of rounding to apply to each corner.
+		Rounding: [Number] or [Table]
+			[Number] Amount of rounding to apply to all corners.
+			[Table] Define the rounding for each corner. The order goes top left, top right, bottom right, and bottom left.
 		Outline: [Boolean] If the Mode option is 'fill', this option will allow an outline to be drawn.
 		OutlineColor: [Table] The color to use for the outline if requested.
 

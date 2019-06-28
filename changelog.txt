@@ -1,12 +1,13 @@
 v0.5.0 RELEASE
 ==========
 [API]: Expose Stats interface.
-[Shape]: Define rounding for each corner.
+[Menu]: Convert background to use rectangle with rounding applied to bottom corners only.
 [Shape]: Documentation for Rectangle.
 [Shape]: Documentation for Circle.
 [Shape]: Documentation for Triangle.
 [Shape]: Documentation for Line.
 [Shape]: Documentation for Curve.
+[Shape]: Documentation for Polygon.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
 
