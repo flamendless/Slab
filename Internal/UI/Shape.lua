@@ -32,22 +32,6 @@ local Shape = {}
 local Curve = nil
 local CurveX, CurveY = 0, 0
 
-local function AddArc(Verts, X, Y, Radius, Angle1, Angle2, Segments)
-	if Radius == 0 then
-		table.insert(Verts, X)
-		table.insert(Verts, Y)
-		return
-	end
-
-	local Step = (Angle2 - Angle1) / Segments
-
-	for Theta = Angle1, Angle2, Step do
-		local Radians = math.rad(Theta)
-		table.insert(Verts, math.sin(Radians) * Radius + X)
-		table.insert(Verts, math.cos(Radians) * Radius + Y)
-	end
-end
-
 function Shape.Rectangle(Options)
 	Options = Options == nil and {} or Options
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
@@ -62,38 +46,16 @@ function Shape.Rectangle(Options)
 	local X, Y = Cursor.GetPosition()
 	local W = Options.W
 	local H = Options.H
-	local Rounding = {}
 
-	if type(Options.Rounding) == 'table' then
-		Rounding = Options.Rounding
-	else
-		for I = 1, 4, 1 do
-			table.insert(Rounding, Options.Rounding)
-		end
+	if Options.Outline then
+		DrawCommands.Rectangle('line', X, Y, W, H, Options.OutlineColor, Options.Rounding, Options.Segments)
 	end
 
-	local Verts = {}
-	local TL = Rounding[1]
-	local TR = Rounding[2]
-	local BR = Rounding[3]
-	local BL = Rounding[4]
+	DrawCommands.Rectangle(Options.Mode, X, Y, W, H, Options.Color, Options.Rounding, Options.Segments)
 
-	TL = TL == nil and 0 or TL
-	TR = TR == nil and 0 or TR
-	BR = BR == nil and 0 or BR
-	BL = BL == nil and 0 or BL
-
-	AddArc(Verts, W - BR, H - BR, BR, 0, 90, Options.Segments)
-	AddArc(Verts, W - TR, TR, TR, 90, 180, Options.Segments)
-	AddArc(Verts, TL, TL, TL, 180, 270, Options.Segments)
-	AddArc(Verts, BL, H - BL, BL, 270, 360, Options.Segments)
-
-	if Options.Outline and Options.Mode == 'fill' then
-		Shape.Polygon(Verts, {Mode = 'line', Color = Options.OutlineColor})
-		Cursor.SetPosition(X, Y)
-	end
-
-	Shape.Polygon(Verts, {Mode = Options.Mode, Color = Options.Color})
+	Window.AddItem(X, Y, W, H)
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
 end
 
 function Shape.Circle(Options)

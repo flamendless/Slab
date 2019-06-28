@@ -1170,6 +1170,8 @@ local function DrawShapes()
 	Slab.SameLine()
 	DrawShapes_Rectangle_Rounding_Input('BL', 4)
 
+	Slab.NewLine()
+
 	Slab.Rectangle({W = 150.0, H = 75.0, Rounding = DrawShapes_Rectangle_Rounding, Outline = true, Color = {0, 1, 0, 1}})
 
 	Slab.NewLine()

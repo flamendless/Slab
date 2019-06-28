@@ -65,6 +65,22 @@ local Layers =
 
 local ActiveLayer = Layers.Normal
 
+local function AddArc(Verts, CenterX, CenterY, Radius, Angle1, Angle2, Segments, X, Y)
+	if Radius == 0 then
+		table.insert(Verts, CenterX + X)
+		table.insert(Verts, CenterY + Y)
+		return
+	end
+
+	local Step = (Angle2 - Angle1) / Segments
+
+	for Theta = Angle1, Angle2, Step do
+		local Radians = math.rad(Theta)
+		table.insert(Verts, math.sin(Radians) * Radius + CenterX + X)
+		table.insert(Verts, math.cos(Radians) * Radius + CenterY + Y)
+	end
+end
+
 local function GetLayerDebugInfo(Layer)
 	local Result = {}
 
@@ -324,18 +340,40 @@ function DrawCommands.SetLayer(Layer)
 	end
 end
 
-function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius)
+function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius, Segments)
 	AssertActiveBatch()
-	local Item = {}
-	Item.Type = Types.Rect
-	Item.Mode = Mode
-	Item.X = X
-	Item.Y = Y
-	Item.Width = Width
-	Item.Height = Height
-	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	Item.Radius = Radius and Radius or 0.0
-	table.insert(ActiveBatch.Elements, Item)
+	if type(Radius) == 'table' then
+		Segments = Segments == nil and 10 or Segments
+
+		local Verts = {}
+		local TL = Radius[1]
+		local TR = Radius[2]
+		local BR = Radius[3]
+		local BL = Radius[4]
+
+		TL = TL == nil and 0 or TL
+		TR = TR == nil and 0 or TR
+		BR = BR == nil and 0 or BR
+		BL = BL == nil and 0 or BL
+
+		AddArc(Verts, Width - BR, Height - BR, BR, 0, 90, Segments, X, Y)
+		AddArc(Verts, Width - TR, TR, TR, 90, 180, Segments, X, Y)
+		AddArc(Verts, TL, TL, TL, 180, 270, Segments, X, Y)
+		AddArc(Verts, BL, Height - BL, BL, 270, 360, Segments, X, Y)
+
+		DrawCommands.Polygon(Mode, Verts, Color)
+	else
+		local Item = {}
+		Item.Type = Types.Rect
+		Item.Mode = Mode
+		Item.X = X
+		Item.Y = Y
+		Item.Width = Width
+		Item.Height = Height
+		Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
+		Item.Radius = Radius and Radius or 0.0
+		table.insert(ActiveBatch.Elements, Item)
+	end
 end
 
 function DrawCommands.Triangle(Mode, X, Y, Radius, Rotation, Color)
