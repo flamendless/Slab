@@ -74,6 +74,9 @@ function ComboBox.Begin(Id, Options)
 	local DropDownX = X + W - DropDownW
 	local DropDownColor = Style.ComboBoxDropDownColor
 
+	local InputRounding = {Options.Rounding, 0, 0, Options.Rounding}
+	local DropDownRounding = {0, Options.Rounding, Options.Rounding, 0}
+
 	Instance.X = X
 	Instance.Y = Y
 	Instance.W = W
@@ -101,11 +104,11 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W - DropDownW, H = H, BgColor = InputBgColor, Rounding = Options.Rounding})
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W - DropDownW, H = H, BgColor = InputBgColor, Rounding = InputRounding})
 
 	Cursor.SameLine()
 
-	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor, Options.Rounding)
+	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor, DropDownRounding)
 	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 180, Style.ComboBoxArrowColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)

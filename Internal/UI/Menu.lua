@@ -86,7 +86,8 @@ local function BeginWindow(Id, X, Y)
 		Border = 0.0,
 		AutoSizeWindow = true,
 		Layer = 'ContextMenu',
-		BgColor = Style.MenuColor
+		BgColor = Style.MenuColor,
+		Rounding = {0, 0, 2, 2}
 	})
 end
 

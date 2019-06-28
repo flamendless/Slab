@@ -459,6 +459,16 @@ function Window.Begin(Id, Options)
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 	Options.Columns = Options.Columns == nil and 0 or Options.Columns
 
+	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
+	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
+
+	if type(Options.Rounding) == 'table' then
+		TitleRounding = Options.Rounding
+		BodyRounding = Options.Rounding
+	elseif Options.Title == "" then
+		BodyRounding = Options.Rounding
+	end
+
 	local Instance = GetInstance(Id)
 	table.insert(PendingStack, 1, Instance)
 
@@ -558,8 +568,8 @@ function Window.Begin(Id, Options)
 		if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
 		end
-		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, Options.Rounding)
-		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, Options.Rounding)
+		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, TitleRounding)
+		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, TitleRounding)
 		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
 
 		Region.Begin(ActiveInstance.Id .. '_Title', {
@@ -589,7 +599,7 @@ function Window.Begin(Id, Options)
 		MouseX = MouseX,
 		MouseY = MouseY,
 		ResetContent = ActiveInstance.HasResized,
-		Rounding = Options.Rounding,
+		Rounding = BodyRounding,
 		NoOutline = Options.NoOutline
 	})
 
