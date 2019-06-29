@@ -941,7 +941,7 @@ end
 	Return: None.
 --]]
 function Slab.Image(Id, Options)
-	return Image.Begin(Id, Options)
+	Image.Begin(Id, Options)
 end
 
 --[[
@@ -1485,6 +1485,7 @@ end
 			[Table] Define the rounding for each corner. The order goes top left, top right, bottom right, and bottom left.
 		Outline: [Boolean] If the Mode option is 'fill', this option will allow an outline to be drawn.
 		OutlineColor: [Table] The color to use for the outline if requested.
+		Segments: [Number] Number of points to add for each corner if rounding is requested.
 
 	Return: None.
 --]]
@@ -1531,6 +1532,8 @@ end
 
 	Draws a line starting at the current cursor position and going to the defined points in this function.
 
+	X2: [Number] The X coordinate for the destination.
+	Y2: [Number] The Y coordinate for the destination.
 	Option: [Table] List of options that control how this line is displayed.
 		Width: [Number] How thick the line should be.
 		Color: [Table] The color to use for the line.
