@@ -1652,9 +1652,15 @@ local function DrawTooltip()
 	end
 end
 
+local DrawSlabTest = true
+
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
+			if Slab.MenuItemChecked("Slab Test", DrawSlabTest) then
+				DrawSlabTest = not DrawSlabTest
+			end
+
 			if Slab.MenuItem("Quit") then
 				love.event.quit()
 			end
@@ -1697,27 +1703,29 @@ function SlabTest.Begin()
 		Selected = Categories[1]
 	end
 
-	Slab.BeginWindow('Main', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
+	if DrawSlabTest then
+		Slab.BeginWindow('Main', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
 
-	local W, H = Slab.GetWindowActiveSize()
+		local W, H = Slab.GetWindowActiveSize()
 
-	if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
-		for I, V in ipairs(Categories) do
-			if Slab.TextSelectable(V[1]) then
-				Selected = Categories[I]
+		if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
+			for I, V in ipairs(Categories) do
+				if Slab.TextSelectable(V[1]) then
+					Selected = Categories[I]
+				end
 			end
+
+			Slab.EndComboBox()
 		end
 
-		Slab.EndComboBox()
+		Slab.Separator()
+
+		if Selected ~= nil and Selected[2] ~= nil then
+			Selected[2]()
+		end
+
+		Slab.EndWindow()
 	end
-
-	Slab.Separator()
-
-	if Selected ~= nil and Selected[2] ~= nil then
-		Selected[2]()
-	end
-
-	Slab.EndWindow()
 
 	SlabDebug.Begin()
 end
