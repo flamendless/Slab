@@ -396,7 +396,7 @@ local DrawInput_Basic = "Hello World"
 local DrawInput_Basic_Return = "Hello World"
 local DrawInput_Basic_Numbers = 0
 local DrawInput_Basic_Numbers_Clamped = 0.5
-local DrawInput_MultiLine = 
+local DrawInput_MultiLine =
 [[
 function Foo()
 	print("Bar")
@@ -404,11 +404,14 @@ end
 
 The quick brown fox jumped over the lazy dog.]]
 local DrawInput_MultiLine_Width = math.huge
+local DrawInput_CursorPos = 0
+local DrawInput_CursorColumn = 0
+local DrawInput_CursorLine = 0
 
 local function DrawInput()
 	Slab.Textf(
 		"The input control allows the user to enter in text into an input box. This control is similar " ..
-		"to input boxes found in other applications.")
+		"to input boxes found in other applications. These controls are set up to handle UTF8 characters.")
 
 	Slab.NewLine()
 
@@ -465,10 +468,41 @@ local function DrawInput()
 		DrawInput_MultiLine_Width = Slab.GetInputNumber()
 	end
 
+	Slab.SameLine()
+	Slab.Text("Cursor Pos")
+	Slab.SameLine()
+	if Slab.Input('DrawInput_CursorPos', {Text = tostring(DrawInput_CursorPos), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+		DrawInput_CursorPos = Slab.GetInputNumber()
+		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputCursorPos(DrawInput_CursorPos)
+	end
+
+	Slab.SameLine()
+	Slab.Text("Column")
+	Slab.SameLine()
+	if Slab.Input('DrawInput_CursorColumn', {Text = tostring(DrawInput_CursorColumn), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+		DrawInput_CursorColumn = Slab.GetInputNumber()
+		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputCursorPosLine(DrawInput_CursorColumn, DrawInput_CursorLine)
+	end
+
+	Slab.SameLine()
+	Slab.Text("Line")
+	Slab.SameLine()
+	if Slab.Input('DrawInput_CursorLine', {Text = tostring(DrawInput_CursorLine), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+		DrawInput_CursorLine = Slab.GetInputNumber()
+		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputCursorPosLine(DrawInput_CursorColumn, DrawInput_CursorLine)
+	end
+
 	local W, H = Slab.GetWindowActiveSize()
 
 	if Slab.Input('DrawInput_MultiLine', {Text = DrawInput_MultiLine, MultiLine = true, MultiLineW = DrawInput_MultiLine_Width, W = W, H = 150.0}) then
 		DrawInput_MultiLine = Slab.GetInputText()
+	end
+
+	if Slab.IsInputFocused('DrawInput_MultiLine') then
+		DrawInput_CursorPos, DrawInput_CursorColumn, DrawInput_CursorLine = Slab.GetInputCursorPos()
 	end
 end
 

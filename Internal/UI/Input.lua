@@ -52,6 +52,10 @@ local DragSelect = false
 local FocusToNext = false
 local LastText = ""
 local Pad = Region.GetScrollPad() + Region.GetScrollBarSize()
+local PendingFocus = nil
+local PendingCursorPos = -1
+local PendingCursorColumn = -1
+local PendingCursorLine = -1
 
 local MIN_WIDTH = 150.0
 
@@ -125,6 +129,29 @@ local function UpdateMultiLinePosition(Instance)
 			TextCursorPosLineNumber = 1
 		end
 		TextCursorPosLineMax = TextCursorPosLine
+	end
+end
+
+local function ValidateTextCursorPos(Instance)
+	if Instance ~= nil then
+		local OldPos = TextCursorPos
+		local Byte = string.byte(string.sub(Instance.Text, TextCursorPos, TextCursorPos))
+		-- This is a continuation byte. Check next byte to see if it is an ASCII character or
+		-- the beginning of a UTF8 character.
+		if Byte ~= nil and Byte > 127 then
+			local NextByte = string.byte(string.sub(Instance.Text, TextCursorPos + 1, TextCursorPos + 1))
+			if NextByte ~= nil and NextByte > 127 and NextByte < 191 then
+				while Byte > 127 and Byte < 191 do
+					TextCursorPos = TextCursorPos - 1
+					Byte = string.byte(string.sub(Instance.Text, TextCursorPos, TextCursorPos))
+				end
+
+				if TextCursorPos < OldPos or Byte >= 191 then
+					TextCursorPos = TextCursorPos - 1
+					UpdateMultiLinePosition(Instance)
+				end
+			end
+		end
 	end
 end
 
@@ -1103,6 +1130,59 @@ function Input.Update(dt)
 		TextCursorAlpha = math.max(TextCursorAlpha - Delta, 0.0)
 		FadeIn = TextCursorAlpha == 0.0
 	end
+
+	if PendingFocus ~= nil then
+		LastFocused = Focused
+		Focused = PendingFocus
+		PendingFocus = nil
+	end
+
+	if Focused ~= nil then
+		if PendingCursorPos >= 0 then
+			TextCursorPos = math.min(PendingCursorPos, #Focused.Text)
+			ValidateTextCursorPos(Focused)
+			UpdateMultiLinePosition(Focused)
+			PendingCursorPos = -1
+		end
+
+		local MultiLineChanged = false
+
+		if PendingCursorColumn >= 0 then
+			if Focused.Lines ~= nil then
+				TextCursorPosLine = PendingCursorColumn
+				MultiLineChanged = true
+			end
+
+			PendingCursorColumn = -1
+		end
+
+		if PendingCursorLine > 0 then
+			if Focused.Lines ~= nil then
+				TextCursorPosLineNumber = math.min(PendingCursorLine, #Focused.Lines)
+				MultiLineChanged = true
+			end
+
+			PendingCursorLine = 0
+		end
+
+		if MultiLineChanged then
+			local Line = Focused.Lines[TextCursorPosLineNumber]
+			TextCursorPosLine = math.min(TextCursorPosLine, string.len(Line))
+			local Start = 0
+			for I, V in ipairs(Focused.Lines) do
+				if I == TextCursorPosLineNumber then
+					TextCursorPos = Start + TextCursorPosLine
+					break
+				end
+				Start = Start + string.len(V)
+			end
+			ValidateTextCursorPos(Focused)
+		end
+	else
+		PendingCursorPos = -1
+		PendingCursorColumn = -1
+		PendingCursorLine = 0
+	end
 end
 
 function Input.GetText()
@@ -1113,6 +1193,38 @@ function Input.GetText()
 		return Focused.Text
 	end
 	return LastText
+end
+
+function Input.GetCursorPos()
+	if Focused ~= nil then
+		return TextCursorPos, TextCursorPosLine, TextCursorPosLineNumber
+	end
+
+	return 0, 0, 0
+end
+
+function Input.IsFocused(Id)
+	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
+	return Instance == Focused
+end
+
+function Input.SetFocused(Id)
+	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
+	PendingFocus = Instance
+end
+
+function Input.SetCursorPos(Pos)
+	PendingCursorPos = math.max(Pos, 0)
+end
+
+function Input.SetCursorPosLine(Column, Line)
+	if Column ~= nil then
+		PendingCursorColumn = math.max(Column, 0)
+	end
+
+	if Line ~= nil then
+		PendingCursorLine = math.max(Line, 1)
+	end
 end
 
 function Input.GetDebugInfo()

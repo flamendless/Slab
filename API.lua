@@ -106,6 +106,11 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Input
 		GetInputText
 		GetInputNumber
+		GetInputCursorPos
+		IsInputFocused
+		SetInputFocus
+		SetInputCursorPos
+		SetInputCursorPosLine
 		BeginTree
 		EndTree
 		BeginComboBox
@@ -823,6 +828,73 @@ function Slab.GetInputNumber()
 		Result = 0
 	end
 	return Result
+end
+
+--[[
+	GetInputCursorPos
+
+	Retrieves the position of the input cursor for the focused input control. There are three values that are returned. The first one
+	is the absolute position of the cursor with regards to the text for the control. The second is the column position of the cursor
+	on the current line. The final value is the line number. The column will match the absolute position if the input control is not
+	multi line.
+
+	Return: [Number], [Number], [Number] The absolute position of the cursor, the column position of the cursor on the current line,
+		and the line number of the cursor. These values will all be zero if no input control is focused.
+--]]
+function Slab.GetInputCursorPos()
+	return Input.GetCursorPos()
+end
+
+--[[
+	IsInputFocused
+
+	Returns whether the input control with the given Id is focused or not.
+
+	Id: [String] The Id of the input control to check.
+
+	Return: [Boolean] True if the input control with the given Id is focused. False otherwise.
+--]]
+function Slab.IsInputFocused(Id)
+	return Input.IsFocused(Id)
+end
+
+--[[
+	SetInputFocus
+
+	Sets the focus of the input control to the control with the given Id. The focus is set at the beginning
+	of the next frame to avoid any input events from the current frame.
+
+	Id: [String] The Id of the input control to focus.
+--]]
+function Slab.SetInputFocus(Id)
+	Input.SetFocused(Id)
+end
+
+--[[
+	SetInputCursorPos
+
+	Sets the absolute text position in bytes of the focused input control. This value is applied on the next frame.
+	This function can be combined with the SetInputFocus function to modify the cursor positioning of the desired
+	input control. Note that the input control supports UTF8 characters so if the desired position is not a valid
+	character, the position will be altered to find the next closest valid character.
+
+	Pos: [Number] The absolute position in bytes of the text of the focused input control.
+--]]
+function Slab.SetInputCursorPos(Pos)
+	Input.SetCursorPos(Pos)
+end
+
+--[[
+	SetInputCursorPosLine
+
+	Sets the column and line number of the focused input control. These values are applied on the next frame. This
+	function behaves the same as SetInputCursorPos, but allows for setting the cursor by column and line.
+
+	Column: [Number] The text position in bytes of the current line.
+	Line: [Number] The line number to set.
+--]]
+function Slab.SetInputCursorPosLine(Column, Line)
+	Input.SetCursorPosLine(Column, Line)
 end
 
 --[[
