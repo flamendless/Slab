@@ -40,7 +40,7 @@ local WheelX = 0.0
 local WheelY = 0.0
 local WheelSpeed = 3.0
 local HotInstance = nil
-local WheelInsance = nil
+local WheelInstance = nil
 local ScrollInstance = nil
 
 local function GetXScrollSize(Instance)
@@ -108,8 +108,13 @@ local function UpdateScrollBars(Instance, IsObstructed)
 
 	local DeltaX, DeltaY = Mouse.GetDelta()
 
+	if WheelInstance == Instance then
+		Instance.HoverScrollX = WheelX ~= 0.0
+		Instance.HoverScrollY = WheelY ~= 0.0
+	end
+
 	if not IsObstructed and Contains(Instance, X, Y) or (Instance.HoverScrollX or Instance.HoverScrollY) then
-		if WheelInsance == Instance then
+		if WheelInstance == Instance then
 			if WheelX ~= 0.0 then
 				Instance.ScrollPosX = math.max(Instance.ScrollPosX + WheelX, 0.0)
 				Instance.IsScrollingX = true
@@ -124,7 +129,7 @@ local function UpdateScrollBars(Instance, IsObstructed)
 				WheelY = 0.0
 			end
 
-			WheelInsance = nil
+			WheelInstance = nil
 			ScrollInstance = Instance
 		end
 
@@ -333,8 +338,8 @@ function Region.End()
 	DrawCommands.TransformPop()
 	DrawScrollBars(ActiveInstance)
 
-	if HotInstance == ActiveInstance and WheelInsance == nil and (WheelX ~= 0.0 or WheelY ~= 0.0) then
-		WheelInsance = ActiveInstance
+	if HotInstance == ActiveInstance and WheelInstance == nil and (WheelX ~= 0.0 or WheelY ~= 0.0) then
+		WheelInstance = ActiveInstance
 	end
 
 	if ActiveInstance.Intersect then
@@ -493,13 +498,17 @@ function Region.WheelMoved(X, Y)
 	WheelY = Y * WheelSpeed
 end
 
+function Region.GetWheelDelta()
+	return WheelX, WheelY
+end
+
 function Region.IsScrolling(Id)
 	if Id ~= nil then
 		local Instance = GetInstance(Id)
-		return ScrollInstance == Instance
+		return ScrollInstance == Instance or WheelInstance == Instance
 	end
 
-	return ScrollInstance ~= nil
+	return ScrollInstance ~= nil or WheelInstance ~= nil
 end
 
 function Region.GetHotInstanceId()
@@ -532,6 +541,9 @@ function Region.GetDebugInfo(Id)
 	end
 
 	table.insert(Result, "ScrollInstance: " .. (ScrollInstance ~= nil and ScrollInstance.Id or "nil"))
+	table.insert(Result, "WheelInstance: " .. (WheelInstance ~= nil and WheelInstance.Id or "nil"))
+	table.insert(Result, "WheelX: " .. WheelX)
+	table.insert(Result, "WheelY: " .. WheelY)
 
 	if Instance ~= nil then
 		table.insert(Result, "Id: " .. Instance.Id)

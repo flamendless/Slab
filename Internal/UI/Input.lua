@@ -705,7 +705,7 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 
 			local TX, TY = Region.InverseTransform(Instance.Id, 0, 0)
 			local TextH = Text.GetHeight()
-			local Top = TY - TextH
+			local Top = TY - TextH * 2
 			local Bottom = TY + Instance.H + TextH * 2
 			local H = #Instance.Lines * TextH
 			local TopLineNo = math.max(math.floor((Top / H) * #Instance.Lines), 1)
@@ -1182,8 +1182,9 @@ function Input.Begin(Id, Options)
 
 	if Region.IsScrolling(Instance.Id) then
 		local DeltaX, DeltaY = Mouse.GetDelta()
+		local WheelX, WheelY = Region.GetWheelDelta()
 
-		if DeltaY ~= 0.0 then
+		if DeltaY ~= 0.0 or WheelY ~= 0.0 then
 			UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
 		end
 	end
