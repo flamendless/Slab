@@ -819,6 +819,7 @@ local function GetInstance(Id)
 	Instance.Lines = nil
 	Instance.TextObject = nil
 	Instance.Highlight = nil
+	Instance.ShouldUpdateTextObject = false
 	table.insert(Instances, Instance)
 	return Instance
 end
@@ -920,7 +921,8 @@ function Input.Begin(Id, Options)
 		ContentW, ContentH = Text.GetSizeWrap(Instance.Text, Options.MultiLineW)
 	end
 
-	local ShouldUpdateTextObject = false
+	local ShouldUpdateTextObject = Instance.ShouldUpdateTextObject
+	Instance.ShouldUpdateTextObject = false
 
 	if Instance.Lines == nil and Instance.Text ~= "" then
 		if Options.MultiLine then
@@ -951,6 +953,11 @@ function Input.Begin(Id, Options)
 					break
 				end
 			end
+		end
+	else
+		if Instance.Highlight ~= nil then
+			Instance.Highlight = nil
+			ShouldUpdateTextObject = true
 		end
 	end
 
@@ -1185,7 +1192,7 @@ function Input.Begin(Id, Options)
 		local WheelX, WheelY = Region.GetWheelDelta()
 
 		if DeltaY ~= 0.0 or WheelY ~= 0.0 then
-			UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
+			Instance.ShouldUpdateTextObject = true
 		end
 	end
 

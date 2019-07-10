@@ -449,6 +449,32 @@ function SlabDebug.Input()
 	Slab.EndWindow()
 end
 
+local SlabDebug_MultiLine_Highlight = {
+	['function'] = {1, 0, 0, 1},
+	['end'] = {1, 0, 0, 1},
+	['if'] = {1, 0, 0, 1},
+	['then'] = {1, 0, 0, 1},
+	['local'] = {1, 0, 0, 1},
+	['for'] = {1, 0, 0, 1},
+	['do'] = {1, 0, 0, 1},
+	['not'] = {1, 0, 0, 1},
+	['while'] = {1, 0, 0, 1},
+	['repeat'] = {1, 0, 0, 1},
+	['until'] = {1, 0, 0, 1},
+	['break'] = {1, 0, 0, 1},
+	['else'] = {1, 0, 0, 1},
+	['elseif'] = {1, 0, 0, 1},
+	['in'] = {1, 0, 0, 1},
+	['and'] = {1, 0, 0, 1},
+	['or'] = {1, 0, 0, 1},
+	['true'] = {1, 0, 0, 1},
+	['false'] = {1, 0, 0, 1},
+	['nil'] = {1, 0, 0, 1},
+	['return'] = {1, 0, 0, 1}
+}
+
+local SlabDebug_MultiLine_ShouldHighlight = true
+
 function SlabDebug.MultiLine()
 	Slab.BeginWindow('SlabDebug_MultiLine', {Title = "Multi-Line Input"})
 
@@ -467,11 +493,22 @@ function SlabDebug.MultiLine()
 		end
 	end
 
+	Slab.SameLine()
+	if Slab.CheckBox(SlabDebug_MultiLine_ShouldHighlight, "Use Lua Highlight") then
+		SlabDebug_MultiLine_ShouldHighlight = not SlabDebug_MultiLine_ShouldHighlight
+	end
+
 	Slab.Separator()
 
 	Slab.Text("File: " .. SlabDebug_MultiLine_FileName)
 
-	if Slab.Input('SlabDebug_MultiLine', {MultiLine = true, Text = SlabDebug_MultiLine_Contents, W = 500.0, H = 500.0}) then
+	if Slab.Input('SlabDebug_MultiLine', {
+		MultiLine = true,
+		Text = SlabDebug_MultiLine_Contents,
+		W = 500.0,
+		H = 500.0,
+		Highlight = SlabDebug_MultiLine_ShouldHighlight and SlabDebug_MultiLine_Highlight or nil
+	}) then
 		SlabDebug_MultiLine_Contents = Slab.GetInputText()
 	end
 
