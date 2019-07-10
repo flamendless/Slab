@@ -493,7 +493,12 @@ function Region.WheelMoved(X, Y)
 	WheelY = Y * WheelSpeed
 end
 
-function Region.IsScrolling()
+function Region.IsScrolling(Id)
+	if Id ~= nil then
+		local Instance = GetInstance(Id)
+		return ScrollInstance == Instance
+	end
+
 	return ScrollInstance ~= nil
 end
 
@@ -525,6 +530,8 @@ function Region.GetDebugInfo(Id)
 			break
 		end
 	end
+
+	table.insert(Result, "ScrollInstance: " .. (ScrollInstance ~= nil and ScrollInstance.Id or "nil"))
 
 	if Instance ~= nil then
 		table.insert(Result, "Id: " .. Instance.Id)

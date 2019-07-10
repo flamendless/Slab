@@ -407,6 +407,16 @@ local DrawInput_MultiLine_Width = math.huge
 local DrawInput_CursorPos = 0
 local DrawInput_CursorColumn = 0
 local DrawInput_CursorLine = 0
+local DrawInput_Highlight_Text =
+[[
+function Hello()
+	print("World")
+end]]
+local DrawInput_Highlight_Table = {
+	['function'] = {1, 0, 0, 1},
+	['end'] = {0, 0, 1, 1}
+}
+local DrawInput_Highlight_Table_Modify = nil
 
 local function DrawInput()
 	Slab.Textf(
@@ -503,6 +513,59 @@ local function DrawInput()
 
 	if Slab.IsInputFocused('DrawInput_MultiLine') then
 		DrawInput_CursorPos, DrawInput_CursorColumn, DrawInput_CursorLine = Slab.GetInputCursorPos()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The input control also offers a way to highlight certain words with a custom color. Below is a list of keywords and the color used to define the word.")
+
+	Slab.NewLine()
+
+	local TextW, TextH = Slab.GetTextSize("")
+
+	for K, V in pairs(DrawInput_Highlight_Table) do
+		if Slab.Input('DrawInput_Highlight_Table_' .. K, {Text = K, ReturnOnText = false}) then
+			DrawInput_Highlight_Table[K] = nil
+			K = Slab.GetInputText()
+			DrawInput_Highlight_Table[K] = V
+		end
+
+		Slab.SameLine({Pad = 20.0})
+		Slab.Rectangle({W = 50, H = TextH, Color = V})
+
+		if Slab.IsControlClicked() then
+			DrawInput_Highlight_Table_Modify = K
+		end
+
+		Slab.SameLine({Pad = 20.0})
+
+		if Slab.Button("Delete", {H = TextH}) then
+			DrawInput_Highlight_Table[K] = nil
+		end
+	end
+
+	if Slab.Button("Add") then
+		DrawInput_Highlight_Table['new'] = {1, 0, 0, 1}
+	end
+
+	if DrawInput_Highlight_Table_Modify ~= nil then
+		local Result = Slab.ColorPicker({Color = DrawInput_Highlight_Table[DrawInput_Highlight_Table_Modify]})
+
+		if Result.Button ~= "" then
+			if Result.Button == "OK" then
+				DrawInput_Highlight_Table[DrawInput_Highlight_Table_Modify] = Result.Color
+			end
+
+			DrawInput_Highlight_Table_Modify = nil
+		end
+	end
+
+	Slab.NewLine()
+
+	if Slab.Input('DrawInput_Highlight', {Text = DrawInput_Highlight_Text, MultiLine = true, Highlight = DrawInput_Highlight_Table, W = W, H = 150.0}) then
+		DrawInput_Highlight_Text = Slab.GetInputText()
 	end
 end
 

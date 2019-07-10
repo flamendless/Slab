@@ -156,6 +156,18 @@ function Utility.Contains(Table, Value)
 	return false
 end
 
+function Utility.TableCount(Table)
+	local Result = 0
+
+	if Table ~= nil then
+		for K, V in pairs(Table) do
+			Result = Result + 1
+		end
+	end
+
+	return Result
+end
+
 function Utility.IsWindows()
 	return love.system.getOS() == "Windows"
 end

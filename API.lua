@@ -102,6 +102,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Text
 		TextSelectable
 		Textf
+		GetTextSize
 		CheckBox
 		Input
 		GetInputText
@@ -738,6 +739,19 @@ function Slab.Textf(Label, Options)
 end
 
 --[[
+	GetTextSize
+
+	Retrieves the width and height of the given text. The result is based on the current font.
+
+	Label: [String] The string to retrieve the size for.
+
+	Return: [Number], [Number] The width and height of the given text.
+--]]
+function Slab.GetTextSize(Label)
+	return Text.GetSize(Label)
+end
+
+--[[
 	CheckBox
 
 	Renders a check box with a label. The check box when enabled will render an 'X'.
@@ -775,6 +789,8 @@ end
 			a new character into the Input box. This is true by default.
 		Text: [String] The text to be supplied to the input box. It is recommended to use this option
 			when ReturnOnText is true.
+		TextColor: [Table] The color to use for the text. The default color is the color used for text, but there is also
+			a default multiline text color defined in the Style.
 		BgColor: [Table] The background color for the input box.
 		SelectColor: [Table] The color used when the user is selecting text within the input box.
 		SelectOnFocus: [Boolean] When this input box is focused by the user, the text contents within the input
@@ -794,6 +810,8 @@ end
 			SelectOnFocus flag will be false. The given text will also be sanitized to remove controls characters such as
 			'\r'. Also, the text will be left aligned.
 		MultiLineW: [Number] The width for which the lines of text should be wrapped at.
+		Highlight: [Table] A list of key-values that define what words to highlight what color. Strings should be used for
+			the word to highlight and the value should be a table defining the color.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.

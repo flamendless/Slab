@@ -1,7 +1,5 @@
 v0.5.0 RELEASE
 ==========
-[Input]: Colored text.
-[Input]: Get/Set documentation.
 [Mac]: Test latest on Mac.
 
 v0.6.0 RELEASE

@@ -161,7 +161,7 @@ local function DrawTextFormatted(Text)
 end
 
 local function DrawTextObject(Text)
-	love.graphics.setColor(Text.Color)
+	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(Text.Text, Text.X, Text.Y)
 end
 

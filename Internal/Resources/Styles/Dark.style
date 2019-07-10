@@ -21,6 +21,7 @@ ComboBoxArrowColor = (1.0, 1.0, 1.0, 1.0)
 InputBgColor = (0.4, 0.4, 0.4, 1.0)
 InputEditBgColor = (0.6, 0.6, 0.6, 1.0)
 InputSelectColor = (0.14, 0.29, 0.53, 0.4)
+MultilineTextColor = (0.0, 0.0, 0.0, 1.0)
 
 WindowRounding = 2.0
 ButtonRounding = 2.0

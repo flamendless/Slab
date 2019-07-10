@@ -686,6 +686,121 @@ local function DrawCursor(Instance, X, Y, W, H)
 	end
 end
 
+local function IsHighlightTerminator(Ch)
+	if Ch ~= nil then
+		return string.match(Ch, "%w") == nil
+	end
+
+	return true
+end
+
+local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
+	if Instance ~= nil and Instance.TextObject ~= nil then
+		local ColoredText = {}
+
+		if Highlight == nil then
+			ColoredText = {BaseColor, Instance.Text}
+		else
+			--local StartTime = love.timer.getTime()
+
+			local TX, TY = Region.InverseTransform(Instance.Id, 0, 0)
+			local TextH = Text.GetHeight()
+			local Top = TY - TextH
+			local Bottom = TY + Instance.H + TextH * 2
+			local H = #Instance.Lines * TextH
+			local TopLineNo = math.max(math.floor((Top / H) * #Instance.Lines), 1)
+			local BottomLineNo = math.min(math.floor((Bottom / H) * #Instance.Lines), #Instance.Lines)
+
+			local Index = 1
+			local EndIndex = 1
+			for I = 1, BottomLineNo, 1 do
+				local Count = string.len(Instance.Lines[I])
+				if I < TopLineNo then
+					Index = Index + Count
+				end
+
+				EndIndex = EndIndex + Count
+			end
+
+			if Index > 1 then
+				table.insert(ColoredText, BaseColor)
+				table.insert(ColoredText, string.sub(Instance.Text, 1, Index - 1))
+			end
+
+			while Index < EndIndex do
+				local MatchIndex = nil
+				local Key = nil
+				for K, V in pairs(Highlight) do
+					local Found = nil
+					local Anchor = Index
+					repeat
+						Found = string.find(Instance.Text, K, Anchor, true)
+
+						if Found ~= nil then
+							local FoundEnd = Found + string.len(K)
+							local Prev = string.sub(Instance.Text, Found - 1, Found - 1)
+							local Next = string.sub(Instance.Text, FoundEnd, FoundEnd)
+							
+							if Found == 1 then
+								Prev = nil
+							end
+
+							if FoundEnd > string.len(Instance.Text) then
+								Next = nil
+							end
+
+							if not (IsHighlightTerminator(Prev) and IsHighlightTerminator(Next)) then
+								Anchor = Found + 1
+								Found = nil
+							end
+						else
+							break
+						end
+					until Found ~= nil
+
+					if Found ~= nil then
+						if MatchIndex == nil then
+							MatchIndex = Found
+							Key = K
+						elseif Found < MatchIndex then
+							MatchIndex = Found
+							Key = K
+						end
+					end
+				end
+
+				if Key ~= nil then
+					table.insert(ColoredText, BaseColor)
+					table.insert(ColoredText, string.sub(Instance.Text, Index, MatchIndex - 1))
+
+					table.insert(ColoredText, Highlight[Key])
+					table.insert(ColoredText, Key)
+
+					Index = MatchIndex + string.len(Key)
+				else
+					table.insert(ColoredText, BaseColor)
+					table.insert(ColoredText, string.sub(Instance.Text, Index, EndIndex))
+					Index = EndIndex
+					break
+				end
+			end
+
+			if Index < string.len(Instance.Text) then
+				table.insert(ColoredText, BaseColor)
+				table.insert(ColoredText, string.sub(Instance.Text, Index))
+			end
+
+			--print(string.format("UpdateTextObject Time: %f", (love.timer.getTime() - StartTime)))
+		end
+
+		if #ColoredText == 0 then
+			ColoredText = {BaseColor, Instance.Text}
+		end
+
+		Instance.TextObject:setf(ColoredText, Width, Align)
+	end
+end
+
 local function GetInstance(Id)
 	for I, V in ipairs(Instances) do
 		if V.Id == Id then
@@ -703,6 +818,7 @@ local function GetInstance(Id)
 	Instance.MaxNumber = nil
 	Instance.Lines = nil
 	Instance.TextObject = nil
+	Instance.Highlight = nil
 	table.insert(Instances, Instance)
 	return Instance
 end
@@ -716,6 +832,7 @@ function Input.Begin(Id, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
 	Options.Text = Options.Text == nil and nil or Options.Text
+	Options.TextColor = Options.TextColor == nil and nil or Options.TextColor
 	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
 	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
 	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
@@ -728,6 +845,7 @@ function Input.Begin(Id, Options)
 	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
 	Options.MultiLine = Options.MultiLine == nil and false or Options.MultiLine
 	Options.MultiLineW = Options.MultiLineW == nil and math.huge or Options.MultiLineW
+	Options.Highlight = Options.Highlight == nil and nil or Options.Highlight
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -735,6 +853,10 @@ function Input.Begin(Id, Options)
 
 	if type(Options.MaxNumber) ~= "number" then
 		Options.MaxNumber = nil
+	end
+
+	if Options.MultiLine then
+		Options.TextColor = Style.MultilineTextColor
 	end
 
 	local Instance = GetInstance(Window.GetId() .. "." .. Id)
@@ -798,6 +920,8 @@ function Input.Begin(Id, Options)
 		ContentW, ContentH = Text.GetSizeWrap(Instance.Text, Options.MultiLineW)
 	end
 
+	local ShouldUpdateTextObject = false
+
 	if Instance.Lines == nil and Instance.Text ~= "" then
 		if Options.MultiLine then
 			if Instance.TextObject == nil then
@@ -805,8 +929,33 @@ function Input.Begin(Id, Options)
 			end
 			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
 			ContentH = #Instance.Lines * Text.GetHeight()
-			Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
+			ShouldUpdateTextObject = true
 		end
+	end
+
+	if Options.Highlight ~= nil then
+		if Instance.Highlight == nil or Utility.TableCount(Options.Highlight) ~= Utility.TableCount(Instance.Highlight) then
+			Instance.Highlight = Utility.Copy(Options.Highlight)
+			ShouldUpdateTextObject = true
+		else
+			for K, V in pairs(Options.Highlight) do
+				local HighlightColor = Instance.Highlight[K]
+				if HighlightColor ~= nil then
+					if V[1] ~= HighlightColor[1] or V[2] ~= HighlightColor[2] or V[3] ~= HighlightColor[3] or V[4] ~= HighlightColor[4] then
+						ShouldUpdateTextObject = true
+						break
+					end
+				else
+					Instance.Highlight = Utility.Copy(Options.Highlight)
+					ShouldUpdateTextObject = true
+					break
+				end
+			end
+		end
+	end
+
+	if ShouldUpdateTextObject then
+		UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
 	end
 
 	local IsObstructed = Window.IsObstructedAtMouse()
@@ -1006,10 +1155,7 @@ function Input.Begin(Id, Options)
 
 			if Options.MultiLine then
 				Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
-
-				if Instance.TextObject ~= nil then
-					Instance.TextObject:setf(Instance.Text, Options.MultiLineW, Instance.Align)
-				end
+				UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
 			end
 
 			UpdateMultiLinePosition(Instance)
@@ -1031,6 +1177,14 @@ function Input.Begin(Id, Options)
 		if WasValidated then
 			Result = true
 			LastText = Instance.Text
+		end
+	end
+
+	if Region.IsScrolling(Instance.Id) then
+		local DeltaX, DeltaY = Mouse.GetDelta()
+
+		if DeltaY ~= 0.0 then
+			UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
 		end
 	end
 
@@ -1067,7 +1221,7 @@ function Input.Begin(Id, Options)
 		if Instance.TextObject ~= nil then
 			Text.BeginObject(Instance.TextObject)
 		else
-			Text.Begin(Instance.Text, {AddItem = false})
+			Text.Begin(Instance.Text, {AddItem = false, Color = Options.TextColor})
 		end
 	end
 	Region.End()
