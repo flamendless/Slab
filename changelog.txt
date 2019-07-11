@@ -1,6 +1,5 @@
 v0.6.0 RELEASE
 ==========
-[API]: Update version string.
 [API]: Expose Stats interface.
 [Group]: Initial implementation of grouping of controls. Controls with their options are stored until grouping ends. Then position is calculated based on each control size.
 [Style]: Push/Pop fonts.
