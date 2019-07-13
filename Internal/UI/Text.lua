@@ -35,7 +35,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 local Text = {}
 
 function Text.Begin(Label, Options)
-	Stats.Begin('Text')
+	local StatHandle = Stats.Begin('Text', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
@@ -95,13 +95,13 @@ function Text.Begin(Label, Options)
 		Window.AddItem(X, Y, W + PadX, H, WinId)
 	end
 
-	Stats.End('Text')
+	Stats.End(StatHandle)
 
 	return Result
 end
 
 function Text.BeginFormatted(Label, Options)
-	Stats.Begin('Textf')
+	local StatHandle = Stats.Begin('Textf', 'Slab')
 
 	local WinW, WinH = Window.GetBorderlessSize()
 
@@ -123,10 +123,12 @@ function Text.BeginFormatted(Label, Options)
 	Window.ResetContentSize()
 	Window.AddItem(math.floor(X), math.floor(Y), Width, H)
 
-	Stats.End('Textf')
+	Stats.End(StatHandle)
 end
 
 function Text.BeginObject(Object, Options)
+	local StatHandle = Stats.Begin('TextObject', 'Slab')
+
 	local WinW, WinH = Window.GetBorderlessSize()
 
 	Options = Options == nil and {} or Options
@@ -142,6 +144,8 @@ function Text.BeginObject(Object, Options)
 
 	Window.ResetContentSize()
 	Window.AddItem(math.floor(X), math.floor(Y), W, H)
+
+	Stats.End(StatHandle)
 end
 
 function Text.GetWidth(Label)

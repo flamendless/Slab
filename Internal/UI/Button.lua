@@ -42,7 +42,7 @@ local Radius = 8.0
 local ClickedId = nil
 
 function Button.Begin(Label, Options)
-	Stats.Begin('Button')
+	local StatHandle = Stats.Begin('Button', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
@@ -120,13 +120,13 @@ function Button.Begin(Label, Options)
 
 	Window.AddItem(X, Y, W, H, Id)
 
-	Stats.End('Button')
+	Stats.End(StatHandle)
 
 	return Result
 end
 
 function Button.BeginRadio(Label, Options)
-	Stats.Begin('RadioButton')
+	local StatHandle = Stats.Begin('RadioButton', 'Slab')
 
 	Label = Label == nil and "" or Label
 
@@ -191,7 +191,7 @@ function Button.BeginRadio(Label, Options)
 
 	Window.AddItem(X, Y, W, H)
 
-	Stats.End('RadioButton')
+	Stats.End(StatHandle)
 
 	return Result
 end

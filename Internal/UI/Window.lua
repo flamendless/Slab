@@ -115,6 +115,7 @@ local function NewInstance(Id)
 	Instance.FrameNumber = 0
 	Instance.LastCursorX = 0
 	Instance.LastCursorY = 0
+	Instance.StatHandle = nil
 	return Instance
 end
 
@@ -428,7 +429,7 @@ function Window.Reset()
 end
 
 function Window.Begin(Id, Options)
-	Stats.Push('Window')
+	local StatHandle = Stats.Begin('Window', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.X = Options.X == nil and 50.0 or Options.X
@@ -523,6 +524,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.CanObstruct = Options.CanObstruct
 	ActiveInstance.ColumnY = nil
 	ActiveInstance.FrameNumber = CurrentFrameNumber
+	ActiveInstance.StatHandle = StatHandle
 
 	if ActiveInstance.StackIndex == 0 then
 		table.insert(Stack, 1, ActiveInstance)
@@ -616,6 +618,7 @@ end
 
 function Window.End()
 	if ActiveInstance ~= nil then
+		local Handle = ActiveInstance.StatHandle
 		DrawColumns(ActiveInstance)
 		Region.End()
 		DrawCommands.End()
@@ -629,9 +632,9 @@ function Window.End()
 			DrawCommands.SetLayer(ActiveInstance.Layer)
 			Region.ApplyScissor()
 		end
-	end
 
-	Stats.Pop()
+		Stats.End(Handle)
+	end
 end
 
 function Window.GetMousePosition()

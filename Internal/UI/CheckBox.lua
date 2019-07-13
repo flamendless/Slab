@@ -38,7 +38,7 @@ local CheckBox = {}
 local Radius = 8.0
 
 function CheckBox.Begin(Enabled, Label, Options)
-	Stats.Begin('CheckBox')
+	local StatHandle = Stats.Begin('CheckBox', 'Slab')
 
 	Label = Label == nil and "" or Label
 
@@ -89,7 +89,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 
 	Window.AddItem(X, Y, W, H, Id)
 
-	Stats.End('CheckBox')
+	Stats.End(StatHandle)
 
 	return Result
 end

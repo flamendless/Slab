@@ -56,7 +56,7 @@ local function GetInstance(Id)
 end
 
 function Image.Begin(Id, Options)
-	Stats.Begin('Image')
+	local StatHandle = Stats.Begin('Image', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
@@ -125,7 +125,7 @@ function Image.Begin(Id, Options)
 
 	Window.AddItem(X, Y, W, H, WinItemId)
 
-	Stats.End('Image')
+	Stats.End(StatHandle)
 end
 
 return Image

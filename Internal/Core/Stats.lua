@@ -27,102 +27,116 @@ SOFTWARE.
 local Stats = {}
 
 local Data = {}
-local Stack = {}
+local Pending = {}
 local Enabled = false
 local QueueEnabled = false
+local Id = 1
 
-local function CreateCategory(Category)
+local function GetCategory(Category)
+	assert(Category ~= nil, "Nil category given to Stats system.")
+	assert(Category ~= '', "Empty category given to Stats system.")
+	assert(type(Category) == 'string', "Category given is not of type string. Type given is '" .. type(Category) .. "'.")
+
 	if Data[Category] == nil then
-		local Instance = {}
-		Instance.StartTime = 0.0
-		Instance.Time = 0.0
-		Instance.CallCount = 0
-		Instance.LastTime = 0.0
-		Instance.LastCallCount = 0.0
-		Data[Category] = Instance
+		Data[Category] = {}
 	end
 
 	return Data[Category]
 end
 
-function Stats.Begin(Category)
-	if not Enabled then
-		return
-	end
-
-	local Instance = CreateCategory(Category)
-
-	Instance.StartTime = love.timer.getTime()
-	Instance.CallCount = Instance.CallCount + 1
-end
-
-function Stats.End(Category)
-	if not Enabled then
-		return
-	end
-
+local function ResetCategory(Category)
 	local Instance = Data[Category]
-	assert(Instance ~= nil, "Tried to call Stats.End without properly calling Stats.Begin for category '" .. Category .. "'.")
 
-	Instance.Time = Instance.Time + (love.timer.getTime() - Instance.StartTime)
+	if Instance ~= nil then
+		for K, V in pairs(Instance) do
+			V.LastTime = V.Time
+			V.LastCallCount = V.CallCount
+			V.MaxTime = math.max(V.MaxTime, V.Time)
+			V.Time = 0.0
+			V.CallCount = 0
+		end
+	end
 end
 
-function Stats.Push(Category)
+local function GetItem(Name, Category)
+	assert(Name ~= nil, "Nil name given to Stats system.")
+	assert(Name ~= '', "Empty name given to Stats system.")
+
+	local Cat = GetCategory(Category)
+
+	if Cat[Name] == nil then
+		local Instance = {}
+		Instance.Time = 0.0
+		Instance.MaxTime = 0.0
+		Instance.CallCount = 0
+		Instance.LastTime = 0.0
+		Instance.LastCallCount = 0.0
+		Cat[Name] = Instance
+	end
+
+	return Cat[Name]
+end
+
+function Stats.Begin(Name, Category)
 	if not Enabled then
 		return
 	end
 
-	local Instance = CreateCategory(Category)
-	Instance.CallCount = Instance.CallCount + 1
+	local Handle = Id
+	Id = Id + 1
 
-	local Item = {}
-	Item.Category = Category
-	Item.StartTime = love.timer.getTime()
+	local Instance = {StartTime = love.timer.getTime(), Name = Name, Category = Category}
+	Pending[Handle] = Instance
 
-	table.insert(Stack, 1, Item)
+	return Handle
 end
 
-function Stats.Pop()
+function Stats.End(Handle)
 	if not Enabled then
 		return
 	end
 
-	assert(#Stack > 0, "Unable to pop stat. No stats were pushed to the stack!")
+	assert(Handle ~= nil, "Nil handle given to Stats.End.")
 
-	local Item = Stack[1]
-	local Instance = Data[Item.Category]
+	local Instance = Pending[Handle]
+	assert(Instance ~= nil, "Invalid handle given to Stats.End.")
+	Pending[Handle] = nil
 
-	assert(Instance ~= nil, "Tried to call Stats.Pop without properly calling Stats.Push for category '" .. Item.Category .. "'.")
+	local Elapsed = love.timer.getTime() - Instance.StartTime
 
-	Instance.Time = Instance.Time + (love.timer.getTime() - Item.StartTime)
-
-	table.remove(Stack, 1)
+	local Item = GetItem(Instance.Name, Instance.Category)
+	Item.CallCount = Item.CallCount + 1
+	Item.Time = Item.Time + Elapsed
 end
 
-function Stats.GetTime(Category, Last)
+function Stats.GetTime(Name, Category)
 	if not Enabled then
 		return 0.0
 	end
 
-	local Instance = Data[Category]
-	if Instance == nil then
+	local Item = GetItem(Name, Category)
+
+	return Item.Time > 0.0 and Item.Time or Item.LastTime
+end
+
+function Stats.GetMaxTime(Name, Category)
+	if not Enabled then
 		return 0.0
 	end
 
-	return Last and Instance.LastTime or Instance.Time
+	local Item = GetItem(Name, Category)
+
+	return Item.MaxTime
 end
 
-function Stats.GetCallCount(Category, Last)
+function Stats.GetCallCount(Name, Category)
 	if not Enabled then
 		return 0
 	end
 
-	local Instance = Data[Category]
-	if Instance == nil then
-		return 0
-	end
+	local Item = GetItem(Name, Category)
 	
-	return Last and Instance.LastCallCount or Instance.CallCount
+	return Item.CallCount > 0 and Item.CallCount or Item.LastCallCount
 end
 
 function Stats.Reset()
@@ -135,20 +149,46 @@ function Stats.Reset()
 		return
 	end
 
-	if #Stack > 0 then
-		assert(false, "Stats stack is not empty! Stack item '" .. Stack[1].Category .. "' was not popped!")
+	local Message = nil
+	for K, V in pairs(Pending) do
+		if Message == nil then
+			Message = "Stats.End were not called for the given stats: \n"
+		end
+
+		Message = Message .. "\t" .. tostring(V.Name) .. " in " .. tostring(V.Category) .. "\n"
 	end
 
+	assert(Message == nil, Message)
+
 	for K, V in pairs(Data) do
-		V.LastTime = V.Time
-		V.LastCallCount = V.CallCount
-		V.CallCount = 0
-		V.Time = 0.0
+		ResetCategory(K)
 	end
 end
 
 function Stats.SetEnabled(IsEnabled)
 	QueueEnabled = IsEnabled
+end
+
+function Stats.GetCategories()
+	local Result = {}
+
+	for K, V in pairs(Data) do
+		table.insert(Result, K)
+	end
+
+	return Result
+end
+
+function Stats.GetItems(Category)
+	local Result = {}
+
+	local Instance = GetCategory(Category)
+
+	for K, V in pairs(Instance) do
+		table.insert(Result, K)
+	end
+
+	return Result
 end
 
 return Stats

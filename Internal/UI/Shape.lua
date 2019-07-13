@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Shape = {}
@@ -33,6 +34,8 @@ local Curve = nil
 local CurveX, CurveY = 0, 0
 
 function Shape.Rectangle(Options)
+	local StatHandle = Stats.Begin('Rectangle', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
 	Options.W = Options.W == nil and 32 or Options.W
@@ -56,9 +59,13 @@ function Shape.Rectangle(Options)
 	Window.AddItem(X, Y, W, H)
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
+
+	Stats.End(StatHandle)
 end
 
 function Shape.Circle(Options)
+	local StatHandle = Stats.Begin('Circle', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
 	Options.Radius = Options.Radius == nil and 12.0 or Options.Radius
@@ -74,9 +81,13 @@ function Shape.Circle(Options)
 	Window.AddItem(X, Y, Diameter, Diameter)
 	Cursor.SetItemBounds(X, Y, Diameter, Diameter)
 	Cursor.AdvanceY(Diameter)
+
+	Stats.End(StatHandle)
 end
 
 function Shape.Triangle(Options)
+	local StatHandle = Stats.Begin('Triangle', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
 	Options.Radius = Options.Radius == nil and 12 or Options.Radius
@@ -92,9 +103,13 @@ function Shape.Triangle(Options)
 	Window.AddItem(X, Y, Diameter, Diameter)
 	Cursor.SetItemBounds(X, Y, Diameter, Diameter)
 	Cursor.AdvanceY(Diameter)
+
+	Stats.End(StatHandle)
 end
 
 function Shape.Line(X2, Y2, Options)
+	local StatHandle = Stats.Begin('Line', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Width = Options.Width == nil and 1.0 or Options.Width
 	Options.Color = Options.Color == nil and nil or Options.Color
@@ -107,9 +122,13 @@ function Shape.Line(X2, Y2, Options)
 	Window.AddItem(X, Y, W, H)
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
+
+	Stats.End(StatHandle)
 end
 
 function Shape.Curve(Points, Options)
+	local StatHandle = Stats.Begin('Curve', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Depth = Options.Depth == nil and nil or Options.Depth
@@ -137,6 +156,8 @@ function Shape.Curve(Points, Options)
 	Window.AddItem(MinX, MinY, W, H)
 	Cursor.SetItemBounds(MinX, MinY, W, H)
 	Cursor.AdvanceY(H)
+
+	Stats.End(StatHandle)
 end
 
 function Shape.GetCurveControlPointCount()
@@ -188,6 +209,8 @@ function Shape.EvaluateCurve(Time, Options)
 end
 
 function Shape.Polygon(Points, Options)
+	local StatHandle = Stats.Begin('Polygon', 'Slab')
+
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
@@ -215,6 +238,8 @@ function Shape.Polygon(Points, Options)
 	Window.AddItem(MinX, MinY, W, H)
 	Cursor.SetItemBounds(MinX, MinY, W, H)
 	Cursor.AdvanceY(H)
+
+	Stats.End(StatHandle)
 end
 
 return Shape

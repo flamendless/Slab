@@ -48,13 +48,14 @@ local function GetInstance(Id)
 		Instance.WasOpened = false
 		Instance.WinW = 0.0
 		Instance.WinH = 0.0
+		Instance.StatHandle = nil
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
 end
 
 function ComboBox.Begin(Id, Options)
-	Stats.Begin('ComboBox')
+	local StatHandle = Stats.Begin('ComboBox', 'Slab')
 
 	Options = Options ~= nil and Options or {}
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
@@ -82,6 +83,7 @@ function ComboBox.Begin(Id, Options)
 	Instance.W = W
 	Instance.H = H
 	Instance.WinH = math.min(Instance.WinH, Options.WinH)
+	Instance.StatHandle = StatHandle
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	local MouseClicked = Mouse.IsClicked(1)
@@ -138,7 +140,7 @@ function ComboBox.Begin(Id, Options)
 		})
 		Active = Instance
 	else
-		Stats.End('ComboBox')
+		Stats.End(Instance.StatHandle)
 	end
 
 	return Instance.IsOpen
@@ -147,6 +149,7 @@ end
 function ComboBox.End()
 	local Y = 0.0
 	local H = 0.0
+	local StatHandle = nil
 
 	if Active ~= nil then
 		Cursor.SetItemBounds(Active.X, Active.Y, Active.W, Active.H)
@@ -154,6 +157,7 @@ function ComboBox.End()
 		local ContentW, ContentH = Window.GetContentSize()
 		Active.WinH = ContentH
 		Active.WinW = math.max(ContentW, Active.W)
+		StatHandle = Active.StatHandle
 		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
 			Active.IsOpen = false
 			Active = nil
@@ -169,7 +173,7 @@ function ComboBox.End()
 		Cursor.AdvanceY(H)
 	end
 
-	Stats.End('ComboBox')
+	Stats.End(StatHandle)
 end
 
 return ComboBox

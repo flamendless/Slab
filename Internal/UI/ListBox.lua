@@ -65,13 +65,14 @@ local function GetInstance(Id)
 		Instance.ActiveItem = nil
 		Instance.HotItem = nil
 		Instance.Selected = false
+		Instance.StatHandle = nil
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
 end
 
 function ListBox.Begin(Id, Options)
-	Stats.Begin('ListBox')
+	local StatHandle = Stats.Begin('ListBox', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.H = Options.H == nil and 150.0 or Options.H
@@ -102,6 +103,7 @@ function ListBox.Begin(Id, Options)
 	Instance.Y = Y
 	Instance.W = W
 	Instance.H = H
+	Instance.StatHandle = StatHandle
 	ActiveInstance = Instance
 
 	local IsObstructed = Window.IsObstructedAtMouse()
@@ -195,9 +197,9 @@ function ListBox.End()
 	Cursor.SetPosition(ActiveInstance.X, ActiveInstance.Y)
 	Cursor.AdvanceY(ActiveInstance.H)
 
-	ActiveInstance = nil
+	Stats.End(ActiveInstance.StatHandle)
 
-	Stats.End('ListBox')
+	ActiveInstance = nil
 end
 
 return ListBox

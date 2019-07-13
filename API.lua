@@ -183,6 +183,7 @@ local Version_Minor = 6
 local Version_Revision = 0
 
 local FrameNumber = 0
+local FrameStatHandle = nil
 
 local function TextInput(Ch)
 	Input.Text(Ch)
@@ -253,8 +254,8 @@ function Slab.Update(dt)
 	FrameNumber = FrameNumber + 1
 
 	Stats.Reset()
-	Stats.Begin('Frame')
-	Stats.Begin('Update')
+	FrameStatHandle = Stats.Begin('Frame', 'Slab')
+	local StatHandle = Stats.Begin('Update', 'Slab')
 
 	Mouse.Update()
 	Keyboard.Update()
@@ -270,7 +271,7 @@ function Slab.Update(dt)
 		end
 	end
 
-	Stats.End('Update')
+	Stats.End(StatHandle)
 end
 
 --[[
@@ -283,7 +284,7 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
-	Stats.Begin('Draw')
+	local StatHandle = Stats.Begin('Draw', 'Slab')
 
 	Window.Validate()
 
@@ -300,8 +301,8 @@ function Slab.Draw()
 
 	DrawCommands.Execute()
 
-	Stats.End('Draw')
-	Stats.End('Frame')
+	Stats.End(StatHandle)
+	Stats.End(FrameStatHandle)
 end
 
 --[[
@@ -749,6 +750,20 @@ end
 --]]
 function Slab.GetTextSize(Label)
 	return Text.GetSize(Label)
+end
+
+--[[
+	GetTextWidth
+
+	Retrieves the width of the given text. The result is based on the current font.
+
+	Label: [String] The string to retrieve the width for.
+
+	Return: [Number] The width of the given text.
+--]]
+function Slab.GetTextWidth(Label)
+	local W, H = Slab.GetTextSize(Label)
+	return W
 end
 
 --[[

@@ -101,60 +101,82 @@ local function DrawCommands_Item(Root, Label)
 	end
 end
 
-local function PrintStatsCategory(Label, Category, Last, AddSeparator)
-	Slab.BeginColumn(1)
-	Slab.Text(Label)
-	if AddSeparator then
-		Slab.Separator()
-	end
-	Slab.EndColumn()
-
-	Slab.BeginColumn(2)
-	Slab.Text(string.format("%.5f", Stats.GetTime(Category, Last)), {CenterX = true})
-	if AddSeparator then
-		Slab.Separator()
-	end
-	Slab.EndColumn()
-
-	Slab.BeginColumn(3)
-	Slab.Text(Stats.GetCallCount(Category, Last), {CenterX = true})
-	if AddSeparator then
-		Slab.Separator()
-	end
-	Slab.EndColumn()
-end
+local DrawPerformance_Category = nil
 
 local function DrawPerformance()
-	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance", Columns = 3, AutoSizeWindow = false, W = 450.0, H = 350.0})
-	Slab.BeginColumn(1)
-	Slab.Text("Category", {CenterX = true})
-	Slab.Separator()
-	Slab.EndColumn()
+	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance"})
 
-	Slab.BeginColumn(2)
-	Slab.Text("Time", {CenterX = true})
-	Slab.Separator()
-	Slab.EndColumn()
+	local Categories = Stats.GetCategories()
 
-	Slab.BeginColumn(3)
-	Slab.Text("Call Count", {CenterX = true})
-	Slab.Separator()
-	Slab.EndColumn()
+	if DrawPerformance_Category == nil then
+		DrawPerformance_Category = Categories[1]
+	end
 
-	PrintStatsCategory("Frame Time", 'Frame', true)
-	PrintStatsCategory("Update Time", 'Update')
-	PrintStatsCategory("Draw Time", 'Draw', true, true)
-	PrintStatsCategory("Button Time", 'Button')
-	PrintStatsCategory("Radio Button Time", 'RadioButton')
-	PrintStatsCategory("Check Box Time", 'CheckBox')
-	PrintStatsCategory("Combo Box Time", 'ComboBox')
-	PrintStatsCategory("Image Time", 'Image')
-	PrintStatsCategory("Input Time", 'Input')
-	PrintStatsCategory("List Box Time", 'ListBox')
-	PrintStatsCategory("Text Time", 'Text')
-	PrintStatsCategory("Text Formatted Time", 'Textf')
-	PrintStatsCategory("Tree Time", 'Tree')
-	PrintStatsCategory("Window Time", 'Window')
+	local WinW, WinH = Slab.GetWindowActiveSize()
+
+	if Slab.BeginComboBox('DrawPerformance_Categories', {Selected = DrawPerformance_Category, W = WinW}) then
+		for I, V in ipairs(Categories) do
+			if Slab.TextSelectable(V) then
+				DrawPerformance_Category = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.Separator()
+
+	if DrawPerformance_Category ~= nil then
+		local Items = Stats.GetItems(DrawPerformance_Category)
+
+		local Pad = 50.0
+		local MaxW = 0.0
+		for I, V in ipairs(Items) do
+			MaxW = math.max(MaxW, Slab.GetTextWidth(V))
+		end
+
+		local CursorX, CursorY = Slab.GetCursorPos()
+		Slab.SetCursorPos(MaxW * 0.5 - Slab.GetTextWidth("Stat") * 0.5)
+		Slab.Text("Stat")
+
+		local TimeX = MaxW + Pad
+		local TimeW = Slab.GetTextWidth("Time")
+		local TimeItemW = Slab.GetTextWidth(string.format("%.4f", 0.0))
+		Slab.SetCursorPos(TimeX, CursorY)
+		Slab.Text("Time")
+
+		local MaxTimeX = TimeX + TimeW + Pad
+		local MaxTimeW = Slab.GetTextWidth("Max Time")
+		Slab.SetCursorPos(MaxTimeX, CursorY)
+		Slab.Text("Max Time")
+
+		local CallCountX = MaxTimeX + MaxTimeW + Pad
+		local CallCountW = Slab.GetTextWidth("Call Count")
+		Slab.SetCursorPos(CallCountX, CursorY)
+		Slab.Text("Call Count")
+
+		Slab.Separator()
+
+		for I, V in ipairs(Items) do
+			local Time = Stats.GetTime(V, DrawPerformance_Category)
+			local MaxTime = Stats.GetMaxTime(V, DrawPerformance_Category)
+			local CallCount = Stats.GetCallCount(V, DrawPerformance_Category)
+
+			CursorX, CursorY = Slab.GetCursorPos()
+			Slab.SetCursorPos(MaxW * 0.5 - Slab.GetTextWidth(V) * 0.5)
+			Slab.Text(V)
+
+			Slab.SetCursorPos(TimeX + TimeW * 0.5 - TimeItemW * 0.5, CursorY)
+			Slab.Text(string.format("%.4f", Time))
+
+			Slab.SetCursorPos(MaxTimeX + MaxTimeW * 0.5 - TimeItemW * 0.5, CursorY)
+			Slab.Text(string.format("%.4f", MaxTime))
+
+			Slab.SetCursorPos(CallCountX + CallCountW * 0.5 - Slab.GetTextWidth(CallCount) * 0.5, CursorY)
+			Slab.Text(CallCount)
+		end
+	end
+
 	Slab.EndWindow()
 end
 

@@ -3,8 +3,11 @@ v0.6.0 RELEASE
 [API]: Expose Stats interface.
 [Group]: Initial implementation of grouping of controls. Controls with their options are stored until grouping ends. Then position is calculated based on each control size.
 [Style]: Push/Pop fonts.
+[Stats]: Add stats for DrawCommands.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
+[Slab Test]: Test when Slab is not in the root directory.
+[Text]: GetTextSize, GetTextWidth documentation.
 
 BUGS
 ==========
@@ -51,6 +54,7 @@ Region: Clamp position check with owning window's size.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
 [Separator]: Option to change the line thickness.
 [Slab]: Store settings such as window positions and style.
+[Slab]: Move all love.* calls into interfaces for portability with other Lua based frameworks.
 SlabDebug: Show image stats.
 [SlabDebug]: Window management tools.
 [Stats]: Draw time draw command.

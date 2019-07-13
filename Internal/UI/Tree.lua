@@ -55,13 +55,14 @@ local function GetInstance(Id)
 		Instance.IsOpen = false
 		Instance.WasOpen = false
 		Instance.Id = Id
+		Instance.StatHandle = nil
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
 end
 
 function Tree.Begin(Id, Options)
-	Stats.Push('Tree')
+	local StatHandle = Stats.Begin('Tree', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.Label = Options.Label == nil and Id or Options.Label
@@ -75,6 +76,7 @@ function Tree.Begin(Id, Options)
 	local Instance = GetInstance(Id)
 
 	Instance.WasOpen = Instance.IsOpen
+	Instance.StatHandle = StatHandle
 
 	local WinItemId = Window.GetItemId(Instance.Id)
 	local X, Y = Cursor.GetPosition()
@@ -162,13 +164,14 @@ function Tree.Begin(Id, Options)
 	Window.AddItem(X, Y, (WinW + WinX) - Instance.X, H, WinItemId)
 
 	if not Instance.IsOpen then
-		Stats.Pop()
+		Stats.End(Instance.StatHandle)
 	end
 
 	return Instance.IsOpen
 end
 
 function Tree.End()
+	local StatHandle = Hierarchy[1].StatHandle
 	table.remove(Hierarchy, 1)
 	local Instance = Hierarchy[1]
 	if Instance ~= nil then
@@ -177,7 +180,7 @@ function Tree.End()
 		Cursor.SetX(Cursor.GetAnchorX())
 	end
 
-	Stats.Pop()
+	Stats.End(StatHandle)
 end
 
 return Tree

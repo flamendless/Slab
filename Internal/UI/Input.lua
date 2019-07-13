@@ -827,7 +827,7 @@ end
 function Input.Begin(Id, Options)
 	assert(Id ~= nil, "Please pass a valid Id into Slab.Input.")
 
-	Stats.Begin('Input')
+	local StatHandle = Stats.Begin('Input', 'Slab')
 
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
@@ -1252,7 +1252,7 @@ function Input.Begin(Id, Options)
 		end
 	end
 
-	Stats.End('Input')
+	Stats.End(StatHandle)
 
 	return Result
 end
