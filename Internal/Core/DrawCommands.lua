@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+
 local DrawCommands = {}
 
 local LayerTable = {}
@@ -64,6 +66,7 @@ local Layers =
 }
 
 local ActiveLayer = Layers.Normal
+local StatsCategory = 'Slab Draw'
 
 local function AddArc(Verts, CenterX, CenterY, Radius, Angle1, Angle2, Segments, X, Y)
 	if Radius == 0 then
@@ -99,8 +102,12 @@ local function GetLayerDebugInfo(Layer)
 end
 
 local function DrawRect(Rect)
+	local StatHandle = Stats.Begin('DrawRect', StatsCategory)
+
 	love.graphics.setColor(Rect.Color)
 	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
+
+	Stats.End(StatHandle)
 end
 
 local function GetTriangleVertices(X, Y, Radius, Rotation)
@@ -132,12 +139,18 @@ local function GetTriangleVertices(X, Y, Radius, Rotation)
 end
 
 local function DrawTriangle(Triangle)
+	local StatHandle = Stats.Begin('DrawTriangle', StatsCategory)
+
 	love.graphics.setColor(Triangle.Color)
 	local Vertices = GetTriangleVertices(Triangle.X, Triangle.Y, Triangle.Radius, Triangle.Rotation)
 	love.graphics.polygon(Triangle.Mode, Vertices)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawCheck(Check)
+	local StatHandle = Stats.Begin('DrawCheck', StatsCategory)
+
 	love.graphics.setColor(Check.Color)
 	local Vertices =
 	{
@@ -146,67 +159,131 @@ local function DrawCheck(Check)
 		Check.X + Check.Radius, Check.Y - Check.Radius
 	}
 	love.graphics.line(Vertices)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawText(Text)
+	local StatHandle = Stats.Begin('DrawText', StatsCategory)
+
 	love.graphics.setFont(Text.Font)
 	love.graphics.setColor(Text.Color)
 	love.graphics.print(Text.Text, Text.X, Text.Y)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawTextFormatted(Text)
+	local StatHandle = Stats.Begin('DrawTextFormatted', StatsCategory)
+
 	love.graphics.setFont(Text.Font)
 	love.graphics.setColor(Text.Color)
 	love.graphics.printf(Text.Text, Text.X, Text.Y, Text.W, Text.Align)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawTextObject(Text)
+	local StatHandle = Stats.Begin('DrawTextObject', StatsCategory)
+
 	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.draw(Text.Text, Text.X, Text.Y)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawLine(Line)
+	local StatHandle = Stats.Begin('DrawLine', StatsCategory)
+
 	love.graphics.setColor(Line.Color)
 	local LineW = love.graphics.getLineWidth()
 	love.graphics.setLineWidth(Line.Width)
 	love.graphics.line(Line.X1, Line.Y1, Line.X2, Line.Y2)
 	love.graphics.setLineWidth(LineW)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawCross(Cross)
+	local StatHandle = Stats.Begin('DrawCross', StatsCategory)
+
 	local X, Y = Cross.X, Cross.Y
 	local R = Cross.Radius
 	love.graphics.setColor(Cross.Color)
 	love.graphics.line(X - R, Y - R, X + R, Y + R)
 	love.graphics.line(X - R, Y + R, X + R, Y - R)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawImage(Image)
+	local StatHandle = Stats.Begin('DrawImage', StatsCategory)
+
 	love.graphics.setColor(Image.Color)
 	love.graphics.draw(Image.Image, Image.X, Image.Y, Image.Rotation, Image.ScaleX, Image.ScaleY)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawSubImage(Image)
+	local StatHandle = Stats.Begin('DrawSubImage', StatsCategory)
+
 	love.graphics.setColor(Image.Color)
 	love.graphics.draw(Image.Image, Image.Quad, Image.Transform)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawCircle(Circle)
+	local StatHandle = Stats.Begin('DrawCircle', StatsCategory)
+
 	love.graphics.setColor(Circle.Color)
 	love.graphics.circle(Circle.Mode, Circle.X, Circle.Y, Circle.Radius, Circle.Segments)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawCurve(Curve)
+	local StatHandle = Stats.Begin('DrawCurve', StatsCategory)
+
 	love.graphics.setColor(Curve.Color)
 	love.graphics.line(Curve.Points)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawPolygon(Polygon)
+	local StatHandle = Stats.Begin('DrawPolygon', StatsCategory)
+
 	love.graphics.setColor(Polygon.Color)
 	love.graphics.polygon(Polygon.Mode, Polygon.Points)
+
+	Stats.End(StatHandle)
+end
+
+local function DrawCanvas(Canvas)
+	local StatHandle = Stats.Begin('DrawCanvas', StatsCategory)
+
+	love.graphics.setBlendMode('alpha', 'premultiplied')
+	love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+	love.graphics.draw(Canvas.Canvas, Canvas.X, Canvas.Y)
+	love.graphics.setBlendMode('alpha')
+
+	Stats.End(StatHandle)
+end
+
+local function DrawMesh(Mesh)
+	local StatHandle = Stats.Begin('DrawMesh', StatsCategory)
+
+	love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
+	love.graphics.draw(Mesh.Mesh, Mesh.X, Mesh.Y)
+
+	Stats.End(StatHandle)
 end
 
 local function DrawElements(Elements)
+	local StatHandle = Stats.Begin('Draw Elements', StatsCategory)
+
 	for K, V in pairs(Elements) do
 		if V.Type == Types.Rect then
 			DrawRect(V)
@@ -239,13 +316,9 @@ local function DrawElements(Elements)
 		elseif V.Type == Types.Circle then
 			DrawCircle(V)
 		elseif V.Type == Types.DrawCanvas then
-			love.graphics.setBlendMode('alpha', 'premultiplied')
-			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-			love.graphics.draw(V.Canvas, V.X, V.Y)
-			love.graphics.setBlendMode('alpha')
+			DrawCanvas(V)
 		elseif V.Type == Types.Mesh then
-			love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
-			love.graphics.draw(V.Mesh, V.X, V.Y)
+			DrawMesh(V)
 		elseif V.Type == Types.TextObject then
 			DrawTextObject(V)
 		elseif V.Type == Types.Curve then
@@ -254,6 +327,8 @@ local function DrawElements(Elements)
 			DrawPolygon(V)
 		end
 	end
+
+	Stats.End(StatHandle)
 end
 
 local function AssertActiveBatch()
@@ -264,6 +339,8 @@ local function DrawLayer(Layer, Name)
 	if Layer.Channels == nil then
 		return
 	end
+
+	local StatHandle = Stats.Begin('Draw Layer ' .. Name, StatsCategory)
 
 	local Keys = {}
 	for K, Channel in pairs(Layer.Channels) do
@@ -280,6 +357,8 @@ local function DrawLayer(Layer, Name)
 			end
 		end
 	end
+
+	Stats.End(StatHandle)
 end
 
 function DrawCommands.Reset()
@@ -589,11 +668,15 @@ function DrawCommands.Polygon(Mode, Points, Color)
 end
 
 function DrawCommands.Execute()
+	local StatHandle = Stats.Begin('Execute', StatsCategory)
+
 	DrawLayer(LayerTable[Layers.Normal], 'Normal')
 	DrawLayer(LayerTable[Layers.ContextMenu], 'ContextMenu')
 	DrawLayer(LayerTable[Layers.MainMenuBar], 'MainMenuBar')
 	DrawLayer(LayerTable[Layers.Dialog], 'Dialog')
 	DrawLayer(LayerTable[Layers.Debug], 'Debug')
+
+	Stats.End(StatHandle)
 end
 
 function DrawCommands.GetDebugInfo()
