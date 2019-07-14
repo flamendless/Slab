@@ -24,7 +24,7 @@ SOFTWARE.
 
 --]]
 
-local Slab = require('Slab')
+local Slab = require(SLAB_PATH .. '.Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')

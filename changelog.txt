@@ -5,7 +5,6 @@ v0.6.0 RELEASE
 [Style]: Push/Pop fonts.
 [Stats]: Documentation.
 [Stats]: User stats that can be displayed in the Performance window.
-[Slab Test]: Test when Slab is not in the root directory.
 [Text]: GetTextSize, GetTextWidth documentation.
 
 BUGS

@@ -24,7 +24,7 @@ SOFTWARE.
 
 --]]
 
-local Slab = require('Slab')
+local Slab = require(SLAB_PATH .. '.Slab')
 local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
 
 local SlabTest = {}
@@ -569,8 +569,8 @@ local function DrawInput()
 	end
 end
 
-local DrawImage_Path = SLAB_PATH .. "/Internal/Resources/Textures/power.png"
-local DrawImage_Path_Icons = SLAB_PATH .. "/Internal/Resources/Textures/gameicons.png"
+local DrawImage_Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/power.png"
+local DrawImage_Path_Icons = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/gameicons.png"
 local DrawImage_Color = {1, 0, 0, 1}
 local DrawImage_Color_Edit = false
 local DrawImage_Scale = 1.0
