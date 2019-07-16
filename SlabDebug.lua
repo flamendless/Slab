@@ -106,7 +106,7 @@ local DrawPerformance_WinX = 50.0
 local DrawPerformance_WinY = 50.0
 local DrawPerformance_ResetPosition = false
 local DrawPerformance_Init = false
-local DrawPerformance_ResetSize = false
+local DrawPerformance_W = 200.0
 
 local function DrawPerformance()
 	if not DrawPerformance_Init then
@@ -118,12 +118,9 @@ local function DrawPerformance()
 		Title = "Performance",
 		X = DrawPerformance_WinX,
 		Y = DrawPerformance_WinY,
-		ResetPosition = DrawPerformance_ResetPosition,
-		ResetSize = DrawPerformance_ResetSize,
-		ResetContent = DrawPerformance_ResetSize
+		ResetPosition = DrawPerformance_ResetPosition
 	})
 	DrawPerformance_ResetPosition = false
-	DrawPerformance_ResetSize = false
 
 	local Categories = Stats.GetCategories()
 
@@ -131,13 +128,10 @@ local function DrawPerformance()
 		DrawPerformance_Category = Categories[1]
 	end
 
-	local WinW, WinH = Slab.GetWindowActiveSize()
-
-	if Slab.BeginComboBox('DrawPerformance_Categories', {Selected = DrawPerformance_Category, W = WinW}) then
+	if Slab.BeginComboBox('DrawPerformance_Categories', {Selected = DrawPerformance_Category, W = DrawPerformance_W}) then
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V) then
 				DrawPerformance_Category = V
-				DrawPerformance_ResetSize = true
 			end
 		end
 
@@ -184,6 +178,8 @@ local function DrawPerformance()
 		local CallCountW = Slab.GetTextWidth("Call Count")
 		Slab.SetCursorPos(CallCountX, CursorY)
 		Slab.Text("Call Count")
+
+		DrawPerformance_W = CallCountX + CallCountW
 
 		Slab.Separator()
 
