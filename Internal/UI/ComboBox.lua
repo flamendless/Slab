@@ -106,7 +106,7 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = W - DropDownW, H = H, BgColor = InputBgColor, Rounding = InputRounding})
+	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = math.max(W - DropDownW, DropDownW), H = H, BgColor = InputBgColor, Rounding = InputRounding})
 
 	Cursor.SameLine()
 

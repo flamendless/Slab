@@ -8,7 +8,6 @@ v0.6.0 RELEASE
 BUGS
 ==========
 [Combo Box]: Selectable text not expanding to full width of window.
-[Combo Box]: Assertion if width is too small.
 [File Dialog]: Excess right border.
 [File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
