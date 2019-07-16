@@ -102,9 +102,28 @@ local function DrawCommands_Item(Root, Label)
 end
 
 local DrawPerformance_Category = nil
+local DrawPerformance_WinX = 50.0
+local DrawPerformance_WinY = 50.0
+local DrawPerformance_ResetPosition = false
+local DrawPerformance_Init = false
+local DrawPerformance_ResetSize = false
 
 local function DrawPerformance()
-	Slab.BeginWindow('SlabDebug_Performance', {Title = "Performance"})
+	if not DrawPerformance_Init then
+		Slab.EnableStats(true)
+		DrawPerformance_Init = true
+	end
+
+	Slab.BeginWindow('SlabDebug_Performance', {
+		Title = "Performance",
+		X = DrawPerformance_WinX,
+		Y = DrawPerformance_WinY,
+		ResetPosition = DrawPerformance_ResetPosition,
+		ResetSize = DrawPerformance_ResetSize,
+		ResetContent = DrawPerformance_ResetSize
+	})
+	DrawPerformance_ResetPosition = false
+	DrawPerformance_ResetSize = false
 
 	local Categories = Stats.GetCategories()
 
@@ -118,10 +137,21 @@ local function DrawPerformance()
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V) then
 				DrawPerformance_Category = V
+				DrawPerformance_ResetSize = true
 			end
 		end
 
 		Slab.EndComboBox()
+	end
+
+	if Slab.CheckBox(Slab.IsStatsEnabled(), "Enabled") then
+		Slab.EnableStats(not Slab.IsStatsEnabled())
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("Flush") then
+		Slab.FlushStats()
 	end
 
 	Slab.Separator()
@@ -439,8 +469,13 @@ function SlabDebug.DrawCommands()
 end
 
 function SlabDebug.Performance()
-	Stats.SetEnabled(true)
 	DrawPerformance()
+end
+
+function SlabDebug.Performance_SetPosition(X, Y)
+	DrawPerformance_WinX = X ~= nil and X or 50.0
+	DrawPerformance_WinY = Y ~= nil and Y or 50.0
+	DrawPerformance_ResetPosition = true
 end
 
 function SlabDebug.StyleEditor()

@@ -103,6 +103,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		TextSelectable
 		Textf
 		GetTextSize
+		GetTextWidth
 		CheckBox
 		Input
 		GetInputText
@@ -174,6 +175,13 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			EvaluateCurve
 			EvaluateCurveMouse
 			Polygon
+
+		Stats:
+			BeginStat
+			EndStat
+			EnableStats
+			IsStatsEnabled
+			FlushStats
 --]]
 local Slab = {}
 
@@ -1745,6 +1753,68 @@ end
 --]]
 function Slab.Polygon(Points, Options)
 	Shape.Polygon(Points, Options)
+end
+
+--[[
+	BeginStat
+
+	Starts the timer for the specific stat in the given category.
+
+	Name: [String] The name of the stat to capture.
+	Category: [String] The category this stat belongs to.
+
+	Return: [Number] The handle identifying this stat capture.
+--]]
+function Slab.BeginStat(Name, Category)
+	return Stats.Begin(Name, Category)
+end
+
+--[[
+	EndStat
+
+	Ends the timer for the stat assigned to the given handle.
+
+	Handle: [Number] The handle identifying a BeginStat call.
+
+	Return: None.
+--]]
+function Slab.EndStat(Handle)
+	Stats.End(Handle)
+end
+
+--[[
+	EnableStats
+
+	Sets the enabled state of the stats system. The system is disabled by default.
+
+	Enable: [Boolean] The new state of the states system.
+
+	Return: None.
+--]]
+function Slab.EnableStats(Enable)
+	Stats.SetEnabled(Enable)
+end
+
+--[[
+	IsStatsEnabled
+
+	Query whether the stats system is enabled or disabled.
+
+	Return: [Boolean] Returns whether the stats system is enabled or disabled.
+--]]
+function Slab.IsStatsEnabled()
+	return Stats.IsEnabled()
+end
+
+--[[
+	FlushStats
+
+	Resets the stats system to an empty state.
+
+	Return: None.
+--]]
+function Slab.FlushStats()
+	Stats.Flush()
 end
 
 return Slab

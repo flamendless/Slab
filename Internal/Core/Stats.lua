@@ -30,7 +30,9 @@ local Data = {}
 local Pending = {}
 local Enabled = false
 local QueueEnabled = false
+local QueueDisable = false
 local Id = 1
+local QueueFlush = false
 
 local function GetCategory(Category)
 	assert(Category ~= nil, "Nil category given to Stats system.")
@@ -145,6 +147,18 @@ function Stats.Reset()
 		QueueEnabled = false
 	end
 
+	if QueueDisable then
+		Enabled = false
+		QueueDisable = false
+	end
+
+	if QueueFlush then
+		Data = {}
+		Pending = {}
+		Id = 1
+		QueueFlush = false
+	end
+
 	if not Enabled then
 		return
 	end
@@ -167,6 +181,14 @@ end
 
 function Stats.SetEnabled(IsEnabled)
 	QueueEnabled = IsEnabled
+
+	if not QueueEnabled then
+		QueueDisable = true
+	end
+end
+
+function Stats.IsEnabled()
+	return Enabled
 end
 
 function Stats.GetCategories()
@@ -189,6 +211,10 @@ function Stats.GetItems(Category)
 	end
 
 	return Result
+end
+
+function Stats.Flush()
+	QueueFlush = true
 end
 
 return Stats

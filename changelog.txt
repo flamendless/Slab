@@ -1,11 +1,9 @@
 v0.6.0 RELEASE
 ==========
-[API]: Expose Stats interface.
 [Group]: Initial implementation of grouping of controls. Controls with their options are stored until grouping ends. Then position is calculated based on each control size.
 [Style]: Push/Pop fonts.
-[Stats]: Documentation.
-[Stats]: User stats that can be displayed in the Performance window.
 [Text]: GetTextSize, GetTextWidth documentation.
+[Text]: GetTextHeight implementation.
 
 BUGS
 ==========
@@ -20,11 +18,11 @@ BUGS
 [Tooltip]: Gains focus when displayed. Focus should not be allowed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Clamp window moving to viewport.
+[Window]: Auto sizing content does not shrink.
 
 TODO
 ==========
 [Animation]: Initial animation support.
-[API]: Expose Draw Command functions.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.
 [Color Picker]: Set initial position.
@@ -71,5 +69,6 @@ Window: Ids should be used as keys.
 Window: Deprecate window bounds values and use region directly.
 [Window]: Move default border size to Style.
 [Window]: Allow arrow key movements of window if option is set.
+[Window]: IsWindowOpen API function.
 Widgets: Track owning window's alpha channel.
 Widgets: Forward Options parameter to sub widgets.

@@ -1749,6 +1749,63 @@ local function DrawTooltip()
 	end
 end
 
+local DrawStats_SetPosition = false
+local DrawStats_EncodeIterations = 20
+local DrawStats_EncodeLength = 500
+
+local function DrawStats()
+	Slab.Textf(
+		"The Slab API offers functions that track the performance of desired sections of code. With these functions coupled together with the debug " ..
+		"performance window, end-users will be able to see bottlenecks located within their code base quickly. To display the performance window, " ..
+		"call the SlabDebug.Performance function.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	if not DrawStats_SetPosition then
+		SlabDebug.Performance_SetPosition(800.0, 175.0)
+		DrawStats_SetPosition = true
+	end
+
+	Slab.Textf(
+		"This page has an example of capturing the performance of encoding data. The iterations and length can be changed to show how the performance is " ..
+		"impacted when these values change.")
+
+	Slab.NewLine()
+
+	Slab.Text("Iterations")
+	Slab.SameLine()
+	if Slab.Input('DrawStats_EncodeIterations', {Text = tostring(DrawStats_EncodeIterations), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
+		DrawStats_EncodeIterations = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Length")
+	Slab.SameLine()
+	if Slab.Input('DrawStats_EncodeLength', {Text = tostring(DrawStats_EncodeLength), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
+		DrawStats_EncodeLength = Slab.GetInputNumber()
+	end
+
+	local StatHandle = Slab.BeginStat('Encode', 'Slab Test')
+
+	for I = 1, DrawStats_EncodeIterations, 1 do
+		local LengthStatHandle = Slab.BeginStat('Encode Length', 'Slab Test')
+
+		local Data = ""
+		for J = 1, DrawStats_EncodeLength, 1 do
+			local Byte = love.math.random(255)
+			Data = Data .. string.char(Byte)
+		end
+		love.data.encode('string', 'hex', Data)
+
+		Slab.EndStat(LengthStatHandle)
+	end
+
+	Slab.EndStat(StatHandle)
+
+	SlabDebug.Performance()
+end
+
 local DrawSlabTest = true
 
 function SlabTest.MainMenuBar()
@@ -1788,12 +1845,15 @@ local Categories = {
 	{"Dialog", DrawDialog},
 	{"Interaction", DrawInteraction},
 	{"Shapes", DrawShapes},
-	{"Tooltips", DrawTooltip}
+	{"Tooltips", DrawTooltip},
+	{"Stats", DrawStats}
 }
 
 local Selected = nil
 
 function SlabTest.Begin()
+	local StatHandle = Slab.BeginStat('Slab Test', 'Slab Test')
+
 	SlabTest.MainMenuBar()
 
 	if Selected == nil then
@@ -1825,6 +1885,8 @@ function SlabTest.Begin()
 	end
 
 	SlabDebug.Begin()
+
+	Slab.EndStat(StatHandle)
 end
 
 return SlabTest
