@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -66,9 +67,12 @@ function ComboBox.Begin(Id, Options)
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
-	local X, Y = Cursor.GetPosition()
 	local W = Options.W
 	local H = Style.Font:getHeight()
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 	local Radius = H * 0.35
 	local InputBgColor = Style.ComboBoxColor
 	local DropDownW = Radius * 4.0
@@ -106,7 +110,17 @@ function ComboBox.Begin(Id, Options)
 		end
 	end
 
-	Input.Begin(Id .. '_Input', {ReadOnly = true, Text = Options.Selected, Align = 'left', W = math.max(W - DropDownW, DropDownW), H = H, BgColor = InputBgColor, Rounding = InputRounding})
+	LayoutManager.Begin('Ignore', {Ignore = true})
+	Input.Begin(Id .. '_Input', {
+		ReadOnly = true,
+		Text = Options.Selected,
+		Align = 'left',
+		W = math.max(W - DropDownW, DropDownW),
+		H = H,
+		BgColor = InputBgColor,
+		Rounding = InputRounding
+	})
+	LayoutManager.End()
 
 	Cursor.SameLine()
 
@@ -126,6 +140,7 @@ function ComboBox.Begin(Id, Options)
 	local WinX, WinY = Window.TransformPoint(X, Y)
 
 	if Instance.IsOpen then
+		LayoutManager.Begin('ComboBox', {Ignore = true})
 		Window.Begin(Id .. '_combobox',
 		{
 			X = WinX - 1.0,
@@ -167,6 +182,7 @@ function ComboBox.End()
 
 	Window.End()
 	DrawCommands.SetLayer('Normal')
+	LayoutManager.End()
 
 	if Y ~= 0.0 and H ~= 0.0 then
 		Cursor.SetY(Y)

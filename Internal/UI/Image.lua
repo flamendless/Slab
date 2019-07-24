@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
@@ -86,10 +87,8 @@ function Image.Begin(Id, Options)
 
 	Instance.Image:setWrap(Options.WrapH, Options.WrapV)
 
-	local X, Y = Cursor.GetPosition()
 	local W = Instance.Image:getWidth() * Options.ScaleX
 	local H = Instance.Image:getHeight() * Options.ScaleY
-	local MouseX, MouseY = Window.GetMousePosition()
 
 	local UseSubImage = false
 	if Options.SubW > 0.0 and Options.SubH > 0.0 then
@@ -97,6 +96,11 @@ function Image.Begin(Id, Options)
 		H = Options.SubH
 		UseSubImage = true
 	end
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
+	local MouseX, MouseY = Window.GetMousePosition()
 
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Tooltip.Begin(Options.Tooltip)

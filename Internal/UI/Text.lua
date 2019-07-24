@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
@@ -44,13 +45,16 @@ function Text.Begin(Label, Options)
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
 	Options.CenterX = Options.CenterX == nil and false or Options.CenterX
 
-	local X, Y = Cursor.GetPosition()
 	local W = Text.GetWidth(Label)
 	local H = Style.Font:getHeight()
+	local PadX = Options.Pad
+
+	LayoutManager.AddControl(W + PadX, H)
+
 	local Color = Options.Color
 	local Result = false
-	local PadX = Options.Pad
 	local WinId = Window.GetItemId(Label)
+	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()
 
 	if Options.CenterX then
@@ -110,12 +114,14 @@ function Text.BeginFormatted(Label, Options)
 	Options.W = Options.W == nil and WinW or Options.W
 	Options.Align = Options.Align == nil and 'left' or Options.Align
 
+	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
+	local H = #Wrapped * Style.Font:getHeight()
+
+	LayoutManager.AddControl(W, H)
+
 	local X, Y = Cursor.GetPosition()
 
 	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Options.W, Options.Align, Options.Color, Style.Font)
-
-	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
-	local H = #Wrapped * Style.Font:getHeight()
 
 	Cursor.SetItemBounds(math.floor(X), math.floor(Y), Width, H)
 	Cursor.AdvanceY(H)
@@ -134,8 +140,11 @@ function Text.BeginObject(Object, Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
 
-	local X, Y = Cursor.GetPosition()
 	local W, H = Object:getDimensions()
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 
 	DrawCommands.Text(Object, math.floor(X), math.floor(Y), Options.Color)
 

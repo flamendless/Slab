@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -75,23 +76,12 @@ function ListBox.Begin(Id, Options)
 	local StatHandle = Stats.Begin('ListBox', 'Slab')
 
 	Options = Options == nil and {} or Options
+	Options.W = Options.W == nil and 150.0 or Options.W
 	Options.H = Options.H == nil and 150.0 or Options.H
 	Options.Clear = Options.Clear == nil and false or Options.Clear
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 
 	local Instance = GetInstance(Window.GetItemId(Id))
-	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	local X, Y = Cursor.GetPosition()
-	local ContentW, ContentH = Window.GetBorderlessSize()
-
-	if Options.W == nil then
-		Options.W = math.max(0.0, ContentW - (X - WinX))
-	end
-
-	if Options.H == 0.0 then
-		Options.H = math.max(0.0, ContentH - (Y - WinY))
-	end
-
 	local W = Options.W
 	local H = Options.H
 
@@ -99,6 +89,9 @@ function ListBox.Begin(Id, Options)
 		Instance.Items = {}
 	end
 
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 	Instance.X = X
 	Instance.Y = Y
 	Instance.W = W
@@ -146,6 +139,8 @@ function ListBox.Begin(Id, Options)
 	Cursor.AdvanceY(0.0)
 
 	Window.AddItem(X, Y, W, H, Instance.Id)
+
+	LayoutManager.Begin('Ignore', {Ignore = true})
 end
 
 function ListBox.BeginItem(Id, Options)
@@ -157,7 +152,9 @@ function ListBox.BeginItem(Id, Options)
 		"BeginListBoxItem was called for item '" .. (ActiveInstance.ActiveItem ~= nil and ActiveInstance.ActiveItem.Id or "nil") .. 
 			"' without a call to EndListBoxItem.")
 	local Item = GetItemInstance(ActiveInstance, Id)
-	Item.X, Item.Y = Cursor.GetPosition()
+	Item.X = ActiveInstance.X
+	Item.Y = Cursor.GetY()
+	Cursor.SetX(Item.X)
 	Cursor.AdvanceX(0.0)
 	ActiveInstance.ActiveItem = Item
 	ActiveInstance.ActiveItem.Selected = Options.Selected
@@ -196,6 +193,8 @@ function ListBox.End()
 	Cursor.SetItemBounds(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.W, ActiveInstance.H)
 	Cursor.SetPosition(ActiveInstance.X, ActiveInstance.Y)
 	Cursor.AdvanceY(ActiveInstance.H)
+
+	LayoutManager.End()
 
 	Stats.End(ActiveInstance.StatHandle)
 

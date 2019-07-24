@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -46,9 +47,11 @@ function Shape.Rectangle(Options)
 	Options.OutlineColor = Options.OutlineColor == nil and {0.0, 0.0, 0.0, 1.0} or Options.OutlineColor
 	Options.Segments = Options.Segments == nil and 10 or Options.Segments
 
-	local X, Y = Cursor.GetPosition()
 	local W = Options.W
 	local H = Options.H
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 
 	if Options.Outline then
 		DrawCommands.Rectangle('line', X, Y, W, H, Options.OutlineColor, Options.Rounding, Options.Segments)
@@ -72,10 +75,13 @@ function Shape.Circle(Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Segments = Options.Segments == nil and nil or Options.Segments
 
+	local Diameter = Options.Radius * 2.0
+
+	LayoutManager.AddControl(Diameter, Diameter)
+
 	local X, Y = Cursor.GetPosition()
 	local CenterX = X + Options.Radius
 	local CenterY = Y + Options.Radius
-	local Diameter = Options.Radius * 2.0
 
 	DrawCommands.Circle(Options.Mode, CenterX, CenterY, Options.Radius, Options.Color, Options.Segments)
 	Window.AddItem(X, Y, Diameter, Diameter)
@@ -94,10 +100,13 @@ function Shape.Triangle(Options)
 	Options.Rotation = Options.Rotation == nil and 0 or Options.Rotation
 	Options.Color = Options.Color == nil and nil or Options.Color
 
+	local Diameter = Options.Radius * 2.0
+
+	LayoutManager.AddControl(Diameter, Diameter)
+
 	local X, Y = Cursor.GetPosition()
 	local CenterX = X + Options.Radius
 	local CenterY = Y + Options.Radius
-	local Diameter = Options.Radius * 2.0
 
 	DrawCommands.Triangle(Options.Mode, CenterX, CenterY, Options.Radius, Options.Rotation, Options.Color)
 	Window.AddItem(X, Y, Diameter, Diameter)
@@ -133,12 +142,9 @@ function Shape.Curve(Points, Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Depth = Options.Depth == nil and nil or Options.Depth
 
-	CurveX, CurveY = Cursor.GetPosition()
-
 	Curve = love.math.newBezierCurve(Points)
-	Curve:translate(CurveX, CurveY)
 
-	local MinX, MinY = CurveX, CurveY
+	local MinX, MinY = math.huge, math.huge
 	local MaxX, MaxY = 0, 0
 	for I = 1, Curve:getControlPointCount(), 1 do
 		local PX, PY = Curve:getControlPoint(I)
@@ -151,6 +157,11 @@ function Shape.Curve(Points, Options)
 
 	local W = math.abs(MaxX - MinX)
 	local H = math.abs(MaxY - MinY)
+
+	LayoutManager.AddControl(W, H)
+
+	CurveX, CurveY = Cursor.GetPosition()
+	Curve:translate(CurveX, CurveY)
 
 	DrawCommands.Curve(Curve:render(Options.Depth), Options.Color)
 	Window.AddItem(MinX, MinY, W, H)
@@ -215,11 +226,26 @@ function Shape.Polygon(Points, Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
 
-	local X, Y = Cursor.GetPosition()
 	local MinX, MinY = math.huge, math.huge
 	local MaxX, MaxY = 0, 0
 	local Verts = {}
 
+	for I = 1, #Points, 2 do
+		MinX = math.min(MinX, Points[I])
+		MinY = math.min(MinY, Points[I+1])
+
+		MaxX = math.max(MaxX, Points[I])
+		MaxY = math.max(MaxY, Points[I+1])
+	end
+
+	local W = math.abs(MaxX - MinX)
+	local H = math.abs(MaxY - MinY)
+
+	LayoutManager.AddControl(W, H)
+
+	MinX, MinY = math.huge, math.huge
+	MaxX, MaxY = 0, 0
+	local X, Y = Cursor.GetPosition()
 	for I = 1, #Points, 2 do
 		table.insert(Verts, Points[I] + X)
 		table.insert(Verts, Points[I+1] + Y)
@@ -230,9 +256,6 @@ function Shape.Polygon(Points, Options)
 		MaxX = math.max(MaxX, Verts[I])
 		MaxY = math.max(MaxY, Verts[I+1])
 	end
-
-	local W = math.abs(MaxX - MinX)
-	local H = math.abs(MaxY - MinY)
 
 	DrawCommands.Polygon(Options.Mode, Verts, Options.Color)
 	Window.AddItem(MinX, MinY, W, H)

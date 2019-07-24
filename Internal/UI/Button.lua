@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
@@ -55,7 +56,6 @@ function Button.Begin(Label, Options)
 	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
 
 	local Id = Window.GetItemId(Label)
-	local X, Y = Cursor.GetPosition()
 	local W, H = Button.GetSize(Label)
 	local LabelW = Style.Font:getWidth(Label)
 	local FontHeight = Style.Font:getHeight()
@@ -73,6 +73,10 @@ function Button.Begin(Label, Options)
 	if Options.H ~= nil then
 		H = Options.H
 	end
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 
 	if Options.AlignRight then
 		X = Layout.AlignRight(W)
@@ -111,7 +115,9 @@ function Button.Begin(Label, Options)
 		local X, Y = Cursor.GetPosition()
 		Cursor.SetX(math.floor(LabelX))
 		Cursor.SetY(math.floor(Y + (H * 0.5) - (FontHeight * 0.5)))
+		LayoutManager.Begin('Ignore', {Ignore = true})
 		Text.Begin(Label, {Color = TextColor})
+		LayoutManager.End()
 		Cursor.SetPosition(X, Y)
 	end
 
@@ -137,13 +143,21 @@ function Button.BeginRadio(Label, Options)
 
 	local Result = false
 	local Id = Window.GetItemId(Label)
-	local X, Y = Cursor.GetPosition()
-	local CenterX, CenterY = X + Radius, Y + Radius
 	local W, H = Radius * 2.0, Radius * 2.0
 	local IsObstructed = Window.IsObstructedAtMouse()
 	local Color = Style.ButtonColor
 	local MouseX, MouseY = Window.GetMousePosition()
 
+	if Label ~= "" then
+		local TextW, TextH = Text.GetSize(Label)
+		W = W + Cursor.PadX() + TextW
+		H = math.max(H, TextH)
+	end
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
+	local CenterX, CenterY = X + Radius, Y + Radius
 	local DX = MouseX - CenterX
 	local DY = MouseY - CenterY
 	local HoveredButton = not IsObstructed and (DX * DX) + (DY * DY) <= Radius * Radius
@@ -172,12 +186,10 @@ function Button.BeginRadio(Label, Options)
 
 	if Label ~= "" then
 		local CursorY = Cursor.GetY()
-		Cursor.AdvanceX(W)
+		Cursor.AdvanceX(Radius * 2.0)
+		LayoutManager.Begin('Ignore', {Ignore = true})
 		Text.Begin(Label)
-
-		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-		W = (ItemX + ItemW) - X
-		H = math.max(H, ItemH)
+		LayoutManager.End()
 		Cursor.SetY(CursorY)
 	end
 

@@ -666,9 +666,10 @@ function Window.GetBorder()
 	return 0.0
 end
 
-function Window.GetBounds()
+function Window.GetBounds(IgnoreTitleBar)
 	if ActiveInstance ~= nil then
-		local OffsetY = ActiveInstance.Title ~= "" and Style.Font:getHeight() or 0.0
+		IgnoreTitleBar = IgnoreTitleBar == nil and false or IgnoreTitleBar
+		local OffsetY = (ActiveInstance.Title ~= "" and not IgnoreTitleBar) and Style.Font:getHeight() or 0.0
 		return ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, ActiveInstance.H + OffsetY
 	end
 	return 0.0, 0.0, 0.0, 0.0

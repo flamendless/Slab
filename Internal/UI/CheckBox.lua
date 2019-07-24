@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
@@ -48,16 +49,20 @@ function CheckBox.Begin(Enabled, Label, Options)
 	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
 
 	local Id = Window.GetItemId(Options.Id and Options.Id or ('_' .. Label .. '_CheckBox'))
-	local X, Y = Cursor.GetPosition()
-	local W = Radius * 2.0
-	local H = Radius * 2.0
+	local BoxW, BoxH = Radius * 2.0, Radius * 2.0
+	local TextW, TextH = Text.GetSize(Label)
+	local W = BoxW + Cursor.PadX() + 2.0 + TextW
+	local H = math.max(BoxH, TextH)
+
+	LayoutManager.AddControl(W, H)
 
 	local Result = false
 	local Color = Style.ButtonColor
 
+	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()
 	local IsObstructed = Window.IsObstructedAtMouse()
-	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+	if not IsObstructed and X <= MouseX and MouseX <= X + BoxW and Y <= MouseY and MouseY <= Y + BoxH then
 		Color = Style.ButtonHoveredColor
 
 		if Mouse.IsPressed(1) then
@@ -67,16 +72,15 @@ function CheckBox.Begin(Enabled, Label, Options)
 		end
 	end
 
-	DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
+	DrawCommands.Rectangle('fill', X, Y, BoxW, BoxH, Color, Options.Rounding)
 	if Enabled then
 		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
 	end
 	if Label ~= "" then
-		Cursor.AdvanceX(W + 2.0)
+		Cursor.AdvanceX(BoxW + 2.0)
+		LayoutManager.Begin('Ignore', {Ignore = true})
 		Text.Begin(Label)
-
-		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-		W = ItemX + ItemW - X
+		LayoutManager.End()
 	else
 		Cursor.SetItemBounds(X, Y, W, H)
 		Cursor.AdvanceY(H)

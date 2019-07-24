@@ -38,6 +38,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
@@ -182,6 +183,10 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			EnableStats
 			IsStatsEnabled
 			FlushStats
+
+		Layout:
+			BeginLayout
+			EndLayout
 --]]
 local Slab = {}
 
@@ -271,6 +276,7 @@ function Slab.Update(dt)
 	DrawCommands.Reset()
 	Window.Reset()
 	Window.SetFrameNumber(FrameNumber)
+	LayoutManager.Validate()
 
 	if MenuState.IsOpened then
 		MenuState.WasOpened = MenuState.IsOpened
@@ -1073,6 +1079,7 @@ end
 --]]
 function Slab.SameLine(Options)
 	Cursor.SameLine(Options)
+	LayoutManager.SameLine()
 end
 
 --[[
@@ -1083,6 +1090,7 @@ end
 	Return: None.
 --]]
 function Slab.NewLine()
+	LayoutManager.NewLine()
 	Cursor.NewLine()
 end
 
@@ -1815,6 +1823,42 @@ end
 --]]
 function Slab.FlushStats()
 	Stats.Flush()
+end
+
+--[[
+	BeginLayout
+
+	Enables the layout manager and positions the controls between this call and EndLayout based on the given options. The anchor
+	position for the layout is determined by the current cursor position on the Y axis. The horizontal position is not anchored.
+	Layouts are stacked, so there can be layouts within parent layouts.
+
+	Id: [String] The Id of this layout.
+	Options: [Table] List of options that control how this layout behaves.
+		AlignX: [String] Defines how the controls should be positioned horizontally in the window. The available options are 
+			'left', 'center', or 'right'. The default option is 'left'.
+		AlignY: [String] Defines how the controls should be positioned vertically in the window. The available options are
+			'top', 'center', or 'bottom'. The default option is 'top'. The top is determined by the current cursor position.
+		AlignRowY: [String] Defines how the controls should be positioned vertically within a row. The available options are
+			'top', 'center', or 'bottom'. The default option is 'top'.
+		Ignore: [Boolean] Should this layout ignore positioning of controls. This is useful if certain controls need custom
+			positioning within a layout.
+
+	Return: None.
+--]]
+function Slab.BeginLayout(Id, Options)
+	LayoutManager.Begin(Id, Options)
+end
+
+--[[
+	EndLayout
+
+	Ends the currently active layout. Each BeginLayout call must have a matching EndLayout. Failure to do so will result in
+	an assertion.
+
+	Return: None.
+--]]
+function Slab.EndLayout()
+	LayoutManager.End()
 end
 
 return Slab

@@ -133,6 +133,18 @@ function Cursor.GetY()
 	return State.Y
 end
 
+function Cursor.GetRelativePosition()
+	return Cursor.GetRelativeX(), Cursor.GetRelativeY()
+end
+
+function Cursor.GetRelativeX()
+	return State.X - State.AnchorX
+end
+
+function Cursor.GetRelativeY()
+	return State.Y - State.AnchorY
+end
+
 function Cursor.SetItemBounds(X, Y, W, H)
 	State.ItemX = X
 	State.ItemY = Y
@@ -170,6 +182,10 @@ end
 
 function Cursor.SetNewLineSize(NewLineSize)
 	State.NewLineSize = NewLineSize
+end
+
+function Cursor.GetNewLineSize()
+	return State.NewLineSize
 end
 
 function Cursor.NewLine()

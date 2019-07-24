@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -900,7 +901,6 @@ function Input.Begin(Id, Options)
 			"Invalid MinNumber and MaxNumber passed to Input control '" .. Instance.Id .. "'. MinNumber: " .. Instance.MinNumber .. " MaxNumber: " .. Instance.MaxNumber)
 	end
 
-	local X, Y = Cursor.GetPosition()
 	local H = Options.H == nil and Text.GetHeight() or Options.H
 	local W = Options.W == nil and MIN_WIDTH or Options.W
 	local ContentW, ContentH = 0.0, 0.0
@@ -908,6 +908,10 @@ function Input.Begin(Id, Options)
 
 	Instance.W = W
 	Instance.H = H
+
+	LayoutManager.AddControl(W, H)
+
+	local X, Y = Cursor.GetPosition()
 
 	if Options.MultiLine then
 		Options.SelectOnFocus = false
@@ -1226,11 +1230,13 @@ function Input.Begin(Id, Options)
 	if Instance.Text ~= "" then
 		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
 
+		LayoutManager.Begin('Ignore', {Ignore = true})
 		if Instance.TextObject ~= nil then
 			Text.BeginObject(Instance.TextObject)
 		else
 			Text.Begin(Instance.Text, {AddItem = false, Color = Options.TextColor})
 		end
+		LayoutManager.End()
 	end
 	Region.End()
 	Region.ApplyScissor()

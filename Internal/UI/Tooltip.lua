@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
@@ -67,6 +68,7 @@ function Tooltip.Begin(Tip)
 
 		local CursorX, CursorY = Cursor.GetPosition()
 
+		LayoutManager.Begin('Ignore', {Ignore = true})
 		Window.Begin('tooltip',
 		{
 			X = X,
@@ -84,6 +86,7 @@ function Tooltip.Begin(Tip)
 		Text.Begin(Tip, {Color = TextColor})
 		OffsetY = Window.GetHeight()
 		Window.End()
+		LayoutManager.End()
 		Cursor.SetPosition(CursorX, CursorY)
 		ResetSize = false
 	end

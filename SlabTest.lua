@@ -1806,6 +1806,94 @@ local function DrawStats()
 	SlabDebug.Performance()
 end
 
+local DrawLayout_AlignX = 'left'
+local DrawLayout_AlignY = 'top'
+local DrawLayout_AlignRowY = 'top'
+local DrawLayout_AlignX_Options = {'left', 'center', 'right'}
+local DrawLayout_AlignY_Options = {'top', 'center', 'bottom'}
+local DrawLayout_Radio = 1
+local DrawLayout_Input = "Input Control"
+local DrawLayout_ListBox_Selected = 1
+
+local function DrawLayout()
+	Slab.Textf(
+		"The layout API allows for controls to be grouped together and aligned to a specific position based on the window. " ..
+		"These controls can be aligned to the left, the center, or the right part of a window horizontally. They can also " ..
+		"be aligned to the top, the center, or the bottom vertically in a window. Multiple controls can be declared on the " ..
+		"same line and the API will properly align on the controls on the same line. Below are examples of how this API can " ..
+		"be utilized.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"The below example shows how controls can be aligned within a window. Use the below options to dictate where the next " ..
+		"set of controls are aligned.")
+	Slab.NewLine()
+
+	Slab.BeginLayout('DrawLayout_Options', {AlignX = 'center'})
+
+	Slab.Text("AlignX")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawLayout_AlignX', {Selected = DrawLayout_AlignX}) then
+		for I, V in ipairs(DrawLayout_AlignX_Options) do
+			if Slab.TextSelectable(V) then
+				DrawLayout_AlignX = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.SameLine()
+	Slab.Text("AlignY")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawLayout_AlignY', {Selected = DrawLayout_AlignY}) then
+		for I, V in ipairs(DrawLayout_AlignY_Options) do
+			if Slab.TextSelectable(V) then
+				DrawLayout_AlignY = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.SameLine()
+	Slab.Text("AlignRowY")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawLayout_AlignRowY', {Selected = DrawLayout_AlignRowY}) then
+		for I, V in ipairs(DrawLayout_AlignY_Options) do
+			if Slab.TextSelectable(V) then
+				DrawLayout_AlignRowY = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.EndLayout()
+
+	Slab.NewLine()
+
+	Slab.BeginLayout('DrawLayout_General', {AlignX = DrawLayout_AlignX, AlignY = DrawLayout_AlignY, AlignRowY = DrawLayout_AlignRowY})
+
+	Slab.Button("Button 1")
+	Slab.SameLine()
+	Slab.Button("Button 2", {W = 150})
+
+	Slab.Button("Button")
+	Slab.SameLine()
+	Slab.Button("Button", {W = 50, H = 50, Tooltip = "This is a large button."})
+	Slab.SameLine()
+	Slab.Button("Button")
+
+	Slab.NewLine()
+
+	Slab.Text("New Lines are supported too.")
+
+	Slab.EndLayout()
+end
+
 local DrawSlabTest = true
 
 function SlabTest.MainMenuBar()
@@ -1846,7 +1934,8 @@ local Categories = {
 	{"Interaction", DrawInteraction},
 	{"Shapes", DrawShapes},
 	{"Tooltips", DrawTooltip},
-	{"Stats", DrawStats}
+	{"Stats", DrawStats},
+	{"Layout", DrawLayout}
 }
 
 local Selected = nil
@@ -1861,7 +1950,7 @@ function SlabTest.Begin()
 	end
 
 	if DrawSlabTest then
-		Slab.BeginWindow('Main', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
+		Slab.BeginWindow('SlabTest', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
 
 		local W, H = Slab.GetWindowActiveSize()
 
