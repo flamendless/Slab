@@ -34,8 +34,8 @@ local Stack = {}
 local Active = nil
 
 local function GetRowSize(Instance)
-	if Instance ~= nil and Instance.Controls ~= nil then
-		local Row = Instance.Controls.Rows[Instance.RowNo]
+	if Instance ~= nil and Instance.Rows ~= nil then
+		local Row = Instance.Rows[Instance.RowNo]
 
 		if Row ~= nil then
 			return Row.W, Row.H
@@ -46,8 +46,8 @@ local function GetRowSize(Instance)
 end
 
 local function GetRowCursorPos(Instance)
-	if Instance ~= nil and Instance.Controls ~= nil then
-		local Row = Instance.Controls.Rows[Instance.RowNo]
+	if Instance ~= nil and Instance.Rows ~= nil then
+		local Row = Instance.Rows[Instance.RowNo]
 
 		if Row ~= nil then
 			return Row.CursorX, Row.CursorY
@@ -58,10 +58,10 @@ local function GetRowCursorPos(Instance)
 end
 
 local function GetLayoutH(Instance)
-	if Instance ~= nil and Instance.Controls ~= nil then
+	if Instance ~= nil and Instance.Rows ~= nil then
 		local H = 0
 
-		for I, V in ipairs(Instance.Controls.Rows) do
+		for I, V in ipairs(Instance.Rows) do
 			H = H + V.H + Cursor.PadY()
 		end
 
@@ -72,10 +72,10 @@ local function GetLayoutH(Instance)
 end
 
 local function GetPreviousRowBottom(Instance)
-	if Instance ~= nil and Instance.Controls ~= nil then
+	if Instance ~= nil and Instance.Rows ~= nil then
 		if Instance.RowNo > 1 then
-			local Y = Instance.Controls.Rows[Instance.RowNo - 1].CursorY
-			local H = Instance.Controls.Rows[Instance.RowNo - 1].H
+			local Y = Instance.Rows[Instance.RowNo - 1].CursorY
+			local H = Instance.Rows[Instance.RowNo - 1].H
 			return Y + H
 		end
 	end
@@ -143,8 +143,8 @@ local function AddControl(Instance, W, H)
 
 		local RowNo = Instance.RowNo
 
-		if Instance.Controls ~= nil then
-			local Row = Instance.Controls.Rows[RowNo]
+		if Instance.Rows ~= nil then
+			local Row = Instance.Rows[RowNo]
 
 			if Row ~= nil then
 				Row.CursorX = X + W + Cursor.PadX()
@@ -152,8 +152,8 @@ local function AddControl(Instance, W, H)
 			end
 		end
 
-		if Instance.PendingControls.Rows[Instance.RowNo] == nil then
-			Instance.PendingControls.Rows[Instance.RowNo] = {
+		if Instance.PendingRows[Instance.RowNo] == nil then
+			Instance.PendingRows[Instance.RowNo] = {
 				CursorX = nil,
 				CursorY = nil,
 				W = 0.0,
@@ -161,7 +161,7 @@ local function AddControl(Instance, W, H)
 			}
 		end
 
-		local Row = Instance.PendingControls.Rows[RowNo]
+		local Row = Instance.PendingRows[RowNo]
 
 		Row.W = Row.W + W + Cursor.PadX()
 		Row.H = math.max(Row.H, H)
@@ -181,7 +181,7 @@ local function GetInstance(Id)
 		Instance.AlignY = 'top'
 		Instance.AlignRowY = 'top'
 		Instance.Controls = nil
-		Instance.PendingControls = nil
+		Instance.PendingRows = nil
 		Instance.RowNo = 1
 		Instance.Ignore = false
 		Instances[Key] = Instance
@@ -210,7 +210,7 @@ function LayoutManager.Begin(Id, Options)
 	Instance.AlignY = Options.AlignY
 	Instance.AlignRowY = Options.AlignRowY
 	Instance.Ignore = Options.Ignore
-	Instance.PendingControls = {Rows = {}}
+	Instance.PendingRows = {}
 	Instance.RowNo = 1
 
 	table.insert(Stack, 1, Instance)
@@ -220,8 +220,8 @@ end
 function LayoutManager.End()
 	assert(Active ~= nil, "LayoutManager.End was called without a call to LayoutManager.Begin!")
 
-	Active.Controls = Active.PendingControls
-	Active.PendingControls = nil
+	Active.Rows = Active.PendingRows
+	Active.PendingRows = nil
 
 	table.remove(Stack, 1)
 	Active = nil
