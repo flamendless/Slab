@@ -132,4 +132,19 @@ function Image.Begin(Id, Options)
 	Stats.End(StatHandle)
 end
 
+function Image.GetSize(Image)
+	if Image ~= nil then
+		local Data = Image
+		if type(Image) == 'string' then
+			Data = GetImage(Image)
+		end
+
+		if Data ~= nil then
+			return Data:getWidth(), Data:getHeight()
+		end
+	end
+
+	return 0, 0
+end
+
 return Image

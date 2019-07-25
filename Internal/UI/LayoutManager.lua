@@ -98,7 +98,7 @@ local function AddControl(Instance, W, H)
 		WinH = WinH - Window.GetBorder() * 2
 
 		if RowW == 0 then
-			RowW = W
+			RowW = WinW
 		end
 
 		if RowH == 0 then

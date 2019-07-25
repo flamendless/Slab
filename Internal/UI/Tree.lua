@@ -27,6 +27,7 @@ SOFTWARE.
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -51,11 +52,14 @@ local function GetInstance(Id)
 		local Instance = {}
 		Instance.X = 0.0
 		Instance.Y = 0.0
+		Instance.W = 0.0
 		Instance.H = 0.0
 		Instance.IsOpen = false
 		Instance.WasOpen = false
 		Instance.Id = Id
 		Instance.StatHandle = nil
+		Instance.TreeR = 0
+		Instance.TreeB = 0
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -79,17 +83,46 @@ function Tree.Begin(Id, Options)
 	Instance.StatHandle = StatHandle
 
 	local WinItemId = Window.GetItemId(Instance.Id)
-	local X, Y = Cursor.GetPosition()
-	local H = math.max(Style.Font:getHeight(), Instance.H)
-	local TriX, TriY = X + Radius, Y + H * 0.5
-	local Diameter = Radius * 2.0
-
 	local MouseX, MouseY = Mouse.Position()
 	local TMouseX, TMouseY = Region.InverseTransform(nil, MouseX, MouseY)
-	local WinX, WinY, WinW, WinH = Region.GetBounds()
-	local ContentW, ContentH = Region.GetContentSize()
-	WinW = math.max(WinW, ContentW)
+	local WinX, WinY = Window.GetPosition()
+	local WinW, WinH = Window.GetBorderlessSize()
 	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
+	local W = Text.GetWidth(Options.Label)
+	local H = math.max(Style.Font:getHeight(), Instance.H)
+	local Diameter = Radius * 2.0
+
+	if not Options.IsLeaf then
+		W = W + Diameter + Radius
+	end
+
+	local Icon = Options.Icon
+	if Icon == nil then
+		Icon = Options.IconPath
+	end
+
+	local ImageW, ImageH = Image.GetSize(Icon)
+	W = W + ImageW
+	H = math.max(H, ImageH)
+
+	WinX = WinX + Window.GetBorder()
+	WinY = WinY + Window.GetBorder()
+
+	if #Hierarchy == 0 then
+		local ControlW, ControlH = W, H
+		if Instance.TreeR > 0 and Instance.TreeB > 0 then
+			ControlW = Instance.TreeR - Instance.X
+			ControlH = Instance.TreeB - Instance.Y
+		end
+
+		LayoutManager.AddControl(ControlW, ControlH)
+
+		Instance.TreeR = 0
+		Instance.TreeB = 0
+	end
+
+	local X, Y = Cursor.GetPosition()
+	local TriX, TriY = X + Radius, Y + H * 0.5
 
 	local IsHot = not IsObstructed and WinX <= TMouseX and TMouseX <= WinX + WinW and Y <= TMouseY and TMouseY <= Y + H and Region.Contains(MouseX, MouseY)
 
@@ -122,9 +155,15 @@ function Tree.Begin(Id, Options)
 		Region.ResetContentSize()
 	end
 
-	Cursor.AdvanceX(Radius * 2.0)
-	Instance.X = Cursor.GetX()
-	Instance.Y = Cursor.GetY()
+	Cursor.AdvanceX(Diameter)
+	Instance.X = X
+	Instance.Y = Y
+	Instance.W = W
+	Instance.H = H
+
+	local CursorX, CursorY = Cursor.GetPosition()
+
+	LayoutManager.Begin('Ignore', {Ignore = true})
 
 	if Options.Icon ~= nil or Options.IconPath ~= nil then
 		Image.Begin(Instance.Id .. '_Icon', {
@@ -139,6 +178,17 @@ function Tree.Begin(Id, Options)
 
 	Text.Begin(Options.Label)
 
+	LayoutManager.End()
+
+	local Root = Instance
+	if #Hierarchy > 0 then
+		Root = Hierarchy[#Hierarchy]
+	end
+
+	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
+	Root.TreeR = math.max(Root.TreeR, ItemX + ItemW)
+	Root.TreeB = math.max(Root.TreeB, Y + H)
+
 	Cursor.SetY(Instance.Y)
 	Cursor.AdvanceY(H)
 
@@ -148,7 +198,7 @@ function Tree.Begin(Id, Options)
 
 	if Instance.IsOpen then
 		table.insert(Hierarchy, 1, Instance)
-		Cursor.SetX(Instance.X)
+		Cursor.SetX(CursorX)
 	else
 		Cursor.SetX(X)
 	end
@@ -161,7 +211,7 @@ function Tree.Begin(Id, Options)
 		end
 	end
 
-	Window.AddItem(X, Y, (WinW + WinX) - Instance.X, H, WinItemId)
+	Window.AddItem(X, Y, (WinX + WinW) - Instance.X, H, WinItemId)
 
 	if not Instance.IsOpen then
 		Stats.End(Instance.StatHandle)
