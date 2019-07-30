@@ -70,6 +70,7 @@ function ComboBox.Begin(Id, Options)
 	local W = Options.W
 	local H = Style.Font:getHeight()
 
+	W = LayoutManager.ComputeSize(W, H)
 	LayoutManager.AddControl(W, H)
 
 	local X, Y = Cursor.GetPosition()

@@ -33,6 +33,18 @@ local Instances = {}
 local Stack = {}
 local Active = nil
 
+local function GetWindowBounds()
+	local WinX, WinY, WinW, WinH = Window.GetBounds(true)
+	local Border = Window.GetBorder()
+
+	WinX = WinX + Border
+	WinY = WinY + Border
+	WinW = WinW - Border * 2
+	WinH = WinH - Border * 2
+
+	return WinX, WinY, WinW, WinH
+end
+
 local function GetRowSize(Instance)
 	if Instance ~= nil and Instance.Rows ~= nil then
 		local Row = Instance.Rows[Instance.RowNo]
@@ -86,16 +98,11 @@ end
 local function AddControl(Instance, W, H)
 	if Instance ~= nil then
 		local RowW, RowH = GetRowSize(Instance)
-		local WinX, WinY, WinW, WinH = Window.GetBounds(true)
+		local WinX, WinY, WinW, WinH = GetWindowBounds()
 		local CursorX, CursorY = Cursor.GetPosition()
 		local X, Y = GetRowCursorPos(Instance)
 		local LayoutH = GetLayoutH(Instance)
 		local PrevRowBottom = GetPreviousRowBottom(Instance)
-
-		WinX = WinX + Window.GetBorder()
-		WinY = WinY + Window.GetBorder()
-		WinW = WinW - Window.GetBorder() * 2
-		WinH = WinH - Window.GetBorder() * 2
 
 		if RowW == 0 then
 			RowW = WinW
@@ -157,16 +164,25 @@ local function AddControl(Instance, W, H)
 				CursorX = nil,
 				CursorY = nil,
 				W = 0.0,
-				H = 0.0
+				H = 0.0,
+				Controls = {}
 			}
 		end
 
 		local Row = Instance.PendingRows[RowNo]
 
+		table.insert(Row.Controls, {
+			X = Cursor.GetX(),
+			Y = Cursor.GetY(),
+			W = W,
+			H = H,
+			AlteredSize = Instance.AlteredSize
+		})
 		Row.W = Row.W + W + Cursor.PadX()
 		Row.H = math.max(Row.H, H)
 
 		Instance.RowNo = RowNo + 1
+		Instance.AlteredSize = false
 	end
 end
 
@@ -184,6 +200,10 @@ local function GetInstance(Id)
 		Instance.PendingRows = nil
 		Instance.RowNo = 1
 		Instance.Ignore = false
+		Instance.ExpandW = false
+		Instance.X = 0
+		Instance.Y = 0
+		Instance.AlteredSize = false
 		Instances[Key] = Instance
 	end
 
@@ -196,6 +216,45 @@ function LayoutManager.AddControl(W, H)
 	end
 end
 
+function LayoutManager.ComputeSize(W, H)
+	if Active ~= nil then
+		local X, Y = Active.X, Active.Y
+		local WinX, WinY, WinW, WinH = GetWindowBounds()
+		local RealW = WinW - X
+
+		if Active.ExpandW then
+			if Active.Rows ~= nil then
+				local Count = 0
+				local ReduceW = 0
+				local Pad = 0
+				local Row = Active.Rows[Active.RowNo]
+				if Row ~= nil then
+					for I, V in ipairs(Row.Controls) do
+						if V.AlteredSize then
+							Count = Count + 1
+						else
+							ReduceW = ReduceW + V.W
+						end
+					end
+
+					if #Row.Controls > 1 then
+						Pad = Cursor.PadX() * (#Row.Controls - 1)
+					end
+				end
+
+				Count = math.max(Count, 1)
+
+				local BaseW = (RealW - ReduceW - Pad) / Count
+				W = BaseW
+			end
+		end
+
+		Active.AlteredSize = true
+	end
+
+	return W, H
+end
+
 function LayoutManager.Begin(Id, Options)
 	assert(Id ~= nil or type(Id) ~= string, "A valid string Id must be given to BeginLayout!")
 
@@ -204,14 +263,17 @@ function LayoutManager.Begin(Id, Options)
 	Options.AlignY = Options.AlignY == nil and 'top' or Options.AlignY
 	Options.AlignRowY = Options.AlignRowY == nil and 'top' or Options.AlignRowY
 	Options.Ignore = Options.Ignore == nil and false or Options.Ignore
+	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
 
 	local Instance = GetInstance(Id)
 	Instance.AlignX = Options.AlignX
 	Instance.AlignY = Options.AlignY
 	Instance.AlignRowY = Options.AlignRowY
 	Instance.Ignore = Options.Ignore
+	Instance.ExpandW = Options.ExpandW
 	Instance.PendingRows = {}
 	Instance.RowNo = 1
+	Instance.X, Instance.Y = Cursor.GetRelativePosition()
 
 	table.insert(Stack, 1, Instance)
 	Active = Instance

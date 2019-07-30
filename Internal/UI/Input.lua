@@ -906,10 +906,11 @@ function Input.Begin(Id, Options)
 	local ContentW, ContentH = 0.0, 0.0
 	local Result = false
 
+	W, H = LayoutManager.ComputeSize(W, H)
+	LayoutManager.AddControl(W, H)
+
 	Instance.W = W
 	Instance.H = H
-
-	LayoutManager.AddControl(W, H)
 
 	local X, Y = Cursor.GetPosition()
 

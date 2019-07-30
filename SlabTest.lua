@@ -1892,6 +1892,31 @@ local function DrawLayout()
 	Slab.Text("New Lines are supported too.")
 
 	Slab.EndLayout()
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Controls can also be expanded in the width and height. Only controls that can have their size modified through the API " ..
+		"will be affected by these options. The controls that will be affected are buttons, combo boxes (only the width), " ..
+		"input controls, and list boxes. Non-expandable controls such as text can be mixed in with the controls and the size " ..
+		"of the controls will be adjusted accordingly.")
+	Slab.NewLine()
+
+	Slab.BeginLayout('DrawLayout_Expand', {ExpandW = true})
+	Slab.Button("OK")
+	Slab.SameLine()
+	Slab.Text("Hello")
+	Slab.SameLine()
+	Slab.Input('DrawLayout_ExpandInput')
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawLayout_ExpandComboBox') then
+		Slab.EndComboBox()
+	end
+	Slab.SameLine()
+	Slab.BeginListBox('DrawLayout_ExpandListBox')
+	Slab.EndListBox()
+	Slab.EndLayout()
 end
 
 local DrawSlabTest = true

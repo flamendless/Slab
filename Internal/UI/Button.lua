@@ -74,6 +74,7 @@ function Button.Begin(Label, Options)
 		H = Options.H
 	end
 
+	W, H = LayoutManager.ComputeSize(W, H)
 	LayoutManager.AddControl(W, H)
 
 	local X, Y = Cursor.GetPosition()

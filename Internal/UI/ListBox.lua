@@ -89,6 +89,7 @@ function ListBox.Begin(Id, Options)
 		Instance.Items = {}
 	end
 
+	W, H = LayoutManager.ComputeSize(W, H)
 	LayoutManager.AddControl(W, H)
 
 	local X, Y = Cursor.GetPosition()
@@ -98,6 +99,11 @@ function ListBox.Begin(Id, Options)
 	Instance.H = H
 	Instance.StatHandle = StatHandle
 	ActiveInstance = Instance
+
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(0.0)
+
+	Window.AddItem(X, Y, W, H, Instance.Id)
 
 	local IsObstructed = Window.IsObstructedAtMouse()
 
@@ -134,11 +140,6 @@ function ListBox.Begin(Id, Options)
 			DrawCommands.Rectangle('fill', V.X, V.Y, Instance.W, V.H, Style.TextHoverBgColor)
 		end
 	end
-
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(0.0)
-
-	Window.AddItem(X, Y, W, H, Instance.Id)
 
 	LayoutManager.Begin('Ignore', {Ignore = true})
 end
