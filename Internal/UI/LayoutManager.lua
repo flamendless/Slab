@@ -69,12 +69,18 @@ local function GetRowCursorPos(Instance)
 	return nil, nil
 end
 
-local function GetLayoutH(Instance)
+local function GetLayoutH(Instance, IncludePad)
+	IncludePad = IncludePad == nil and true or IncludePad
+
 	if Instance ~= nil and Instance.Rows ~= nil then
 		local H = 0
 
 		for I, V in ipairs(Instance.Rows) do
-			H = H + V.H + Cursor.PadY()
+			H = H + V.H
+
+			if IncludePad then
+				H = H + Cursor.PadY()
+			end
 		end
 
 		return H
@@ -95,7 +101,7 @@ local function GetPreviousRowBottom(Instance)
 	return nil
 end
 
-local function AddControl(Instance, W, H)
+local function AddControl(Instance, W, H, Type)
 	if Instance ~= nil then
 		local RowW, RowH = GetRowSize(Instance)
 		local WinX, WinY, WinW, WinH = GetWindowBounds()
@@ -163,8 +169,10 @@ local function AddControl(Instance, W, H)
 			Instance.PendingRows[Instance.RowNo] = {
 				CursorX = nil,
 				CursorY = nil,
-				W = 0.0,
-				H = 0.0,
+				W = 0,
+				H = 0,
+				RequestH = 0,
+				MaxH = 0,
 				Controls = {}
 			}
 		end
@@ -176,7 +184,8 @@ local function AddControl(Instance, W, H)
 			Y = Cursor.GetY(),
 			W = W,
 			H = H,
-			AlteredSize = Instance.AlteredSize
+			AlteredSize = Instance.AlteredSize,
+			Type = Type
 		})
 		Row.W = Row.W + W + Cursor.PadX()
 		Row.H = math.max(Row.H, H)
@@ -210,7 +219,7 @@ local function GetInstance(Id)
 	return Instances[Key]
 end
 
-function LayoutManager.AddControl(W, H)
+function LayoutManager.AddControl(W, H, Type)
 	if Active ~= nil and not Active.Ignore then
 		AddControl(Active, W, H)
 	end
@@ -221,6 +230,15 @@ function LayoutManager.ComputeSize(W, H)
 		local X, Y = Active.X, Active.Y
 		local WinX, WinY, WinW, WinH = GetWindowBounds()
 		local RealW = WinW - X
+		local RealH = WinH - Y
+
+		if Window.IsAutoSize() then
+			local LayoutH = GetLayoutH(Active, false)
+
+			if LayoutH > 0 then
+				RealH = LayoutH
+			end
+		end
 
 		if Active.ExpandW then
 			if Active.Rows ~= nil then
@@ -244,8 +262,47 @@ function LayoutManager.ComputeSize(W, H)
 
 				Count = math.max(Count, 1)
 
-				local BaseW = (RealW - ReduceW - Pad) / Count
-				W = BaseW
+				W = (RealW - ReduceW - Pad) / Count
+			end
+		end
+
+		if Active.ExpandH then
+			if Active.Rows ~= nil then
+				local Count = 0
+				local ReduceH = 0
+				local Pad = 0
+				local MaxRowH = 0
+				for I, Row in ipairs(Active.Rows) do
+					local IsSizeAltered = false
+
+					if I == Active.RowNo then
+						MaxRowH = Row.MaxH
+						Row.RequestH = math.max(Row.RequestH, H)
+					end
+
+					for J, Control in ipairs(Row.Controls) do
+						if Control.AlteredSize then
+							if not IsSizeAltered then
+								Count = Count + 1
+								IsSizeAltered = true
+							end
+						end
+					end
+
+					if not IsSizeAltered then
+						ReduceH = ReduceH + Row.H
+					end
+				end
+
+				if #Active.Rows > 1 then
+					Pad = Cursor.PadY() * (#Active.Rows - 1)
+				end
+
+				Count = math.max(Count, 1)
+
+				RealH = math.max(RealH - ReduceH - Pad, 0)
+				H = math.max(RealH / Count, H)
+				H = math.max(H, MaxRowH)
 			end
 		end
 
@@ -264,6 +321,7 @@ function LayoutManager.Begin(Id, Options)
 	Options.AlignRowY = Options.AlignRowY == nil and 'top' or Options.AlignRowY
 	Options.Ignore = Options.Ignore == nil and false or Options.Ignore
 	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
+	Options.ExpandH = Options.ExpandH == nil and false or Options.ExpandH
 
 	local Instance = GetInstance(Id)
 	Instance.AlignX = Options.AlignX
@@ -271,6 +329,7 @@ function LayoutManager.Begin(Id, Options)
 	Instance.AlignRowY = Options.AlignRowY
 	Instance.Ignore = Options.Ignore
 	Instance.ExpandW = Options.ExpandW
+	Instance.ExpandH = Options.ExpandH
 	Instance.PendingRows = {}
 	Instance.RowNo = 1
 	Instance.X, Instance.Y = Cursor.GetRelativePosition()
@@ -282,8 +341,15 @@ end
 function LayoutManager.End()
 	assert(Active ~= nil, "LayoutManager.End was called without a call to LayoutManager.Begin!")
 
+	local Rows = Active.Rows
 	Active.Rows = Active.PendingRows
 	Active.PendingRows = nil
+
+	if Rows ~= nil and Active.Rows ~= nil and #Rows == #Active.Rows then
+		for I, V in ipairs(Rows) do
+			Active.Rows[I].MaxH = Rows[I].RequestH
+		end
+	end
 
 	table.remove(Stack, 1)
 	Active = nil
@@ -301,7 +367,7 @@ end
 
 function LayoutManager.NewLine()
 	if Active ~= nil then
-		AddControl(Active, 0, Cursor.GetNewLineSize())
+		AddControl(Active, 0, Cursor.GetNewLineSize(), 'NewLine')
 	end
 end
 

@@ -1017,4 +1017,12 @@ function Window.GetStackDebug()
 	return Result
 end
 
+function Window.IsAutoSize()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.AutoSizeWindowW or ActiveInstance.AutoSizeWindowH
+	end
+
+	return false
+end
+
 return Window

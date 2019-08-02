@@ -1842,7 +1842,8 @@ end
 			'top', 'center', or 'bottom'. The default option is 'top'.
 		Ignore: [Boolean] Should this layout ignore positioning of controls. This is useful if certain controls need custom
 			positioning within a layout.
-		ExpandW: [Boolean] If true, will expand all controls within the row to the size of the window.
+		ExpandW: [Boolean] If true, will expand all controls' width within the row to the size of the window.
+		ExpandH: [Boolean] If true, will expand all controls' height within the row and the size of the window.
 
 	Return: None.
 --]]

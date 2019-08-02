@@ -1,11 +1,11 @@
 v0.6.0 RELEASE
 ==========
 [File Dialog]: Fix layout of controls to use LayoutManager.
-[Layout]: ExpandH option. Expand the height of all controls that can be expanded in the row.
 [Layout]: Columns.
 [Layout]: Documentation.
 [Layout]: Deprecate Layout.lua module.
 [Layout]: Anchor on X position.
+[Layout]: Store total width and height on EndLayout for next frame calculation.
 [Message Box]: Convert to using the LayoutManager.
 [Style]: Push/Pop fonts.
 [Text]: GetTextSize, GetTextWidth documentation.

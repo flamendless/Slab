@@ -1903,7 +1903,7 @@ local function DrawLayout()
 		"of the controls will be adjusted accordingly.")
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_Expand', {ExpandW = true})
+	Slab.BeginLayout('DrawLayout_Expand', {ExpandW = true, ExpandH = true})
 	Slab.Button("OK")
 	Slab.SameLine()
 	Slab.Text("Hello")
@@ -1914,8 +1914,10 @@ local function DrawLayout()
 		Slab.EndComboBox()
 	end
 	Slab.SameLine()
-	Slab.BeginListBox('DrawLayout_ExpandListBox')
+	Slab.BeginListBox('DrawLayout_ExpandListBox', {H = 0})
 	Slab.EndListBox()
+
+	Slab.Button("Cancel")
 	Slab.EndLayout()
 end
 
