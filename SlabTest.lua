@@ -79,23 +79,6 @@ local function DrawButtons()
 	Slab.NewLine()
 	Slab.Separator()
 
-	Slab.Textf(
-		"Buttons can be aligned to fit on the right side of the of window. When multiple buttons are declared with this " ..
-		"option set along with Slab.SameLine call, each button will be moved over to make room for the new aligned button.")
-
-	Slab.Button("Cancel", {AlignRight = true})
-	Slab.SameLine()
-	Slab.Button("OK", {AlignRight = true})
-
-	Slab.NewLine()
-	Slab.Separator()
-
-	Slab.Textf("Buttons can be set to expand to the size of the window.")
-	Slab.Button("Expanded Button", {ExpandW = true})
-
-	Slab.NewLine()
-	Slab.Separator()
-
 	Slab.Textf("Buttons can have a custom width and height.")
 	Slab.Button("Square", {W = 75, H = 75})
 
@@ -198,14 +181,6 @@ local function DrawText()
 	if Slab.TextSelectable("This text has been clicked " .. DrawText_NumClicked_TextOnly .. " time(s).", {IsSelectableTextOnly = true}) then
 		DrawText_NumClicked_TextOnly = DrawText_NumClicked_TextOnly + 1
 	end
-
-	Slab.NewLine()
-	Slab.Separator()
-
-	Slab.Textf("Text can also be centered horizontally within the bounds of the window.")
-
-	Slab.NewLine()
-	Slab.Text("Centered Text", {CenterX = true})
 end
 
 local DrawCheckBox_Checked = false

@@ -353,9 +353,11 @@ function SlabDebug.About()
 		Slab.Text("Slab Version: " .. Slab.GetVersion())
 		Slab.Text("Love Version: " .. Slab.GetLoveVersion())
 		Slab.NewLine()
-		if Slab.Button("OK", {AlignRight = true}) then
+		Slab.BeginLayout(SlabDebug_About .. '.Buttons_Layout', {AlignX = 'center'})
+		if Slab.Button("OK") then
 			Slab.CloseDialog()
 		end
+		Slab.EndLayout()
 		Slab.EndDialog()
 	end
 end

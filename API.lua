@@ -654,8 +654,6 @@ end
 	Label: [String] The label to display on the button.
 	Options: [Table] List of options for how this button will behave.
 		Tooltip: [String] The tooltip to display when the user hovers over this button.
-		AlignRight: [Boolean] Flag to push this button to the right side of the window.
-		ExpandW: [Boolean] Expands the button to fit the contents of the window.
 		Rounding: [Number] Amount of rounding to apply to the corners of the button.
 		Invisible: [Boolean] Don't render the button, but keep the behavior.
 		W: [Number] Override the width of the button.
@@ -704,7 +702,6 @@ end
 		IsSelected: [Boolean] Forces the hover background to be rendered.
 		SelectOnHover: [Boolean] Returns true if the user is hovering over the hot zone of this text.
 		HoverColor: [Table] The color to render the background if the IsSelected option is true.
-		CenterX: [Boolean] Should the text be centered relative to the current active bounds.
 
 	Return: [Boolean] Returns true if SelectOnHover option is set to true. False otherwise.
 --]]

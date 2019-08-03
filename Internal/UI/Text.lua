@@ -26,7 +26,6 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -43,7 +42,6 @@ function Text.Begin(Label, Options)
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
 	Options.AddItem = Options.AddItem == nil and true or Options.AddItem
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
-	Options.CenterX = Options.CenterX == nil and false or Options.CenterX
 
 	local W = Text.GetWidth(Label)
 	local H = Style.Font:getHeight()
@@ -56,10 +54,6 @@ function Text.Begin(Label, Options)
 	local WinId = Window.GetItemId(Label)
 	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()
-
-	if Options.CenterX then
-		X = Layout.CenterX(W)
-	end
 
 	local IsObstructed = Window.IsObstructedAtMouse()
 
@@ -117,11 +111,11 @@ function Text.BeginFormatted(Label, Options)
 	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
 	local H = #Wrapped * Style.Font:getHeight()
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(Width, H)
 
 	local X, Y = Cursor.GetPosition()
 
-	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Options.W, Options.Align, Options.Color, Style.Font)
+	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Width, Options.Align, Options.Color, Style.Font)
 
 	Cursor.SetItemBounds(math.floor(X), math.floor(Y), Width, H)
 	Cursor.AdvanceY(H)

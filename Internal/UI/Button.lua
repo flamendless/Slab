@@ -26,7 +26,6 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Layout = require(SLAB_PATH .. '.Internal.UI.Layout')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -47,8 +46,6 @@ function Button.Begin(Label, Options)
 
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.AlignRight = Options.AlignRight == nil and false or Options.AlignRight
-	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
 	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
 	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
 	Options.W = Options.W == nil and nil or Options.W
@@ -60,11 +57,6 @@ function Button.Begin(Label, Options)
 	local LabelW = Style.Font:getWidth(Label)
 	local FontHeight = Style.Font:getHeight()
 	local TextColor = Options.Disabled and Style.ButtonDisabledTextColor or nil
-
-	if Options.ExpandW then
-		local RegionW, RegionH = Window.GetBorderlessSize()
-		W = RegionW
-	end
 
 	if Options.W ~= nil then
 		W = Options.W
@@ -78,10 +70,6 @@ function Button.Begin(Label, Options)
 	LayoutManager.AddControl(W, H)
 
 	local X, Y = Cursor.GetPosition()
-
-	if Options.AlignRight then
-		X = Layout.AlignRight(W)
-	end
 
 	local Result = false
 	local Color = Style.ButtonColor

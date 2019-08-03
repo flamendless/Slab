@@ -31,6 +31,7 @@ local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
@@ -298,8 +299,8 @@ function Dialog.Begin(Id, Options)
 
 	Options = Options == nil and {} or Options
 	Options.Border = Options.Border == nil and 12.0 or Options.Border
-	Options.X = love.graphics.getWidth() * 0.5 - Instance.W * 0.5
-	Options.Y = love.graphics.getHeight() * 0.5 - Instance.H * 0.5
+	Options.X = math.floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
+	Options.Y = math.floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
 	Options.Layer = 'Dialog'
 	Options.AllowFocus = false
 	Options.AllowMove = false
@@ -360,30 +361,33 @@ function Dialog.MessageBox(Title, Message, Options)
 		Options = Options == nil and {} or Options
 		Options.Buttons = Options.Buttons == nil and {"OK"} or Options.Buttons
 
+		LayoutManager.Begin('MessageBox_Message_Layout', {AlignX = 'center', AlignY = 'center'})
+		LayoutManager.NewLine()
 		Cursor.NewLine()
 
-		local WinX, WinY, WinW, WinH = Window.GetBounds()
+		local MaxW = love.graphics.getWidth() * 0.85
 		local TextW = Text.GetWidth(Message)
-		TextW = math.min(TextW, love.graphics.getWidth() * 0.65)
-		Cursor.SetX(WinX + (WinW * 0.5) - (TextW * 0.5))
-		Text.BeginFormatted(Message, {W = TextW, Align = 'center'})
+		TextW = math.min(TextW, MaxW)
+		Text.BeginFormatted(Message, {Align = 'center', W = TextW})
+
+		LayoutManager.NewLine()
+		Cursor.NewLine()
+		LayoutManager.NewLine()
+		Cursor.NewLine()
+
+		LayoutManager.End()
 
 		Cursor.NewLine()
-		Cursor.NewLine()
 
-		local ButtonWidth = 0.0
-		local WinW, WinH = Window.GetSize()
+		LayoutManager.Begin('MessageBox_Buttons_Layout', {AlignX = 'right', AlignY = 'bottom'})
 		for I, V in ipairs(Options.Buttons) do
-			local ButtonW, ButtonH = Button.GetSize(V)
-			ButtonWidth = ButtonWidth + ButtonW + Cursor.PadX()
-		end
-
-		for I, V in ipairs(Options.Buttons) do
-			if Button.Begin(V, {AlignRight = WinW > ButtonWidth}) then
+			if Button.Begin(V) then
 				Result = V
 			end
 			Cursor.SameLine()
+			LayoutManager.SameLine()
 		end
+		LayoutManager.End()
 
 		if Result ~= "" then
 			Dialog.Close()
@@ -541,14 +545,8 @@ function Dialog.FileDialog(Options)
 		local FilterCBX, FilterCBY, FilterCBW, FilterCBH = Cursor.GetItemBounds()
 		FilterW = FilterCBW
 
-		Cursor.SetRelativeY(H - ButtonH - Cursor.PadY())
-		if Button.Begin("Cancel", {AlignRight = true}) then
-			Result.Button = "Cancel"
-		end
-
-		Cursor.SameLine()
-
-		if Button.Begin("OK", {AlignRight = true}) then
+		LayoutManager.Begin('FileDialog_Buttons_Layout', {AlignX = 'right', AlignY = 'bottom'})
+		if Button.Begin("OK") then
 			local OpeningDirectory = false
 			if #ActiveInstance.Return == 1 and Options.Type ~= 'opendirectory' then
 				local Path = ActiveInstance.Return[1]
@@ -572,6 +570,14 @@ function Dialog.FileDialog(Options)
 				end
 			end
 		end
+
+		Cursor.SameLine()
+		LayoutManager.SameLine()
+
+		if Button.Begin("Cancel") then
+			Result.Button = "Cancel"
+		end
+		LayoutManager.End()
 
 		if FileDialog_AskOverwrite then
 			local FileName = #ActiveInstance.Return > 0 and ActiveInstance.Return[1] or ""

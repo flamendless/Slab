@@ -111,7 +111,7 @@ local function AddControl(Instance, W, H, Type)
 		local PrevRowBottom = GetPreviousRowBottom(Instance)
 
 		if RowW == 0 then
-			RowW = WinW
+			RowW = W
 		end
 
 		if RowH == 0 then
@@ -122,7 +122,12 @@ local function AddControl(Instance, W, H, Type)
 			if Instance.AlignX == 'center' then
 				X = math.max(WinW * 0.5 - RowW * 0.5, Cursor.GetRelativeX())
 			elseif Instance.AlignX == 'right' then
-				X = math.max(WinW - RowW + Window.GetBorder(), Cursor.GetRelativeX())
+				local Right = WinW - RowW
+				if not Window.IsAutoSize() then
+					Right = Right + Window.GetBorder()
+				end
+
+				X = math.max(Right, Cursor.GetRelativeX())
 			else
 				X = Cursor.GetRelativeX()
 			end
@@ -306,7 +311,7 @@ function LayoutManager.ComputeSize(W, H)
 			end
 		end
 
-		Active.AlteredSize = true
+		Active.AlteredSize = Active.ExpandW or Active.ExpandH
 	end
 
 	return W, H
