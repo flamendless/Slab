@@ -354,51 +354,6 @@ function Dialog.IsOpen()
 	return #Stack > 0
 end
 
-function Dialog.MessageBox(Title, Message, Options)
-	local Result = ""
-	Dialog.Open('MessageBox')
-	if Dialog.Begin('MessageBox', {Title = Title}) then
-		Options = Options == nil and {} or Options
-		Options.Buttons = Options.Buttons == nil and {"OK"} or Options.Buttons
-
-		LayoutManager.Begin('MessageBox_Message_Layout', {AlignX = 'center', AlignY = 'center'})
-		LayoutManager.NewLine()
-		Cursor.NewLine()
-
-		local MaxW = love.graphics.getWidth() * 0.85
-		local TextW = Text.GetWidth(Message)
-		TextW = math.min(TextW, MaxW)
-		Text.BeginFormatted(Message, {Align = 'center', W = TextW})
-
-		LayoutManager.NewLine()
-		Cursor.NewLine()
-		LayoutManager.NewLine()
-		Cursor.NewLine()
-
-		LayoutManager.End()
-
-		Cursor.NewLine()
-
-		LayoutManager.Begin('MessageBox_Buttons_Layout', {AlignX = 'right', AlignY = 'bottom'})
-		for I, V in ipairs(Options.Buttons) do
-			if Button.Begin(V) then
-				Result = V
-			end
-			Cursor.SameLine()
-			LayoutManager.SameLine()
-		end
-		LayoutManager.End()
-
-		if Result ~= "" then
-			Dialog.Close()
-		end
-
-		Dialog.End()
-	end
-
-	return Result
-end
-
 function Dialog.FileDialog(Options)
 	Options = Options == nil and {} or Options
 	Options.AllowMultiSelect = Options.AllowMultiSelect == nil and true or Options.AllowMultiSelect

@@ -5,7 +5,6 @@ v0.6.0 RELEASE
 [Layout]: Documentation.
 [Layout]: Anchor on X position.
 [Layout]: Store total width and height on EndLayout for next frame calculation.
-[Message Box]: Move message box implementation to Slab module.
 [Style]: Push/Pop fonts.
 [Text]: GetTextSize, GetTextWidth documentation.
 [Text]: GetTextHeight implementation.
