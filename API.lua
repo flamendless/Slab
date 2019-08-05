@@ -788,6 +788,7 @@ end
 		Tooltip: [String] Text to be displayed if the user hovers over the check box.
 		Id: [String] An optional Id that can be supplied by the user. By default, the Id will be the label.
 		Rounding: [Number] Amount of rounding to apply to the corners of the check box.
+		Size: [Number] The uniform size of the box. The default value is 16.
 
 	Return: [Boolean] Returns true if the user clicks within the check box.
 --]]
@@ -1334,7 +1335,7 @@ function Slab.MessageBox(Title, Message, Options)
 	local Result = ""
 
 	Slab.OpenDialog('MessageBox')
-	if Slab.BeginDialog('MessageBox', {Title = Title}) then
+	if Slab.BeginDialog('MessageBox', {Title = Title, Border = 12}) then
 		Slab.BeginLayout('MessageBox_Message_Layout', {AlignX = 'center', AlignY = 'center'})
 		local TextW = math.min(Slab.GetTextWidth(Message), love.graphics.getWidth() * 0.80)
 		Slab.Textf(Message, {Align = 'center', W = TextW})
@@ -1872,6 +1873,10 @@ end
 			positioning within a layout.
 		ExpandW: [Boolean] If true, will expand all controls' width within the row to the size of the window.
 		ExpandH: [Boolean] If true, will expand all controls' height within the row and the size of the window.
+		AnchorX: [Boolean] Anchors the layout management at the current X cursor position. The size is calculated using this position.
+			The default value for this is false.
+		AnchorY: [Boolean] Anchors the layout management at the current Y cursor position. The size is calculated using this position.
+			The default value for this is true.
 
 	Return: None.
 --]]

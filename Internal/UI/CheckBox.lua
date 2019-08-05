@@ -36,8 +36,6 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local CheckBox = {}
 
-local Radius = 8.0
-
 function CheckBox.Begin(Enabled, Label, Options)
 	local StatHandle = Stats.Begin('CheckBox', 'Slab')
 
@@ -47,12 +45,14 @@ function CheckBox.Begin(Enabled, Label, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.Id = Options.Id == nil and Label or Options.Id
 	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
+	Options.Size = Options.Size == nil and 16 or Options.Size
 
 	local Id = Window.GetItemId(Options.Id and Options.Id or ('_' .. Label .. '_CheckBox'))
-	local BoxW, BoxH = Radius * 2.0, Radius * 2.0
+	local BoxW, BoxH = Options.Size, Options.Size
 	local TextW, TextH = Text.GetSize(Label)
 	local W = BoxW + Cursor.PadX() + 2.0 + TextW
 	local H = math.max(BoxH, TextH)
+	local Radius = Options.Size * 0.5
 
 	LayoutManager.AddControl(W, H)
 
@@ -77,19 +77,21 @@ function CheckBox.Begin(Enabled, Label, Options)
 		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
 	end
 	if Label ~= "" then
+		local CursorY = Cursor.GetY()
 		Cursor.AdvanceX(BoxW + 2.0)
 		LayoutManager.Begin('Ignore', {Ignore = true})
 		Text.Begin(Label)
 		LayoutManager.End()
-	else
-		Cursor.SetItemBounds(X, Y, W, H)
-		Cursor.AdvanceY(H)
+		Cursor.SetY(CursorY)
 	end
 
 	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(Id)
 	end
+
+	Cursor.SetItemBounds(X, Y, W, H)
+	Cursor.AdvanceY(H)
 
 	Window.AddItem(X, Y, W, H, Id)
 

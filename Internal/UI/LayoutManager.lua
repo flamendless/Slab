@@ -109,6 +109,16 @@ local function AddControl(Instance, W, H, Type)
 		local X, Y = GetRowCursorPos(Instance)
 		local LayoutH = GetLayoutH(Instance)
 		local PrevRowBottom = GetPreviousRowBottom(Instance)
+		local AnchorX, AnchorY = Instance.X, Instance.Y
+		local WinL, WinT = Window.GetPosition()
+
+		if not Instance.AnchorX then
+			AnchorX = WinX - WinL
+		end
+
+		if not Instance.AnchorY then
+			AnchorY = WinY - WinT
+		end
 
 		if RowW == 0 then
 			RowW = W
@@ -120,16 +130,16 @@ local function AddControl(Instance, W, H, Type)
 
 		if X == nil then
 			if Instance.AlignX == 'center' then
-				X = math.max(WinW * 0.5 - RowW * 0.5, Cursor.GetRelativeX())
+				X = math.max(WinW * 0.5 - RowW * 0.5 + AnchorX, AnchorX)
 			elseif Instance.AlignX == 'right' then
 				local Right = WinW - RowW
 				if not Window.IsAutoSize() then
 					Right = Right + Window.GetBorder()
 				end
 
-				X = math.max(Right, Cursor.GetRelativeX())
+				X = math.max(Right, AnchorX)
 			else
-				X = Cursor.GetRelativeX()
+				X = AnchorX
 			end
 		end
 
@@ -139,11 +149,11 @@ local function AddControl(Instance, W, H, Type)
 			else
 				local RegionH = WinY + WinH - CursorY
 				if Instance.AlignY == 'center' then
-					Y = math.max(RegionH * 0.5 - LayoutH * 0.5 + Cursor.GetRelativeY(), Cursor.GetRelativeY())
+					Y = math.max(RegionH * 0.5 - LayoutH * 0.5 + AnchorY, AnchorY)
 				elseif Instance.AlignY == 'bottom' then
-					Y = math.max(WinH - LayoutH, Cursor.GetRelativeY())
+					Y = math.max(WinH - LayoutH, AnchorY)
 				else
-					Y = Cursor.GetRelativeY()
+					Y = AnchorY
 				end
 			end
 		end
@@ -237,6 +247,14 @@ function LayoutManager.ComputeSize(W, H)
 		local RealW = WinW - X
 		local RealH = WinH - Y
 
+		if not Active.AnchorX then
+			RealW = WinW
+		end
+
+		if not Active.AnchorY then
+			RealH = WinH
+		end
+
 		if Window.IsAutoSize() then
 			local LayoutH = GetLayoutH(Active, false)
 
@@ -327,6 +345,8 @@ function LayoutManager.Begin(Id, Options)
 	Options.Ignore = Options.Ignore == nil and false or Options.Ignore
 	Options.ExpandW = Options.ExpandW == nil and false or Options.ExpandW
 	Options.ExpandH = Options.ExpandH == nil and false or Options.ExpandH
+	Options.AnchorX = Options.AnchorX == nil and false or Options.AnchorX
+	Options.AnchorY = Options.AnchorY == nil and true or Options.AnchorY
 
 	local Instance = GetInstance(Id)
 	Instance.AlignX = Options.AlignX
@@ -338,6 +358,8 @@ function LayoutManager.Begin(Id, Options)
 	Instance.PendingRows = {}
 	Instance.RowNo = 1
 	Instance.X, Instance.Y = Cursor.GetRelativePosition()
+	Instance.AnchorX = Options.AnchorX
+	Instance.AnchorY = Options.AnchorY
 
 	table.insert(Stack, 1, Instance)
 	Active = Instance

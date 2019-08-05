@@ -1,10 +1,7 @@
 v0.6.0 RELEASE
 ==========
-[File Dialog]: Fix layout of controls to use LayoutManager.
 [Layout]: Columns.
 [Layout]: Documentation.
-[Layout]: Anchor on X position.
-[Layout]: Store total width and height on EndLayout for next frame calculation.
 [Style]: Push/Pop fonts.
 [Text]: GetTextSize, GetTextWidth documentation.
 [Text]: GetTextHeight implementation.

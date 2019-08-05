@@ -548,8 +548,10 @@ function SlabDebug.MultiLine()
 		end
 	end
 
+	local ItemW, ItemH = Slab.GetControlSize()
+
 	Slab.SameLine()
-	if Slab.CheckBox(SlabDebug_MultiLine_ShouldHighlight, "Use Lua Highlight") then
+	if Slab.CheckBox(SlabDebug_MultiLine_ShouldHighlight, "Use Lua Highlight", {Size = ItemH}) then
 		SlabDebug_MultiLine_ShouldHighlight = not SlabDebug_MultiLine_ShouldHighlight
 	end
 

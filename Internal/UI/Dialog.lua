@@ -298,7 +298,6 @@ function Dialog.Begin(Id, Options)
 	end
 
 	Options = Options == nil and {} or Options
-	Options.Border = Options.Border == nil and 12.0 or Options.Border
 	Options.X = math.floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
 	Options.Y = math.floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
 	Options.Layer = 'Dialog'
@@ -455,9 +454,9 @@ function Dialog.FileDialog(Options)
 		Region.End()
 		Region.ApplyScissor()
 		Cursor.AdvanceX(ExplorerW + 4.0)
-		Cursor.SetAnchorX(Cursor.GetX())
 		Cursor.SetY(CursorY)
 
+		LayoutManager.Begin('FileDialog_ListBox_Expand', {AnchorX = true, ExpandW = true})
 		ListBox.Begin('FileDialog_ListBox', {H = ListH, Clear = Clear})
 		local Index = 1
 		for I, V in ipairs(ActiveInstance.Directories) do
@@ -469,6 +468,7 @@ function Dialog.FileDialog(Options)
 			Index = Index + 1
 		end
 		ListBox.End()
+		LayoutManager.End()
 
 		local ListBoxX, ListBoxY, ListBoxW, ListBoxH = Cursor.GetItemBounds()
 		local InputW = ListBoxX + ListBoxW - PrevAnchorX - FilterW - Cursor.PadX()
