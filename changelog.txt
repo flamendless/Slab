@@ -1,6 +1,5 @@
 v0.6.0 RELEASE
 ==========
-[Layout]: Columns.
 [Layout]: Documentation.
 [Style]: Push/Pop fonts.
 [Text]: GetTextSize, GetTextWidth documentation.

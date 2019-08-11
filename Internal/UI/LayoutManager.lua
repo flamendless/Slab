@@ -46,11 +46,15 @@ local function GetWindowBounds()
 end
 
 local function GetRowSize(Instance)
-	if Instance ~= nil and Instance.Rows ~= nil then
-		local Row = Instance.Rows[Instance.RowNo]
+	if Instance ~= nil then
+		local Column = Instance.Columns[Instance.ColumnNo]
 
-		if Row ~= nil then
-			return Row.W, Row.H
+		if Column.Rows ~= nil then
+			local Row = Column.Rows[Column.RowNo]
+
+			if Row ~= nil then
+				return Row.W, Row.H
+			end
 		end
 	end
 
@@ -58,11 +62,15 @@ local function GetRowSize(Instance)
 end
 
 local function GetRowCursorPos(Instance)
-	if Instance ~= nil and Instance.Rows ~= nil then
-		local Row = Instance.Rows[Instance.RowNo]
+	if Instance ~= nil then
+		local Column = Instance.Columns[Instance.ColumnNo]
 
-		if Row ~= nil then
-			return Row.CursorX, Row.CursorY
+		if Column.Rows ~= nil then
+			local Row = Column.Rows[Column.RowNo]
+
+			if Row ~= nil then
+				return Row.CursorX, Row.CursorY
+			end
 		end
 	end
 
@@ -72,33 +80,85 @@ end
 local function GetLayoutH(Instance, IncludePad)
 	IncludePad = IncludePad == nil and true or IncludePad
 
-	if Instance ~= nil and Instance.Rows ~= nil then
-		local H = 0
+	if Instance ~= nil then
+		local Column = Instance.Columns[Instance.ColumnNo]
 
-		for I, V in ipairs(Instance.Rows) do
-			H = H + V.H
+		if Column.Rows ~= nil then
+			local H = 0
 
-			if IncludePad then
-				H = H + Cursor.PadY()
+			for I, V in ipairs(Column.Rows) do
+				H = H + V.H
+
+				if IncludePad then
+					H = H + Cursor.PadY()
+				end
 			end
-		end
 
-		return H
+			return H
+		end
 	end
 
 	return 0
 end
 
 local function GetPreviousRowBottom(Instance)
-	if Instance ~= nil and Instance.Rows ~= nil then
-		if Instance.RowNo > 1 then
-			local Y = Instance.Rows[Instance.RowNo - 1].CursorY
-			local H = Instance.Rows[Instance.RowNo - 1].H
+	if Instance ~= nil then
+		local Column = Instance.Columns[Instance.ColumnNo]
+
+		if Column.Rows ~= nil and Column.RowNo > 1 then
+			local Y = Column.Rows[Column.RowNo - 1].CursorY
+			local H = Column.Rows[Column.RowNo - 1].H
 			return Y + H
 		end
 	end
 
 	return nil
+end
+
+local function GetColumnPosition(Instance)
+	if Instance ~= nil then
+		local WinX, WinY, WinW, WinH = GetWindowBounds()
+		local WinL, WinT = Window.GetPosition()
+		local Count = #Instance.Columns
+		local ColumnW = WinW / Count
+		local TotalW = 0
+
+		for I = 1, Instance.ColumnNo - 1, 1 do
+			local Column = Instance.Columns[I]
+			TotalW = TotalW + Column.W
+		end
+
+		local AnchorX, AnchorY = Instance.X, Instance.Y
+
+		if not Instance.AnchorX then
+			AnchorX = WinX - WinL
+		end
+
+		if not Instance.AnchorY then
+			AnchorY = WinY - WinT
+		end
+
+		return AnchorX + TotalW, AnchorY
+	end
+
+	return 0, 0
+end
+
+local function GetColumnSize(Instance)
+	if Instance ~= nil then
+		local Column = Instance.Columns[Instance.ColumnNo]
+		local WinX, WinY, WinW, WinH = GetWindowBounds()
+
+		if not Window.IsAutoSize() then
+			local Count = #Instance.Columns
+			local ColumnW = WinW / Count
+			Column.W = ColumnW
+		end
+
+		return Column.W, GetLayoutH(Instance)
+	end
+
+	return 0, 0
 end
 
 local function AddControl(Instance, W, H, Type)
@@ -109,16 +169,9 @@ local function AddControl(Instance, W, H, Type)
 		local X, Y = GetRowCursorPos(Instance)
 		local LayoutH = GetLayoutH(Instance)
 		local PrevRowBottom = GetPreviousRowBottom(Instance)
-		local AnchorX, AnchorY = Instance.X, Instance.Y
-		local WinL, WinT = Window.GetPosition()
-
-		if not Instance.AnchorX then
-			AnchorX = WinX - WinL
-		end
-
-		if not Instance.AnchorY then
-			AnchorY = WinY - WinT
-		end
+		local AnchorX, AnchorY = GetColumnPosition(Instance)
+		WinW, WinH = GetColumnSize(Instance)
+		local Column = Instance.Columns[Instance.ColumnNo]
 
 		if RowW == 0 then
 			RowW = W
@@ -169,10 +222,10 @@ local function AddControl(Instance, W, H, Type)
 			end
 		end
 
-		local RowNo = Instance.RowNo
+		local RowNo = Column.RowNo
 
-		if Instance.Rows ~= nil then
-			local Row = Instance.Rows[RowNo]
+		if Column.Rows ~= nil then
+			local Row = Column.Rows[RowNo]
 
 			if Row ~= nil then
 				Row.CursorX = X + W + Cursor.PadX()
@@ -180,8 +233,8 @@ local function AddControl(Instance, W, H, Type)
 			end
 		end
 
-		if Instance.PendingRows[Instance.RowNo] == nil then
-			Instance.PendingRows[Instance.RowNo] = {
+		if Column.PendingRows[RowNo] == nil then
+			local Row = {
 				CursorX = nil,
 				CursorY = nil,
 				W = 0,
@@ -190,23 +243,25 @@ local function AddControl(Instance, W, H, Type)
 				MaxH = 0,
 				Controls = {}
 			}
+			table.insert(Column.PendingRows, Row)
 		end
 
-		local Row = Instance.PendingRows[RowNo]
+		local Row = Column.PendingRows[RowNo]
 
 		table.insert(Row.Controls, {
 			X = Cursor.GetX(),
 			Y = Cursor.GetY(),
 			W = W,
 			H = H,
-			AlteredSize = Instance.AlteredSize,
+			AlteredSize = Column.AlteredSize,
 			Type = Type
 		})
 		Row.W = Row.W + W + Cursor.PadX()
 		Row.H = math.max(Row.H, H)
 
-		Instance.RowNo = RowNo + 1
-		Instance.AlteredSize = false
+		Column.RowNo = RowNo + 1
+		Column.AlteredSize = false
+		Column.W = math.max(Row.W, Column.W)
 	end
 end
 
@@ -220,14 +275,12 @@ local function GetInstance(Id)
 		Instance.AlignX = 'left'
 		Instance.AlignY = 'top'
 		Instance.AlignRowY = 'top'
-		Instance.Controls = nil
-		Instance.PendingRows = nil
-		Instance.RowNo = 1
 		Instance.Ignore = false
 		Instance.ExpandW = false
 		Instance.X = 0
 		Instance.Y = 0
-		Instance.AlteredSize = false
+		Instance.Columns = {}
+		Instance.ColumnNo = 1
 		Instances[Key] = Instance
 	end
 
@@ -242,10 +295,11 @@ end
 
 function LayoutManager.ComputeSize(W, H)
 	if Active ~= nil then
-		local X, Y = Active.X, Active.Y
-		local WinX, WinY, WinW, WinH = GetWindowBounds()
+		local X, Y = GetColumnPosition(Active)
+		local WinX, WinY, WinW, WinH = GetWindowBounds(Active)
 		local RealW = WinW - X
 		local RealH = WinH - Y
+		local Column = Active.Columns[Active.ColumnNo]
 
 		if not Active.AnchorX then
 			RealW = WinW
@@ -264,11 +318,11 @@ function LayoutManager.ComputeSize(W, H)
 		end
 
 		if Active.ExpandW then
-			if Active.Rows ~= nil then
+			if Column.Rows ~= nil then
 				local Count = 0
 				local ReduceW = 0
 				local Pad = 0
-				local Row = Active.Rows[Active.RowNo]
+				local Row = Column.Rows[Column.RowNo]
 				if Row ~= nil then
 					for I, V in ipairs(Row.Controls) do
 						if V.AlteredSize then
@@ -290,15 +344,15 @@ function LayoutManager.ComputeSize(W, H)
 		end
 
 		if Active.ExpandH then
-			if Active.Rows ~= nil then
+			if Column.Rows ~= nil then
 				local Count = 0
 				local ReduceH = 0
 				local Pad = 0
 				local MaxRowH = 0
-				for I, Row in ipairs(Active.Rows) do
+				for I, Row in ipairs(Column.Rows) do
 					local IsSizeAltered = false
 
-					if I == Active.RowNo then
+					if I == Column.RowNo then
 						MaxRowH = Row.MaxH
 						Row.RequestH = math.max(Row.RequestH, H)
 					end
@@ -317,8 +371,8 @@ function LayoutManager.ComputeSize(W, H)
 					end
 				end
 
-				if #Active.Rows > 1 then
-					Pad = Cursor.PadY() * (#Active.Rows - 1)
+				if #Column.Rows > 1 then
+					Pad = Cursor.PadY() * (#Column.Rows - 1)
 				end
 
 				Count = math.max(Count, 1)
@@ -329,7 +383,7 @@ function LayoutManager.ComputeSize(W, H)
 			end
 		end
 
-		Active.AlteredSize = Active.ExpandW or Active.ExpandH
+		Column.AlteredSize = Active.ExpandW or Active.ExpandH
 	end
 
 	return W, H
@@ -347,6 +401,9 @@ function LayoutManager.Begin(Id, Options)
 	Options.ExpandH = Options.ExpandH == nil and false or Options.ExpandH
 	Options.AnchorX = Options.AnchorX == nil and false or Options.AnchorX
 	Options.AnchorY = Options.AnchorY == nil and true or Options.AnchorY
+	Options.Columns = Options.Columns == nil and 1 or Options.Columns
+
+	Options.Columns = math.max(Options.Columns, 1)
 
 	local Instance = GetInstance(Id)
 	Instance.AlignX = Options.AlignX
@@ -355,11 +412,28 @@ function LayoutManager.Begin(Id, Options)
 	Instance.Ignore = Options.Ignore
 	Instance.ExpandW = Options.ExpandW
 	Instance.ExpandH = Options.ExpandH
-	Instance.PendingRows = {}
-	Instance.RowNo = 1
 	Instance.X, Instance.Y = Cursor.GetRelativePosition()
 	Instance.AnchorX = Options.AnchorX
 	Instance.AnchorY = Options.AnchorY
+
+	if Options.Columns ~= #Instance.Columns then
+		Instance.Columns = {}
+		for I = 1, Options.Columns, 1 do
+			local Column = {
+				Rows = nil,
+				PendingRows = {},
+				RowNo = 1,
+				W = 0
+			}
+
+			table.insert(Instance.Columns, Column)
+		end
+	end
+
+	for I, Column in ipairs(Instance.Columns) do
+		Column.PendingRows = {}
+		Column.RowNo = 1
+	end
 
 	table.insert(Stack, 1, Instance)
 	Active = Instance
@@ -368,13 +442,15 @@ end
 function LayoutManager.End()
 	assert(Active ~= nil, "LayoutManager.End was called without a call to LayoutManager.Begin!")
 
-	local Rows = Active.Rows
-	Active.Rows = Active.PendingRows
-	Active.PendingRows = nil
+	for I, Column in ipairs(Active.Columns) do
+		local Rows = Column.Rows
+		Column.Rows = Column.PendingRows
+		Column.PendingRows = nil
 
-	if Rows ~= nil and Active.Rows ~= nil and #Rows == #Active.Rows then
-		for I, V in ipairs(Rows) do
-			Active.Rows[I].MaxH = Rows[I].RequestH
+		if Rows ~= nil and Column.Rows ~= nil and #Rows == #Column.Rows then
+			for I, V in ipairs(Rows) do
+				Column.Rows[I].MaxH = Rows[I].RequestH
+			end
 		end
 	end
 
@@ -388,13 +464,22 @@ end
 
 function LayoutManager.SameLine()
 	if Active ~= nil then
-		Active.RowNo = math.max(Active.RowNo - 1, 1)
+		local Column = Active.Columns[Active.ColumnNo]
+		Column.RowNo = math.max(Column.RowNo - 1, 1)
 	end
 end
 
 function LayoutManager.NewLine()
 	if Active ~= nil then
 		AddControl(Active, 0, Cursor.GetNewLineSize(), 'NewLine')
+	end
+end
+
+function LayoutManager.SetColumn(Index)
+	if Active ~= nil then
+		Index = math.max(Index, 1)
+		Index = math.min(Index, #Active.Columns)
+		Active.ColumnNo = Index
 	end
 end
 

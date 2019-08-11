@@ -1789,6 +1789,7 @@ local DrawLayout_AlignY_Options = {'top', 'center', 'bottom'}
 local DrawLayout_Radio = 1
 local DrawLayout_Input = "Input Control"
 local DrawLayout_ListBox_Selected = 1
+local DrawLayout_Columns = 3
 
 local function DrawLayout()
 	Slab.Textf(
@@ -1893,6 +1894,34 @@ local function DrawLayout()
 	Slab.EndListBox()
 
 	Slab.Button("Cancel")
+	Slab.EndLayout()
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Controls can be layed out in columns. The 'Columns' option is a number that tells the layout how many columns to allocate for " ..
+		"positioning the controls. The 'SetLayoutColumn' function sets the current active column and all controls will be placed within " ..
+		"the bounds of that column.")
+
+	Slab.NewLine()
+
+	Slab.BeginLayout('DrawLayout_Columns_Options', {AlignX = 'center'})
+	Slab.Text("Columns")
+	Slab.SameLine()
+	if Slab.Input('DrawLayout_Columns_Input', {Text = tostring(DrawLayout_Columns), ReturnOnText = false, MinNumber = 1, NumbersOnly = true}) then
+		DrawLayout_Columns = Slab.GetInputNumber()
+	end
+	Slab.EndLayout()
+
+	Slab.NewLine()
+
+	Slab.BeginLayout('DrawLayout_Columns', {Columns = DrawLayout_Columns, AlignX = 'center'})
+	for I = 1, DrawLayout_Columns, 1 do
+		Slab.SetLayoutColumn(I)
+		Slab.Text("Column " .. I)
+		Slab.Text("This is a very long string")
+	end
 	Slab.EndLayout()
 end
 

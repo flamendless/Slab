@@ -187,6 +187,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Layout:
 			BeginLayout
 			EndLayout
+			SetLayoutColumn
 --]]
 local Slab = {}
 
@@ -1894,6 +1895,19 @@ end
 --]]
 function Slab.EndLayout()
 	LayoutManager.End()
+end
+
+--[[
+	SetLayoutColumn
+
+	Sets the current active column.
+
+	Index: [Number] The index of the column to be active.
+
+	Return: None.
+--]]
+function Slab.SetLayoutColumn(Index)
+	LayoutManager.SetColumn(Index)
 end
 
 return Slab
