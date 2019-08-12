@@ -784,7 +784,7 @@ end
 
 	Retrieves the height of the current font.
 
-	Return: [Number] The height of the given text.
+	Return: [Number] The height of the current font.
 --]]
 function Slab.GetTextHeight()
 	return Text.GetHeight()

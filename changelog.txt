@@ -1,8 +1,6 @@
 v0.6.0 RELEASE
 ==========
 [Layout]: Documentation.
-[Text]: GetTextSize, GetTextWidth documentation.
-[Text]: GetTextHeight implementation.
 
 BUGS
 ==========
