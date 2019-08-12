@@ -72,7 +72,11 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		GetLoveVersion
 		Update
 		Draw
-		GetStyle
+
+		Style:
+			GetStyle
+			PushFont
+			PopFont
 
 		Window:
 			BeginWindow
@@ -330,6 +334,30 @@ end
 --]]
 function Slab.GetStyle()
 	return Style
+end
+
+--[[
+	PushFont
+
+	Pushes a Love font object onto the font stack. All text rendering will use this font until PopFont is called.
+
+	Font: [Object] The Love font object to use.
+
+	Return: None.
+--]]
+function Slab.PushFont(Font)
+	Style.API.PushFont(Font)
+end
+
+--[[
+	PopFont
+
+	Pops the last font from the stack.
+
+	Return: None.
+--]]
+function Slab.PopFont()
+	Style.API.PopFont()
 end
 
 --[[

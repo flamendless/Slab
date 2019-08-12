@@ -1925,6 +1925,31 @@ local function DrawLayout()
 	Slab.EndLayout()
 end
 
+local DrawFonts_Roboto = nil
+local DrawFonts_Roboto_Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Fonts/Roboto-Regular.ttf"
+
+local function DrawFonts()
+	if DrawFonts_Roboto == nil then
+		DrawFonts_Roboto = love.graphics.newFont(DrawFonts_Roboto_Path, 18)
+		print("Created Font!")
+	end
+
+	Slab.Textf(
+		"Fonts can be pushed to a stack to alter the rendering of any text. All controls will use this pushed font until " ..
+		"the font is popped from the stack, using the last pushed font or the default font. Below is an example of font " ..
+		"being pushed to the stack to render a single text control and then being popped before the next text control.")
+
+	Slab.NewLine()
+
+	Slab.PushFont(DrawFonts_Roboto)
+	Slab.Text("This text control is using the Roboto font with point size of 18.")
+	Slab.PopFont()
+
+	Slab.NewLine()
+
+	Slab.Text("This text control is using the default font.")
+end
+
 local DrawSlabTest = true
 
 function SlabTest.MainMenuBar()
@@ -1966,7 +1991,8 @@ local Categories = {
 	{"Shapes", DrawShapes},
 	{"Tooltips", DrawTooltip},
 	{"Stats", DrawStats},
-	{"Layout", DrawLayout}
+	{"Layout", DrawLayout},
+	{"Fonts", DrawFonts}
 }
 
 local Selected = nil

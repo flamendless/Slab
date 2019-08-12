@@ -34,6 +34,7 @@ local Styles = {}
 local StylePaths = {}
 local DefaultStyles = {}
 local CurrentStyle = ""
+local FontStack = {}
 
 local Style = 
 {
@@ -102,6 +103,7 @@ function API.Initialize()
 	end
 
 	Style.Font = love.graphics.newFont(Style.FontSize)
+	API.PushFont(Style.Font)
 	Cursor.SetNewLineSize(Style.Font:getHeight())
 end
 
@@ -195,6 +197,20 @@ end
 
 function API.IsDefaultStyle(Name)
 	return Utility.Contains(DefaultStyles, Name)
+end
+
+function API.PushFont(Font)
+	if Font ~= nil then
+		Style.Font = Font
+		table.insert(FontStack, 1, Font)
+	end
+end
+
+function API.PopFont()
+	if #FontStack > 1 then
+		table.remove(FontStack, 1)
+		Style.Font = FontStack[1]
+	end
 end
 
 return Style

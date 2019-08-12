@@ -148,14 +148,18 @@ local function GetColumnSize(Instance)
 	if Instance ~= nil then
 		local Column = Instance.Columns[Instance.ColumnNo]
 		local WinX, WinY, WinW, WinH = GetWindowBounds()
+		local Count = #Instance.Columns
+		local ColumnW = WinW / Count
+		local W, H = 0, GetLayoutH(Instance)
 
 		if not Window.IsAutoSize() then
-			local Count = #Instance.Columns
-			local ColumnW = WinW / Count
-			Column.W = ColumnW
+			W = ColumnW
+			Column.W = W
+		else
+			W = math.max(Column.W, ColumnW)
 		end
 
-		return Column.W, GetLayoutH(Instance)
+		return W, H
 	end
 
 	return 0, 0

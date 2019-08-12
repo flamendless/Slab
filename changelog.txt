@@ -1,7 +1,6 @@
 v0.6.0 RELEASE
 ==========
 [Layout]: Documentation.
-[Style]: Push/Pop fonts.
 [Text]: GetTextSize, GetTextWidth documentation.
 [Text]: GetTextHeight implementation.
 [Window]: Deprecate Columns API and update documentation.
@@ -36,6 +35,7 @@ Controls: Convert all window bounds check to use region.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Dock]: Initial implementation of docking.
+[Documentation]: Command-line option to just dump all functions listed in API table.
 [Error]: Dialog that shows any error messages.
 [Error]: Show messages for deprecated API.
 [Graph]: Initial line graph implementation.
