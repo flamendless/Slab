@@ -108,10 +108,6 @@ local function NewInstance(Id)
 	Instance.Layer = 'Normal'
 	Instance.StackIndex = 0
 	Instance.CanObstruct = true
-	Instance.Columns = nil
-	Instance.ActiveColumn = nil
-	Instance.ColumnY = nil
-	Instance.ColumnH = nil
 	Instance.FrameNumber = 0
 	Instance.LastCursorX = 0
 	Instance.LastCursorY = 0
@@ -327,53 +323,6 @@ local function UpdateSize(Instance, IsObstructed)
 	end
 end
 
-local function UpdateColumns(Instance, Count)
-	if Instance ~= nil and Count > 1 then
-		if Instance.Columns == nil or Count ~= #Instance.Columns then
-			Instance.Columns = {}
-			Instance.ActiveColumn = nil
-		end
-
-		local ColumnW = Instance.W / Count
-
-		for I = 1, Count, 1 do
-			if Instance.Columns[I] == nil then
-				Instance.Columns[I] = {}
-				Instance.Columns[I].Index = I
-			end
-
-			local Column = Instance.Columns[I]
-			Column.X = Instance.X + ColumnW * (I - 1)
-			Column.W = ColumnW
-			Column.CursorX = Column.X + Instance.Border
-			Column.CursorY = nil
-		end
-	end
-end
-
-local function DrawColumns(Instance)
-	if Instance ~= nil and Instance.Columns ~= nil and #Instance.Columns > 1 and Instance.ColumnY ~= nil and Instance.ColumnH ~= nil then
-		local ColumnW = Instance.W / #Instance.Columns
-
-		for I = 1, #Instance.Columns - 1, 1 do
-			local Column = Instance.Columns[I]
-			DrawCommands.Line(Column.X + Column.W, Instance.ColumnY + Cursor.PadY(), Column.X + Column.W, Instance.ColumnY + Instance.ColumnH - Cursor.PadY(), 1.0)
-		end
-	end
-end
-
-local function IsColumnRegionActive(Instance)
-	if Instance ~= nil and Instance.Columns ~= nil then
-		for I, Column in ipairs(Instance.Columns) do
-			if Region.IsActive(Instance.Id .. "_Column_" .. I) then
-				return true
-			end
-		end
-	end
-
-	return false
-end
-
 function Window.Top()
 	return ActiveInstance
 end
@@ -458,7 +407,6 @@ function Window.Begin(Id, Options)
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
-	Options.Columns = Options.Columns == nil and 0 or Options.Columns
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -522,7 +470,6 @@ function Window.Begin(Id, Options)
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
-	ActiveInstance.ColumnY = nil
 	ActiveInstance.FrameNumber = CurrentFrameNumber
 	ActiveInstance.StatHandle = StatHandle
 
@@ -559,7 +506,6 @@ function Window.Begin(Id, Options)
 
 	UpdateSize(ActiveInstance, IsObstructed)
 	UpdateTitleBar(ActiveInstance)
-	UpdateColumns(ActiveInstance, Options.Columns)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
@@ -619,7 +565,6 @@ end
 function Window.End()
 	if ActiveInstance ~= nil then
 		local Handle = ActiveInstance.StatHandle
-		DrawColumns(ActiveInstance)
 		Region.End()
 		DrawCommands.End()
 		table.remove(PendingStack, 1)
@@ -704,19 +649,11 @@ function Window.GetBorderlessSize()
 	local W, H = 0.0, 0.0
 
 	if ActiveInstance ~= nil then
-		if ActiveInstance.ActiveColumn ~= nil then
-			W = ActiveInstance.ActiveColumn.W
-			H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
+		W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
+		H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
 
-			W = math.max(0.0, W - ActiveInstance.Border * 2.0)
-			H = math.max(0.0, H - ActiveInstance.Border * 2.0)
-		else
-			W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
-			H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
-
-			W = math.max(0.0, W - ActiveInstance.Border * 2.0)
-			H = math.max(0.0, H - ActiveInstance.Border * 2.0)
-		end
+		W = math.max(0.0, W - ActiveInstance.Border * 2.0)
+		H = math.max(0.0, H - ActiveInstance.Border * 2.0)
 	end
 
 	return W, H
@@ -751,7 +688,7 @@ end
 function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
 		ActiveInstance.LastItem = Id
-		if Region.IsActive(ActiveInstance.Id) or IsColumnRegionActive(ActiveInstance) then
+		if Region.IsActive(ActiveInstance.Id) then
 			if ActiveInstance.AutoSizeWindowW then
 				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
 			end
@@ -881,56 +818,6 @@ function Window.PushToTop(Id)
 
 	if Instance ~= nil then
 		PushToTop(Instance)
-	end
-end
-
-function Window.BeginColumn(Index)
-	if ActiveInstance ~= nil and ActiveInstance.Columns ~= nil then
-		assert(Index > 0 and Index <= #ActiveInstance.Columns, "Invalid index '" .. Index .. "' set for column. Window contains '" .. #ActiveInstance.Columns .. "' columns.")
-
-		if ActiveInstance.ColumnY == nil then
-			ActiveInstance.ColumnY = Cursor.GetY() - Cursor.PadY()
-		end
-
-		ActiveInstance.ActiveColumn = ActiveInstance.Columns[Index]
-
-		if ActiveInstance.ActiveColumn.CursorY == nil then
-			ActiveInstance.ActiveColumn.CursorY = ActiveInstance.ColumnY + Cursor.PadY()
-		end
-
-		Cursor.SetPosition(ActiveInstance.ActiveColumn.CursorX, ActiveInstance.ActiveColumn.CursorY)
-		Cursor.SetAnchor(ActiveInstance.ActiveColumn.X + ActiveInstance.Border, ActiveInstance.ColumnY)
-
-		local TX, TY = Window.TransformPoint(ActiveInstance.ActiveColumn.X, ActiveInstance.ColumnY)
-		Region.Begin(ActiveInstance.Id .. '_Column_' .. Index, {
-			X = ActiveInstance.ActiveColumn.X,
-			Y = ActiveInstance.ColumnY,
-			W = ActiveInstance.ActiveColumn.W,
-			H = ActiveInstance.ColumnH,
-			SX = TX,
-			SY = TY,
-			NoOutline = true,
-			NoBackground = true,
-			IgnoreScroll = true,
-			Intersect = true
-		})
-	end
-end
-
-function Window.EndColumn()
-	if ActiveInstance ~= nil and ActiveInstance.ActiveColumn ~= nil then
-		Region.End()
-		Region.ApplyScissor()
-		ActiveInstance.ActiveColumn.CursorY = Cursor.GetY()
-		ActiveInstance.ActiveColumn = nil
-
-		Cursor.SetX(ActiveInstance.X + ActiveInstance.Border)
-		Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
-
-		local H = Cursor.GetY() - ActiveInstance.ColumnY
-		if ActiveInstance.ColumnH == nil or H > ActiveInstance.ColumnH then
-			ActiveInstance.ColumnH = H
-		end
 	end
 end
 

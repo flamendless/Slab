@@ -211,54 +211,14 @@ local function EditColor(Color)
 	Style_ColorStore = {Color[1], Color[2], Color[3], Color[4]}
 end
 
-local function DrawStyleColor(Label, Color)
-	local Style = Slab.GetStyle()
-	local H = Style.Font:getHeight()
-	local TextColor = Style.TextColor
-
-	if Style_EditingColor == Color then
-		TextColor = {1.0, 1.0, 0.0, 1.0}
-	end
-
-	Slab.BeginColumn(1)
-	Slab.Text(Label, {Color = TextColor})
-	Slab.EndColumn()
-
-	Slab.BeginColumn(2)
-	local ColW, ColH = Slab.GetWindowActiveSize()
-	local X, Y = Slab.GetCursorPos()
-	Slab.Rectangle({W = ColW, H = H, Color = Color, Outline = true})
-	Slab.SetCursorPos(X, Y)
-
-	if Slab.Button("", {Invisible = true, W = ColW, H = H}) then
-		EditColor(Color)
-	end
-	Slab.EndColumn()
-end
-
-local function DrawStyleValue(Label, Value)
-	local Style = Slab.GetStyle()
-
-	Slab.BeginColumn(1)
-	Slab.Text(Label)
-	Slab.EndColumn()
-
-	Slab.BeginColumn(2)
-	local W, H = Slab.GetWindowActiveSize()
-	if Slab.Input('SlabDebug_Style_' .. Label, {Text = tostring(Value), ReturnOnText = false, NumbersOnly = true, W = W}) then
-		Style[Label] = Slab.GetInputNumber()
-	end
-	Slab.EndColumn()
-end
-
 local function DrawStyleEditor()
-	Slab.BeginWindow('SlabDebug_StyleEditor', {Title = "Style Editor", Columns = 2, AutoSizeWindow = false, AllowResize = true, W = 500.0, H = 400.0})
+	Slab.BeginWindow('SlabDebug_StyleEditor', {Title = "Style Editor", AutoSizeWindow = false, AllowResize = true, W = 700.0, H = 500.0})
 
 	local Style = Slab.GetStyle()
 	local Names = Style.API.GetStyleNames()
 	local CurrentStyle = Style.API.GetCurrentStyleName()
-	local W, H = Slab.GetWindowActiveSize()
-	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {W = W, Selected = CurrentStyle}) then
+	Slab.BeginLayout('SlabDebug_StyleEditor_Styles_Layout', {ExpandW = true})
+	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {Selected = CurrentStyle}) then
 		for I, V in ipairs(Names) do
 			if Slab.TextSelectable(V) then
 				Style.API.SetStyle(V)
@@ -284,21 +244,36 @@ local function DrawStyleEditor()
 	if Slab.Button("Save", {Disabled = SaveDisabled}) then
 		Style.API.SaveCurrentStyle()
 	end
+	Slab.EndLayout()
 
 	Slab.Separator()
 
+	Slab.BeginLayout('SlabDebug_StyleEditor_Content_Layout', {Columns = 2, ExpandW = true})
 	for K, V in pairs(Style) do
 		if type(V) == "table" and K ~= "Font" and K ~= "API" then
-			DrawStyleColor(K, V)
+			Slab.SetLayoutColumn(1)
+			Slab.Text(K)
+			Slab.SetLayoutColumn(2)
+			local W, H = Slab.GetLayoutSize()
+			H = Slab.GetTextHeight()
+			Slab.Rectangle({W = W, H = H, Color = V, Outline = true})
+			if Slab.IsControlClicked() then
+				EditColor(V)
+			end
 		end
 	end
 
 	for K, V in pairs(Style) do
 		if type(V) == "number" and K ~= "FontSize" then
-			DrawStyleValue(K, V)
+			Slab.SetLayoutColumn(1)
+			Slab.Text(K)
+			Slab.SetLayoutColumn(2)
+			if Slab.Input('SlabDebug_Style_' .. K, {Text = tostring(V), ReturnOnText = false, NumbersOnly = true}) then
+				Style[Label] = Slab.GetInputNumber()
+			end
 		end
 	end
-
+	Slab.EndLayout()
 	Slab.EndWindow()
 
 	if Style_EditingColor ~= nil then
@@ -385,18 +360,18 @@ function SlabDebug.Mouse()
 end
 
 function SlabDebug.Keyboard()
-	Slab.BeginWindow('SlabDebug_Keyboard', {Title = "Keyboard", Columns = 2})
+	Slab.BeginWindow('SlabDebug_Keyboard', {Title = "Keyboard"})
 
+	Slab.BeginLayout('SlabDebug_Keyboard', {Columns = 2})
 	local Keys = Keyboard.Keys()
 	for I, V in ipairs(Keys) do
-		Slab.BeginColumn(1)
+		Slab.SetLayoutColumn(1)
 		Slab.Text(V)
-		Slab.EndColumn()
 
-		Slab.BeginColumn(2)
+		Slab.SetLayoutColumn(2)
 		Slab.Text(tostring(Keyboard.IsDown(V)))
-		Slab.EndColumn()
 	end
+	Slab.EndLayout()
 
 	Slab.EndWindow()
 end

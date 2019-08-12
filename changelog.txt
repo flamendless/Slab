@@ -1,9 +1,9 @@
 v0.6.0 RELEASE
 ==========
+[Color Picker]: Fix dialog to use Layout Manager.
 [Layout]: Documentation.
 [Text]: GetTextSize, GetTextWidth documentation.
 [Text]: GetTextHeight implementation.
-[Window]: Deprecate Columns API and update documentation.
 
 BUGS
 ==========

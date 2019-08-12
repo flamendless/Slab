@@ -85,8 +85,6 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetWindowSize
 			GetWindowContentSize
 			GetWindowActiveSize
-			BeginColumn
-			EndColumn
 
 		Menu:
 			BeginMainMenuBar
@@ -109,6 +107,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Textf
 		GetTextSize
 		GetTextWidth
+		GetTextHeight
 		CheckBox
 		Input
 		GetInputText
@@ -192,6 +191,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			BeginLayout
 			EndLayout
 			SetLayoutColumn
+			GetLayoutSize
 --]]
 local Slab = {}
 
@@ -397,7 +397,6 @@ end
 			be: NW, NE, SW, SE, N, S, E, W
 		CanObstruct: [Boolean] Sets whether this window is considered for obstruction of other windows and their controls. The default value is true.
 		Rounding: [Number] Amount of rounding to apply to the corners of the window.
-		Columns: [Number] The number of columns for this window. Must be larger than 1 for columns to work properly.
 
 	Return: None
 --]]
@@ -453,38 +452,12 @@ end
 --[[
 	GetWindowActiveSize
 
-	Retrieves the active window's active size minus the borders. This could be the size of the window or
-	the size of the current column.
+	Retrieves the active window's active size minus the borders.
 
 	Return: [Number], [Number] The width and height of the window's active bounds.
 --]]
 function Slab.GetWindowActiveSize()
 	return Window.GetBorderlessSize()
-end
-
---[[
-	BeginColumn
-
-	The start of a column. EndColumn must be called after a call to BeginColumn and all controls have been rendered.
-
-	Index: [Number] The index to the column to add controls to. This must be a valid column between 1 and the max column index
-		defined by the Columns option in BeginWindow.
-
-	Return: None.
---]]
-function Slab.BeginColumn(Index)
-	Window.BeginColumn(Index)
-end
-
---[[
-	EndColumn
-
-	The end of a column. Must be called after a BeginColumn call.
-
-	Return: None.
---]]
-function Slab.EndColumn()
-	Window.EndColumn()
 end
 
 --[[
@@ -804,6 +777,17 @@ end
 function Slab.GetTextWidth(Label)
 	local W, H = Slab.GetTextSize(Label)
 	return W
+end
+
+--[[
+	GetTextHeight
+
+	Retrieves the height of the current font.
+
+	Return: [Number] The height of the given text.
+--]]
+function Slab.GetTextHeight()
+	return Text.GetHeight()
 end
 
 --[[
@@ -1936,6 +1920,17 @@ end
 --]]
 function Slab.SetLayoutColumn(Index)
 	LayoutManager.SetColumn(Index)
+end
+
+--[[
+	GetLayoutSize
+
+	Retrieves the size of the active layout. If there are columns, then the size of the column is returned.
+
+	Return: [Number], [Number] The width and height of the active layout. 0 is returned if no layout is active.
+--]]
+function Slab.GetLayoutSize()
+	return LayoutManager.GetActiveSize()
 end
 
 return Slab

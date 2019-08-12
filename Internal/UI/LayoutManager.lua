@@ -105,7 +105,7 @@ local function GetPreviousRowBottom(Instance)
 	if Instance ~= nil then
 		local Column = Instance.Columns[Instance.ColumnNo]
 
-		if Column.Rows ~= nil and Column.RowNo > 1 then
+		if Column.Rows ~= nil and Column.RowNo > 1 and Column.RowNo <= #Column.Rows then
 			local Y = Column.Rows[Column.RowNo - 1].CursorY
 			local H = Column.Rows[Column.RowNo - 1].H
 			return Y + H
@@ -131,11 +131,11 @@ local function GetColumnPosition(Instance)
 		local AnchorX, AnchorY = Instance.X, Instance.Y
 
 		if not Instance.AnchorX then
-			AnchorX = WinX - WinL
+			AnchorX = WinX - WinL - Window.GetBorder()
 		end
 
 		if not Instance.AnchorY then
-			AnchorY = WinY - WinT
+			AnchorY = WinY - WinT - Window.GetBorder()
 		end
 
 		return AnchorX + TotalW, AnchorY
@@ -300,7 +300,7 @@ end
 function LayoutManager.ComputeSize(W, H)
 	if Active ~= nil then
 		local X, Y = GetColumnPosition(Active)
-		local WinX, WinY, WinW, WinH = GetWindowBounds(Active)
+		local WinW, WinH = GetColumnSize(Active)
 		local RealW = WinW - X
 		local RealH = WinH - Y
 		local Column = Active.Columns[Active.ColumnNo]
@@ -485,6 +485,14 @@ function LayoutManager.SetColumn(Index)
 		Index = math.min(Index, #Active.Columns)
 		Active.ColumnNo = Index
 	end
+end
+
+function LayoutManager.GetActiveSize()
+	if Active ~= nil then
+		return GetColumnSize(Active)
+	end
+
+	return 0, 0
 end
 
 function LayoutManager.Validate()
