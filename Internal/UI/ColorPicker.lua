@@ -29,6 +29,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
+local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
@@ -442,17 +443,19 @@ function ColorPicker.Begin(Options)
 	Cursor.SetPosition(InputX, InputY)
 	Cursor.NewLine()
 
+	LayoutManager.Begin('ColorPicker_Buttons_Layout', {AlignX = 'right'})
 	local Result = {Button = "", Color = Utility.MakeColor(CurrentColor)}
-	if Button.Begin("Cancel", {AlignRight = true}) then
+	if Button.Begin("OK") then
+		Result.Button = "OK"
+	end
+
+	LayoutManager.SameLine()
+
+	if Button.Begin("Cancel") then
 		Result.Button = "Cancel"
 		Result.Color = Utility.MakeColor(Options.Color)
 	end
-
-	Cursor.SameLine()
-
-	if Button.Begin("OK", {AlignRight = true}) then
-		Result.Button = "OK"
-	end
+	LayoutManager.End()
 
 	Window.End()
 

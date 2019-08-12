@@ -1089,8 +1089,7 @@ end
 	Return: None.
 --]]
 function Slab.SameLine(Options)
-	Cursor.SameLine(Options)
-	LayoutManager.SameLine()
+	LayoutManager.SameLine(Options)
 end
 
 --[[
@@ -1102,7 +1101,6 @@ end
 --]]
 function Slab.NewLine()
 	LayoutManager.NewLine()
-	Cursor.NewLine()
 end
 
 --[[

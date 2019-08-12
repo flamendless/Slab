@@ -466,7 +466,8 @@ function LayoutManager.End()
 	end
 end
 
-function LayoutManager.SameLine()
+function LayoutManager.SameLine(CursorOptions)
+	Cursor.SameLine(CursorOptions)
 	if Active ~= nil then
 		local Column = Active.Columns[Active.ColumnNo]
 		Column.RowNo = math.max(Column.RowNo - 1, 1)
@@ -477,6 +478,7 @@ function LayoutManager.NewLine()
 	if Active ~= nil then
 		AddControl(Active, 0, Cursor.GetNewLineSize(), 'NewLine')
 	end
+	Cursor.NewLine()
 end
 
 function LayoutManager.SetColumn(Index)
