@@ -1888,6 +1888,7 @@ end
 			The default value for this is false.
 		AnchorY: [Boolean] Anchors the layout management at the current Y cursor position. The size is calculated using this position.
 			The default value for this is true.
+		Columns: [Number] The number of columns to use for this layout. The default value is 1.
 
 	Return: None.
 --]]

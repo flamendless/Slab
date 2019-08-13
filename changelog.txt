@@ -1,6 +1,6 @@
-v0.6.0 RELEASE
+v0.7.0 RELEASE
 ==========
-[Layout]: Documentation.
+[API]: Update version number.
 
 BUGS
 ==========
@@ -11,11 +11,9 @@ BUGS
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
 [Scroll Bar]: Color flicker when clicking and releasing on scroll bar.
-[Slab Debug]: Window combo box being overlapped when initially opened.
 [Tooltip]: Gains focus when displayed. Focus should not be allowed.
 [Tree]: View transform not correct with content size. Content size may be incorrect.
 [Window]: Clamp window moving to viewport.
-[Window]: Auto sizing content does not shrink.
 
 TODO
 ==========
