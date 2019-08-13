@@ -1931,7 +1931,6 @@ local DrawFonts_Roboto_Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Re
 local function DrawFonts()
 	if DrawFonts_Roboto == nil then
 		DrawFonts_Roboto = love.graphics.newFont(DrawFonts_Roboto_Path, 18)
-		print("Created Font!")
 	end
 
 	Slab.Textf(
