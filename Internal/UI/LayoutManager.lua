@@ -154,6 +154,7 @@ local function GetColumnSize(Instance)
 
 		if not Window.IsAutoSize() then
 			W = ColumnW
+			H = WinH
 			Column.W = W
 		else
 			W = math.max(Column.W, ColumnW)
