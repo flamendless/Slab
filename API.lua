@@ -85,7 +85,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetWindowSize
 			GetWindowContentSize
 			GetWindowActiveSize
-			IsAppearing
+			IsWindowAppearing
 
 		Menu:
 			BeginMainMenuBar
@@ -462,7 +462,7 @@ function Slab.GetWindowActiveSize()
 end
 
 --[[
-	IsAppearing
+	IsWindowAppearing
 
 	Is the current window appearing this frame. This will return true if BeginWindow has
 	not been called for a window over 2 or more frames.
