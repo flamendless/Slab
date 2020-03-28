@@ -103,7 +103,6 @@ local function NewInstance(Id)
 	Instance.LastItem = nil
 	Instance.HotItem = nil
 	Instance.ContextHotItem = nil
-	Instance.LastVisibleTime = 0.0
 	Instance.Items = {}
 	Instance.Layer = 'Normal'
 	Instance.StackIndex = 0
@@ -112,6 +111,7 @@ local function NewInstance(Id)
 	Instance.LastCursorX = 0
 	Instance.LastCursorY = 0
 	Instance.StatHandle = nil
+	Instance.IsAppearing = false
 	return Instance
 end
 
@@ -466,10 +466,10 @@ function Window.Begin(Id, Options)
 	ActiveInstance.AutoSizeContent = Options.AutoSizeContent
 	ActiveInstance.Layer = Options.Layer
 	ActiveInstance.HotItem = nil
-	ActiveInstance.LastVisibleTime = love.timer.getTime()
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
+	ActiveInstance.IsAppearing = CurrentFrameNumber - ActiveInstance.FrameNumber > 1
 	ActiveInstance.FrameNumber = CurrentFrameNumber
 	ActiveInstance.StatHandle = StatHandle
 
@@ -821,23 +821,12 @@ function Window.PushToTop(Id)
 	end
 end
 
-function Window.GetLastVisibleTime(Id)
-	local Instance = ActiveInstance
-
-	if Id ~= nil then
-		for I, V in ipairs(Instances) do
-			if V.Id == Id then
-				Instance = V
-				break
-			end
-		end
+function Window.IsAppearing()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.IsAppearing
 	end
 
-	if Instance ~= nil then
-		return Instance.LastVisibleTime
-	end
-
-	return 0.0
+	return false
 end
 
 function Window.GetLayer()

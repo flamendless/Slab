@@ -64,7 +64,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 	so that they may make adjustments that meet the needs of their own projects and tools. Refer
 	to main.lua and SlabTest.lua for example usage of this library.
 
-	Supported Version: 11.2.0
+	Supported Version: 11.3.0
 
 	API:
 		Initialize
@@ -85,6 +85,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetWindowSize
 			GetWindowContentSize
 			GetWindowActiveSize
+			IsAppearing
 
 		Menu:
 			BeginMainMenuBar
@@ -198,7 +199,7 @@ local Slab = {}
 -- Slab version numbers.
 local Version_Major = 0
 local Version_Minor = 6
-local Version_Revision = 1
+local Version_Revision = 2
 
 local FrameNumber = 0
 local FrameStatHandle = nil
@@ -458,6 +459,18 @@ end
 --]]
 function Slab.GetWindowActiveSize()
 	return Window.GetBorderlessSize()
+end
+
+--[[
+	IsAppearing
+
+	Is the current window appearing this frame. This will return true if BeginWindow has
+	not been called for a window over 2 or more frames.
+
+	Return: [Boolean] True if the window is appearing this frame. False otherwise.
+--]]
+function Slab.IsWindowAppearing()
+	return Window.IsAppearing()
 end
 
 --[[

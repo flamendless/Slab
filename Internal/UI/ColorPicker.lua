@@ -252,16 +252,15 @@ function ColorPicker.Begin(Options)
 		InitializeAlphaMesh()
 	end
 
-	local DeltaVisibleTime = love.timer.getTime() - Window.GetLastVisibleTime('ColorPicker')
-	if DeltaVisibleTime > 1.0 then
+	Window.Begin('ColorPicker', {Title = "Color Picker"})
+
+	if Window.IsAppearing() then
 		CurrentColor[1] = Options.Color[1]
 		CurrentColor[2] = Options.Color[2]
 		CurrentColor[3] = Options.Color[3]
 		CurrentColor[4] = Options.Color[4]
 		UpdateSaturationColors()
 	end
-
-	Window.Begin('ColorPicker', {Title = "Color Picker"})
 
 	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()
