@@ -1,6 +1,5 @@
 v0.6.2 RELEASE
 ==========
-[FileSystem]: Implement GetDirectoryItems on Windows.
 [License]: Add mention for LuaPower/fs and lovefs for FileSystem help.
 
 v0.7.0 RELEASE

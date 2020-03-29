@@ -47,10 +47,72 @@ end
 local GetDirectoryItems = nil
 
 if FFI.os == "Windows" then
-	-- TODO: Implement on windows platform.
+	FFI.cdef[[
+		#pragma pack(push)
+		#pragma pack(1)
+		struct WIN32_FIND_DATAW {
+			uint32_t dwFileAttributes;
+			uint64_t ftCreationTime;
+			uint64_t ftLastAccessTime;
+			uint64_t ftLastWriteTime;
+			uint32_t dwReserved[4];
+			wchar_t cFileName[520];
+			wchar_t cAlternateFileName[28];
+		};
+		#pragma pack(pop)
+		
+		void* FindFirstFileW(const wchar_t* pattern, struct WIN32_FIND_DATAW* fd);
+		bool FindNextFileW(void* ff, struct WIN32_FIND_DATAW* fd);
+		bool FindClose(void* ff);
+		
+		int MultiByteToWideChar(unsigned int CodePage, uint32_t dwFlags, const char* lpMultiByteStr,
+			int cbMultiByte, const wchar_t* lpWideCharStr, int cchWideChar);
+		int WideCharToMultiByte(unsigned int CodePage, uint32_t dwFlags, const wchar_t* lpWideCharStr,
+			int cchWideChar, const char* lpMultiByteStr, int cchMultiByte,
+			const char* default, int* used);
+	]]
+
+	local WIN32_FIND_DATA = FFI.typeof('struct WIN32_FIND_DATAW')
+	local INVALID_HANDLE = FFI.cast('void*', -1)
+
+	local function u2w(str, code)
+		local size = FFI.C.MultiByteToWideChar(code or 65001, 0, str, #str, nil, 0)
+		local buf = FFI.new("wchar_t[?]", size * 2 + 2)
+		FFI.C.MultiByteToWideChar(code or 65001, 0, str, #str, buf, size * 2)
+		return buf
+	end
+
+	local function w2u(wstr, code)
+		local size = FFI.C.WideCharToMultiByte(code or 65001, 0, wstr, -1, nil, 0, nil, nil)
+		local buf = FFI.new("char[?]", size + 1)
+		size = FFI.C.WideCharToMultiByte(code or 65001, 0, wstr, -1, buf, size, nil, nil)
+		return FFI.string(buf)
+	end
 
 	GetDirectoryItems = function(Directory, Options)
 		local Result = {}
+
+		local FindData = FFI.new(WIN32_FIND_DATA)
+		local Handle = FFI.C.FindFirstFileW(u2w(Directory .. "\\*"), FindData)
+		FFI.gc(Handle, FFI.C.FindClose)
+
+		if Handle ~= nil then
+			repeat
+				local Name = w2u(FindData.cFileName)
+
+				if Name ~= "." and Name ~= ".." then
+					local AddDirectory = (FindData.dwFileAttributes == 16 or FindData.dwFileAttributes == 17) and Options.Directories
+					local AddFile = FindData.dwFileAttributes == 32 and Options.Files
+					
+					if (AddDirectory or AddFile) and not ShouldFilter(Name, Options.Filter) then
+						table.insert(Result, Name)
+					end
+				end
+
+			until not FFI.C.FindNextFileW(Handle, FindData)
+		end
+
+		FFI.C.FindClose(FFI.gc(Handle, nil))
 
 		return Result
 	end
