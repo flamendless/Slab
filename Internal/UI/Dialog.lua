@@ -186,7 +186,7 @@ local function FileDialogExplorer(Instance, Root)
 	end
 
 	if Root ~= nil then
-		local ShouldOpen = string.find(Instance.Directory, Root.Path, 1, true) ~= nil
+		local ShouldOpen = Window.IsAppearing() and string.find(Instance.Directory, Root.Path, 1, true) ~= nil
 
 		local Options = {
 			Label = Root.Name,

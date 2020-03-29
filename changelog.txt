@@ -1,6 +1,5 @@
 v0.6.2 RELEASE
 ==========
-[Dialog]: Initialize tree node open state to current directory only when window is appearing.
 [FileSystem]: Integrate lovefs.
 
 v0.7.0 RELEASE
