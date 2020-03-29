@@ -1,7 +1,3 @@
-v0.6.2 RELEASE
-==========
-[License]: Add mention for LuaPower/fs and lovefs for FileSystem help.
-
 v0.7.0 RELEASE
 ==========
 [API]: Update version number.

@@ -46,6 +46,19 @@ end
 
 local GetDirectoryItems = nil
 
+--[[
+	The following code is based on the following sources:
+
+	LoveFS v1.1
+	Pure Lua FileSystem Access
+	Under the MIT license.
+	copyright(c) 2016 Caldas Lopes aka linux-man
+
+	luapower/fs_posix
+	portable filesystem API for LuaJIT / Linux & OSX backend
+	Written by Cosmin Apreutesei. Public Domain.
+--]]
+
 if FFI.os == "Windows" then
 	FFI.cdef[[
 		#pragma pack(push)
@@ -130,9 +143,18 @@ else
 		typedef struct DIR DIR;
 
 		DIR* opendir(const char* name);
-		struct dirent* readdir(DIR* dirp) asm("readdir$INODE64");
 		int closedir(DIR* dirp);
 	]]
+
+	if FFI.os == "OSX" then
+		FFI.cdef[[
+			struct dirent* readdir(DIR* dirp) asm("readdir$INODE64");
+		]]
+	else
+		FFI.cdef[[
+			struct dirent* readdir(DIR* dirp) asm("readdir64");
+		]]
+	end
 
 	GetDirectoryItems = function(Directory, Options)
 		local Result = {}
@@ -146,10 +168,11 @@ else
 				local Name = FFI.string(Entry.d_name)
 
 				if Name ~= "." and Name ~= ".." and string.sub(Name, 1, 1) ~= "." then
-					if (Entry.d_type == 4 and Options.Directories) or (Entry.d_type == 8 and Options.Files) then
-						if not ShouldFilter(Name, Options.Filter) then
-							table.insert(Result, Name)
-						end
+					local AddDirectory = Entry.d_type == 4 and Options.Directories
+					local AddFile = Entry.d_type == 8 and Options.Files
+
+					if (AddDirectory or AddFile) and not ShouldFilter(Name, Options.Filter) then
+						table.insert(Result, Name)
 					end
 				end
 
