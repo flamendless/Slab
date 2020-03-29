@@ -26,6 +26,81 @@ SOFTWARE.
 
 local FileSystem = {}
 
+local FFI = require('ffi')
+
+local function ShouldFilter(Name, Filter)
+	Filter = Filter == nil and "*.*" or Filter
+
+	local Extension = FileSystem.GetExtension(Name)
+
+	if Filter ~= "*.*" then
+		local FilterExt = FileSystem.GetExtension(Filter)
+
+		if Extension ~= FilterExt then
+			return true
+		end
+	end
+
+	return false
+end
+
+local GetDirectoryItems = nil
+
+if FFI.os == "Windows" then
+	-- TODO: Implement on windows platform.
+
+	GetDirectoryItems = function(Directory, Options)
+		local Result = {}
+
+		return Result
+	end
+else
+	FFI.cdef[[
+		struct dirent {
+			uint64_t	d_ino;
+			uint64_t	d_off;
+			uint16_t	d_reclen;
+			uint16_t	d_namlen;
+			uint8_t		d_type;
+			char		d_name[1024];
+		};
+
+		typedef struct DIR DIR;
+
+		DIR* opendir(const char* name);
+		struct dirent* readdir(DIR* dirp) asm("readdir$INODE64");
+		int closedir(DIR* dirp);
+	]]
+
+	GetDirectoryItems = function(Directory, Options)
+		local Result = {}
+
+		local DIR = FFI.C.opendir(Directory)
+
+		if DIR ~= nil then
+			local Entry = FFI.C.readdir(DIR)
+
+			while Entry ~= nil do
+				local Name = FFI.string(Entry.d_name)
+
+				if Name ~= "." and Name ~= ".." and string.sub(Name, 1, 1) ~= "." then
+					if (Entry.d_type == 4 and Options.Directories) or (Entry.d_type == 8 and Options.Files) then
+						if not ShouldFilter(Name, Options.Filter) then
+							table.insert(Result, Name)
+						end
+					end
+				end
+
+				Entry = FFI.C.readdir(DIR)
+			end
+
+			FFI.C.closedir(DIR)
+		end
+
+		return Result
+	end
+end
+
 function FileSystem.Separator()
 	-- Lua/Love2D returns all paths with back slashes.
 	return "/"
@@ -37,44 +112,13 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 	Options.Directories = Options.Directories == nil and true or Options.Directories
 	Options.Filter = Options.Filter == nil and "*.*" or Options.Filter
 
-	local Cmd = ""
-	local OS = love.system.getOS()
-
 	if string.sub(Directory, #Directory, #Directory) ~= FileSystem.Separator() then
 		Directory = Directory .. FileSystem.Separator()
 	end
 
-	if OS == "Windows" then
-		Directory = string.gsub(Directory, "/", "\\")
-		if Options.Files and not Options.Directories then
-			Cmd = 'DIR "' .. Directory .. Options.Filter .. '" /B /A:-D-H'
-		elseif Options.Directories and not Options.Files then
-			Cmd = 'DIR "' .. Directory .. '" /B /A:D-H'
-		else
-			Cmd = 'DIR "' .. Directory .. '" /B /A-H'
-		end
-	else
-		if Options.Files and not Options.Directories then
-			Cmd = 'find "' .. Directory .. '" \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type f \\( -iname \\' .. Options.Filter .. ' \\)'
-		elseif Options.Directories and not Options.Files then
-			Cmd = 'find "' .. Directory .. '" ! -path ' .. Directory .. ' \\( ! -regex ".*/\\..*" \\) -maxdepth 1 -type d'
-		else
-			Cmd = 'ls -1 ' .. Directory
-		end
-	end
+	local Result = GetDirectoryItems(Directory, Options)
 
-	local Result = {}
-	local Handle, Error = io.popen(Cmd)
-	if Handle ~= nil then
-		local I = 1
-		for Item in Handle:lines() do
-			if Item ~= "nil" then
-				Result[I] = Item
-				I = I + 1
-			end
-		end
-		io.close(Handle)
-	end
+	table.sort(Result)
 
 	return Result
 end
@@ -164,6 +208,16 @@ function FileSystem.GetSlabPath()
 		Path = love.filesystem.getSourceBaseDirectory()
 	end
 	return Path .. "/Slab"
+end
+
+function FileSystem.GetExtension(Path)
+	local Result = string.match(Path, "[^.]+$")
+
+	if Result == nil then
+		Result = ""
+	end
+
+	return Result
 end
 
 function FileSystem.RemoveExtension(Path)
