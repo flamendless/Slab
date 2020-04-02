@@ -24,9 +24,9 @@ SOFTWARE.
 
 --]]
 
-local Mouse = 
+local Mouse =
 {
-	
+
 }
 
 local State =

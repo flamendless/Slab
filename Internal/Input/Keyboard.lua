@@ -26,6 +26,8 @@ SOFTWARE.
 
 local Keyboard = {}
 
+local insert = table.insert
+
 local State =
 {
 	Pressed = {},
@@ -106,7 +108,7 @@ function Keyboard.Keys()
 	local Result = {}
 
 	for K, V in pairs(State.Pressed) do
-		table.insert(Result, K)
+		insert(Result, K)
 	end
 
 	return Result

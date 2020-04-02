@@ -24,6 +24,12 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local abs = math.abs
+local max = math.max
+local min = math.min
+local huge = math.huge
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
@@ -124,8 +130,8 @@ function Shape.Line(X2, Y2, Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 
 	local X, Y = Cursor.GetPosition()
-	local W, H = math.abs(X2 - X), math.abs(Y2 - Y)
-	H = math.max(H, Options.Width)
+	local W, H = abs(X2 - X), abs(Y2 - Y)
+	H = max(H, Options.Width)
 
 	DrawCommands.Line(X, Y, X2, Y2, Options.Width, Options.Color)
 	Window.AddItem(X, Y, W, H)
@@ -144,19 +150,19 @@ function Shape.Curve(Points, Options)
 
 	Curve = love.math.newBezierCurve(Points)
 
-	local MinX, MinY = math.huge, math.huge
+	local MinX, MinY = huge, huge
 	local MaxX, MaxY = 0, 0
 	for I = 1, Curve:getControlPointCount(), 1 do
 		local PX, PY = Curve:getControlPoint(I)
-		MinX = math.min(MinX, PX)
-		MinY = math.min(MinY, PY)
+		MinX = min(MinX, PX)
+		MinY = min(MinY, PY)
 
-		MaxX = math.max(MaxX, PX)
-		MaxY = math.max(MaxY, PY)
+		MaxX = max(MaxX, PX)
+		MaxY = max(MaxY, PY)
 	end
 
-	local W = math.abs(MaxX - MinX)
-	local H = math.abs(MaxY - MinY)
+	local W = abs(MaxX - MinX)
+	local H = abs(MaxY - MinY)
 
 	LayoutManager.AddControl(W, H)
 
@@ -226,35 +232,35 @@ function Shape.Polygon(Points, Options)
 	Options.Color = Options.Color == nil and nil or Options.Color
 	Options.Mode = Options.Mode == nil and 'fill' or Options.Mode
 
-	local MinX, MinY = math.huge, math.huge
+	local MinX, MinY = huge, huge
 	local MaxX, MaxY = 0, 0
 	local Verts = {}
 
 	for I = 1, #Points, 2 do
-		MinX = math.min(MinX, Points[I])
-		MinY = math.min(MinY, Points[I+1])
+		MinX = min(MinX, Points[I])
+		MinY = min(MinY, Points[I+1])
 
-		MaxX = math.max(MaxX, Points[I])
-		MaxY = math.max(MaxY, Points[I+1])
+		MaxX = max(MaxX, Points[I])
+		MaxY = max(MaxY, Points[I+1])
 	end
 
-	local W = math.abs(MaxX - MinX)
-	local H = math.abs(MaxY - MinY)
+	local W = abs(MaxX - MinX)
+	local H = abs(MaxY - MinY)
 
 	LayoutManager.AddControl(W, H)
 
-	MinX, MinY = math.huge, math.huge
+	MinX, MinY = huge, huge
 	MaxX, MaxY = 0, 0
 	local X, Y = Cursor.GetPosition()
 	for I = 1, #Points, 2 do
-		table.insert(Verts, Points[I] + X)
-		table.insert(Verts, Points[I+1] + Y)
+		insert(Verts, Points[I] + X)
+		insert(Verts, Points[I+1] + Y)
 
-		MinX = math.min(MinX, Verts[I])
-		MinY = math.min(MinY, Verts[I+1])
+		MinX = min(MinX, Verts[I])
+		MinY = min(MinY, Verts[I+1])
 
-		MaxX = math.max(MaxX, Verts[I])
-		MaxY = math.max(MaxY, Verts[I+1])
+		MaxX = max(MaxX, Verts[I])
+		MaxY = max(MaxY, Verts[I+1])
 	end
 
 	DrawCommands.Polygon(Options.Mode, Verts, Options.Color)

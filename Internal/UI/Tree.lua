@@ -24,6 +24,10 @@ SOFTWARE.
 
 --]]
 
+local max = math.max
+local insert = table.insert
+local remove = table.remove
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
@@ -89,7 +93,7 @@ function Tree.Begin(Id, Options)
 	local WinW, WinH = Window.GetBorderlessSize()
 	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
 	local W = Text.GetWidth(Options.Label)
-	local H = math.max(Style.Font:getHeight(), Instance.H)
+	local H = max(Style.Font:getHeight(), Instance.H)
 	local Diameter = Radius * 2.0
 
 	if not Options.IsLeaf then
@@ -103,7 +107,7 @@ function Tree.Begin(Id, Options)
 
 	local ImageW, ImageH = Image.GetSize(Icon)
 	W = W + ImageW
-	H = math.max(H, ImageH)
+	H = max(H, ImageH)
 
 	WinX = WinX + Window.GetBorder()
 	WinY = WinY + Window.GetBorder()
@@ -172,7 +176,7 @@ function Tree.Begin(Id, Options)
 		})
 
 		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-		Instance.H = math.max(Instance.H, ItemH)
+		Instance.H = max(Instance.H, ItemH)
 		Cursor.SameLine({CenterY = true})
 	end
 
@@ -186,8 +190,8 @@ function Tree.Begin(Id, Options)
 	end
 
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-	Root.TreeR = math.max(Root.TreeR, ItemX + ItemW)
-	Root.TreeB = math.max(Root.TreeB, Y + H)
+	Root.TreeR = max(Root.TreeR, ItemX + ItemW)
+	Root.TreeB = max(Root.TreeB, Y + H)
 
 	Cursor.SetY(Instance.Y)
 	Cursor.AdvanceY(H)
@@ -197,7 +201,7 @@ function Tree.Begin(Id, Options)
 	end
 
 	if Instance.IsOpen then
-		table.insert(Hierarchy, 1, Instance)
+		insert(Hierarchy, 1, Instance)
 		Cursor.SetX(CursorX)
 	else
 		Cursor.SetX(X)
@@ -222,7 +226,7 @@ end
 
 function Tree.End()
 	local StatHandle = Hierarchy[1].StatHandle
-	table.remove(Hierarchy, 1)
+	remove(Hierarchy, 1)
 	local Instance = Hierarchy[1]
 	if Instance ~= nil then
 		Cursor.SetX(Instance.X)

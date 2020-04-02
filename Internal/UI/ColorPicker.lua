@@ -24,6 +24,11 @@ SOFTWARE.
 
 --]]
 
+local ceil = math.ceil
+local max = math.max
+local min = math.min
+local insert = table.insert
+
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
@@ -61,11 +66,11 @@ local function InputColor(Component, Value, OffsetX)
 	Text.Begin(string.format("%s ", Component))
 	Cursor.SameLine()
 	Cursor.SetRelativeX(OffsetX)
-	if Input.Begin('ColorPicker_' .. Component, {W = 40.0, NumbersOnly = true, Text = tostring(math.ceil(Value * 255)), ReturnOnText = false}) then
+	if Input.Begin('ColorPicker_' .. Component, {W = 40.0, NumbersOnly = true, Text = tostring(ceil(Value * 255)), ReturnOnText = false}) then
 		local NewValue = tonumber(Input.GetText())
 		if NewValue ~= nil then
-			NewValue = math.max(NewValue, 0)
-			NewValue = math.min(NewValue, 255)
+			NewValue = max(NewValue, 0)
+			NewValue = min(NewValue, 255)
 			Value = NewValue / 255
 			Changed = true
 		end
@@ -142,7 +147,7 @@ local function InitializeSaturationMeshes()
 				}
 
 				local NewMesh = love.graphics.newMesh(Verts)
-				table.insert(SaturationMeshes, NewMesh)
+				insert(SaturationMeshes, NewMesh)
 
 				X = X + Size
 			end
@@ -200,7 +205,7 @@ local function InitializeTintMeshes()
 			}
 
 			local NewMesh = love.graphics.newMesh(Verts)
-			table.insert(TintMeshes, NewMesh)
+			insert(TintMeshes, NewMesh)
 
 			Y = Y + TintH / Step
 		end
@@ -287,11 +292,11 @@ function ColorPicker.Begin(Options)
 		end
 
 		if UpdateSaturation then
-			local CanvasX = math.max(MouseX - X, 0)
-			CanvasX = math.min(CanvasX, SaturationSize)
+			local CanvasX = max(MouseX - X, 0)
+			CanvasX = min(CanvasX, SaturationSize)
 
-			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, SaturationSize)
+			local CanvasY = max(MouseY - Y, 0)
+			CanvasY = min(CanvasY, SaturationSize)
 
 			S = CanvasX / SaturationSize
 			V = 1 - (CanvasY / SaturationSize)
@@ -326,8 +331,8 @@ function ColorPicker.Begin(Options)
 		end
 
 		if UpdateTint then
-			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, TintH)
+			local CanvasY = max(MouseY - Y, 0)
+			CanvasY = min(CanvasY, TintH)
 
 			H = CanvasY / TintH
 
@@ -354,8 +359,8 @@ function ColorPicker.Begin(Options)
 		end
 
 		if UpdateAlpha then
-			local CanvasY = math.max(MouseY - Y, 0)
-			CanvasY = math.min(CanvasY, AlphaH)
+			local CanvasY = max(MouseY - Y, 0)
+			CanvasY = min(CanvasY, AlphaH)
 
 			CurrentColor[4] = 1.0 - CanvasY / AlphaH
 

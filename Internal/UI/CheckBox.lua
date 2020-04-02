@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local max = math.max
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
@@ -51,7 +53,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	local BoxW, BoxH = Options.Size, Options.Size
 	local TextW, TextH = Text.GetSize(Label)
 	local W = BoxW + Cursor.PadX() + 2.0 + TextW
-	local H = math.max(BoxH, TextH)
+	local H = max(BoxH, TextH)
 	local Radius = Options.Size * 0.5
 
 	LayoutManager.AddControl(W, H)

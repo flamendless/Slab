@@ -24,6 +24,10 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local format = string.format
+local min = math.min
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
@@ -60,7 +64,7 @@ function Tooltip.Begin(Tip)
 
 	if AccumDisplayTime > TooltipTime then
 		local X, Y = Mouse.Position()
-		Alpha = math.min(Alpha + DeltaTime * 4.0, 1.0)
+		Alpha = min(Alpha + DeltaTime * 4.0, 1.0)
 		local BgColor = Utility.MakeColor(Style.WindowBackgroundColor)
 		local TextColor = Utility.MakeColor(Style.TextColor)
 		BgColor[4] = Alpha
@@ -96,10 +100,10 @@ function Tooltip.GetDebugInfo()
 	local Info = {}
 
 	local Elapsed = love.timer.getTime() - LastDisplayTime
-	table.insert(Info, string.format("Time: %.2f", AccumDisplayTime))
-	table.insert(Info, string.format("Is Visible: %s", tostring(AccumDisplayTime > TooltipTime and Elapsed <= TooltipExpireTime)))
-	table.insert(Info, string.format("Time to Display: %.2f", TooltipTime))
-	table.insert(Info, string.format("Expire Time: %f", TooltipExpireTime))
+	insert(Info, format("Time: %.2f", AccumDisplayTime))
+	insert(Info, format("Is Visible: %s", tostring(AccumDisplayTime > TooltipTime and Elapsed <= TooltipExpireTime)))
+	insert(Info, format("Time to Display: %.2f", TooltipTime))
+	insert(Info, format("Expire Time: %f", TooltipExpireTime))
 
 	return Info
 end

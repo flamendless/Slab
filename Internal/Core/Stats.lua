@@ -26,6 +26,9 @@ SOFTWARE.
 
 local Stats = {}
 
+local insert = table.insert
+local max = math.max
+
 local Data = {}
 local Pending = {}
 local Enabled = false
@@ -53,7 +56,7 @@ local function ResetCategory(Category)
 		for K, V in pairs(Instance) do
 			V.LastTime = V.Time
 			V.LastCallCount = V.CallCount
-			V.MaxTime = math.max(V.MaxTime, V.Time)
+			V.MaxTime = max(V.MaxTime, V.Time)
 			V.Time = 0.0
 			V.CallCount = 0
 		end
@@ -137,7 +140,7 @@ function Stats.GetCallCount(Name, Category)
 	end
 
 	local Item = GetItem(Name, Category)
-	
+
 	return Item.CallCount > 0 and Item.CallCount or Item.LastCallCount
 end
 
@@ -195,7 +198,7 @@ function Stats.GetCategories()
 	local Result = {}
 
 	for K, V in pairs(Data) do
-		table.insert(Result, K)
+		insert(Result, K)
 	end
 
 	return Result
@@ -207,7 +210,7 @@ function Stats.GetItems(Category)
 	local Instance = GetCategory(Category)
 
 	for K, V in pairs(Instance) do
-		table.insert(Result, K)
+		insert(Result, K)
 	end
 
 	return Result
