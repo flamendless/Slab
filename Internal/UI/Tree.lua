@@ -121,7 +121,16 @@ function Tree.Begin(Id, Options)
 		Instance.TreeB = 0
 	end
 
+	local Root = Instance
+	if #Hierarchy > 0 then
+		Root = Hierarchy[#Hierarchy]
+	end
+
 	local X, Y = Cursor.GetPosition()
+	if Root ~= Instance then
+		X = Root ~= Instance and (Root.X + Diameter * #Hierarchy)
+		Cursor.SetX(X)
+	end
 	local TriX, TriY = X + Radius, Y + H * 0.5
 
 	local IsHot = not IsObstructed and WinX <= TMouseX and TMouseX <= WinX + WinW and Y <= TMouseY and TMouseY <= Y + H and Region.Contains(MouseX, MouseY)
@@ -161,8 +170,6 @@ function Tree.Begin(Id, Options)
 	Instance.W = W
 	Instance.H = H
 
-	local CursorX, CursorY = Cursor.GetPosition()
-
 	LayoutManager.Begin('Ignore', {Ignore = true})
 
 	if Options.Icon ~= nil or Options.IconPath ~= nil then
@@ -180,11 +187,6 @@ function Tree.Begin(Id, Options)
 
 	LayoutManager.End()
 
-	local Root = Instance
-	if #Hierarchy > 0 then
-		Root = Hierarchy[#Hierarchy]
-	end
-
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	Root.TreeR = math.max(Root.TreeR, ItemX + ItemW)
 	Root.TreeB = math.max(Root.TreeB, Y + H)
@@ -198,9 +200,6 @@ function Tree.Begin(Id, Options)
 
 	if Instance.IsOpen then
 		table.insert(Hierarchy, 1, Instance)
-		Cursor.SetX(CursorX)
-	else
-		Cursor.SetX(X)
 	end
 
 	if IsHot then
@@ -223,13 +222,6 @@ end
 function Tree.End()
 	local StatHandle = Hierarchy[1].StatHandle
 	table.remove(Hierarchy, 1)
-	local Instance = Hierarchy[1]
-	if Instance ~= nil then
-		Cursor.SetX(Instance.X)
-	else
-		Cursor.SetX(Cursor.GetAnchorX())
-	end
-
 	Stats.End(StatHandle)
 end
 

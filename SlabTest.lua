@@ -830,6 +830,11 @@ local function DrawTree()
 
 		Slab.BeginTree('DrawTree_Leaf_1', {Label = "Leaf 2", IsLeaf = true})
 
+		if Slab.BeginTree('DrawTree_Child_2', {Label = "Child 2"}) then
+			Slab.BeginTree('DrawTree_Child_2_Leaf_3', {Label = "Leaf 3", IsLeaf = true})
+			Slab.EndTree()
+		end
+
 		Slab.EndTree()
 	end
 
