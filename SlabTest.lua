@@ -768,6 +768,7 @@ local function DrawCursor()
 end
 
 local DrawListBox_Basic_Selected = 1
+local DrawListBox_Basic_Count = 10
 local DrawListBox_Advanced_Selected = 1
 
 local function DrawListBox()
@@ -778,8 +779,19 @@ local function DrawListBox()
 
 	Slab.NewLine()
 
-	Slab.BeginListBox('DrawListBox_Basic')
-	for I = 1, 10, 1 do
+	local Clear = false
+
+	Slab.Text("Count")
+	Slab.SameLine()
+	if Slab.Input('DrawListBox_Basic_Count', {Text = tostring(DrawListBox_Basic_Count), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+		DrawListBox_Basic_Count = Slab.GetInputNumber()
+		Clear = true
+	end
+
+	Slab.NewLine()
+
+	Slab.BeginListBox('DrawListBox_Basic', {Clear = Clear})
+	for I = 1, DrawListBox_Basic_Count, 1 do
 		Slab.BeginListBoxItem('DrawListBox_Basic_Item_' .. I, {Selected = I == DrawListBox_Basic_Selected})
 		Slab.Text("List Box Item " .. I)
 		if Slab.IsListBoxItemClicked() then

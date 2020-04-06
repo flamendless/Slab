@@ -311,6 +311,11 @@ function Region.Begin(Id, Options)
 
 	UpdateScrollBars(Instance, Options.IsObstructed)
 
+	if Options.AutoSizeContent then
+		Instance.ContentH = 0.0
+		Instance.ContentW = 0.0
+	end
+
 	if HotInstance == Instance and not Contains(Instance, Instance.MouseX, Instance.MouseY) then
 		HotInstance = nil
 	end
