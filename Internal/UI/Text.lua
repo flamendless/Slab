@@ -108,6 +108,10 @@ function Text.BeginFormatted(Label, Options)
 	Options.W = Options.W == nil and WinW or Options.W
 	Options.Align = Options.Align == nil and 'left' or Options.Align
 
+	if Window.IsAutoSize() then
+		Options.W = love.graphics.getWidth()
+	end
+
 	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
 	local H = #Wrapped * Style.Font:getHeight()
 

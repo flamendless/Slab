@@ -1747,6 +1747,10 @@ local function DrawTooltip()
 		Slab.BeginTree('DrawTooltip_Tree_Child', {Label = "Child", Tooltip = "This is the child tree item.", IsLeaf = true})
 		Slab.EndTree()
 	end
+
+	Slab.NewLine()
+
+	Slab.Button("MultiLine Tooltip", {Tooltip = "This is a multi-line tooltip.\nThis is the second line."})
 end
 
 local DrawStats_SetPosition = false

@@ -83,7 +83,7 @@ function Tooltip.Begin(Tip)
 			ResetWindowSize = ResetSize,
 			CanObstruct = false
 		})
-		Text.Begin(Tip, {Color = TextColor})
+		Text.BeginFormatted(Tip, {Color = TextColor})
 		OffsetY = Window.GetHeight()
 		Window.End()
 		LayoutManager.End()
