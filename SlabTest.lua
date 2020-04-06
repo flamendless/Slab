@@ -849,6 +849,14 @@ local function DrawTree()
 
 	if Slab.BeginTree('DrawTree_Root_NoHighlight', {Label = "Root", OpenWithHighlight = false}) then
 		Slab.BeginTree('DrawTree_Leaf', {Label = "Leaf", IsLeaf = true})
+
+		if Slab.BeginContextMenuItem() then
+			Slab.MenuItem("Leaf Option 1")
+			Slab.MenuItem("Leaf Option 2")
+
+			Slab.EndContextMenu()
+		end
+
 		Slab.EndTree()
 	end
 

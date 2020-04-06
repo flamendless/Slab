@@ -210,7 +210,9 @@ function Tree.Begin(Id, Options)
 		end
 	end
 
-	Window.AddItem(X, Y, (WinX + WinW) - Instance.X, H, WinItemId)
+	-- The size of the item has already been determined by Text.Begin. However, this item's ID needs to be
+	-- set as the last item for hot item checks. So the item will be added with zero width and height.
+	Window.AddItem(X, Y, 0, 0, WinItemId)
 
 	if not Instance.IsOpen then
 		Stats.End(Instance.StatHandle)
