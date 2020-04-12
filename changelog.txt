@@ -1,3 +1,14 @@
+v0.6.3 RELEASE
+==========
+[API]: Update version number.
+[API]: Investigate IsVoidHovered within hidden windows.
+[FileSystem]: Test file system on Linux.
+[FileSystem]: Investigate crash when selecting an existing file in Save Dialog.
+[Optimization]: Investigate Pull request and integrate.
+[ScrollBar]: Allow modifying wheel scroll speed through the API.
+[Style]: Update style documentation for Close button.
+[Window]: Update Wiki with IsOpen documentation.
+
 v0.7.0 RELEASE
 ==========
 [API]: Update version number.

@@ -112,6 +112,7 @@ local function NewInstance(Id)
 	Instance.LastCursorY = 0
 	Instance.StatHandle = nil
 	Instance.IsAppearing = false
+	Instance.IsOpen = true
 	return Instance
 end
 
@@ -339,6 +340,10 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 	if ActiveInstance ~= nil then
 		local FoundStackLock = false
 
+		if not ActiveInstance.IsOpen then
+			return true
+		end
+
 		for I, V in ipairs(Stack) do
 			if V.Id == StackLockId then
 				FoundStackLock = true
@@ -473,6 +478,12 @@ function Window.Begin(Id, Options)
 	ActiveInstance.FrameNumber = CurrentFrameNumber
 	ActiveInstance.StatHandle = StatHandle
 
+	local ShowClose = false
+	if Options.IsOpen ~= nil and type(Options.IsOpen) == 'boolean' then
+		ActiveInstance.IsOpen = Options.IsOpen
+		ShowClose = true
+	end
+
 	if ActiveInstance.StackIndex == 0 then
 		table.insert(Stack, 1, ActiveInstance)
 		UpdateStackIndex()
@@ -532,6 +543,40 @@ function Window.Begin(Id, Options)
 			MouseY = MouseY
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
+
+		if ShowClose then
+			local CloseBgRadius = OffsetY * 0.4
+			local CloseSize = CloseBgRadius * 0.5
+			local CloseX = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - CloseBgRadius
+			local CloseY = ActiveInstance.Y - OffsetY * 0.5
+			local IsCloseHovered = 
+				CloseX - CloseBgRadius <= MouseX and MouseX <= CloseX + CloseBgRadius and
+				CloseY - OffsetY * 0.5 <= MouseY and MouseY <= CloseY + CloseBgRadius and
+				not IsObstructed
+
+			if IsCloseHovered then
+				DrawCommands.Circle(
+					'fill',
+					CloseX,
+					CloseY,
+					CloseBgRadius,
+					Style.WindowCloseBgColor
+				)
+
+				if Mouse.IsClicked(1) then
+					ActiveInstance.IsOpen = false
+					Options.IsOpen = false
+				end
+			end
+
+			DrawCommands.Cross(
+				CloseX,
+				CloseY,
+				CloseSize,
+				Style.WindowCloseColor
+			)
+		end
+
 		Region.End()
 	end
 
@@ -566,7 +611,7 @@ function Window.End()
 	if ActiveInstance ~= nil then
 		local Handle = ActiveInstance.StatHandle
 		Region.End()
-		DrawCommands.End()
+		DrawCommands.End(not ActiveInstance.IsOpen)
 		table.remove(PendingStack, 1)
 
 		Cursor.SetPosition(ActiveInstance.LastCursorX, ActiveInstance.LastCursorY)

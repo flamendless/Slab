@@ -393,8 +393,14 @@ function DrawCommands.Begin(Options)
 	table.insert(PendingBatches, 1, ActiveBatch)
 end
 
-function DrawCommands.End()
+function DrawCommands.End(ClearElements)
+	ClearElements = ClearElements == nil and false or ClearElements
+
 	if ActiveBatch ~= nil then
+		if ClearElements then
+			ActiveBatch.Elements = {}
+		end
+
 		love.graphics.setScissor()
 		table.remove(PendingBatches, 1)
 

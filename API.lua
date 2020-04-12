@@ -398,6 +398,8 @@ end
 			be: NW, NE, SW, SE, N, S, E, W
 		CanObstruct: [Boolean] Sets whether this window is considered for obstruction of other windows and their controls. The default value is true.
 		Rounding: [Number] Amount of rounding to apply to the corners of the window.
+		IsOpen: [Boolean] Determines if the window is open. If this value exists within the options, a close button will appear in
+			the corner of the window and is updated when this button is pressed to reflect the new open state of this window.
 
 	Return: None
 --]]

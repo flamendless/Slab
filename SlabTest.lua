@@ -1978,13 +1978,13 @@ local function DrawFonts()
 	Slab.Text("This text control is using the default font.")
 end
 
-local DrawSlabTest = true
+local SlabTest_Options = {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0, IsOpen = true}
 
 function SlabTest.MainMenuBar()
 	if Slab.BeginMainMenuBar() then
 		if Slab.BeginMenu("File") then
-			if Slab.MenuItemChecked("Slab Test", DrawSlabTest) then
-				DrawSlabTest = not DrawSlabTest
+			if Slab.MenuItemChecked("Show Test Window", SlabTest_Options.IsOpen) then
+				SlabTest_Options.IsOpen = not SlabTest_Options.IsOpen
 			end
 
 			if Slab.MenuItem("Quit") then
@@ -2034,29 +2034,27 @@ function SlabTest.Begin()
 		Selected = Categories[1]
 	end
 
-	if DrawSlabTest then
-		Slab.BeginWindow('SlabTest', {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0})
+	Slab.BeginWindow('SlabTest', SlabTest_Options)
 
-		local W, H = Slab.GetWindowActiveSize()
+	local W, H = Slab.GetWindowActiveSize()
 
-		if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
-			for I, V in ipairs(Categories) do
-				if Slab.TextSelectable(V[1]) then
-					Selected = Categories[I]
-				end
+	if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
+		for I, V in ipairs(Categories) do
+			if Slab.TextSelectable(V[1]) then
+				Selected = Categories[I]
 			end
-
-			Slab.EndComboBox()
 		end
 
-		Slab.Separator()
-
-		if Selected ~= nil and Selected[2] ~= nil then
-			Selected[2]()
-		end
-
-		Slab.EndWindow()
+		Slab.EndComboBox()
 	end
+
+	Slab.Separator()
+
+	if Selected ~= nil and Selected[2] ~= nil then
+		Selected[2]()
+	end
+
+	Slab.EndWindow()
 
 	SlabDebug.Begin()
 
