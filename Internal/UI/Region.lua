@@ -316,15 +316,17 @@ function Region.Begin(Id, Options)
 		Instance.ContentW = 0.0
 	end
 
-	if HotInstance == Instance and not Contains(Instance, Instance.MouseX, Instance.MouseY) then
+	if HotInstance == Instance and (not Contains(Instance, Instance.MouseX, Instance.MouseY) or Options.IsObstructed) then
 		HotInstance = nil
 	end
 
-	if not IsObstructed and Contains(Instance, Instance.MouseX, Instance.MouseY) or (Instance.HoverScrollX or Instance.HoverScrollY) then
-		if ScrollInstance == nil then
-			HotInstance = Instance
-		else
-			HotInstance = ScrollInstance
+	if not Options.IsObstructed then
+		if Contains(Instance, Instance.MouseX, Instance.MouseY) or (Instance.HoverScrollX or Instance.HoverScrollY) then
+			if ScrollInstance == nil then
+				HotInstance = Instance
+			else
+				HotInstance = ScrollInstance
+			end
 		end
 	end
 
