@@ -1978,6 +1978,30 @@ local function DrawFonts()
 	Slab.Text("This text control is using the default font.")
 end
 
+local function DrawScroll()
+	Slab.Textf(
+		"The scroll speed can be modified through the SetScrollSpeed API call. There is also an API function to retrieve " ..
+		"the current speed.")
+
+	Slab.NewLine()
+
+	Slab.Text("Speed")
+	Slab.SameLine()
+	if Slab.Input('DrawScroll_Speed', {Text = tostring(Slab.GetScrollSpeed()), ReturnOnText = false, NumbersOnly = true}) then
+		Slab.SetScrollSpeed(Slab.GetInputNumber())
+	end
+
+	Slab.NewLine()
+
+	Slab.BeginListBox('DrawScroll_List')
+
+	for I = 1, 25, 1 do
+		Slab.Text("Item " .. I)
+	end
+
+	Slab.EndListBox()
+end
+
 local SlabTest_Options = {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0, IsOpen = true}
 
 function SlabTest.MainMenuBar()
@@ -2020,7 +2044,8 @@ local Categories = {
 	{"Tooltips", DrawTooltip},
 	{"Stats", DrawStats},
 	{"Layout", DrawLayout},
-	{"Fonts", DrawFonts}
+	{"Fonts", DrawFonts},
+	{"Scroll", DrawScroll}
 }
 
 local Selected = nil

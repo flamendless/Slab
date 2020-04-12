@@ -193,6 +193,10 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			EndLayout
 			SetLayoutColumn
 			GetLayoutSize
+
+		Scroll:
+			SetScrollSpeed
+			GetScrollSpeed
 --]]
 local Slab = {}
 
@@ -1945,6 +1949,28 @@ end
 --]]
 function Slab.GetLayoutSize()
 	return LayoutManager.GetActiveSize()
+end
+
+--[[
+	SetScrollSpeed
+
+	Sets the speed of scrolling when using the mouse wheel.
+
+	Return: None.
+--]]
+function Slab.SetScrollSpeed(Speed)
+	Region.SetWheelSpeed(Speed)
+end
+
+--[[
+	GetScrollSpeed
+
+	Retrieves the speed of scrolling for the mouse wheel.
+
+	Return: [Number] The current wheel scroll speed.
+--]]
+function Slab.GetScrollSpeed()
+	return Region.GetWheelSpeed()
 end
 
 return Slab

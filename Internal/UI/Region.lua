@@ -554,6 +554,7 @@ function Region.GetDebugInfo(Id)
 	table.insert(Result, "WheelInstance: " .. (WheelInstance ~= nil and WheelInstance.Id or "nil"))
 	table.insert(Result, "WheelX: " .. WheelX)
 	table.insert(Result, "WheelY: " .. WheelY)
+	table.insert(Result, "Wheel Speed: " .. WheelSpeed)
 
 	if Instance ~= nil then
 		table.insert(Result, "Id: " .. Instance.Id)
@@ -572,6 +573,14 @@ function Region.GetDebugInfo(Id)
 	end
 
 	return Result
+end
+
+function Region.SetWheelSpeed(Speed)
+	WheelSpeed = Speed == nil and 3.0 or Speed
+end
+
+function Region.GetWheelSpeed()
+	return WheelSpeed
 end
 
 return Region
