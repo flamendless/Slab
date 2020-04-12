@@ -6,7 +6,6 @@ v0.6.3 RELEASE
 [Style]: Update style documentation for Close button.
 [Wiki]: Update Wiki with IsOpen documentation for Window options.
 [Wiki]: Add Scroll section with SetScrollSpeed/GetScrollSpeed documentation.
-[Window]: Push to front when window is appearing.
 
 v0.7.0 RELEASE
 ==========

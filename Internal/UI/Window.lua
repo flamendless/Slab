@@ -478,8 +478,6 @@ function Window.Begin(Id, Options)
 	ActiveInstance.SizerFilter = Options.SizerFilter
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
-	ActiveInstance.IsAppearing = CurrentFrameNumber - ActiveInstance.FrameNumber > 1
-	ActiveInstance.FrameNumber = CurrentFrameNumber
 	ActiveInstance.StatHandle = StatHandle
 
 	local ShowClose = false
@@ -488,9 +486,14 @@ function Window.Begin(Id, Options)
 		ShowClose = true
 	end
 
-	if ActiveInstance.StackIndex == 0 then
-		table.insert(Stack, 1, ActiveInstance)
-		UpdateStackIndex()
+	if ActiveInstance.IsOpen then
+		ActiveInstance.IsAppearing = CurrentFrameNumber - ActiveInstance.FrameNumber > 1
+		ActiveInstance.FrameNumber = CurrentFrameNumber
+
+		if ActiveInstance.StackIndex == 0 then
+			table.insert(Stack, 1, ActiveInstance)
+			UpdateStackIndex()
+		end
 	end
 
 	if ActiveInstance.AutoSizeContent then
@@ -511,7 +514,8 @@ function Window.Begin(Id, Options)
 
 	local MouseX, MouseY = Mouse.Position()
 	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
-	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed and Contains(ActiveInstance, MouseX, MouseY) then
+	if (ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed and Contains(ActiveInstance, MouseX, MouseY)) or
+		ActiveInstance.IsAppearing then
 		PushToTop(ActiveInstance)
 	end
 
