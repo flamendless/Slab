@@ -1,6 +1,5 @@
 v0.6.3 RELEASE
 ==========
-[Control]: IsControlClicked does not account for window obstruction.
 [FileSystem]: Test file system on Linux.
 [FileSystem]: Investigate crash when selecting an existing file in Save Dialog.
 [Optimization]: Investigate Pull request and integrate.

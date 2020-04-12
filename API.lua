@@ -1551,7 +1551,7 @@ end
 function Slab.IsControlHovered()
 	local Result = Window.IsItemHot()
 
-	if not Result then
+	if not Result and not Window.IsObstructedAtMouse() then
 		local X, Y = Slab.GetMousePositionWindow()
 		Result = Cursor.IsInItemBounds(X, Y)
 	end

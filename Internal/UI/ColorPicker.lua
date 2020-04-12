@@ -56,6 +56,16 @@ local AlphaFocused = false
 local CurrentColor = {1.0, 1.0, 1.0, 1.0}
 local ColorH = 25.0
 
+local function IsEqual(A, B)
+	for I, V in ipairs(A) do
+		if V ~= B[I] then
+			return false
+		end
+	end
+
+	return true
+end
+
 local function InputColor(Component, Value, OffsetX)
 	local Changed = false
 	Text.Begin(string.format("%s ", Component))
@@ -239,6 +249,7 @@ end
 function ColorPicker.Begin(Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
+	Options.Refresh = Options.Refresh == nil and false or Options.Refresh
 
 	if SaturationMeshes == nil then
 		InitializeSaturationMeshes()
@@ -254,7 +265,7 @@ function ColorPicker.Begin(Options)
 
 	Window.Begin('ColorPicker', {Title = "Color Picker"})
 
-	if Window.IsAppearing() then
+	if Window.IsAppearing() or Options.Refresh then
 		CurrentColor[1] = Options.Color[1]
 		CurrentColor[2] = Options.Color[2]
 		CurrentColor[3] = Options.Color[3]
@@ -266,6 +277,7 @@ function ColorPicker.Begin(Options)
 	local MouseX, MouseY = Window.GetMousePosition()
 	local H, S, V = Utility.RGBtoHSV(CurrentColor[1], CurrentColor[2], CurrentColor[3])
 	local UpdateColor = false
+	local MouseClicked = Mouse.IsClicked(1) and not Window.IsObstructedAtMouse()
 
 	if SaturationMeshes ~= nil then
 		for I, V in ipairs(SaturationMeshes) do
@@ -276,7 +288,7 @@ function ColorPicker.Begin(Options)
 
 		local UpdateSaturation = false
 		if X <= MouseX and MouseX < X + SaturationSize and Y <= MouseY and MouseY < Y + SaturationSize then
-			if Mouse.IsClicked(1) then
+			if MouseClicked then
 				SaturationFocused = true
 				UpdateSaturation = true
 			end
@@ -315,7 +327,7 @@ function ColorPicker.Begin(Options)
 
 		local UpdateTint = false
 		if X <= MouseX and MouseX < X + TintW and Y <= MouseY and MouseY < Y + TintH then
-			if Mouse.IsClicked(1) then
+			if MouseClicked then
 				TintFocused = true
 				UpdateTint = true
 			end
@@ -343,7 +355,7 @@ function ColorPicker.Begin(Options)
 
 		local UpdateAlpha = false
 		if X <= MouseX and MouseX < X + AlphaW and Y <= MouseY and MouseY < Y + AlphaH then
-			if Mouse.IsClicked(1) then
+			if MouseClicked then
 				AlphaFocused = true
 				UpdateAlpha = true
 			end

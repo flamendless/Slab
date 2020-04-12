@@ -210,6 +210,13 @@ local function EditColor(Color)
 	Style_ColorStore = {Color[1], Color[2], Color[3], Color[4]}
 end
 
+local function RestoreEditColor()
+	Style_EditingColor[1] = Style_ColorStore[1]
+	Style_EditingColor[2] = Style_ColorStore[2]
+	Style_EditingColor[3] = Style_ColorStore[3]
+	Style_EditingColor[4] = Style_ColorStore[4]
+end
+
 local function DrawStyleEditor()
 	Slab.BeginWindow('SlabDebug_StyleEditor', SlabDebug_StyleEditor)
 
@@ -247,6 +254,7 @@ local function DrawStyleEditor()
 
 	Slab.Separator()
 
+	local Refresh = false
 	Slab.BeginLayout('SlabDebug_StyleEditor_Content_Layout', {Columns = 2, ExpandW = true})
 	for K, V in pairs(Style) do
 		if type(V) == "table" and K ~= "Font" and K ~= "API" then
@@ -257,6 +265,11 @@ local function DrawStyleEditor()
 			H = Slab.GetTextHeight()
 			Slab.Rectangle({W = W, H = H, Color = V, Outline = true})
 			if Slab.IsControlClicked() then
+				if Style_EditingColor ~= nil then
+					RestoreEditColor()
+					Refresh = true
+				end
+
 				EditColor(V)
 			end
 		end
@@ -276,7 +289,7 @@ local function DrawStyleEditor()
 	Slab.EndWindow()
 
 	if Style_EditingColor ~= nil then
-		local Result = Slab.ColorPicker({Color = Style_ColorStore})
+		local Result = Slab.ColorPicker({Color = Style_ColorStore, Refresh = Refresh})
 		Style_EditingColor[1] = Result.Color[1]
 		Style_EditingColor[2] = Result.Color[2]
 		Style_EditingColor[3] = Result.Color[3]
@@ -288,10 +301,7 @@ local function DrawStyleEditor()
 			end
 
 			if Result.Button == "Cancel" then
-				Style_EditingColor[1] = Style_ColorStore[1]
-				Style_EditingColor[2] = Style_ColorStore[2]
-				Style_EditingColor[3] = Style_ColorStore[3]
-				Style_EditingColor[4] = Style_ColorStore[4]
+				RestoreEditColor()
 			end
 
 			Style_EditingColor = nil
