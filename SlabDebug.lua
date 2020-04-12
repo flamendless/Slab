@@ -37,16 +37,16 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local SlabDebug = {}
 local SlabDebug_About = 'SlabDebug_About'
-local SlabDebug_Mouse = false
-local SlabDebug_Keyboard = false
-local SlabDebug_Windows = false
-local SlabDebug_Regions = false
-local SlabDebug_Tooltip = false
-local SlabDebug_DrawCommands = false
-local SlabDebug_Performance = false
-local SlabDebug_StyleEditor = false
-local SlabDebug_Input = false
-local SlabDebug_MultiLine = false
+local SlabDebug_Mouse = {Title = "Mouse", IsOpen = false}
+local SlabDebug_Keyboard = {Title = "Keyboard", IsOpen = false}
+local SlabDebug_Windows = {Title = "Windows", IsOpen = false}
+local SlabDebug_Regions = {Title = "Regions", IsOpen = false}
+local SlabDebug_Tooltip = {Title = "Tooltip", IsOpen = false}
+local SlabDebug_DrawCommands = {Title = "DrawCommands", IsOpen = false}
+local SlabDebug_Performance = {Title = "Performance", IsOpen = false}
+local SlabDebug_StyleEditor = {Title = "Style Editor", IsOpen = false, AutoSizeWindow = false, AllowResize = true, W = 700.0, H = 500.0}
+local SlabDebug_Input = {Title = "Input", IsOpen = false}
+local SlabDebug_MultiLine = {Title = "Multi-Line Input", IsOpen = false}
 local SlabDebug_MultiLine_FileDialog = false
 local SlabDebug_MultiLine_FileName = ""
 local SlabDebug_MultiLine_Contents = ""
@@ -114,12 +114,11 @@ local function DrawPerformance()
 		DrawPerformance_Init = true
 	end
 
-	Slab.BeginWindow('SlabDebug_Performance', {
-		Title = "Performance",
-		X = DrawPerformance_WinX,
-		Y = DrawPerformance_WinY,
-		ResetPosition = DrawPerformance_ResetPosition
-	})
+	SlabDebug_Performance.X = DrawPerformance_WinX
+	SlabDebug_Performance.Y = DrawPerformance_WinY
+	SlabDebug_Performance.ResetPosition = DrawPerformance_ResetPosition
+
+	Slab.BeginWindow('SlabDebug_Performance', SlabDebug_Performance)
 	DrawPerformance_ResetPosition = false
 
 	local Categories = Stats.GetCategories()
@@ -212,7 +211,7 @@ local function EditColor(Color)
 end
 
 local function DrawStyleEditor()
-	Slab.BeginWindow('SlabDebug_StyleEditor', {Title = "Style Editor", AutoSizeWindow = false, AllowResize = true, W = 700.0, H = 500.0})
+	Slab.BeginWindow('SlabDebug_StyleEditor', SlabDebug_StyleEditor)
 
 	local Style = Slab.GetStyle()
 	local Names = Style.API.GetStyleNames()
@@ -342,7 +341,7 @@ function SlabDebug.OpenAbout()
 end
 
 function SlabDebug.Mouse()
-	Slab.BeginWindow('SlabDebug_Mouse', {Title = "Mouse"})
+	Slab.BeginWindow('SlabDebug_Mouse', SlabDebug_Mouse)
 	local X, Y = Mouse.Position()
 	Slab.Text("X: " .. X)
 	Slab.Text("Y: " .. Y)
@@ -360,7 +359,7 @@ function SlabDebug.Mouse()
 end
 
 function SlabDebug.Keyboard()
-	Slab.BeginWindow('SlabDebug_Keyboard', {Title = "Keyboard"})
+	Slab.BeginWindow('SlabDebug_Keyboard', SlabDebug_Keyboard)
 
 	Slab.BeginLayout('SlabDebug_Keyboard', {Columns = 2})
 	local Keys = Keyboard.Keys()
@@ -377,7 +376,7 @@ function SlabDebug.Keyboard()
 end
 
 function SlabDebug.Windows()
-	Slab.BeginWindow('SlabDebug_Windows', {Title = "Windows"})
+	Slab.BeginWindow('SlabDebug_Windows', SlabDebug_Windows)
 
 	if Slab.BeginComboBox('SlabDebug_Windows_Categories', {Selected = SlabDebug_Windows_Category}) then
 		for I, V in ipairs(SlabDebug_Windows_Categories) do
@@ -399,7 +398,7 @@ function SlabDebug.Windows()
 end
 
 function SlabDebug.Regions()
-	Slab.BeginWindow('SlabDebug_Regions', {Title = "Regions"})
+	Slab.BeginWindow('SlabDebug_Regions', SlabDebug_Regions)
 
 	local Ids = Region.GetInstanceIds()
 	if Slab.BeginComboBox('SlabDebug_Regions_Ids', {Selected = SlabDebug_Regions_Selected}) then
@@ -420,7 +419,7 @@ function SlabDebug.Regions()
 end
 
 function SlabDebug.Tooltip()
-	Slab.BeginWindow('SlabDebug_Tooltip', {Title = "Tooltip"})
+	Slab.BeginWindow('SlabDebug_Tooltip', SlabDebug_Tooltip)
 
 	local Info = Tooltip.GetDebugInfo()
 	for I, V in ipairs(Info) do
@@ -431,7 +430,7 @@ function SlabDebug.Tooltip()
 end
 
 function SlabDebug.DrawCommands()
-	Slab.BeginWindow('SlabDebug_DrawCommands', {Title = "Draw Commands"})
+	Slab.BeginWindow('SlabDebug_DrawCommands', SlabDebug_DrawCommands)
 	
 	local Info = DrawCommands.GetDebugInfo()
 	for K, V in pairs(Info) do
@@ -456,7 +455,7 @@ function SlabDebug.StyleEditor()
 end
 
 function SlabDebug.Input()
-	Slab.BeginWindow('SlabDebug_Input', {Title = "Input"})
+	Slab.BeginWindow('SlabDebug_Input', SlabDebug_Input)
 
 	local Info = Input.GetDebugInfo()
 	Slab.Text("Focused: " .. Info['Focused'])
@@ -506,7 +505,7 @@ local SlabDebug_MultiLine_Highlight = {
 local SlabDebug_MultiLine_ShouldHighlight = true
 
 function SlabDebug.MultiLine()
-	Slab.BeginWindow('SlabDebug_MultiLine', {Title = "Multi-Line Input"})
+	Slab.BeginWindow('SlabDebug_MultiLine', SlabDebug_MultiLine)
 
 	if Slab.Button("Load") then
 		SlabDebug_MultiLine_FileDialog = true
@@ -565,52 +564,30 @@ function SlabDebug.MultiLine()
 	end
 end
 
+local function MenuItemWindow(Options)
+	if Slab.MenuItemChecked(Options.Title, Options.IsOpen) then
+		Options.IsOpen = not Options.IsOpen
+	end
+end
+
 function SlabDebug.Menu()
 	if Slab.BeginMenu("Debug") then
 		if Slab.MenuItem("About") then
 			SlabDebug.OpenAbout()
 		end
 
-		if Slab.MenuItemChecked("Mouse", SlabDebug_Mouse) then
-			SlabDebug_Mouse = not SlabDebug_Mouse
-		end
+		MenuItemWindow(SlabDebug_Mouse)
+		MenuItemWindow(SlabDebug_Keyboard)
+		MenuItemWindow(SlabDebug_Windows)
+		MenuItemWindow(SlabDebug_Regions)
+		MenuItemWindow(SlabDebug_Tooltip)
+		MenuItemWindow(SlabDebug_DrawCommands)
+		MenuItemWindow(SlabDebug_Performance)
+		MenuItemWindow(SlabDebug_StyleEditor)
+		MenuItemWindow(SlabDebug_Input)
+		MenuItemWindow(SlabDebug_MultiLine)
 
-		if Slab.MenuItemChecked("Keyboard", SlabDebug_Keyboard) then
-			SlabDebug_Keyboard = not SlabDebug_Keyboard
-		end
-
-		if Slab.MenuItemChecked("Windows", SlabDebug_Windows) then
-			SlabDebug_Windows = not SlabDebug_Windows
-		end
-
-		if Slab.MenuItemChecked("Regions", SlabDebug_Regions) then
-			SlabDebug_Regions = not SlabDebug_Regions
-		end
-
-		if Slab.MenuItemChecked("Tooltip", SlabDebug_Tooltip) then
-			SlabDebug_Tooltip = not SlabDebug_Tooltip
-		end
-
-		if Slab.MenuItemChecked("Draw Commands", SlabDebug_DrawCommands) then
-			SlabDebug_DrawCommands = not SlabDebug_DrawCommands
-		end
-
-		if Slab.MenuItemChecked("Performance", SlabDebug_Performance) then
-			SlabDebug_Performance = not SlabDebug_Performance
-			Stats.SetEnabled(SlabDebug_Performance)
-		end
-
-		if Slab.MenuItemChecked("Style Editor", SlabDebug_StyleEditor) then
-			SlabDebug_StyleEditor = not SlabDebug_StyleEditor
-		end
-
-		if Slab.MenuItemChecked("Input", SlabDebug_Input) then
-			SlabDebug_Input = not SlabDebug_Input
-		end
-
-		if Slab.MenuItemChecked("Multi-Line", SlabDebug_MultiLine) then
-			SlabDebug_MultiLine = not SlabDebug_MultiLine
-		end
+		Stats.SetEnabled(SlabDebug_Performance.IsOpen)
 
 		Slab.EndMenu()
 	end
@@ -618,46 +595,16 @@ end
 
 function SlabDebug.Begin()
 	SlabDebug.About()
-
-	if SlabDebug_Mouse then
-		SlabDebug.Mouse()
-	end
-
-	if SlabDebug_Keyboard then
-		SlabDebug.Keyboard()
-	end
-
-	if SlabDebug_Windows then
-		SlabDebug.Windows()
-	end
-
-	if SlabDebug_Regions then
-		SlabDebug.Regions()
-	end
-
-	if SlabDebug_Tooltip then
-		SlabDebug.Tooltip()
-	end
-
-	if SlabDebug_DrawCommands then
-		SlabDebug.DrawCommands()
-	end
-
-	if SlabDebug_Performance then
-		SlabDebug.Performance()
-	end
-
-	if SlabDebug_StyleEditor then
-		SlabDebug.StyleEditor()
-	end
-
-	if SlabDebug_Input then
-		SlabDebug.Input()
-	end
-
-	if SlabDebug_MultiLine then
-		SlabDebug.MultiLine()
-	end
+	SlabDebug.Mouse()
+	SlabDebug.Keyboard()
+	SlabDebug.Windows()
+	SlabDebug.Regions()
+	SlabDebug.Tooltip()
+	SlabDebug.DrawCommands()
+	SlabDebug.Performance()
+	SlabDebug.StyleEditor()
+	SlabDebug.Input()
+	SlabDebug.MultiLine()
 end
 
 return SlabDebug

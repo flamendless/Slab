@@ -142,7 +142,11 @@ local function Contains(Instance, X, Y)
 	return false
 end
 
-local function UpdateTitleBar(Instance)
+local function UpdateTitleBar(Instance, IsObstructed)
+	if IsObstructed then
+		return
+	end
+
 	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None and Instance.AllowMove then
 		local W = Instance.W
 		local H = Style.Font:getHeight()
@@ -151,7 +155,7 @@ local function UpdateTitleBar(Instance)
 
 		local MouseX, MouseY = Mouse.Position()
 
-		if Mouse.IsClicked(1) and not Window.IsObstructed(MouseX, MouseY) then
+		if Mouse.IsClicked(1) then
 			if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
 				Instance.IsMoving = true
 				if Instance.AllowFocus then
@@ -358,7 +362,7 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 					end
 
 					return false
-				else
+				elseif V.IsOpen then
 					return true
 				end
 			end
@@ -507,7 +511,7 @@ function Window.Begin(Id, Options)
 
 	local MouseX, MouseY = Mouse.Position()
 	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
-	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed then
+	if ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed and Contains(ActiveInstance, MouseX, MouseY) then
 		PushToTop(ActiveInstance)
 	end
 
@@ -516,7 +520,7 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance)
+	UpdateTitleBar(ActiveInstance, IsObstructed)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
