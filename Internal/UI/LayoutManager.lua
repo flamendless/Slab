@@ -24,6 +24,11 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local remove = table.remove
+local max = math.max
+local min = math.min
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
@@ -157,7 +162,7 @@ local function GetColumnSize(Instance)
 			H = WinH
 			Column.W = W
 		else
-			W = math.max(Column.W, ColumnW)
+			W = max(Column.W, ColumnW)
 		end
 
 		return W, H
@@ -188,14 +193,14 @@ local function AddControl(Instance, W, H, Type)
 
 		if X == nil then
 			if Instance.AlignX == 'center' then
-				X = math.max(WinW * 0.5 - RowW * 0.5 + AnchorX, AnchorX)
+				X = max(WinW * 0.5 - RowW * 0.5 + AnchorX, AnchorX)
 			elseif Instance.AlignX == 'right' then
 				local Right = WinW - RowW
 				if not Window.IsAutoSize() then
 					Right = Right + Window.GetBorder()
 				end
 
-				X = math.max(Right, AnchorX)
+				X = max(Right, AnchorX)
 			else
 				X = AnchorX
 			end
@@ -207,9 +212,9 @@ local function AddControl(Instance, W, H, Type)
 			else
 				local RegionH = WinY + WinH - CursorY
 				if Instance.AlignY == 'center' then
-					Y = math.max(RegionH * 0.5 - LayoutH * 0.5 + AnchorY, AnchorY)
+					Y = max(RegionH * 0.5 - LayoutH * 0.5 + AnchorY, AnchorY)
 				elseif Instance.AlignY == 'bottom' then
-					Y = math.max(WinH - LayoutH, AnchorY)
+					Y = max(WinH - LayoutH, AnchorY)
 				else
 					Y = AnchorY
 				end
@@ -248,12 +253,12 @@ local function AddControl(Instance, W, H, Type)
 				MaxH = 0,
 				Controls = {}
 			}
-			table.insert(Column.PendingRows, Row)
+			insert(Column.PendingRows, Row)
 		end
 
 		local Row = Column.PendingRows[RowNo]
 
-		table.insert(Row.Controls, {
+		insert(Row.Controls, {
 			X = Cursor.GetX(),
 			Y = Cursor.GetY(),
 			W = W,
@@ -262,11 +267,11 @@ local function AddControl(Instance, W, H, Type)
 			Type = Type
 		})
 		Row.W = Row.W + W + Cursor.PadX()
-		Row.H = math.max(Row.H, H)
+		Row.H = max(Row.H, H)
 
 		Column.RowNo = RowNo + 1
 		Column.AlteredSize = false
-		Column.W = math.max(Row.W, Column.W)
+		Column.W = max(Row.W, Column.W)
 	end
 end
 
@@ -342,7 +347,7 @@ function LayoutManager.ComputeSize(W, H)
 					end
 				end
 
-				Count = math.max(Count, 1)
+				Count = max(Count, 1)
 
 				W = (RealW - ReduceW - Pad) / Count
 			end
@@ -359,7 +364,7 @@ function LayoutManager.ComputeSize(W, H)
 
 					if I == Column.RowNo then
 						MaxRowH = Row.MaxH
-						Row.RequestH = math.max(Row.RequestH, H)
+						Row.RequestH = max(Row.RequestH, H)
 					end
 
 					for J, Control in ipairs(Row.Controls) do
@@ -380,11 +385,11 @@ function LayoutManager.ComputeSize(W, H)
 					Pad = Cursor.PadY() * (#Column.Rows - 1)
 				end
 
-				Count = math.max(Count, 1)
+				Count = max(Count, 1)
 
-				RealH = math.max(RealH - ReduceH - Pad, 0)
-				H = math.max(RealH / Count, H)
-				H = math.max(H, MaxRowH)
+				RealH = max(RealH - ReduceH - Pad, 0)
+				H = max(RealH / Count, H)
+				H = max(H, MaxRowH)
 			end
 		end
 
@@ -408,7 +413,7 @@ function LayoutManager.Begin(Id, Options)
 	Options.AnchorY = Options.AnchorY == nil and true or Options.AnchorY
 	Options.Columns = Options.Columns == nil and 1 or Options.Columns
 
-	Options.Columns = math.max(Options.Columns, 1)
+	Options.Columns = max(Options.Columns, 1)
 
 	local Instance = GetInstance(Id)
 	Instance.AlignX = Options.AlignX
@@ -431,7 +436,7 @@ function LayoutManager.Begin(Id, Options)
 				W = 0
 			}
 
-			table.insert(Instance.Columns, Column)
+			insert(Instance.Columns, Column)
 		end
 	end
 
@@ -440,7 +445,7 @@ function LayoutManager.Begin(Id, Options)
 		Column.RowNo = 1
 	end
 
-	table.insert(Stack, 1, Instance)
+	insert(Stack, 1, Instance)
 	Active = Instance
 end
 
@@ -459,7 +464,7 @@ function LayoutManager.End()
 		end
 	end
 
-	table.remove(Stack, 1)
+	remove(Stack, 1)
 	Active = nil
 
 	if #Stack > 0 then
@@ -471,7 +476,7 @@ function LayoutManager.SameLine(CursorOptions)
 	Cursor.SameLine(CursorOptions)
 	if Active ~= nil then
 		local Column = Active.Columns[Active.ColumnNo]
-		Column.RowNo = math.max(Column.RowNo - 1, 1)
+		Column.RowNo = max(Column.RowNo - 1, 1)
 	end
 end
 
@@ -484,8 +489,8 @@ end
 
 function LayoutManager.SetColumn(Index)
 	if Active ~= nil then
-		Index = math.max(Index, 1)
-		Index = math.min(Index, #Active.Columns)
+		Index = max(Index, 1)
+		Index = min(Index, #Active.Columns)
 		Active.ColumnNo = Index
 	end
 end

@@ -24,6 +24,18 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local min = math.min
+local max = math.max
+local floor = math.floor
+local huge = math.huge
+local gsub = string.gsub
+local sub = string.sub
+local match = string.match
+local len = string.len
+local byte = string.byte
+local find = string.find
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
@@ -65,7 +77,7 @@ local function SanitizeText(Data)
 
 	if Data ~= nil then
 		local Count = 0
-		Data, Count = string.gsub(Data, "\r", "")
+		Data, Count = gsub(Data, "\r", "")
 		Result = Count > 0
 	end
 
@@ -77,7 +89,7 @@ local function GetDisplayCharacter(Data, Pos)
 
 	if Data ~= nil and Pos > 0 then
 		local Offset = UTF8.offset(Data, -1, Pos + 1)
-		Result = string.sub(Data, Offset, Pos)
+		Result = sub(Data, Offset, Pos)
 
 		if Result == nil then
 			Result = 'nil'
@@ -94,11 +106,11 @@ end
 local function GetCharacter(Data, Index, Forward)
 	local Result = ""
 	if Forward then
-		local Sub = string.sub(Data, Index + 1)
-		Result = string.match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*")
+		local Sub = sub(Data, Index + 1)
+		Result = match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*")
 	else
-		local Sub = string.sub(Data, 1, Index)
-		Result = string.match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*$")
+		local Sub = sub(Data, 1, Index)
+		Result = match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*$")
 	end
 	return Result
 end
@@ -110,7 +122,7 @@ local function UpdateMultiLinePosition(Instance)
 			local Start = 0
 			local Found = false
 			for I, V in ipairs(Instance.Lines) do
-				local Length = string.len(V)
+				local Length = len(V)
 				Count = Count + Length
 				if TextCursorPos < Count then
 					TextCursorPosLine = TextCursorPos - Start
@@ -122,7 +134,7 @@ local function UpdateMultiLinePosition(Instance)
 			end
 
 			if not Found then
-				TextCursorPosLine = string.len(Instance.Lines[#Instance.Lines])
+				TextCursorPosLine = len(Instance.Lines[#Instance.Lines])
 				TextCursorPosLineNumber = #Instance.Lines
 			end
 		else
@@ -136,15 +148,15 @@ end
 local function ValidateTextCursorPos(Instance)
 	if Instance ~= nil then
 		local OldPos = TextCursorPos
-		local Byte = string.byte(string.sub(Instance.Text, TextCursorPos, TextCursorPos))
+		local Byte = byte(sub(Instance.Text, TextCursorPos, TextCursorPos))
 		-- This is a continuation byte. Check next byte to see if it is an ASCII character or
 		-- the beginning of a UTF8 character.
 		if Byte ~= nil and Byte > 127 then
-			local NextByte = string.byte(string.sub(Instance.Text, TextCursorPos + 1, TextCursorPos + 1))
+			local NextByte = byte(sub(Instance.Text, TextCursorPos + 1, TextCursorPos + 1))
 			if NextByte ~= nil and NextByte > 127 and NextByte < 191 then
 				while Byte > 127 and Byte < 191 do
 					TextCursorPos = TextCursorPos - 1
-					Byte = string.byte(string.sub(Instance.Text, TextCursorPos, TextCursorPos))
+					Byte = byte(sub(Instance.Text, TextCursorPos, TextCursorPos))
 				end
 
 				if TextCursorPos < OldPos or Byte >= 191 then
@@ -163,12 +175,12 @@ local function MoveToHome(Instance)
 			local Count = 0
 			local Start = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + string.len(V)
+				Count = Count + len(V)
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Start
 					break
 				end
-				Start = Start + string.len(V)
+				Start = Start + len(V)
 			end
 		else
 			TextCursorPos = 0
@@ -182,7 +194,7 @@ local function MoveToEnd(Instance)
 		if Instance.Lines ~= nil then
 			local Count = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + string.len(V)
+				Count = Count + len(V)
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Count - 1
 					
@@ -203,7 +215,7 @@ local function ValidateNumber(Instance)
 	local Result = false
 
 	if Instance ~= nil and Instance.NumbersOnly and Instance.Text ~= "" then
-		if string.sub(Instance.Text, #Instance.Text, #Instance.Text) == "." then
+		if sub(Instance.Text, #Instance.Text, #Instance.Text) == "." then
 			return
 		end
 
@@ -215,10 +227,10 @@ local function ValidateNumber(Instance)
 		local OldValue = Value
 
 		if Instance.MinNumber ~= nil then
-			Value = math.max(Value, Instance.MinNumber)
+			Value = max(Value, Instance.MinNumber)
 		end
 		if Instance.MaxNumber ~= nil then
-			Value = math.min(Value, Instance.MaxNumber)
+			Value = min(Value, Instance.MaxNumber)
 		end
 
 		Result = OldValue ~= Value
@@ -242,10 +254,10 @@ end
 
 local function GetSelection(Instance)
 	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
-		local Min = math.min(TextCursorAnchor, TextCursorPos) + 1
-		local Max = math.max(TextCursorAnchor, TextCursorPos)
+		local Min = min(TextCursorAnchor, TextCursorPos) + 1
+		local Max = max(TextCursorAnchor, TextCursorPos)
 
-		return string.sub(Instance.Text, Min, Max)
+		return sub(Instance.Text, Min, Max)
 	end
 	return ""
 end
@@ -254,21 +266,21 @@ local function MoveCursorVertical(Instance, MoveDown)
 	if Instance ~= nil and Instance.Lines ~= nil then
 		local OldLineNumber = TextCursorPosLineNumber
 		if MoveDown then
-			TextCursorPosLineNumber = math.min(TextCursorPosLineNumber + 1, #Instance.Lines)
+			TextCursorPosLineNumber = min(TextCursorPosLineNumber + 1, #Instance.Lines)
 		else
-			TextCursorPosLineNumber = math.max(1, TextCursorPosLineNumber - 1)
+			TextCursorPosLineNumber = max(1, TextCursorPosLineNumber - 1)
 		end
 		local Line = Instance.Lines[TextCursorPosLineNumber]
 		if OldLineNumber == TextCursorPosLineNumber then
-			TextCursorPosLine = MoveDown and string.len(Line) or 0
+			TextCursorPosLine = MoveDown and len(Line) or 0
 		else
-			if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= string.len(Line) then
-				TextCursorPosLine = string.len(Line)
+			if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= len(Line) then
+				TextCursorPosLine = len(Line)
 			else
-				TextCursorPosLine = math.min(string.len(Line), TextCursorPosLineMax + 1)
+				TextCursorPosLine = min(len(Line), TextCursorPosLineMax + 1)
 				local Ch = GetCharacter(Line, TextCursorPosLine)
 				if Ch ~= nil then
-					TextCursorPosLine = TextCursorPosLine - string.len(Ch)
+					TextCursorPosLine = TextCursorPosLine - len(Ch)
 				end
 			end
 		end
@@ -278,7 +290,7 @@ local function MoveCursorVertical(Instance, MoveDown)
 				TextCursorPos = Start + TextCursorPosLine
 				break
 			end
-			Start = Start + string.len(V)
+			Start = Start + len(V)
 		end
 	end
 end
@@ -286,7 +298,7 @@ end
 local function IsValidDigit(Instance, Ch)
 	if Instance ~= nil then
 		if Instance.NumbersOnly then
-			if string.match(Ch, "%d") ~= nil then
+			if match(Ch, "%d") ~= nil then
 				return true
 			end
 
@@ -298,11 +310,11 @@ local function IsValidDigit(Instance, Ch)
 
 			if Ch == "." then
 				local Selected = GetSelection(Instance)
-				if Selected ~= nil and string.find(Selected, ".", 1, true) ~= nil then
+				if Selected ~= nil and find(Selected, ".", 1, true) ~= nil then
 					return true
 				end
 
-				if string.find(Instance.Text, ".", 1, true) == nil then
+				if find(Instance.Text, ".", 1, true) == nil then
 					return true
 				end
 			end
@@ -355,7 +367,7 @@ local function GetCursorXOffset(Instance)
 	local Result = GetAlignmentOffset(Instance)
 	if Instance ~= nil then
 		if TextCursorPos > 0 then
-			local Sub = string.sub(Instance.Text, 1, TextCursorPos)
+			local Sub = sub(Instance.Text, 1, TextCursorPos)
 			Result = Text.GetWidth(Sub) + GetAlignmentOffset(Instance)
 		end
 	end
@@ -371,9 +383,9 @@ local function GetCursorPos(Instance)
 			Data = Instance.Lines[TextCursorPosLineNumber]
 			Y = Text.GetHeight() * (TextCursorPosLineNumber - 1)
 		end
-		local CursorPos = math.min(TextCursorPosLine, string.len(Data))
+		local CursorPos = min(TextCursorPosLine, len(Data))
 		if CursorPos > 0 then
-			local Sub = string.sub(Data, 0, CursorPos)
+			local Sub = sub(Data, 0, CursorPos)
 			X = X + Text.GetWidth(Sub)
 		end
 	end
@@ -394,14 +406,14 @@ local function SelectWord(Instance)
 		TextCursorAnchor = 0
 		local I = 0
 		while I ~= nil and I + 1 < TextCursorPos do
-			I = string.find(Instance.Text, Filter, I + 1)
+			I = find(Instance.Text, Filter, I + 1)
 			if I ~= nil and I < TextCursorPos then
 				TextCursorAnchor = I
 			else
 				break
 			end
 		end
-		I = string.find(Instance.Text, Filter, TextCursorPos + 1)
+		I = find(Instance.Text, Filter, TextCursorPos + 1)
 		if I ~= nil then
 			TextCursorPos = I - 1
 		else
@@ -421,7 +433,7 @@ local function GetNextCursorPos(Instance, Left)
 				Result = 0
 				local I = 0
 				while I ~= nil and I + 1 < TextCursorPos do
-					I = string.find(Instance.Text, "%s", I + 1)
+					I = find(Instance.Text, "%s", I + 1)
 					if I ~= nil and I < TextCursorPos then
 						Result = I
 					else
@@ -429,7 +441,7 @@ local function GetNextCursorPos(Instance, Left)
 					end
 				end
 			else
-				local I = string.find(Instance.Text, "%s", TextCursorPos + 1)
+				local I = find(Instance.Text, "%s", TextCursorPos + 1)
 				if I ~= nil then
 					Result = I
 				else
@@ -440,19 +452,19 @@ local function GetNextCursorPos(Instance, Left)
 			if Left then
 				local Ch = GetCharacter(Instance.Text, TextCursorPos)
 				if Ch ~= nil then
-					Result = TextCursorPos - string.len(Ch)
+					Result = TextCursorPos - len(Ch)
 				end
 			else
 				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
 				if Ch ~= nil then
-					Result = TextCursorPos + string.len(Ch)
+					Result = TextCursorPos + len(Ch)
 				else
 					Result = TextCursorPos
 				end
 			end
 		end
-		Result = math.max(0, Result)
-		Result = math.min(Result, string.len(Instance.Text))
+		Result = max(0, Result)
+		Result = min(Result, len(Instance.Text))
 	end
 	return Result
 end
@@ -461,28 +473,28 @@ local function GetCursorPosLine(Instance, Line, X)
 	local Result = 0
 	if Instance ~= nil and Line ~= "" then
 		if Text.GetWidth(Line) < X then
-			Result = string.len(Line)
-			if string.find(Line, "\n") ~= nil then
-				Result = string.len(Line) - 1
+			Result = len(Line)
+			if find(Line, "\n") ~= nil then
+				Result = len(Line) - 1
 			end
 		else
 			X = X - GetAlignmentOffset(Instance)
 			local PosX = X
 			local Index = 0
 			local Sub = ""
-			while Index <= string.len(Line) do
+			while Index <= len(Line) do
 				local Ch = GetCharacter(Line, Index, true)
 				if Ch == nil then
 					break
 				end
-				Index = Index + string.len(Ch)
+				Index = Index + len(Ch)
 				Sub = Sub .. Ch
 				local PosX = Text.GetWidth(Sub)
 				if PosX > X then
 					local CharX = PosX - X
 					local CharW = Text.GetWidth(Ch)
 					if CharX < CharW * 0.65 then
-						Result = Result + string.len(Ch)
+						Result = Result + len(Ch)
 					end
 					break
 				end
@@ -518,7 +530,7 @@ local function GetTextCursorPos(Instance, X, Y)
 			end
 		end
 
-		Result = math.min(Start + GetCursorPosLine(Instance, Line, X), #Instance.Text)
+		Result = min(Start + GetCursorPosLine(Instance, Line, X), #Instance.Text)
 	end
 	return Result
 end
@@ -533,7 +545,7 @@ local function MoveCursorPage(Instance, PageDown)
 		if PageDown then
 			NextY = TY + PageH
 		else
-			NextY = math.max(TY - PageH, 0.0)
+			NextY = max(TY - PageH, 0.0)
 		end
 
 		TextCursorPos = GetTextCursorPos(Instance, 0.0, NextY)
@@ -582,8 +594,8 @@ local function DeleteSelection(Instance)
 		local Max = 0
 
 		if TextCursorAnchor ~= -1 then
-			Min = math.min(TextCursorAnchor, TextCursorPos)
-			Max = math.max(TextCursorAnchor, TextCursorPos) + 1
+			Min = min(TextCursorAnchor, TextCursorPos)
+			Max = max(TextCursorAnchor, TextCursorPos) + 1
 		else
 			if TextCursorPos == 0 then
 				return false
@@ -592,7 +604,7 @@ local function DeleteSelection(Instance)
 			local NewTextCursorPos = TextCursorPos
 			local Ch = GetCharacter(Instance.Text, TextCursorPos)
 			if Ch ~= nil then
-				Min = TextCursorPos - string.len(Ch)
+				Min = TextCursorPos - len(Ch)
 				NewTextCursorPos = Min
 			end
 
@@ -600,23 +612,23 @@ local function DeleteSelection(Instance)
 			if Ch ~= nil then
 				Max = TextCursorPos + 1
 			else
-				Max = string.len(Instance.Text) + 1
+				Max = len(Instance.Text) + 1
 			end
 
 			TextCursorPos = NewTextCursorPos
 		end
 
-		local Left = string.sub(Instance.Text, 1, Min)
-		local Right = string.sub(Instance.Text, Max)
+		local Left = sub(Instance.Text, 1, Min)
+		local Right = sub(Instance.Text, Max)
 		Instance.Text = Left .. Right
 
-		TextCursorPos = string.len(Left)
+		TextCursorPos = len(Left)
 
 		if TextCursorAnchor ~= -1 then
-			TextCursorPos = math.min(TextCursorAnchor, TextCursorPos)
+			TextCursorPos = min(TextCursorAnchor, TextCursorPos)
 		end
-		TextCursorPos = math.max(0, TextCursorPos)
-		TextCursorPos = math.min(TextCursorPos, string.len(Instance.Text))
+		TextCursorPos = max(0, TextCursorPos)
+		TextCursorPos = min(TextCursorPos, len(Instance.Text))
 
 		TextCursorAnchor = -1
 		UpdateMultiLinePosition(Instance)
@@ -626,8 +638,8 @@ end
 
 local function DrawSelection(Instance, X, Y, W, H, Color)
 	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
-		local Min = math.min(TextCursorAnchor, TextCursorPos)
-		local Max = math.max(TextCursorAnchor, TextCursorPos)
+		local Min = min(TextCursorAnchor, TextCursorPos)
+		local Max = max(TextCursorAnchor, TextCursorPos)
 		H = Text.GetHeight()
 
 		if Instance.Lines ~= nil then
@@ -637,22 +649,22 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 			local OffsetMax = 0
 			local OffsetY = 0
 			for I, V in ipairs(Instance.Lines) do
-				Count = Count + string.len(V)
+				Count = Count + len(V)
 				if Min < Count then
 					if Min > Start then
-						OffsetMin = math.max(Min - Start, 1)
+						OffsetMin = max(Min - Start, 1)
 					else
 						OffsetMin = 0
 					end
 
 					if Max < Count then
-						OffsetMax = math.max(Max - Start, 1)
+						OffsetMax = max(Max - Start, 1)
 					else
-						OffsetMax = string.len(V)
+						OffsetMax = len(V)
 					end
 
-					local SubMin = string.sub(V, 1, OffsetMin)
-					local SubMax = string.sub(V, 1, OffsetMax)
+					local SubMin = sub(V, 1, OffsetMin)
+					local SubMax = sub(V, 1, OffsetMax)
 					local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
 					local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
 
@@ -662,12 +674,12 @@ local function DrawSelection(Instance, X, Y, W, H, Color)
 				if Max <= Count then
 					break
 				end
-				Start = Start + string.len(V)
+				Start = Start + len(V)
 				OffsetY = OffsetY + H
 			end
 		else
-			local SubMin = string.sub(Instance.Text, 1, Min)
-			local SubMax = string.sub(Instance.Text, 1, Max)
+			local SubMin = sub(Instance.Text, 1, Min)
+			local SubMax = sub(Instance.Text, 1, Max)
 			local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
 			local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
 
@@ -689,7 +701,7 @@ end
 
 local function IsHighlightTerminator(Ch)
 	if Ch ~= nil then
-		return string.match(Ch, "%w") == nil
+		return match(Ch, "%w") == nil
 	end
 
 	return true
@@ -709,13 +721,13 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 			local Top = TY - TextH * 2
 			local Bottom = TY + Instance.H + TextH * 2
 			local H = #Instance.Lines * TextH
-			local TopLineNo = math.max(math.floor((Top / H) * #Instance.Lines), 1)
-			local BottomLineNo = math.min(math.floor((Bottom / H) * #Instance.Lines), #Instance.Lines)
+			local TopLineNo = max(floor((Top / H) * #Instance.Lines), 1)
+			local BottomLineNo = min(floor((Bottom / H) * #Instance.Lines), #Instance.Lines)
 
 			local Index = 1
 			local EndIndex = 1
 			for I = 1, BottomLineNo, 1 do
-				local Count = string.len(Instance.Lines[I])
+				local Count = len(Instance.Lines[I])
 				if I < TopLineNo then
 					Index = Index + Count
 				end
@@ -724,8 +736,8 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 			end
 
 			if Index > 1 then
-				table.insert(ColoredText, BaseColor)
-				table.insert(ColoredText, string.sub(Instance.Text, 1, Index - 1))
+				insert(ColoredText, BaseColor)
+				insert(ColoredText, sub(Instance.Text, 1, Index - 1))
 			end
 
 			while Index < EndIndex do
@@ -735,18 +747,18 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 					local Found = nil
 					local Anchor = Index
 					repeat
-						Found = string.find(Instance.Text, K, Anchor, true)
+						Found = find(Instance.Text, K, Anchor, true)
 
 						if Found ~= nil then
-							local FoundEnd = Found + string.len(K)
-							local Prev = string.sub(Instance.Text, Found - 1, Found - 1)
-							local Next = string.sub(Instance.Text, FoundEnd, FoundEnd)
+							local FoundEnd = Found + len(K)
+							local Prev = sub(Instance.Text, Found - 1, Found - 1)
+							local Next = sub(Instance.Text, FoundEnd, FoundEnd)
 							
 							if Found == 1 then
 								Prev = nil
 							end
 
-							if FoundEnd > string.len(Instance.Text) then
+							if FoundEnd > len(Instance.Text) then
 								Next = nil
 							end
 
@@ -771,24 +783,24 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 				end
 
 				if Key ~= nil then
-					table.insert(ColoredText, BaseColor)
-					table.insert(ColoredText, string.sub(Instance.Text, Index, MatchIndex - 1))
+					insert(ColoredText, BaseColor)
+					insert(ColoredText, sub(Instance.Text, Index, MatchIndex - 1))
 
-					table.insert(ColoredText, Highlight[Key])
-					table.insert(ColoredText, Key)
+					insert(ColoredText, Highlight[Key])
+					insert(ColoredText, Key)
 
-					Index = MatchIndex + string.len(Key)
+					Index = MatchIndex + len(Key)
 				else
-					table.insert(ColoredText, BaseColor)
-					table.insert(ColoredText, string.sub(Instance.Text, Index, EndIndex))
+					insert(ColoredText, BaseColor)
+					insert(ColoredText, sub(Instance.Text, Index, EndIndex))
 					Index = EndIndex
 					break
 				end
 			end
 
-			if Index < string.len(Instance.Text) then
-				table.insert(ColoredText, BaseColor)
-				table.insert(ColoredText, string.sub(Instance.Text, Index))
+			if Index < len(Instance.Text) then
+				insert(ColoredText, BaseColor)
+				insert(ColoredText, sub(Instance.Text, Index))
 			end
 
 			--print(string.format("UpdateTextObject Time: %f", (love.timer.getTime() - StartTime)))
@@ -821,7 +833,7 @@ local function GetInstance(Id)
 	Instance.TextObject = nil
 	Instance.Highlight = nil
 	Instance.ShouldUpdateTextObject = false
-	table.insert(Instances, Instance)
+	insert(Instances, Instance)
 	return Instance
 end
 
@@ -846,7 +858,7 @@ function Input.Begin(Id, Options)
 	Options.MinNumber = Options.MinNumber == nil and nil or Options.MinNumber
 	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
 	Options.MultiLine = Options.MultiLine == nil and false or Options.MultiLine
-	Options.MultiLineW = Options.MultiLineW == nil and math.huge or Options.MultiLineW
+	Options.MultiLineW = Options.MultiLineW == nil and huge or Options.MultiLineW
 	Options.Highlight = Options.Highlight == nil and nil or Options.Highlight
 
 	if type(Options.MinNumber) ~= "number" then
@@ -1029,7 +1041,7 @@ function Input.Begin(Id, Options)
 			if Keyboard.IsPressed('v') then
 				local Text = love.system.getClipboardText()
 				Input.Text(Text)
-				TextCursorPos = math.min(TextCursorPos + #Text - 1, #Instance.Text)
+				TextCursorPos = min(TextCursorPos + #Text - 1, #Instance.Text)
 			end
 		end
 
@@ -1051,7 +1063,7 @@ function Input.Begin(Id, Options)
 			if TextCursorAnchor == -1 then
 				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
 				if Ch ~= nil then
-					TextCursorPos = TextCursorPos + string.len(Ch)
+					TextCursorPos = TextCursorPos + len(Ch)
 					ShouldDelete = true
 				end
 			else
@@ -1278,12 +1290,12 @@ function Input.Text(Ch)
 			Focused.Text = Ch .. Focused.Text
 		else
 			local Temp = Focused.Text
-			local Left = string.sub(Temp, 0, TextCursorPos)
-			local Right = string.sub(Temp, TextCursorPos + 1)
+			local Left = sub(Temp, 0, TextCursorPos)
+			local Right = sub(Temp, TextCursorPos + 1)
 			Focused.Text = Left .. Ch .. Right
 		end
 
-		TextCursorPos = math.min(TextCursorPos + string.len(Ch), string.len(Focused.Text))
+		TextCursorPos = min(TextCursorPos + len(Ch), len(Focused.Text))
 		TextCursorAnchor = -1
 		UpdateTransform(Focused)
 		Focused.TextChanged = true
@@ -1293,10 +1305,10 @@ end
 function Input.Update(dt)
 	local Delta = dt * 2.0
 	if FadeIn then
-		TextCursorAlpha = math.min(TextCursorAlpha + Delta, 1.0)
+		TextCursorAlpha = min(TextCursorAlpha + Delta, 1.0)
 		FadeIn = TextCursorAlpha < 1.0
 	else
-		TextCursorAlpha = math.max(TextCursorAlpha - Delta, 0.0)
+		TextCursorAlpha = max(TextCursorAlpha - Delta, 0.0)
 		FadeIn = TextCursorAlpha == 0.0
 	end
 
@@ -1308,7 +1320,7 @@ function Input.Update(dt)
 
 	if Focused ~= nil then
 		if PendingCursorPos >= 0 then
-			TextCursorPos = math.min(PendingCursorPos, #Focused.Text)
+			TextCursorPos = min(PendingCursorPos, #Focused.Text)
 			ValidateTextCursorPos(Focused)
 			UpdateMultiLinePosition(Focused)
 			PendingCursorPos = -1
@@ -1327,7 +1339,7 @@ function Input.Update(dt)
 
 		if PendingCursorLine > 0 then
 			if Focused.Lines ~= nil then
-				TextCursorPosLineNumber = math.min(PendingCursorLine, #Focused.Lines)
+				TextCursorPosLineNumber = min(PendingCursorLine, #Focused.Lines)
 				MultiLineChanged = true
 			end
 
@@ -1336,14 +1348,14 @@ function Input.Update(dt)
 
 		if MultiLineChanged then
 			local Line = Focused.Lines[TextCursorPosLineNumber]
-			TextCursorPosLine = math.min(TextCursorPosLine, string.len(Line))
+			TextCursorPosLine = min(TextCursorPosLine, len(Line))
 			local Start = 0
 			for I, V in ipairs(Focused.Lines) do
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Start + TextCursorPosLine
 					break
 				end
-				Start = Start + string.len(V)
+				Start = Start + len(V)
 			end
 			ValidateTextCursorPos(Focused)
 		end
@@ -1383,16 +1395,16 @@ function Input.SetFocused(Id)
 end
 
 function Input.SetCursorPos(Pos)
-	PendingCursorPos = math.max(Pos, 0)
+	PendingCursorPos = max(Pos, 0)
 end
 
 function Input.SetCursorPosLine(Column, Line)
 	if Column ~= nil then
-		PendingCursorColumn = math.max(Column, 0)
+		PendingCursorColumn = max(Column, 0)
 	end
 
 	if Line ~= nil then
-		PendingCursorLine = math.max(Line, 1)
+		PendingCursorLine = max(Line, 1)
 	end
 end
 
@@ -1414,7 +1426,7 @@ function Input.GetDebugInfo()
 	Info['LineCursorPos'] = TextCursorPosLine
 	Info['LineCursorPosMax'] = TextCursorPosLineMax
 	Info['LineNumber'] = TextCursorPosLineNumber
-	Info['LineLength'] = (Focused ~= nil and Focused.Lines ~= nil) and string.len(Focused.Lines[TextCursorPosLineNumber]) or 0
+	Info['LineLength'] = (Focused ~= nil and Focused.Lines ~= nil) and len(Focused.Lines[TextCursorPosLineNumber]) or 0
 	Info['Lines'] = Focused ~= nil and Focused.Lines or nil
 
 	return Info

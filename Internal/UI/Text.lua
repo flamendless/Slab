@@ -24,6 +24,9 @@ SOFTWARE.
 
 --]]
 
+local floor = math.floor
+local insert = table.insert
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
@@ -84,7 +87,7 @@ function Text.Begin(Label, Options)
 		end
 	end
 
-	DrawCommands.Print(Label, math.floor(X + PadX * 0.5), math.floor(Y), Color, Style.Font)
+	DrawCommands.Print(Label, floor(X + PadX * 0.5), floor(Y), Color, Style.Font)
 
 	Cursor.SetItemBounds(X, Y, W + PadX, H)
 	Cursor.AdvanceY(H)
@@ -119,13 +122,13 @@ function Text.BeginFormatted(Label, Options)
 
 	local X, Y = Cursor.GetPosition()
 
-	DrawCommands.Printf(Label, math.floor(X), math.floor(Y), Width, Options.Align, Options.Color, Style.Font)
+	DrawCommands.Printf(Label, floor(X), floor(Y), Width, Options.Align, Options.Color, Style.Font)
 
-	Cursor.SetItemBounds(math.floor(X), math.floor(Y), Width, H)
+	Cursor.SetItemBounds(floor(X), floor(Y), Width, H)
 	Cursor.AdvanceY(H)
 
 	Window.ResetContentSize()
-	Window.AddItem(math.floor(X), math.floor(Y), Width, H)
+	Window.AddItem(floor(X), floor(Y), Width, H)
 
 	Stats.End(StatHandle)
 end
@@ -144,13 +147,13 @@ function Text.BeginObject(Object, Options)
 
 	local X, Y = Cursor.GetPosition()
 
-	DrawCommands.Text(Object, math.floor(X), math.floor(Y), Options.Color)
+	DrawCommands.Text(Object, floor(X), floor(Y), Options.Color)
 
-	Cursor.SetItemBounds(math.floor(X), math.floor(Y), W, H)
+	Cursor.SetItemBounds(floor(X), floor(Y), W, H)
 	Cursor.AdvanceY(Y)
 
 	Window.ResetContentSize()
-	Window.AddItem(math.floor(X), math.floor(Y), W, H)
+	Window.AddItem(floor(X), floor(Y), W, H)
 
 	Stats.End(StatHandle)
 end
@@ -192,11 +195,11 @@ function Text.GetLines(Label, Width)
 	end
 
 	if string.sub(Label, #Label, #Label) == '\n' then
-		table.insert(Lines, "")
+		insert(Lines, "")
 	end
 
 	if #Lines == 0 then
-		table.insert(Lines, "")
+		insert(Lines, "")
 	end
 
 	return Lines

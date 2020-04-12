@@ -26,6 +26,9 @@ SOFTWARE.
 
 local Utility = {}
 
+local abs = math.abs
+local remove = table.remove
+
 function Utility.MakeColor(Color)
 	local Copy = {0.0, 0.0, 0.0, 1.0}
 	if Color ~= nil then
@@ -86,7 +89,7 @@ function Utility.RGBtoHSV(R, G, B)
 	end
 
 	local Chroma = R - (G < B and G or B)
-	local H = math.abs(K + (G - B) / (6.0 * Chroma + 1e-20))
+	local H = abs(K + (G - B) / (6.0 * Chroma + 1e-20))
 	local S = Chroma / (R + 1e-20)
 	local V = R
 
@@ -106,7 +109,7 @@ end
 function Utility.Remove(Table, Value)
 	for I, V in ipairs(Table) do
 		if V == Value then
-			table.remove(Table, I)
+			remove(Table, I)
 			break
 		end
 	end

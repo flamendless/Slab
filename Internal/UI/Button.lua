@@ -24,6 +24,9 @@ SOFTWARE.
 
 --]]
 
+local floor = math.floor
+local max = math.max
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
@@ -102,8 +105,8 @@ function Button.Begin(Label, Options)
 	if not Options.Invisible then
 		DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
 		local X, Y = Cursor.GetPosition()
-		Cursor.SetX(math.floor(LabelX))
-		Cursor.SetY(math.floor(Y + (H * 0.5) - (FontHeight * 0.5)))
+		Cursor.SetX(floor(LabelX))
+		Cursor.SetY(floor(Y + (H * 0.5) - (FontHeight * 0.5)))
 		LayoutManager.Begin('Ignore', {Ignore = true})
 		Text.Begin(Label, {Color = TextColor})
 		LayoutManager.End()
@@ -140,7 +143,7 @@ function Button.BeginRadio(Label, Options)
 	if Label ~= "" then
 		local TextW, TextH = Text.GetSize(Label)
 		W = W + Cursor.PadX() + TextW
-		H = math.max(H, TextH)
+		H = max(H, TextH)
 	end
 
 	LayoutManager.AddControl(W, H)
@@ -200,7 +203,7 @@ end
 function Button.GetSize(Label)
 	local W = Style.Font:getWidth(Label)
 	local H = Style.Font:getHeight()
-	return math.max(W, MinWidth) + Pad * 2.0, H + Pad * 0.5
+	return max(W, MinWidth) + Pad * 2.0, H + Pad * 0.5
 end
 
 function Button.ClearClicked()

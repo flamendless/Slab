@@ -24,6 +24,10 @@ SOFTWARE.
 
 --]]
 
+local max = math.max
+local min = math.min
+local floor = math.floor
+
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
@@ -45,14 +49,14 @@ local ScrollInstance = nil
 
 local function GetXScrollSize(Instance)
 	if Instance ~= nil then
-		return math.max(Instance.W - (Instance.ContentW - Instance.W), 10.0)
+		return max(Instance.W - (Instance.ContentW - Instance.W), 10.0)
 	end
 	return 0.0
 end
 
 local function GetYScrollSize(Instance)
 	if Instance ~= nil then
-		return math.max(Instance.H - (Instance.ContentH - Instance.H), 10.0)
+		return max(Instance.H - (Instance.ContentH - Instance.H), 10.0)
 	end
 	return 0.0
 end
@@ -116,14 +120,14 @@ local function UpdateScrollBars(Instance, IsObstructed)
 	if not IsObstructed and Contains(Instance, X, Y) or (Instance.HoverScrollX or Instance.HoverScrollY) then
 		if WheelInstance == Instance then
 			if WheelX ~= 0.0 then
-				Instance.ScrollPosX = math.max(Instance.ScrollPosX + WheelX, 0.0)
+				Instance.ScrollPosX = max(Instance.ScrollPosX + WheelX, 0.0)
 				Instance.IsScrollingX = true
 				IsMouseReleased = true
 				WheelX = 0.0
 			end
 
 			if WheelY ~= 0.0 then
-				Instance.ScrollPosY = math.max(Instance.ScrollPosY - WheelY, 0.0)
+				Instance.ScrollPosY = max(Instance.ScrollPosY - WheelY, 0.0)
 				Instance.IsScrollingY = true
 				IsMouseReleased = true
 				WheelY = 0.0
@@ -150,43 +154,43 @@ local function UpdateScrollBars(Instance, IsObstructed)
 		if Instance.HasScrollY then
 			XSize = XSize - ScrollBarSize - ScrollPad
 		end
-		XSize = math.max(XSize, 0.0)
+		XSize = max(XSize, 0.0)
 		if ScrollInstance == Instance then
 			MenuState.RequestClose = false
 
 			if Instance.IsScrollingX then
-				Instance.ScrollPosX = math.max(Instance.ScrollPosX + DeltaX, 0.0)
+				Instance.ScrollPosX = max(Instance.ScrollPosX + DeltaX, 0.0)
 			end
 		end
-		Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
+		Instance.ScrollPosX = min(Instance.ScrollPosX, XSize)
 	end
 
 	if Instance.HasScrollY then
 		if Instance.HasScrollX then
 			YSize = YSize - ScrollBarSize - ScrollPad
 		end
-		YSize = math.max(YSize, 0.0)
+		YSize = max(YSize, 0.0)
 		if ScrollInstance == Instance then
 			MenuState.RequestClose = false
 
 			if Instance.IsScrollingY then
-				Instance.ScrollPosY = math.max(Instance.ScrollPosY + DeltaY, 0.0)
+				Instance.ScrollPosY = max(Instance.ScrollPosY + DeltaY, 0.0)
 			end
 		end
-		Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
+		Instance.ScrollPosY = min(Instance.ScrollPosY, YSize)
 	end
 
 	local XRatio, YRatio = 0.0, 0.0
 	if XSize ~= 0.0 then
-		XRatio = math.max(Instance.ScrollPosX / XSize, 0.0)
+		XRatio = max(Instance.ScrollPosX / XSize, 0.0)
 	end
 	if YSize ~= 0.0 then
-		YRatio = math.max(Instance.ScrollPosY / YSize, 0.0)
+		YRatio = max(Instance.ScrollPosY / YSize, 0.0)
 	end
 
-	local TX = math.max(Instance.ContentW - Instance.W, 0.0) * -XRatio
-	local TY = math.max(Instance.ContentH - Instance.H, 0.0) * -YRatio
-	Instance.Transform:setTransformation(math.floor(TX), math.floor(TY))
+	local TX = max(Instance.ContentW - Instance.W, 0.0) * -XRatio
+	local TY = max(Instance.ContentH - Instance.H, 0.0) * -YRatio
+	Instance.Transform:setTransformation(floor(TX), floor(TY))
 end
 
 local function DrawScrollBars(Instance)
@@ -196,8 +200,8 @@ local function DrawScrollBars(Instance)
 
 	if HotInstance ~= Instance and ScrollInstance ~= Instance then
 		local dt = love.timer.getDelta()
-		Instance.ScrollAlphaX = math.max(Instance.ScrollAlphaX - dt, 0.0)
-		Instance.ScrollAlphaY = math.max(Instance.ScrollAlphaY - dt, 0.0)
+		Instance.ScrollAlphaX = max(Instance.ScrollAlphaX - dt, 0.0)
+		Instance.ScrollAlphaY = max(Instance.ScrollAlphaY - dt, 0.0)
 	else
 		Instance.ScrollAlphaX = 1.0
 		Instance.ScrollAlphaY = 1.0
@@ -389,11 +393,11 @@ function Region.Translate(Id, X, Y)
 					XSize = XSize - ScrollPad - ScrollBarSize
 				end
 
-				XSize = math.max(XSize, 0.0)
+				XSize = max(XSize, 0.0)
 
 				Instance.ScrollPosX = (TX / ContentW) * XSize
-				Instance.ScrollPosX = math.max(Instance.ScrollPosX, 0.0)
-				Instance.ScrollPosX = math.min(Instance.ScrollPosX, XSize)
+				Instance.ScrollPosX = max(Instance.ScrollPosX, 0.0)
+				Instance.ScrollPosX = min(Instance.ScrollPosX, XSize)
 			end
 
 			if Y ~= 0.0 and Instance.HasScrollY then
@@ -403,13 +407,13 @@ function Region.Translate(Id, X, Y)
 					YSize = YSize - ScrollPad - ScrollBarSize
 				end
 
-				YSize = math.max(YSize, 0.0)
+				YSize = max(YSize, 0.0)
 
 				local ContentH = Instance.ContentH - Instance.H
 
 				Instance.ScrollPosY = (TY / ContentH) * YSize
-				Instance.ScrollPosY = math.max(Instance.ScrollPosY, 0.0)
-				Instance.ScrollPosY = math.min(Instance.ScrollPosY, YSize)
+				Instance.ScrollPosY = max(Instance.ScrollPosY, 0.0)
+				Instance.ScrollPosY = min(Instance.ScrollPosY, YSize)
 			end
 		end
 	end
@@ -451,8 +455,8 @@ function Region.AddItem(X, Y, W, H)
 	if ActiveInstance ~= nil and ActiveInstance.AutoSizeContent then
 		local NewW = X + W - ActiveInstance.X
 		local NewH = Y + H - ActiveInstance.Y
-		ActiveInstance.ContentW = math.max(ActiveInstance.ContentW, NewW)
-		ActiveInstance.ContentH = math.max(ActiveInstance.ContentH, NewH)
+		ActiveInstance.ContentW = max(ActiveInstance.ContentW, NewW)
+		ActiveInstance.ContentH = max(ActiveInstance.ContentH, NewH)
 	end
 end
 

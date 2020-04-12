@@ -24,6 +24,11 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local remove = table.remove
+local max = math.max
+local floor = math.floor
+
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
@@ -64,12 +69,12 @@ end
 local function PushToTop(Instance)
 	for I, V in ipairs(Stack) do
 		if Instance == V then
-			table.remove(Stack, I)
+			remove(Stack, I)
 			break
 		end
 	end
 
-	table.insert(Stack, 1, Instance)
+	insert(Stack, 1, Instance)
 
 	UpdateStackIndex()
 end
@@ -127,7 +132,7 @@ local function GetInstance(Id)
 		end
 	end
 	local Instance = NewInstance(Id)
-	table.insert(Instances, Instance)
+	insert(Instances, Instance)
 	return Instance
 end
 
@@ -383,7 +388,7 @@ function Window.Reset()
 	ActiveInstance.W = love.graphics.getWidth()
 	ActiveInstance.H = love.graphics.getHeight()
 	ActiveInstance.Border = 0.0
-	table.insert(PendingStack, 1, ActiveInstance)
+	insert(PendingStack, 1, ActiveInstance)
 end
 
 function Window.Begin(Id, Options)
@@ -428,7 +433,7 @@ function Window.Begin(Id, Options)
 	end
 
 	local Instance = GetInstance(Id)
-	table.insert(PendingStack, 1, Instance)
+	insert(PendingStack, 1, Instance)
 
 	if ActiveInstance ~= nil then
 		ActiveInstance.Children[Id] = Instance
@@ -458,8 +463,8 @@ function Window.Begin(Id, Options)
 
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
 	ActiveInstance.Y = ActiveInstance.TitleDeltaY + Options.Y
-	ActiveInstance.W = math.max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
-	ActiveInstance.H = math.max(ActiveInstance.SizeDeltaY + Options.H + Options.Border, Options.Border)
+	ActiveInstance.W = max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
+	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + Options.H + Options.Border, Options.Border)
 	ActiveInstance.ContentW = Options.ContentW
 	ActiveInstance.ContentH = Options.ContentH
 	ActiveInstance.BackgroundColor = Options.BgColor
@@ -491,14 +496,14 @@ function Window.Begin(Id, Options)
 		ActiveInstance.FrameNumber = CurrentFrameNumber
 
 		if ActiveInstance.StackIndex == 0 then
-			table.insert(Stack, 1, ActiveInstance)
+			insert(Stack, 1, ActiveInstance)
 			UpdateStackIndex()
 		end
 	end
 
 	if ActiveInstance.AutoSizeContent then
-		ActiveInstance.ContentW = math.max(Options.ContentW, ActiveInstance.DeltaContentW)
-		ActiveInstance.ContentH = math.max(Options.ContentH, ActiveInstance.DeltaContentH)
+		ActiveInstance.ContentW = max(Options.ContentW, ActiveInstance.DeltaContentW)
+		ActiveInstance.ContentH = max(Options.ContentH, ActiveInstance.DeltaContentH)
 	end
 
 	local OffsetY = 0.0
@@ -508,7 +513,7 @@ function Window.Begin(Id, Options)
 
 		if Options.AutoSizeWindow then
 			local TitleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2.0
-			ActiveInstance.W = math.max(ActiveInstance.W, TitleW)
+			ActiveInstance.W = max(ActiveInstance.W, TitleW)
 		end
 	end
 
@@ -530,7 +535,7 @@ function Window.Begin(Id, Options)
 
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
-		local TitleX = math.floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
+		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
 		local TitleColor = ActiveInstance.BackgroundColor
 		if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
@@ -551,7 +556,7 @@ function Window.Begin(Id, Options)
 			MouseY = MouseY,
 			IsObstructed = IsObstructed
 		})
-		DrawCommands.Print(ActiveInstance.Title, TitleX, math.floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
+		DrawCommands.Print(ActiveInstance.Title, TitleX, floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 
 		if ShowClose then
 			local CloseBgRadius = OffsetY * 0.4
@@ -621,7 +626,7 @@ function Window.End()
 		local Handle = ActiveInstance.StatHandle
 		Region.End()
 		DrawCommands.End(not ActiveInstance.IsOpen)
-		table.remove(PendingStack, 1)
+		remove(PendingStack, 1)
 
 		Cursor.SetPosition(ActiveInstance.LastCursorX, ActiveInstance.LastCursorY)
 		ActiveInstance = nil
@@ -703,11 +708,11 @@ function Window.GetBorderlessSize()
 	local W, H = 0.0, 0.0
 
 	if ActiveInstance ~= nil then
-		W = math.max(ActiveInstance.W, ActiveInstance.ContentW)
-		H = math.max(ActiveInstance.H, ActiveInstance.ContentH)
+		W = max(ActiveInstance.W, ActiveInstance.ContentW)
+		H = max(ActiveInstance.H, ActiveInstance.ContentH)
 
-		W = math.max(0.0, W - ActiveInstance.Border * 2.0)
-		H = math.max(0.0, H - ActiveInstance.Border * 2.0)
+		W = max(0.0, W - ActiveInstance.Border * 2.0)
+		H = max(0.0, H - ActiveInstance.Border * 2.0)
 	end
 
 	return W, H
@@ -744,16 +749,16 @@ function Window.AddItem(X, Y, W, H, Id)
 		ActiveInstance.LastItem = Id
 		if Region.IsActive(ActiveInstance.Id) then
 			if ActiveInstance.AutoSizeWindowW then
-				ActiveInstance.SizeDeltaX = math.max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
+				ActiveInstance.SizeDeltaX = max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
 			end
 
 			if ActiveInstance.AutoSizeWindowH then
-				ActiveInstance.SizeDeltaY = math.max(ActiveInstance.SizeDeltaY, Y + H - ActiveInstance.Y)
+				ActiveInstance.SizeDeltaY = max(ActiveInstance.SizeDeltaY, Y + H - ActiveInstance.Y)
 			end
 
 			if ActiveInstance.AutoSizeContent then
-				ActiveInstance.DeltaContentW = math.max(ActiveInstance.DeltaContentW, X + W - ActiveInstance.X)
-				ActiveInstance.DeltaContentH = math.max(ActiveInstance.DeltaContentH, Y + H - ActiveInstance.Y)
+				ActiveInstance.DeltaContentW = max(ActiveInstance.DeltaContentW, X + W - ActiveInstance.X)
+				ActiveInstance.DeltaContentH = max(ActiveInstance.DeltaContentH, Y + H - ActiveInstance.Y)
 			end
 		else
 			Region.AddItem(X, Y, W, H)
@@ -846,7 +851,7 @@ function Window.Validate()
 	for I = #Stack, 1, -1 do
 		if Stack[I].FrameNumber ~= CurrentFrameNumber then
 			Stack[I].StackIndex = 0
-			table.remove(Stack, I)
+			remove(Stack, I)
 			ShouldUpdate = true
 		end
 	end
@@ -894,7 +899,7 @@ function Window.GetInstanceIds()
 	local Result = {}
 
 	for I, V in ipairs(Instances) do
-		table.insert(Result, V.Id)
+		insert(Result, V.Id)
 	end
 
 	return Result
@@ -912,22 +917,22 @@ function Window.GetInstanceInfo(Id)
 	end
 
 	if Instance ~= nil then
-		table.insert(Result, "Title: " .. Instance.Title)
-		table.insert(Result, "X: " .. Instance.X)
-		table.insert(Result, "Y: " .. Instance.Y)
-		table.insert(Result, "W: " .. Instance.W)
-		table.insert(Result, "H: " .. Instance.H)
-		table.insert(Result, "ContentW: " .. Instance.ContentW)
-		table.insert(Result, "ContentH: " .. Instance.ContentH)
-		table.insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
-		table.insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
-		table.insert(Result, "DeltaContentW: " .. Instance.DeltaContentW)
-		table.insert(Result, "DeltaContentH: " .. Instance.DeltaContentH)
-		table.insert(Result, "Border: " .. Instance.Border)
-		table.insert(Result, "Layer: " .. Instance.Layer)
-		table.insert(Result, "Stack Index: " .. Instance.StackIndex)
-		table.insert(Result, "AutoSizeWindow: " .. tostring(Instance.AutoSizeWindow))
-		table.insert(Result, "AutoSizeContent: " .. tostring(Instance.AutoSizeContent))
+		insert(Result, "Title: " .. Instance.Title)
+		insert(Result, "X: " .. Instance.X)
+		insert(Result, "Y: " .. Instance.Y)
+		insert(Result, "W: " .. Instance.W)
+		insert(Result, "H: " .. Instance.H)
+		insert(Result, "ContentW: " .. Instance.ContentW)
+		insert(Result, "ContentH: " .. Instance.ContentH)
+		insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
+		insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
+		insert(Result, "DeltaContentW: " .. Instance.DeltaContentW)
+		insert(Result, "DeltaContentH: " .. Instance.DeltaContentH)
+		insert(Result, "Border: " .. Instance.Border)
+		insert(Result, "Layer: " .. Instance.Layer)
+		insert(Result, "Stack Index: " .. Instance.StackIndex)
+		insert(Result, "AutoSizeWindow: " .. tostring(Instance.AutoSizeWindow))
+		insert(Result, "AutoSizeContent: " .. tostring(Instance.AutoSizeContent))
 	end
 
 	return Result

@@ -24,6 +24,10 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local remove = table.remove
+local max = math.max
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
@@ -63,8 +67,8 @@ local function ConstrainPosition(X, Y, W, H)
 		ResultX = WinX - W
 	end
 
-	ResultX = math.max(ResultX, 0.0)
-	ResultY = math.max(ResultY, 0.0)
+	ResultX = max(ResultX, 0.0)
+	ResultY = max(ResultY, 0.0)
 
 	return ResultX, ResultY
 end
@@ -156,7 +160,7 @@ function Menu.BeginMenu(Label)
 
 	if Result then
 		local CursorX, CursorY = Cursor.GetPosition()
-		table.insert(CursorStack, 1, {X = CursorX, Y = CursorY})
+		insert(CursorStack, 1, {X = CursorX, Y = CursorY})
 
 		BeginWindow(Id, MenuX, MenuY)
 	end
@@ -217,7 +221,7 @@ function Menu.EndMenu()
 	if #CursorStack > 0 then
 		local Top = CursorStack[1]
 		Cursor.SetPosition(Top.X, Top.Y)
-		table.remove(CursorStack, 1)
+		remove(CursorStack, 1)
 	end
 end
 
@@ -254,7 +258,7 @@ function Menu.BeginContextMenu(Options)
 	if MenuState.IsOpened and OpenedContextMenu ~= nil then
 		if OpenedContextMenu.Id == Id then
 			local CursorX, CursorY = Cursor.GetPosition()
-			table.insert(CursorStack, 1, {X = CursorX, Y = CursorY})
+			insert(CursorStack, 1, {X = CursorX, Y = CursorY})
 			BeginWindow(OpenedContextMenu.Id, OpenedContextMenu.X, OpenedContextMenu.Y)
 			return true
 		end

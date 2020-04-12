@@ -24,6 +24,12 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+local remove = table.remove
+local min = math.min
+local max = math.max
+local floor = math.floor
+
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
@@ -81,11 +87,11 @@ local function PruneResults(Items, DirectoryOnly)
 	for I, V in ipairs(Items) do
 		if FileSystem.IsDirectory(V) then
 			if DirectoryOnly then
-				table.insert(Result, V)
+				insert(Result, V)
 			end
 		else
 			if not DirectoryOnly then
-				table.insert(Result, V)
+				insert(Result, V)
 			end
 		end
 	end
@@ -126,25 +132,25 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 					Utility.Remove(ActiveInstance.Selected, Index)
 					Utility.Remove(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
 				else
-					table.insert(ActiveInstance.Selected, Index)
-					table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
+					insert(ActiveInstance.Selected, Index)
+					insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. Label)
 				end
 			elseif Keyboard.IsDown('lshift') or Keyboard.IsDown('rshift') then
 				if #ActiveInstance.Selected > 0 then
 					Set = false
 					local Anchor = ActiveInstance.Selected[#ActiveInstance.Selected]
-					local Min = math.min(Anchor, Index)
-					local Max = math.max(Anchor, Index)
+					local Min = min(Anchor, Index)
+					local Max = max(Anchor, Index)
 
 					ActiveInstance.Selected = {}
 					ActiveInstance.Return = {}
 					for I = Min, Max, 1 do
-						table.insert(ActiveInstance.Selected, I)
+						insert(ActiveInstance.Selected, I)
 						if I > #ActiveInstance.Directories then
 							I = I - #ActiveInstance.Directories
-							table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Files[I])
+							insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Files[I])
 						else
-							table.insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Directories[I])
+							insert(ActiveInstance.Return, ActiveInstance.Directory .. "/" .. ActiveInstance.Directories[I])
 						end
 					end
 				end
@@ -215,7 +221,7 @@ local function FileDialogExplorer(Instance, Root)
 						V = string.sub(V, 2)
 					end
 					local Item = AddDirectoryItem(Path .. FileSystem.GetBaseName(V))
-					table.insert(Root.Children, Item)
+					insert(Root.Children, Item)
 				end
 			end
 
@@ -298,8 +304,8 @@ function Dialog.Begin(Id, Options)
 	end
 
 	Options = Options == nil and {} or Options
-	Options.X = math.floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
-	Options.Y = math.floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
+	Options.X = floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
+	Options.Y = floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
 	Options.Layer = 'Dialog'
 	Options.AllowFocus = false
 	Options.AllowMove = false
@@ -308,7 +314,7 @@ function Dialog.Begin(Id, Options)
 	Window.Begin(Instance.Id, Options)
 
 	ActiveInstance = Instance
-	table.insert(InstanceStack, 1, ActiveInstance)
+	insert(InstanceStack, 1, ActiveInstance)
 
 	return true
 end
@@ -318,7 +324,7 @@ function Dialog.End()
 	Window.End()
 
 	ActiveInstance = nil
-	table.remove(InstanceStack, 1)
+	remove(InstanceStack, 1)
 
 	if #InstanceStack > 0 then
 		ActiveInstance = InstanceStack[1]
@@ -329,7 +335,7 @@ function Dialog.Open(Id)
 	local Instance = GetInstance(Id)
 	if not Instance.IsOpen then
 		Instance.IsOpen = true
-		table.insert(Stack, 1, Instance)
+		insert(Stack, 1, Instance)
 		Window.SetStackLock(Instance.Id)
 		Window.PushToTop(Instance.Id)
 	end
@@ -338,7 +344,7 @@ end
 function Dialog.Close()
 	if ActiveInstance ~= nil and ActiveInstance.IsOpen then
 		ActiveInstance.IsOpen = false
-		table.remove(Stack, 1)
+		remove(Stack, 1)
 		Window.SetStackLock(nil)
 
 		if #Stack > 0 then

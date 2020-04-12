@@ -26,7 +26,10 @@ SOFTWARE.
 
 local Cursor = {}
 
-local State = 
+local min = math.min
+local max = math.max
+
+local State =
 {
 	X = 0.0,
 	Y = 0.0,
@@ -153,8 +156,8 @@ function Cursor.SetItemBounds(X, Y, W, H)
 	if State.LineY == 0.0 then
 		State.LineY = Y
 	end
-	State.LineY = math.min(State.LineY, Y)
-	State.LineH = math.max(State.LineH, H)
+	State.LineY = min(State.LineY, Y)
+	State.LineH = max(State.LineH, H)
 end
 
 function Cursor.GetItemBounds()

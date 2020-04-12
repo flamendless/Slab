@@ -26,6 +26,12 @@ SOFTWARE.
 
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 
+local insert = table.insert
+local remove = table.remove
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+
 local DrawCommands = {}
 
 local LayerTable = {}
@@ -70,17 +76,17 @@ local StatsCategory = 'Slab Draw'
 
 local function AddArc(Verts, CenterX, CenterY, Radius, Angle1, Angle2, Segments, X, Y)
 	if Radius == 0 then
-		table.insert(Verts, CenterX + X)
-		table.insert(Verts, CenterY + Y)
+		insert(Verts, CenterX + X)
+		insert(Verts, CenterY + Y)
 		return
 	end
 
 	local Step = (Angle2 - Angle1) / Segments
 
 	for Theta = Angle1, Angle2, Step do
-		local Radians = math.rad(Theta)
-		table.insert(Verts, math.sin(Radians) * Radius + CenterX + X)
-		table.insert(Verts, math.cos(Radians) * Radius + CenterY + Y)
+		local Radians = rad(Theta)
+		insert(Verts, sin(Radians) * Radius + CenterX + X)
+		insert(Verts, cos(Radians) * Radius + CenterY + Y)
 	end
 end
 
@@ -93,7 +99,7 @@ local function GetLayerDebugInfo(Layer)
 	for K, Channel in pairs(Layer) do
 		local Collection = {}
 		Collection['Batch Count'] = #Channel
-		table.insert(Channels, Collection)
+		insert(Channels, Collection)
 	end
 
 	Result['Channels'] = Channels
@@ -113,20 +119,20 @@ end
 local function GetTriangleVertices(X, Y, Radius, Rotation)
 	local Result = {}
 
-	local Radians = math.rad(Rotation)
+	local Radians = rad(Rotation)
 
 	local X1, Y1 = 0, -Radius
 	local X2, Y2 = -Radius, Radius
 	local X3, Y3 = Radius, Radius
 
-	local PX1 = X1 * math.cos(Radians) - Y1 * math.sin(Radians)
-	local PY1 = Y1 * math.cos(Radians) + X1 * math.sin(Radians)
+	local PX1 = X1 * cos(Radians) - Y1 * sin(Radians)
+	local PY1 = Y1 * cos(Radians) + X1 * sin(Radians)
 
-	local PX2 = X2 * math.cos(Radians) - Y2 * math.sin(Radians)
-	local PY2 = Y2 * math.cos(Radians) + X2 * math.sin(Radians)
+	local PX2 = X2 * cos(Radians) - Y2 * sin(Radians)
+	local PY2 = Y2 * cos(Radians) + X2 * sin(Radians)
 
-	local PX3 = X3 * math.cos(Radians) - Y3 * math.sin(Radians)
-	local PY3 = Y3 * math.cos(Radians) + X3 * math.sin(Radians)
+	local PX3 = X3 * cos(Radians) - Y3 * sin(Radians)
+	local PY3 = Y3 * cos(Radians) + X3 * sin(Radians)
 
 	Result =
 	{
@@ -344,7 +350,7 @@ local function DrawLayer(Layer, Name)
 
 	local Keys = {}
 	for K, Channel in pairs(Layer.Channels) do
-		table.insert(Keys, K)
+		insert(Keys, K)
 	end
 
 	table.sort(Keys)
@@ -389,8 +395,8 @@ function DrawCommands.Begin(Options)
 
 	ActiveBatch = {}
 	ActiveBatch.Elements = {}
-	table.insert(Channel, ActiveBatch)
-	table.insert(PendingBatches, 1, ActiveBatch)
+	insert(Channel, ActiveBatch)
+	insert(PendingBatches, 1, ActiveBatch)
 end
 
 function DrawCommands.End(ClearElements)
@@ -402,7 +408,7 @@ function DrawCommands.End(ClearElements)
 		end
 
 		love.graphics.setScissor()
-		table.remove(PendingBatches, 1)
+		remove(PendingBatches, 1)
 
 		ActiveBatch = nil
 		if #PendingBatches > 0 then
@@ -457,7 +463,7 @@ function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius, Segmen
 		Item.Height = Height
 		Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
 		Item.Radius = Radius and Radius or 0.0
-		table.insert(ActiveBatch.Elements, Item)
+		insert(ActiveBatch.Elements, Item)
 	end
 end
 
@@ -471,7 +477,7 @@ function DrawCommands.Triangle(Mode, X, Y, Radius, Rotation, Color)
 	Item.Radius = Radius
 	Item.Rotation = Rotation
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Print(Text, X, Y, Color, Font)
@@ -483,7 +489,7 @@ function DrawCommands.Print(Text, X, Y, Color, Font)
 	Item.Y = Y
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
 	Item.Font = Font
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Printf(Text, X, Y, W, Align, Color, Font)
@@ -497,7 +503,7 @@ function DrawCommands.Printf(Text, X, Y, W, Align, Color, Font)
 	Item.Align = Align and Align or 'left'
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
 	Item.Font = Font
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Scissor(X, Y, W, H)
@@ -514,7 +520,7 @@ function DrawCommands.Scissor(X, Y, W, H)
 	Item.Y = Y
 	Item.W = W
 	Item.H = H
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.IntersectScissor(X, Y, W, H)
@@ -525,21 +531,21 @@ function DrawCommands.IntersectScissor(X, Y, W, H)
 	Item.Y = Y and Y or 0.0
 	Item.W = W and W or 0.0
 	Item.H = H and H or 0.0
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.TransformPush()
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.TransformPush
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.TransformPop()
 	AssertActiveBatch()
 	local Item = {}
 	Item.Type = Types.TransformPop
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.ApplyTransform(Transform)
@@ -547,7 +553,7 @@ function DrawCommands.ApplyTransform(Transform)
 	local Item = {}
 	Item.Type = Types.ApplyTransform
 	Item.Transform = Transform
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Check(X, Y, Radius, Color)
@@ -558,7 +564,7 @@ function DrawCommands.Check(X, Y, Radius, Color)
 	Item.Y = Y
 	Item.Radius = Radius
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Line(X1, Y1, X2, Y2, Width, Color)
@@ -571,7 +577,7 @@ function DrawCommands.Line(X1, Y1, X2, Y2, Width, Color)
 	Item.Y2 = Y2
 	Item.Width = Width
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Cross(X, Y, Radius, Color)
@@ -582,7 +588,7 @@ function DrawCommands.Cross(X, Y, Radius, Color)
 	Item.Y = Y
 	Item.Radius = Radius
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Image(X, Y, Image, Rotation, ScaleX, ScaleY, Color)
@@ -596,7 +602,7 @@ function DrawCommands.Image(X, Y, Image, Rotation, ScaleX, ScaleY, Color)
 	Item.ScaleX = ScaleX
 	Item.ScaleY = ScaleY
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, ScaleY, Color)
@@ -607,7 +613,7 @@ function DrawCommands.SubImage(X, Y, Image, SX, SY, SW, SH, Rotation, ScaleX, Sc
 	Item.Image = Image
 	Item.Quad = love.graphics.newQuad(SX, SY, SW, SH, Image:getWidth(), Image:getHeight())
 	Item.Color = Color and Color or {1.0, 1.0, 1.0, 1.0}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Circle(Mode, X, Y, Radius, Color, Segments)
@@ -620,7 +626,7 @@ function DrawCommands.Circle(Mode, X, Y, Radius, Color, Segments)
 	Item.Radius = Radius
 	Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
 	Item.Segments = Segments and Segments or 24
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.DrawCanvas(Canvas, X, Y)
@@ -630,7 +636,7 @@ function DrawCommands.DrawCanvas(Canvas, X, Y)
 	Item.Canvas = Canvas
 	Item.X = X
 	Item.Y = Y
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Mesh(Mesh, X, Y)
@@ -640,7 +646,7 @@ function DrawCommands.Mesh(Mesh, X, Y)
 	Item.Mesh = Mesh
 	Item.X = X
 	Item.Y = Y
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Text(Text, X, Y)
@@ -651,7 +657,7 @@ function DrawCommands.Text(Text, X, Y)
 	Item.X = X
 	Item.Y = Y
 	Item.Color = {0, 0, 0, 1}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Curve(Points, Color)
@@ -660,7 +666,7 @@ function DrawCommands.Curve(Points, Color)
 	Item.Type = Types.Curve
 	Item.Points = Points
 	Item.Color = Color ~= nil and Color or {0, 0, 0, 1}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Polygon(Mode, Points, Color)
@@ -670,7 +676,7 @@ function DrawCommands.Polygon(Mode, Points, Color)
 	Item.Mode = Mode
 	Item.Points = Points
 	Item.Color = Color ~= nil and Color or {0, 0, 0, 1}
-	table.insert(ActiveBatch.Elements, Item)
+	insert(ActiveBatch.Elements, Item)
 end
 
 function DrawCommands.Execute()

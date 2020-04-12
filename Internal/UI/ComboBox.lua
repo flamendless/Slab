@@ -24,6 +24,9 @@ SOFTWARE.
 
 --]]
 
+local min = math.min
+local max = math.max
+
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
@@ -87,7 +90,7 @@ function ComboBox.Begin(Id, Options)
 	Instance.Y = Y
 	Instance.W = W
 	Instance.H = H
-	Instance.WinH = math.min(Instance.WinH, Options.WinH)
+	Instance.WinH = min(Instance.WinH, Options.WinH)
 	Instance.StatHandle = StatHandle
 
 	local MouseX, MouseY = Window.GetMousePosition()
@@ -116,7 +119,7 @@ function ComboBox.Begin(Id, Options)
 		ReadOnly = true,
 		Text = Options.Selected,
 		Align = 'left',
-		W = math.max(W - DropDownW, DropDownW),
+		W = max(W - DropDownW, DropDownW),
 		H = H,
 		BgColor = InputBgColor,
 		Rounding = InputRounding
@@ -146,7 +149,7 @@ function ComboBox.Begin(Id, Options)
 		{
 			X = WinX - 1.0,
 			Y = WinY + H,
-			W = math.max(W, Instance.WinW),
+			W = max(W, Instance.WinW),
 			H = Instance.WinH,
 			AllowResize = false,
 			AutoSizeWindow = false,
@@ -172,7 +175,7 @@ function ComboBox.End()
 		Y, H = Active.Y, Active.H
 		local ContentW, ContentH = Window.GetContentSize()
 		Active.WinH = ContentH
-		Active.WinW = math.max(ContentW, Active.W)
+		Active.WinW = max(ContentW, Active.W)
 		StatHandle = Active.StatHandle
 		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
 			Active.IsOpen = false
