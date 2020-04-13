@@ -131,15 +131,6 @@ if FFI.os == "Windows" then
 	end
 else
 	FFI.cdef[[
-		struct dirent {
-			uint64_t	d_ino;
-			uint64_t	d_off;
-			uint16_t	d_reclen;
-			uint16_t	d_namlen;
-			uint8_t		d_type;
-			char		d_name[1024];
-		};
-
 		typedef struct DIR DIR;
 
 		DIR* opendir(const char* name);
@@ -148,10 +139,27 @@ else
 
 	if FFI.os == "OSX" then
 		FFI.cdef[[
+			struct dirent {
+				uint64_t	d_ino;
+				uint64_t	d_off;
+				uint16_t	d_reclen;
+				uint16_t	d_namlen;
+				uint8_t		d_type;
+				char		d_name[1024];
+			};
+
 			struct dirent* readdir(DIR* dirp) asm("readdir$INODE64");
 		]]
 	else
 		FFI.cdef[[
+			struct dirent {
+				uint64_t		d_ino;
+				int64_t			d_off;
+				unsigned short	d_reclen;
+				unsigned char	d_type;
+				char			d_name[256];
+			};
+
 			struct dirent* readdir(DIR* dirp) asm("readdir64");
 		]]
 	end
