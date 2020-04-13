@@ -2,9 +2,8 @@ v0.6.3 RELEASE
 ==========
 [FileSystem]: Test file system on Linux.
 [FileSystem]: Investigate crash when selecting an existing file in Save Dialog.
-[Style]: Update style documentation for Close button.
-[Wiki]: Update Wiki with IsOpen documentation for Window options.
 [Wiki]: Add Scroll section with SetScrollSpeed/GetScrollSpeed documentation.
+[Wiki]: Include gif of new close button support.
 
 v0.7.0 RELEASE
 ==========
