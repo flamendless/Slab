@@ -1359,38 +1359,7 @@ end
 	Return: [String] The name of the button that was clicked. If none was clicked, an emtpy string is returned.
 --]]
 function Slab.MessageBox(Title, Message, Options)
-	Options = Options == nil and {} or Options
-	Options.Buttons = Options.Buttons == nil and {"OK"} or Options.Buttons
-
-	local Result = ""
-
-	Slab.OpenDialog('MessageBox')
-	if Slab.BeginDialog('MessageBox', {Title = Title, Border = 12}) then
-		Slab.BeginLayout('MessageBox_Message_Layout', {AlignX = 'center', AlignY = 'center'})
-		local TextW = math.min(Slab.GetTextWidth(Message), love.graphics.getWidth() * 0.80)
-		Slab.Textf(Message, {Align = 'center', W = TextW})
-		Slab.EndLayout()
-
-		Slab.NewLine()
-		Slab.NewLine()
-
-		Slab.BeginLayout('MessageBox_Buttons_Layout', {AlignX = 'right', AlignY = 'bottom'})
-		for I, V in ipairs(Options.Buttons) do
-			if Button.Begin(V) then
-				Result = V
-			end
-			Slab.SameLine()
-		end
-		Slab.EndLayout()
-
-		if Result ~= "" then
-			Slab.CloseDialog()
-		end
-
-		Slab.EndDialog()
-	end
-
-	return Result
+	return Dialog.MessageBox(Title, Message, Options)
 end
 
 --[[
