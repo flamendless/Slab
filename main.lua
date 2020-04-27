@@ -29,7 +29,7 @@ local SlabTest = require 'SlabTest'
 
 function love.load(args)
 	love.graphics.setBackgroundColor(0.4, 0.88, 1.0)
-	Slab.Initialize(args, true)
+	Slab.Initialize(args, true) --second argument is for if we should use persistent data
 end
 
 function love.update(dt)
@@ -42,5 +42,6 @@ function love.draw()
 end
 
 function love.quit()
+	--Slab.Quit is only needed if you set the second argument of `Slab.Initialize` to `true`
 	Slab.Quit()
 end
