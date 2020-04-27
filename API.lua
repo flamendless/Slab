@@ -25,8 +25,14 @@ SOFTWARE.
 --]]
 
 if SLAB_PATH == nil then
-	SLAB_PATH = (...):match("(.-)[^%.]+$") 
+	SLAB_PATH = (...):match("(.-)[^%.]+$")
 end
+
+SLAB_SAVE_DATA = false
+local serializer
+local data
+local save_data
+local serialized_file
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
@@ -230,10 +236,22 @@ end
 
 	Return: None.
 --]]
-function Slab.Initialize(args)
+function Slab.Initialize(args, should_save)
 	Style.API.Initialize()
+
 	love.handlers['textinput'] = TextInput
 	love.handlers['wheelmoved'] = WheelMoved
+
+	if should_save then
+		SLAB_SAVE_DATA = true
+		serializer = require("serializer")
+		data = {}
+		save_data = {}
+		if love.filesystem.getInfo("data.lua") then
+			serialized_file = love.filesystem.read("data.lua")
+			data = serializer.loadBinary(serialized_file)
+		end
+	end
 end
 
 --[[
@@ -402,7 +420,17 @@ end
 	Return: None
 --]]
 function Slab.BeginWindow(Id, Options)
-	Window.Begin(Id, Options)
+	if SLAB_SAVE_DATA then
+		if data[Id] then
+			Options = data[Id]
+		end
+	end
+
+	local ActiveInstance = Window.Begin(Id, Options)
+
+	if SLAB_SAVE_DATA then
+		save_data[Id] = ActiveInstance
+	end
 end
 
 --[[
@@ -415,6 +443,13 @@ end
 --]]
 function Slab.EndWindow()
 	Window.End()
+end
+
+function Slab.Quit()
+	if SLAB_SAVE_DATA then
+		local serialized_data = serializer.saveBinary(save_data)
+		love.filesystem.write("data.lua", serialized_data)
+	end
 end
 
 --[[
@@ -1074,10 +1109,10 @@ end
 		SubY: [Number] The Y-coordinate used inside the given image.
 		SubW: [Number] The width used inside the given image.
 		SubH: [Number] The height used insided the given image.
-		WrapX: [String] The horizontal wrapping mode for this image. The available options are 'clamp', 'repeat', 
+		WrapX: [String] The horizontal wrapping mode for this image. The available options are 'clamp', 'repeat',
 			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
-		WrapY: [String] The vertical wrapping mode for this image. The available options are 'clamp', 'repeat', 
+		WrapY: [String] The vertical wrapping mode for this image. The available options are 'clamp', 'repeat',
 			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
 
@@ -1515,7 +1550,7 @@ end
 --[[
 	GetMousePositionWindow
 
-	Retrieves the current mouse position within the current window. This position will include any transformations 
+	Retrieves the current mouse position within the current window. This position will include any transformations
 	added to the window such as scrolling.
 
 	Return: [Number], [Number] The X and Y coordinates of the mouse position within the window.
@@ -1887,7 +1922,7 @@ end
 
 	Id: [String] The Id of this layout.
 	Options: [Table] List of options that control how this layout behaves.
-		AlignX: [String] Defines how the controls should be positioned horizontally in the window. The available options are 
+		AlignX: [String] Defines how the controls should be positioned horizontally in the window. The available options are
 			'left', 'center', or 'right'. The default option is 'left'.
 		AlignY: [String] Defines how the controls should be positioned vertically in the window. The available options are
 			'top', 'center', or 'bottom'. The default option is 'top'. The top is determined by the current cursor position.

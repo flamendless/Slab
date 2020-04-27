@@ -29,7 +29,7 @@ local SlabTest = require 'SlabTest'
 
 function love.load(args)
 	love.graphics.setBackgroundColor(0.4, 0.88, 1.0)
-	Slab.Initialize(args)
+	Slab.Initialize(args, true)
 end
 
 function love.update(dt)
@@ -39,4 +39,8 @@ end
 
 function love.draw()
 	Slab.Draw()
+end
+
+function love.quit()
+	Slab.Quit()
 end

@@ -565,6 +565,10 @@ function Window.Begin(Id, Options)
 		ActiveInstance.DeltaContentW = 0.0
 		ActiveInstance.DeltaContentH = 0.0
 	end
+
+	if SLAB_SAVE_DATA then
+		return ActiveInstance
+	end
 end
 
 function Window.End()
