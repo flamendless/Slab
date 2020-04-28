@@ -62,20 +62,24 @@ string.decode = function(self, d)
 end
 
 local serializer = {}
+local floor = math.floor
+local byte = string.byte
+local concat = table.concat
+local rshift = bit.rshift
 
 function serializer.packNumber(n)
 	n = n + 1
 	local o = ""
 	while n > 0 do
 		o = o .. string_char(n % 256)
-		n = math.floor(n / 256)
+		n = floor(n / 256)
 	end
 	return o
 end
 function serializer.unpackNumber(p, l)
 	local n = 0
 	for i = 1, l do
-		n = n + string.byte(serializer._s:sub(p + i - 1)) * 256 ^ (i-1)
+		n = n + byte(serializer._s:sub(p + i - 1)) * 256 ^ (i-1)
 	end
 	return n - 1
 end
@@ -83,7 +87,7 @@ end
 function serializer.saveBinary(t)
 	serializer.concatBuffer = { }
 	serializer.saveBinary_(t)
-	return table.concat(serializer.concatBuffer)
+	return concat(serializer.concatBuffer)
 end
 
 function serializer.saveBinary_(t)
@@ -127,7 +131,7 @@ function serializer.saveBinary_(t)
 				indexL = ""
 				lT = (d == true and 1 or d == false and 2 or d == nil and 0)
 			end
-			
+
 			--value (and index combined)
 			local typ = type(s)
 			if typ == "number" then
@@ -159,11 +163,11 @@ function serializer.loadBinary_(i)
 	local t = { }
 	if serializer._s:sub(i-1, i-1) == "A" then
 		while true do
-			local b = string.byte(serializer._s:sub(i, i))
+			local b = byte(serializer._s:sub(i, i))
 			if not b then
 				return t, #serializer._s
 			end
-			local l, typ = b % 4, bit.rshift(b, 2) % 4
+			local l, typ = b % 4, rshift(b, 2) % 4
 			if typ == 0 then
 				local ni = i+1+l+serializer.unpackNumber(i+1, l+1)
 				t[#t+1] = tonumber(serializer._s:sub(i+2+l, ni))
@@ -191,16 +195,16 @@ function serializer.loadBinary_(i)
 		end
 	else
 		while true do
-			local b = string.byte(serializer._s:sub(i, i))
+			local b = byte(serializer._s:sub(i, i))
 			if not b then
 				return t, #serializer._s
 			end
-			local l, typ, lI, typI = b % 4, bit.rshift(b, 2) % 4, bit.rshift(b, 4) % 4, bit.rshift(b, 6) % 4
-			
+			local l, typ, lI, typI = b % 4, rshift(b, 2) % 4, rshift(b, 4) % 4, rshift(b, 6) % 4
+
 			if typ == 3 and l == 1 then
 				return t, i+1
 			end
-			
+
 			--index
 			local index
 			if typI == 0 then
@@ -220,7 +224,7 @@ function serializer.loadBinary_(i)
 					index = nil
 				end
 			end
-			
+
 			--value
 			if typ == 0 then
 				local ni = i+1+l+serializer.unpackNumber(i+1, l+1)
