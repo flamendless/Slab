@@ -1,6 +1,5 @@
 v0.6.4
 ==========
-[API]: Update version number.
 [Issues]: Address #16.
 [Issues]: Address #17.
 [Issues]: Address #19.
