@@ -207,4 +207,13 @@ function Cursor.PadY()
 	return State.PadY
 end
 
+function Cursor.Indent(Width)
+	State.AnchorX = State.AnchorX + Width
+	State.X = State.AnchorX
+end
+
+function Cursor.Unindent(Width)
+	Cursor.Indent(-Width)
+end
+
 return Cursor

@@ -690,6 +690,7 @@ local DrawCursor_NewLines = 1
 local DrawCursor_SameLinePad = 4.0
 local DrawCursor_X = nil
 local DrawCursor_Y = nil
+local DrawCursor_Indent = 14
 
 local function DrawCursor()
 	Slab.Textf(
@@ -765,6 +766,39 @@ local function DrawCursor()
 
 	Slab.SetCursorPos(DrawCursor_X, DrawCursor_Y + 30.0)
 	Slab.Text("Use the input fields to move this text.")
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"There are also API functions to indent or unindent the anchored X position of the cursor. The function takes in a " ..
+		"number which represents how far to advance/retreat in pixels from the current anchored position. If no number is " ..
+		"given, then the default value is used which is defined by the Indent property located in the Style table. Below " ..
+		"are examples of how the Indent/Unindent functions can be used and while the example mainly uses Text controls, these " ..
+		"functions can be applied to any controls.")
+
+	Slab.NewLine()
+
+	Slab.Text("Line 1")
+	Slab.Text("Line 2")
+	Slab.Indent()
+	Slab.Text("Indented Line 1")
+	Slab.Text("Indented Line 2")
+	Slab.Indent()
+	Slab.Text("Indented Line 3")
+	Slab.Unindent()
+	Slab.Text("Unindented Line 1")
+	Slab.Text("Unindented Line 2")
+	Slab.Unindent()
+	Slab.Text("Unindented Line 3")
+
+	Slab.NewLine()
+	Slab.Indent(DrawCursor_Indent)
+	Slab.Text("Indent:")
+	Slab.SameLine()
+	if Slab.Input('DrawCursor_Indent', {Text = tostring(DrawCursor_Indent), NumbersOnly = true, ReturnOnText = false}) then
+		DrawCursor_Indent = Slab.GetInputNumber()
+	end
 end
 
 local DrawListBox_Basic_Selected = 1

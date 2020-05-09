@@ -1180,6 +1180,38 @@ function Slab.GetCursorPos(Options)
 end
 
 --[[
+	Indent
+
+	Advances the anchored X position of the cursor. All subsequent lines will begin at the new cursor position. This function
+	has no effect when columns are present.
+
+	Width: [Number] How far in pixels to advance the cursor. If nil, then the default value identified by the 'Indent'
+		property in the current style is used.
+
+	Return: None.
+--]]
+function Slab.Indent(Width)
+	Width = Width == nil and Style.Indent or Width
+	Cursor.Indent(Width)
+end
+
+--[[
+	Unindent
+
+	Retreats the anchored X position of the cursor. All subsequent lines will begin at the new cursor position. This function
+	has no effect when columns are present.
+
+	Width: [Number] How far in pixels to retreat the cursor. If nil, then the default value identified by the 'Indent'
+		property in the current style is used.
+
+	Return: None.
+--]]
+function Slab.Unindent(Width)
+	Width = Width == nil and Style.Indent or Width
+	Cursor.Unindent(Width)
+end
+
+--[[
 	Properties
 
 	Iterates through the table's key-value pairs and adds them to the active window. This currently only does
