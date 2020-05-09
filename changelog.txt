@@ -1,9 +1,9 @@
 v0.6.4
 ==========
-[Issues]: Address #16.
 [Issues]: Address #17.
 [Issues]: Address #19.
 [Slab]: Store settings such as window positions and style.
+[Window]: Documentation for Issue #16.
 
 v0.7.0 RELEASE
 ==========

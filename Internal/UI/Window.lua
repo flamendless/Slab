@@ -619,6 +619,8 @@ function Window.Begin(Id, Options)
 		ActiveInstance.DeltaContentW = 0.0
 		ActiveInstance.DeltaContentH = 0.0
 	end
+
+	return ActiveInstance.IsOpen
 end
 
 function Window.End()
