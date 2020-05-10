@@ -2,7 +2,6 @@ v0.6.4
 ==========
 [Documentation]: Cursor Indent/Unindent documentation. Provide examples.
 [Documentation]: Window return value documentation. Update IsOpen example.
-[Issues]: Address #19.
 [Slab]: Store settings such as window positions and style.
 
 v0.7.0 RELEASE
