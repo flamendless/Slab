@@ -155,7 +155,8 @@ function ComboBox.Begin(Id, Options)
 			AutoSizeWindow = false,
 			AllowFocus = false,
 			Layer = Window.GetLayer(),
-			AutoSizeContent = true
+			AutoSizeContent = true,
+			NoSavedSettings = true
 		})
 		Active = Instance
 	else

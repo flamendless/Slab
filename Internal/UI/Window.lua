@@ -118,6 +118,7 @@ local function NewInstance(Id)
 	Instance.StatHandle = nil
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
+	Instance.NoSavedSettings = false
 	return Instance
 end
 
@@ -388,6 +389,7 @@ function Window.Reset()
 	ActiveInstance.W = love.graphics.getWidth()
 	ActiveInstance.H = love.graphics.getHeight()
 	ActiveInstance.Border = 0.0
+	ActiveInstance.NoSavedSettings = true
 	insert(PendingStack, 1, ActiveInstance)
 end
 
@@ -421,6 +423,7 @@ function Window.Begin(Id, Options)
 	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
+	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -484,6 +487,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.HasResized = false
 	ActiveInstance.CanObstruct = Options.CanObstruct
 	ActiveInstance.StatHandle = StatHandle
+	ActiveInstance.NoSavedSettings = Options.NoSavedSettings
 
 	local ShowClose = false
 	if Options.IsOpen ~= nil and type(Options.IsOpen) == 'boolean' then
@@ -960,6 +964,33 @@ function Window.IsAutoSize()
 	end
 
 	return false
+end
+
+function Window.Save(Table)
+	if Table ~= nil then
+		for I, V in ipairs(Instances) do
+			if not V.NoSavedSettings then
+				Table[V.Id] = {
+					X = V.TitleDeltaX,
+					Y = V.TitleDeltaY,
+					W = V.SizeDeltaX,
+					H = V.SizeDeltaY
+				}
+			end
+		end
+	end
+end
+
+function Window.Load(Table)
+	if Table ~= nil then
+		for K, V in pairs(Table) do
+			local Instance = GetInstance(K)
+			Instance.TitleDeltaX = V.X
+			Instance.TitleDeltaY = V.Y
+			Instance.SizeDeltaX = V.W
+			Instance.SizeDeltaY = V.H
+		end
+	end
 end
 
 return Window

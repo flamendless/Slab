@@ -69,7 +69,8 @@ function MenuBar.Begin(IsMainMenuBar)
 		AutoSizeWindow = false,
 		AutoSizeContent = false,
 		Layer = IsMainMenuBar and 'MainMenuBar' or nil,
-		Rounding = 0.0
+		Rounding = 0.0,
+		NoSavedSettings = true
 	})
 
 	Cursor.AdvanceX(4.0)

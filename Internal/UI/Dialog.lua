@@ -310,6 +310,7 @@ function Dialog.Begin(Id, Options)
 	Options.AllowFocus = false
 	Options.AllowMove = false
 	Options.AutoSizeWindow = Options.AutoSizeWindow == nil and true or Options.AutoSizeWindow
+	Options.NoSavedSettings = true
 
 	Window.Begin(Instance.Id, Options)
 

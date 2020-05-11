@@ -32,6 +32,7 @@ local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
 local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
+local Config = require(SLAB_PATH .. '.Internal.Core.Config')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
@@ -72,6 +73,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		GetLoveVersion
 		Update
 		Draw
+		SetINIStatePath
+		GetINIStatePath
 
 		Style:
 			GetStyle
@@ -129,6 +132,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			NewLine
 			SetCursorPos
 			GetCursorPos
+			Indent
+			Unindent
 
 		Properties
 
@@ -208,6 +213,29 @@ local Version_Revision = 4
 local FrameNumber = 0
 local FrameStatHandle = nil
 
+-- The path to save the UI state to a file. This will default to the base source directory.
+local INIStatePath = love.filesystem.getSourceBaseDirectory() .. "/Slab.ini"
+local QuitFn = nil
+
+local function LoadState()
+	if INIStatePath ~= nil then
+		local Result, Error = Config.LoadFile(INIStatePath)
+		if Result ~= nil then
+			Window.Load(Result)
+		else
+			print("Failed to load INI file '" .. INIStatePath .. "': " .. Error)
+		end
+	end
+end
+
+local function SaveState()
+	if INIStatePath ~= nil then
+		local Table = {}
+		Window.Save(Table)
+		Config.Save(INIStatePath, Table)
+	end
+end
+
 local function TextInput(Ch)
 	Input.Text(Ch)
 
@@ -221,6 +249,14 @@ local function WheelMoved(X, Y)
 
 	if love.wheelmoved ~= nil then
 		love.wheelmoved(X, Y)
+	end
+end
+
+local function OnQuit()
+	SaveState()
+
+	if QuitFn ~= nil then
+		QuitFn()
 	end
 end
 
@@ -238,6 +274,14 @@ function Slab.Initialize(args)
 	Style.API.Initialize()
 	love.handlers['textinput'] = TextInput
 	love.handlers['wheelmoved'] = WheelMoved
+
+	-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
+	-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
+	-- the stored function once Slab is finished with its process.
+	QuitFn = love.quit
+	love.quit = OnQuit
+
+	LoadState()
 end
 
 --[[
@@ -330,6 +374,28 @@ function Slab.Draw()
 end
 
 --[[
+	SetINIStatePath
+
+	Sets the INI path to save the UI state. If nil, Slab will not save the state to disk.
+
+	Return: None.
+--]]
+function Slab.SetINIStatePath(Path)
+	INIStatePath = Path
+end
+
+--[[
+	GetINIStatePath
+
+	Gets the INI path to save the UI state. This value can be nil.
+
+	Return: [String] The path on disk the UI state will be saved to.
+--]]
+function Slab.GetINIStatePath()
+	return INIStatePath
+end
+
+--[[
 	GetStyle
 
 	Retrieve the style table associated with the current instance of Slab. This will allow the user to add custom styling
@@ -404,6 +470,7 @@ end
 		Rounding: [Number] Amount of rounding to apply to the corners of the window.
 		IsOpen: [Boolean] Determines if the window is open. If this value exists within the options, a close button will appear in
 			the corner of the window and is updated when this button is pressed to reflect the new open state of this window.
+		NoSavedSettings: [Boolean] Flag to disable saving this window's settings to the state INI file.
 
 	Return: [Boolean] The open state of this window. Useful for simplifying API calls by storing the result in a flag instead of a table.
 		EndWindow must still be called regardless of the result for this value.
