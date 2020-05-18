@@ -1,10 +1,13 @@
 v0.6.4
 ==========
+[API]: Flag to enable/disable log output from Slab internally.
 [Documentation]: Cursor Indent/Unindent documentation. Provide examples.
 [Documentation]: Window return value documentation. Update IsOpen example.
 [Documentation]: Window NoSavedSettings. Provide example.
 [Documentation]: SetINIStatePath/GetINIStatePath. Provide example.
-[Tree]: Save open/closed state for tree items.
+[Documentation]: Tree NoSavedSettings. Provide example.
+[License]: Update copyright year.
+[PersistentState]: Test saving/loading INI save state with a packaged build.
 
 v0.7.0 RELEASE
 ==========

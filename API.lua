@@ -221,6 +221,7 @@ local function LoadState()
 	if INIStatePath ~= nil then
 		local Result, Error = Config.LoadFile(INIStatePath)
 		if Result ~= nil then
+			Tree.Load(Result)
 			Window.Load(Result)
 		else
 			print("Failed to load INI file '" .. INIStatePath .. "': " .. Error)
@@ -231,6 +232,7 @@ end
 local function SaveState()
 	if INIStatePath ~= nil then
 		local Table = {}
+		Tree.Save(Table)
 		Window.Save(Table)
 		Config.Save(INIStatePath, Table)
 	end
@@ -1064,6 +1066,7 @@ end
 			manage the image resource.
 		IsSelected: [Boolean] If true, will render a highlight rectangle around the tree item.
 		IsOpen: [Boolean] Will force the tree item to be expanded.
+		NoSavedSettings: [Boolean] Flag to disable saving this tree's settings to the state INI file.
 
 	Return: [Boolean] Returns true if this tree item is expanded. Slab.EndTree must be called if this returns true.
 --]]

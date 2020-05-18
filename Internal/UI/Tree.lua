@@ -64,6 +64,7 @@ local function GetInstance(Id)
 		Instance.StatHandle = nil
 		Instance.TreeR = 0
 		Instance.TreeB = 0
+		Instance.NoSavedSettings = false
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -80,13 +81,15 @@ function Tree.Begin(Id, Options)
 	Options.IconPath = Options.IconPath == nil and nil or Options.IconPath
 	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
+	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
 
-	local Instance = GetInstance(Id)
+	local WinItemId = Window.GetItemId(Id)
+	local Instance = GetInstance(WinItemId)
 
 	Instance.WasOpen = Instance.IsOpen
 	Instance.StatHandle = StatHandle
+	Instance.NoSavedSettings = Options.NoSavedSettings
 
-	local WinItemId = Window.GetItemId(Instance.Id)
 	local MouseX, MouseY = Mouse.Position()
 	local TMouseX, TMouseY = Region.InverseTransform(nil, MouseX, MouseY)
 	local WinX, WinY = Window.GetPosition()
@@ -229,6 +232,32 @@ function Tree.End()
 	local StatHandle = Hierarchy[1].StatHandle
 	remove(Hierarchy, 1)
 	Stats.End(StatHandle)
+end
+
+function Tree.Save(Table)
+	if Table ~= nil then
+		local Settings = {}
+		for K, V in pairs(Instances) do
+			if not V.NoSavedSettings then
+				Settings[V.Id] = {
+					IsOpen = V.IsOpen
+				}
+			end
+		end
+		Table['Tree'] = Settings
+	end
+end
+
+function Tree.Load(Table)
+	if Table ~= nil then
+		local Settings = Table['Tree']
+		if Settings ~= nil then
+			for K, V in pairs(Settings) do
+				local Instance = GetInstance(K)
+				Instance.IsOpen = V.IsOpen
+			end
+		end
+	end
 end
 
 return Tree

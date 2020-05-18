@@ -968,9 +968,10 @@ end
 
 function Window.Save(Table)
 	if Table ~= nil then
+		local Settings = {}
 		for I, V in ipairs(Instances) do
 			if not V.NoSavedSettings then
-				Table[V.Id] = {
+				Settings[V.Id] = {
 					X = V.TitleDeltaX,
 					Y = V.TitleDeltaY,
 					W = V.SizeDeltaX,
@@ -978,17 +979,21 @@ function Window.Save(Table)
 				}
 			end
 		end
+		Table['Window'] = Settings
 	end
 end
 
 function Window.Load(Table)
 	if Table ~= nil then
-		for K, V in pairs(Table) do
-			local Instance = GetInstance(K)
-			Instance.TitleDeltaX = V.X
-			Instance.TitleDeltaY = V.Y
-			Instance.SizeDeltaX = V.W
-			Instance.SizeDeltaY = V.H
+		local Settings = Table['Window']
+		if Settings ~= nil then
+			for K, V in pairs(Settings) do
+				local Instance = GetInstance(K)
+				Instance.TitleDeltaX = V.X
+				Instance.TitleDeltaY = V.Y
+				Instance.SizeDeltaX = V.W
+				Instance.SizeDeltaY = V.H
+			end
 		end
 	end
 end
