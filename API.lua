@@ -75,6 +75,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Draw
 		SetINIStatePath
 		GetINIStatePath
+		SetVerbose
 
 		Style:
 			GetStyle
@@ -216,6 +217,7 @@ local FrameStatHandle = nil
 -- The path to save the UI state to a file. This will default to the base source directory.
 local INIStatePath = love.filesystem.getSourceBaseDirectory() .. "/Slab.ini"
 local QuitFn = nil
+local Verbose = false
 
 local function LoadState()
 	if INIStatePath ~= nil then
@@ -223,7 +225,7 @@ local function LoadState()
 		if Result ~= nil then
 			Tree.Load(Result)
 			Window.Load(Result)
-		else
+		elseif Verbose then
 			print("Failed to load INI file '" .. INIStatePath .. "': " .. Error)
 		end
 	end
@@ -395,6 +397,19 @@ end
 --]]
 function Slab.GetINIStatePath()
 	return INIStatePath
+end
+
+--[[
+	SetVerbose
+
+	Enable/Disables internal Slab logging. Could be useful for diagnosing problems that occur inside of Slab.
+
+	IsVerbose: [Boolean] Flag to enable/disable verbose logging.
+
+	Return: None.
+--]]
+function Slab.SetVerbose(IsVerbose)
+	Verbose = (IsVerbose == nil or type(IsVerbose) ~= 'boolean') and false or IsVerbose
 end
 
 --[[
