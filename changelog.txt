@@ -6,7 +6,6 @@ v0.6.4
 [Documentation]: SetINIStatePath/GetINIStatePath. Provide example.
 [Documentation]: Tree NoSavedSettings. Provide example.
 [Documentation]: SetVerbose. Provide example.
-[License]: Update copyright year.
 [PersistentState]: Test saving/loading INI save state with a packaged build.
 
 v0.7.0 RELEASE
