@@ -1,6 +1,12 @@
 v0.7.0 RELEASE
 ==========
 [API]: Update version number.
+[Draw Commands]: Support custom shader. Should be usable for all controls.
+[Input]: Slider support for numeric input.
+[Separator]: Option to change the line thickness.
+[Color Picker]: Set initial position.
+[Dock]: Initial implementation of docking.
+[Text]: Support for HTTP link.
 
 BUGS
 ==========
@@ -20,7 +26,6 @@ TODO
 [Animation]: Initial animation support.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.
-[Color Picker]: Set initial position.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
 [Column]: Move separator with mouse.
 Combo Box: Easy API with table of possible values.
@@ -29,7 +34,6 @@ Controls: Convert all window bounds check to use region.
 [Date Time]: Initial implementation for a date/time control.
 Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
-[Dock]: Initial implementation of docking.
 [Documentation]: Command-line option to just dump all functions listed in API table.
 [Error]: Dialog that shows any error messages.
 [Error]: Show messages for deprecated API.
@@ -44,7 +48,6 @@ Main Menu Bar: Assert if called within a window context.
 Region: Clamp position check with owning window's size.
 [Scroll Bar]: Velocity based movement for mouse wheel scrolling.
 [Scroll Bar]: Focus owning window if scroll bar is clicked.
-[Separator]: Option to change the line thickness.
 [Slab]: Move all love.* calls into interfaces for portability with other Lua based frameworks.
 SlabDebug: Show image stats.
 [SlabDebug]: Window management tools.
@@ -57,7 +60,6 @@ Style: Add documentation for each style property.
 [Text]: Tooltip support.
 [Text]: Stats for text objects.
 [Text]: Deprecate SelectOnHover option.
-[Text]: Support for HTTP link.
 [Tree]: Fix for BeginContextMenuItem for root and children items.
 Window: Menu support.
 Window: Ids should be used as keys.
