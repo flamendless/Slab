@@ -281,7 +281,7 @@ local function DrawStyleEditor()
 			Slab.Text(K)
 			Slab.SetLayoutColumn(2)
 			if Slab.Input('SlabDebug_Style_' .. K, {Text = tostring(V), ReturnOnText = false, NumbersOnly = true}) then
-				Style[Label] = Slab.GetInputNumber()
+				Style[K] = Slab.GetInputNumber()
 			end
 		end
 	end
