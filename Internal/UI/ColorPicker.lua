@@ -28,6 +28,7 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 local insert = table.insert
+local gsub = string.gsub
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
@@ -422,7 +423,7 @@ function ColorPicker.Begin(Options)
 	local ColorW = (WinX + WinW) - ColorX
 	Cursor.SetPosition(ColorX, Y)
 	Image.Begin('ColorPicker_CurrentAlpha', {
-		Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
+		Path = gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
 		SubW = ColorW,
 		SubH = ColorH,
 		WrapH = "repeat",
@@ -438,7 +439,7 @@ function ColorPicker.Begin(Options)
 
 	Cursor.SetPosition(ColorX, Y)
 	Image.Begin('ColorPicker_CurrentAlpha', {
-		Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
+		Path = gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
 		SubW = ColorW,
 		SubH = ColorH,
 		WrapH = "repeat",
