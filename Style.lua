@@ -55,6 +55,7 @@ local Style =
 	ButtonDisabledTextColor = {0.35, 0.35, 0.35, 1.0},
 	CheckBoxSelectedColor = {0.0, 0.0, 0.0, 1.0},
 	TextColor = {0.875, 0.875, 0.875, 1.0},
+  SubMenuArrowColor = {0.875, 0.875, 0.875, 1.0},
 	TextHoverBgColor = {0.5, 0.5, 0.5, 1.0},
 	ComboBoxColor = {0.4, 0.4, 0.4, 1.0},
 	ComboBoxHoveredColor = {0.55, 0.55, 0.55, 1.0},
