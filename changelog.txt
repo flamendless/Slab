@@ -1,11 +1,12 @@
 v0.7.0 RELEASE
 ==========
-[Draw Commands]: Support custom shader. Should be usable for all controls. Issue #8.
 [Input]: Slider support for numeric input. Issue #6.
 [Separator]: Option to change the line thickness.
 [Color Picker]: Set initial position.
 [Dock]: Initial implementation of docking.
 [Text]: Support for HTTP link.
+[Bug]: Issue #20
+[Documentation]: Update Wiki with shader documentation.
 
 BUGS
 ==========

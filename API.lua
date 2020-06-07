@@ -203,6 +203,10 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Scroll:
 			SetScrollSpeed
 			GetScrollSpeed
+
+		Shader:
+			PushShader
+			PopShader
 --]]
 local Slab = {}
 
@@ -2069,6 +2073,31 @@ end
 --]]
 function Slab.GetScrollSpeed()
 	return Region.GetWheelSpeed()
+end
+
+--[[
+	PushShader
+
+	Pushes a shader effect to be applied to any following controls before a call to PopShader. Any shader effect that is still active
+	will be cleared at the end of Slab's draw call.
+
+	Shader: [Object] The shader object created with the love.graphics.newShader function. This object should be managed by the caller.
+
+	Return: None.
+--]]
+function Slab.PushShader(Shader)
+	DrawCommands.PushShader(Shader)
+end
+
+--[[
+	PopShader
+
+	Pops the currently active shader effect. Will enable the next active shader on the stack. If none exists, no shader is applied.
+
+	Return: None.
+--]]
+function Slab.PopShader()
+	DrawCommands.PopShader()
 end
 
 return Slab
