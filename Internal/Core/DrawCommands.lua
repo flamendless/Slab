@@ -37,6 +37,7 @@ local DrawCommands = {}
 local LayerTable = {}
 local PendingBatches = {}
 local ActiveBatch = nil
+local Shaders = nil
 
 local Types =
 {
@@ -59,7 +60,9 @@ local Types =
 	Mesh = 17,
 	TextObject = 18,
 	Curve = 19,
-	Polygon = 20
+	Polygon = 20,
+	ShaderPush = 21,
+	ShaderPop = 22
 }
 
 local Layers =
@@ -331,6 +334,12 @@ local function DrawElements(Elements)
 			DrawCurve(V)
 		elseif V.Type == Types.Polygon then
 			DrawPolygon(V)
+		elseif V.Type == Types.ShaderPush then
+			insert(Shaders, 1, V.Shader)
+			love.graphics.setShader(V.Shader)
+		elseif V.Type == Types.ShaderPop then
+			remove(Shaders, 1)
+			love.graphics.setShader(Shaders[1])
 		end
 	end
 
@@ -377,6 +386,7 @@ function DrawCommands.Reset()
 	ActiveLayer = Layers.Normal
 	PendingBatches = {}
 	ActiveBatch = nil
+	Shaders = {}
 end
 
 function DrawCommands.Begin(Options)
@@ -679,6 +689,25 @@ function DrawCommands.Polygon(Mode, Points, Color)
 	insert(ActiveBatch.Elements, Item)
 end
 
+function DrawCommands.PushShader(Shader)
+	AssertActiveBatch()
+	local Item =
+	{
+		Type = Types.ShaderPush,
+		Shader = Shader
+	}
+	insert(ActiveBatch.Elements, Item)
+end
+
+function DrawCommands.PopShader()
+	AssertActiveBatch()
+	local Item =
+	{
+		Type = Types.ShaderPop
+	}
+	insert(ActiveBatch.Elements, Item)
+end
+
 function DrawCommands.Execute()
 	local StatHandle = Stats.Begin('Execute', StatsCategory)
 
@@ -687,6 +716,8 @@ function DrawCommands.Execute()
 	DrawLayer(LayerTable[Layers.MainMenuBar], 'MainMenuBar')
 	DrawLayer(LayerTable[Layers.Dialog], 'Dialog')
 	DrawLayer(LayerTable[Layers.Debug], 'Debug')
+
+	love.graphics.setShader()
 
 	Stats.End(StatHandle)
 end

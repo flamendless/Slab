@@ -2036,6 +2036,72 @@ local function DrawScroll()
 	Slab.EndListBox()
 end
 
+local DrawShader_Object = nil
+local DrawShader_Time = 0.0
+local DrawShader_Source =
+[[extern number time;
+vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords)
+{
+	vec4 TexColor = Texel(texture, texture_coords);
+    return vec4((1.0+sin(time))/2.0, abs(cos(time)), abs(sin(time)), 1.0) * TexColor;
+}]]
+local DrawShader_Highlight =
+{
+	['vec2'] = {0, 0, 1, 1},
+	['vec3'] = {0, 0, 1, 1},
+	['vec4'] = {0, 0, 1, 1},
+	['mat4'] = {0, 0, 1, 1}
+}
+
+local function DrawShader()
+	if DrawShader_Object == nil then
+		DrawShader_Object = love.graphics.newShader(DrawShader_Source)
+	end
+
+	DrawShader_Time = DrawShader_Time + love.timer.getDelta()
+
+	if DrawShader_Object ~= nil then
+		DrawShader_Object:send("time", DrawShader_Time)
+	end
+
+	Slab.Textf(
+		"Shader effects can be applied to any control through the PushShader/PopShader API calls. Any controls created after " ..
+		"a PushShader call will have its effects applied. The next PopShader call will disable the current effect and apply " ..
+		"the previous shader on the stack if one is present. The shader object to be pushed must be managed by the user and must be " ..
+		"valid when Slab.Draw is called. Below is an example of a shader effect that changes the pixel color over time.")
+
+	Slab.NewLine()
+
+	local W, H = Slab.GetWindowActiveSize()
+	local Options =
+	{
+		Text = DrawShader_Source,
+		ReturnOnText = false,
+		MultiLine = true,
+		W = W,
+		H = 150,
+		Highlight = DrawShader_Highlight
+	}
+	Slab.Input('DrawShader_Source', Options)
+	if Slab.Button('Compile') then
+		DrawShader_Source = Slab.GetInputText();
+
+		if DrawShader_Object ~= nil then
+			DrawShader_Object:release()
+		end
+
+		DrawShader_Object = love.graphics.newShader(DrawShader_Source)
+	end
+
+	Slab.NewLine()
+
+	Slab.PushShader(DrawShader_Object)
+	Slab.Image('DrawShader_Image', {Path = DrawImage_Path})
+	Slab.Text("Text")
+	Slab.Button("Button")
+	Slab.PopShader()
+end
+
 local SlabTest_Options = {Title = "Slab", AutoSizeWindow = false, W = 800.0, H = 600.0, IsOpen = true}
 
 function SlabTest.MainMenuBar()
@@ -2079,7 +2145,8 @@ local Categories = {
 	{"Stats", DrawStats},
 	{"Layout", DrawLayout},
 	{"Fonts", DrawFonts},
-	{"Scroll", DrawScroll}
+	{"Scroll", DrawScroll},
+	{"Shaders", DrawShader}
 }
 
 local Selected = nil
