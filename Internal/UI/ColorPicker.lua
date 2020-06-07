@@ -422,7 +422,7 @@ function ColorPicker.Begin(Options)
 	local ColorW = (WinX + WinW) - ColorX
 	Cursor.SetPosition(ColorX, Y)
 	Image.Begin('ColorPicker_CurrentAlpha', {
-		Path = SLAB_PATH .. "/Internal/Resources/Textures/Transparency.png",
+		Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
 		SubW = ColorW,
 		SubH = ColorH,
 		WrapH = "repeat",
@@ -438,7 +438,7 @@ function ColorPicker.Begin(Options)
 
 	Cursor.SetPosition(ColorX, Y)
 	Image.Begin('ColorPicker_CurrentAlpha', {
-		Path = SLAB_PATH .. "/Internal/Resources/Textures/Transparency.png",
+		Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Transparency.png",
 		SubW = ColorW,
 		SubH = ColorH,
 		WrapH = "repeat",

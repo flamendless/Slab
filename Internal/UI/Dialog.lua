@@ -117,7 +117,7 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 	ListBox.BeginItem(Id, {Selected = Utility.HasValue(ActiveInstance.Selected, Index)})
 
 	if IsDirectory then
-		Image.Begin('FileDialog_Folder', {Path = SLAB_PATH .. "/Internal/Resources/Textures/Folder.png"})
+		Image.Begin('FileDialog_Folder', {Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/Folder.png"})
 		Cursor.SameLine({CenterY = true})
 	end
 
