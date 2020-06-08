@@ -113,6 +113,91 @@ local function DrawButtons()
 	Slab.Button(DrawButtons_Enabled and "Enabled" or "Disabled", {Disabled = not DrawButtons_Enabled})
 end
 
+local DrawSliders_Data = { X=0, Y=0, Min=-10, Between=0, Max=10, Size=25, Square=0.75, Toggle=0.25 }
+local DrawSliders_Enabled = false
+
+local function DrawSliders()
+	Slab.Textf("Sliders let you adjust a value within a range. Sliders return their current value and whether the user just completed modifying them.")
+
+	local Tab = 50
+	Slab.Text("Min")
+	Slab.SameLine()
+	Slab.Indent(Tab)
+	DrawSliders_Data.Min = Slab.Slider('Min', {Value = DrawSliders_Data.Min, MinNumber = -100, MaxNumber = DrawSliders_Data.Max})
+	Slab.Unindent(Tab)
+	Slab.Text("Max")
+	Slab.SameLine()
+	Slab.Indent(Tab)
+	DrawSliders_Data.Max = Slab.Slider('Max', {Value = DrawSliders_Data.Max, MinNumber = DrawSliders_Data.Min, MaxNumber = 100})
+	Slab.Unindent(Tab)
+	Slab.Text("Value")
+	Slab.SameLine()
+	Slab.Indent(Tab)
+	-- Slider does not modify the value (apply limits) until it's modified to avoid changing behaviour based on
+	-- whether slab is visible. You may want to clamp:
+	local function Clamp(Value, Minimum, Maximum)
+		return math.min(Maximum, math.max(Minimum, Value))
+	end
+	DrawSliders_Data.Between = Clamp(DrawSliders_Data.Between, DrawSliders_Data.Min, DrawSliders_Data.Max)
+	DrawSliders_Data.Between = Slab.Slider('Range', {Value = DrawSliders_Data.Between, MinNumber = DrawSliders_Data.Min, MaxNumber = DrawSliders_Data.Max})
+	Slab.Unindent(Tab)
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("The second return value allows you to control when to apply the slider value.")
+
+	Slab.Textf("Immediately apply changes from slider:")
+	Slab.SameLine()
+	DrawSliders_Data.X = Slab.Slider('Pos.X', {Value = DrawSliders_Data.X, MinNumber = 0, MaxNumber = 100})
+	Slab.Text(string.format("Slider value X: %f", DrawSliders_Data.X))
+	Slab.Textf("Only apply changes from slider when user releases mouse:")
+	Slab.SameLine()
+	local NewY, WasReleased = Slab.Slider('Pos.Y', {Value = DrawSliders_Data.Y, MinNumber = 0, MaxNumber = 100})
+	if WasReleased then
+		DrawSliders_Data.Y = NewY
+	end
+	Slab.Text(string.format("Slider value Y: %f", DrawSliders_Data.Y))
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Sliders can have a custom width and height.")
+	DrawSliders_Data.Square = Slab.Slider("Square", {W = 75, H = 75, Value = DrawSliders_Data.Square})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Sliders can also be invisible so that the designer can implement a custom slider but still rely on the " ..
+		"slider behavior. Below is a an invisible slider and a custom rectangle drawn at the same location.")
+	local X, Y = Slab.GetCursorPos()
+	local Size = 50.0
+	Slab.Rectangle({Mode = 'line', W = Size, H = Size, Color = {1, 1, 1, 1}})
+	Slab.SetCursorPos(X, Y)
+	local Half = DrawSliders_Data.Size/2
+	Slab.SetCursorPos(X + Size/2 - Half, Y + Size/2 - Half)
+	Slab.Rectangle({Mode = 'fill', W = DrawSliders_Data.Size, H = DrawSliders_Data.Size, Color = {1, 1, 1, 1}})
+	Slab.SetCursorPos(X, Y)
+
+	DrawSliders_Data.Size = Slab.Slider('Size', {Invisible = true, W = Size, H = Size, MinNumber = 0.1, MaxNumber = Size, Value = DrawSliders_Data.Size})
+
+	Slab.SameLine({CenterY = true})
+	Slab.Text(string.format("Invisible slider value %.4f", DrawSliders_Data.Size))
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf("Sliders can also be disabled. Click the button below to toggle the status of the neighboring slider.")
+
+	if Slab.Button("Toggle") then
+		DrawSliders_Enabled = not DrawSliders_Enabled
+	end
+
+	Slab.SameLine()
+	DrawSliders_Data.Toggle = Slab.Slider("ToggleSlider", {Disabled = not DrawSliders_Enabled, Value = DrawSliders_Data.Toggle})
+end
+
 local DrawText_Width = 450.0
 local DrawText_Alignment = {'left', 'center', 'right', 'justify'}
 local DrawText_Alignment_Selected = 'left'
@@ -2062,6 +2147,7 @@ local Categories = {
 	{"Overview", DrawOverview},
 	{"Window", DrawWindow},
 	{"Buttons", DrawButtons},
+	{"Sliders", DrawSliders},
 	{"Text", DrawText},
 	{"Check Box", DrawCheckBox},
 	{"Radio Button", DrawRadioButton},

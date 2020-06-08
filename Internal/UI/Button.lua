@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 
 local floor = math.floor
+local insert = table.insert
 local max = math.max
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
@@ -35,27 +36,30 @@ local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Button = {}
 
+local Instances = {}
 local Pad = 10.0
 local MinWidth = 75.0
 local Radius = 8.0
 local ClickedId = nil
 
-function Button.Begin(Label, Options)
-	local StatHandle = Stats.Begin('Button', 'Slab')
+local function GetInstance(Id)
+	for I, V in ipairs(Instances) do
+		if V.Id == Id then
+			return V
+		end
+	end
+	local Instance = {}
+	Instance.Id = Id
+	insert(Instances, Instance)
+	return Instance
+end
 
-	Options = Options == nil and {} or Options
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
-	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
-	Options.W = Options.W == nil and nil or Options.W
-	Options.H = Options.H == nil and nil or Options.H
-	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
-
-	local Id = Window.GetItemId(Label)
+local function BeginInternal(Id, Label, Options, Slider)
 	local W, H = Button.GetSize(Label)
 	local LabelW = Style.Font:getWidth(Label)
 	local FontHeight = Style.Font:getHeight()
@@ -78,7 +82,9 @@ function Button.Begin(Label, Options)
 	local Color = Style.ButtonColor
 
 	local MouseX, MouseY = Window.GetMousePosition()
-	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
+	local Released = Mouse.IsReleased(1) and ClickedId == Id
+	local Hovered = not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
+	if Hovered then
 		Tooltip.Begin(Options.Tooltip)
 		Window.SetHotItem(Id)
 
@@ -104,6 +110,27 @@ function Button.Begin(Label, Options)
 
 	if not Options.Invisible then
 		DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
+	end
+
+	if Slider then
+		local Dragged = ClickedId == Id
+		-- Update on Released too since user might not update the input value
+		-- until release.
+		if Dragged or Released then
+			local MouseInputX = MouseX - X
+			Slider.Progress = Utility.Clamp(MouseInputX / W, 0, 1)
+			Slider.Value = Options.MinNumber + (Options.MaxNumber - Options.MinNumber) * Slider.Progress
+			Slider.Label = string.format("%.2f", Slider.Value)
+			Label = Slider.Label
+		end
+		if not Options.Invisible then
+			local BarColor = (Hovered and not Options.Disabled) and Style.ButtonColor or Style.ButtonPressedColor
+			local Padding = 1
+			DrawCommands.Rectangle('fill', X+Padding, Y+Padding, Padding + (W - Padding * 3) * Slider.Progress, H - (Padding * 2), BarColor, Options.Rounding)
+		end
+	end
+
+	if not Options.Invisible then
 		local X, Y = Cursor.GetPosition()
 		Cursor.SetX(floor(LabelX))
 		Cursor.SetY(floor(Y + (H * 0.5) - (FontHeight * 0.5)))
@@ -118,9 +145,56 @@ function Button.Begin(Label, Options)
 
 	Window.AddItem(X, Y, W, H, Id)
 
+	return Result
+end
+
+function Button.Begin(Label, Options)
+	local StatHandle = Stats.Begin('Button', 'Slab')
+
+	Options = Options == nil and {} or Options
+	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
+	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
+	Options.W = Options.W == nil and nil or Options.W
+	Options.H = Options.H == nil and nil or Options.H
+	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
+
+	local Id = Window.GetItemId(Label)
+	local Result = BeginInternal(Id, Label, Options)
+
 	Stats.End(StatHandle)
 
 	return Result
+end
+
+function Button.BeginSlider(Id, Options)
+	local StatHandle = Stats.Begin('Slider', 'Slab')
+
+	assert(Id ~= nil, "Please pass a valid Id into Slab.Slider.")
+	Options = Options == nil and {} or Options
+	Options.MinNumber = Options.MinNumber or 0
+	Options.MaxNumber = Options.MaxNumber or 1
+	assert(Options.MinNumber <= Options.MaxNumber, string.format("MinNumber (%i) must be less than MaxNumber (%i) in Slab.Slider.", Options.MinNumber, Options.MaxNumber))
+	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+	Options.Rounding = Options.Rounding == nil and Style.ButtonRounding or Options.Rounding
+	Options.Invisible = Options.Invisible == nil and false or Options.Invisible
+	Options.W = Options.W == nil and nil or Options.W
+	Options.H = Options.H == nil and nil or Options.H
+	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
+
+	local Instance = GetInstance(Window.GetId() .. "." .. Id)
+	local IsInstanceOutOfDate = Instance.Value ~= Options.Value
+	Instance.Value = Options.Value or Instance.Value or 0
+	if IsInstanceOutOfDate then
+		Instance.Label = string.format("%.2f", Instance.Value)
+		Instance.Progress = (Instance.Value - Options.MinNumber) / (Options.MaxNumber - Options.MinNumber)
+	end
+
+	local WasReleased = BeginInternal(Id, Instance.Label, Options, Instance)
+
+	Stats.End(StatHandle)
+
+	return Instance.Value, WasReleased
 end
 
 function Button.BeginRadio(Label, Options)

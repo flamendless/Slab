@@ -171,6 +171,10 @@ function Utility.TableCount(Table)
 	return Result
 end
 
+function Utility.Clamp(Value, Minimum, Maximum)
+	return math.min(Maximum, math.max(Minimum, Value))
+end
+
 function Utility.IsWindows()
 	return love.system.getOS() == "Windows"
 end

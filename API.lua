@@ -914,6 +914,43 @@ function Slab.CheckBox(Enabled, Label, Options)
 end
 
 --[[
+	Slider
+
+	Adds a numerical slider to the active window. Returns the current value and a flag indicating whether the user
+	completed modifying the slider.
+
+	Example:
+		local Position = {X=0, Y=0}
+		-- Immediately apply changes from slider:
+		Position.X = Slab.Slider('Pos.X', {Value = Position.X, MinNumber = 0, MaxNumber = 100})
+		-- Only apply changes from slider when user releases mouse:
+		local NewY, WasReleased = Slab.Slider('Pos.Y', {Value = Position.Y, MinNumber = 0, MaxNumber = 100})
+		if WasReleased then
+			Position.Y = NewY
+		end
+
+	Id: [String] A string that uniquely identifies this Input within the context of the window.
+	Options: [Table] List of options for how this slider will behave.
+		Value: [Number] The current value of the slider.
+		MinNumber: [Number] The minimum value for the slider bar. (Default 0.)
+		MaxNumber: [Number] The maximum value for the slider bar. (Default 1.)
+		Tooltip: [String] The tooltip to display when the user hovers over this slider.
+		Rounding: [Number] Amount of rounding to apply to the corners of the slider.
+		Invisible: [Boolean] Don't render the slider, but keep the behavior.
+		W: [Number] Override the width of the slider.
+		H: [Number] Override the height of the slider.
+		Disabled: [Boolean] If true, the slider is not interactable by the user.
+
+	Return: [Number], [Boolean] Returns the numerical slider value and true when the user released the slider (is done
+		making changes).
+--]
+
+--]]
+function Slab.Slider(Id, Options)
+	return Button.BeginSlider(Id, Options)
+end
+
+--[[
 	Input
 
 	This function will render an input box for a user to input text in. This widget behaves like input boxes
@@ -1305,27 +1342,41 @@ end
 	TODO: Iterate through nested tables.
 
 	Table: [Table] The list of properties to build widgets for.
+	Options: [Table] An optional table of Options for each key in Table. Numbers with MinNumber and MaxNumber
+		will become Sliders.
 
 	Return: None.
 --]]
-function Slab.Properties(Table)
+function Slab.Properties(Table, Options)
+
 	if Table ~= nil then
 		for K, V in pairs(Table) do
 			local Type = type(V)
+			local Opt = Options and Options[K] or {}
 			if Type == "boolean" then
-				if Slab.CheckBox(V, K) then
+				if Slab.CheckBox(V, K, Opt) then
 					Table[K] = not Table[K]
 				end
 			elseif Type == "number" then
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
-				if Slab.Input(K, {Text = tostring(V), NumbersOnly = true, ReturnOnText = false}) then
-					Table[K] = Slab.GetInputNumber()
+				if Opt.MinNumber and Opt.MaxNumber then
+					Opt.Value = V
+					Table[K] = Slab.Slider(K, Opt)
+				else
+					Opt.Text = tostring(V)
+					Opt.NumbersOnly = true
+					Opt.ReturnOnText = false
+					if Slab.Input(K, Opt) then
+						Table[K] = Slab.GetInputNumber()
+					end
 				end
 			elseif Type == "string" then
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
-				if Slab.Input(K, {Text = V, ReturnOnText = false}) then
+				Opt.Text = V
+				Opt.ReturnOnText = false
+				if Slab.Input(K, Opt) then
 					Table[K] = Slab.GetInputText()
 				end
 			end
