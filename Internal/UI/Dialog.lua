@@ -83,10 +83,11 @@ end
 
 local function PruneResults(Items, DirectoryOnly)
 	local Result = {}
-
+	local Separator = FileSystem.Separator()
 	for I, V in ipairs(Items) do
 		if FileSystem.IsDirectory(V) then
 			if DirectoryOnly then
+				V = (string.sub(V,#V,#V) == Separator) and V or (V .. Separator)
 				insert(Result, V)
 			end
 		else

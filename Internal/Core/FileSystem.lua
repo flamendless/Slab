@@ -242,7 +242,9 @@ function FileSystem.Exists(Path)
 end
 
 function FileSystem.IsDirectory(Path)
-	return FileSystem.Exists(Path .. FileSystem.Separator())
+	local Separator = FileSystem.Separator()
+	Path = (string.sub(Path,#Path,#Path) == Separator) and Path or (Path .. Separator)
+	return FileSystem.Exists(Path)
 end
 
 function FileSystem.Parent(Path)
