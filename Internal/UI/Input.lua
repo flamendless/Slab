@@ -1384,6 +1384,10 @@ function Input.GetCursorPos()
 	return 0, 0, 0
 end
 
+function Input.IsAnyFocused()
+	return Focused ~= nil
+end
+
 function Input.IsFocused(Id)
 	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
 	return Instance == Focused

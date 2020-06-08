@@ -1021,6 +1021,17 @@ function Slab.IsInputFocused(Id)
 end
 
 --[[
+	IsAnyInputFocused
+
+	Returns whether any input control is focused or not.
+
+	Return: [Boolean] True if there is an input control focused. False otherwise.
+--]]
+function Slab.IsAnyInputFocused()
+	return Input.IsAnyFocused()
+end
+
+--[[
 	SetInputFocus
 
 	Sets the focus of the input control to the control with the given Id. The focus is set at the beginning
