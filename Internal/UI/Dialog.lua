@@ -506,9 +506,11 @@ function Dialog.FileDialog(Options)
 			FileDialogItem('Item_' .. Index, V, true, Index)
 			Index = Index + 1
 		end
-		for I, V in ipairs(ActiveInstance.Files) do
-			FileDialogItem('Item_' .. Index, V, false, Index)
-			Index = Index + 1
+		if Options.Type ~= 'opendirectory' then
+			for I, V in ipairs(ActiveInstance.Files) do
+				FileDialogItem('Item_' .. Index, V, false, Index)
+				Index = Index + 1
+			end
 		end
 		ListBox.End()
 		LayoutManager.End()
