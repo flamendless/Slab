@@ -217,25 +217,28 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 end
 
 function FileSystem.Exists(Path)
-	local Handle = io.open(Path)
-	if Handle ~= nil then
-		io.close(Handle)
+	if (FileSystem.GetRootDirectory(Path) .. FileSystem.Separator()) == Path then
 		return true
 	else
-		local OS = love.system.getOS()
-		if OS == "Windows" then
-			local OK, Error, Code = os.rename(Path, Path)
-			if OK then
+		local Directory = FileSystem.GetDirectory(Path)
+		local BaseName = FileSystem.GetBaseName(Path)
+		BaseName = string.match(BaseName, "(.+)/") or BaseName
+		local ParentDir = FileSystem.Parent(Directory)
+		local ParentDirItems
+		if (Directory .. FileSystem.Separator()) == Path then
+			-- Check if the directory exists
+			ParentDirItems = GetDirectoryItems(ParentDir, {Files=false,Directories=true})
+		else
+			-- Check if the file Exists
+			ParentDirItems = GetDirectoryItems(ParentDir, {Files=true,Directories=false})
+		end
+		for i = 1, #ParentDirItems do
+			if ParentDirItems[i] == BaseName then
 				return true
-			else
-				if Code == 13 then
-					return true
-				end
 			end
 		end
+		return false
 	end
-
-	return false
 end
 
 function FileSystem.IsDirectory(Path)
