@@ -86,9 +86,8 @@ local function DrawButtons()
 	Slab.Separator()
 
 	Slab.Textf(
-		"Buttons can also be invisible. Below is a rectangle with an invisible button so that the designer can " ..
-		"implement a custom button but still rely on the button behavior. Below is a custom rectangle drawn with an " ..
-		"invisible button drawn at the same location.")
+		"Buttons can also be invisible so that the designer can implement a custom button but still rely on the " ..
+		"button behavior. Below is a an invisible button and a custom rectangle drawn at the same location.")
 	local X, Y = Slab.GetCursorPos()
 	Slab.Rectangle({Mode = 'line', W = 50.0, H = 50.0, Color = {1, 1, 1, 1}})
 	Slab.SetCursorPos(X, Y)
