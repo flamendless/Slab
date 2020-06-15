@@ -960,6 +960,8 @@ end
 		MultiLineW: [Number] The width for which the lines of text should be wrapped at.
 		Highlight: [Table] A list of key-values that define what words to highlight what color. Strings should be used for
 			the word to highlight and the value should be a table defining the color.
+		Step: [Number] The step amount for numeric controls when the user click and drags. The default value is 1.0.
+		NoDrag: [Boolean] Determines whether this numberic control allows the user to click and drag to alter the value.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
