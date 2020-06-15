@@ -371,6 +371,10 @@ local DrawInput_Basic = "Hello World"
 local DrawInput_Basic_Return = "Hello World"
 local DrawInput_Basic_Numbers = 0
 local DrawInput_Basic_Numbers_Clamped = 0.5
+local DrawInput_Basic_Numbers_Clamped_Min = 0.0
+local DrawInput_Basic_Numbers_Clamped_Max = 1.0
+local DrawInput_Basic_Numbers_Clamped_Step = 0.01
+local DrawInput_Basic_Numbers_NoDrag = 50
 local DrawInput_MultiLine =
 [[
 function Foo()
@@ -422,7 +426,10 @@ local function DrawInput()
 	Slab.NewLine()
 	Slab.Separator()
 
-	Slab.Textf("Input controls can be configured to only take numeric values.")
+	Slab.Textf(
+		"Input controls can be configured to only take numeric values. Input controls that are configured this way " ..
+		"will allow the user to click and drag the control to alter the value by default. The user must double-click the "..
+		"control to manually enter a valid number.")
 
 	if Slab.Input('DrawInput_Basic_Numbers', {Text = tostring(DrawInput_Basic_Numbers), NumbersOnly = true}) then
 		DrawInput_Basic_Numbers = Slab.GetInputNumber()
@@ -432,10 +439,72 @@ local function DrawInput()
 
 	Slab.Textf(
 		"These numeric controls can also have min and/or max values set. Below is an example where the " ..
-		"numeric input control is clamped from 0.0 to 1.0.")
+		"numeric input control is clamped from 0.0 to 1.0. The drag step is also modified to be smaller for more precision.")
 
-	if Slab.Input('DrawInput_Basic_Numbers_Clamped', {Text = tostring(DrawInput_Basic_Numbers_Clamped), NumbersOnly = true, MinNumber = 0.0, MaxNumber = 1.0}) then
+	Slab.Text("Min")
+	Slab.SameLine()
+	local DrawInput_Basic_Numbers_Clamped_Min_Options =
+	{
+		Text = tostring(DrawInput_Basic_Numbers_Clamped_Min),
+		MaxNumber = DrawInput_Basic_Numbers_Clamped_Max,
+		Step = DrawInput_Basic_Numbers_Clamped_Step,
+		NumbersOnly = true,
+		W = 50
+	}
+	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Min', DrawInput_Basic_Numbers_Clamped_Min_Options) then
+		DrawInput_Basic_Numbers_Clamped_Min = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Max")
+	Slab.SameLine()
+	local DrawInput_Basic_Numbers_Clamped_Max_Options =
+	{
+		Text = tostring(DrawInput_Basic_Numbers_Clamped_Max),
+		MinNumber = DrawInput_Basic_Numbers_Clamped_Min,
+		Step = DrawInput_Basic_Numbers_Clamped_Step,
+		NumbersOnly = true,
+		W = 50
+	}
+	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Max', DrawInput_Basic_Numbers_Clamped_Max_Options) then
+		DrawInput_Basic_Numbers_Clamped_Max = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Step")
+	Slab.SameLine()
+	local DrawInput_Basic_Numbers_Clamped_Step_Options =
+	{
+		Text = tostring(DrawInput_Basic_Numbers_Clamped_Step),
+		MinNumber = 0,
+		Step = 0.01,
+		NumbersOnly = true,
+		W = 50
+	}
+	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Step', DrawInput_Basic_Numbers_Clamped_Step_Options) then
+		DrawInput_Basic_Numbers_Clamped_Step = Slab.GetInputNumber()
+	end
+
+	local DrawInput_Basic_Numbers_Clamped_Options =
+	{
+		Text = tostring(DrawInput_Basic_Numbers_Clamped),
+		NumbersOnly = true,
+		MinNumber = DrawInput_Basic_Numbers_Clamped_Min,
+		MaxNumber = DrawInput_Basic_Numbers_Clamped_Max,
+		Step = DrawInput_Basic_Numbers_Clamped_Step
+	}
+	if Slab.Input('DrawInput_Basic_Numbers_Clamped', DrawInput_Basic_Numbers_Clamped_Options) then
 		DrawInput_Basic_Numbers_Clamped = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"The click and drag functionality of numeric controls can also be disabled. This will make the input control behave like a " ..
+		"standard text input control.")
+
+	if Slab.Input('DrawInput_Basic_Numbers_NoDrag', {Text = tostring(DrawInput_Basic_Numbers_NoDrag), NumbersOnly = true, NoDrag = true}) then
+		DrawInput_Basic_Numbers_NoDrag = Slab.GetInputNumber()
 	end
 
 	Slab.NewLine()

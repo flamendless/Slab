@@ -7,6 +7,7 @@ v0.7.0 RELEASE
 [Text]: Support for HTTP link.
 [Bug]: Issue #20
 [Documentation]: Update Wiki with shader documentation.
+[Documentation]: Update Input Wiki with information about 'Step' and 'NoDrag'. Provide example usage.
 
 BUGS
 ==========
