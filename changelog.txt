@@ -1,6 +1,5 @@
 v0.7.0 RELEASE
 ==========
-[Input]: Slider support for numeric input. Issue #6.
 [Separator]: Option to change the line thickness.
 [Color Picker]: Set initial position.
 [Dock]: Initial implementation of docking.
@@ -8,6 +7,9 @@ v0.7.0 RELEASE
 [Bug]: Issue #20
 [Documentation]: Update Wiki with shader documentation.
 [Documentation]: Update Input Wiki with information about 'Step' and 'NoDrag'. Provide example usage.
+[Documentation]: Update Input Wiki with information about 'UseSlider'. Provide example usage.
+[Documentation]: Add new Input API functions to Input Wiki.
+[Documentation]: Update Style Wiki with information for InputSliderColor.
 
 BUGS
 ==========

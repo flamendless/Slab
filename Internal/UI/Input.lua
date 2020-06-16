@@ -815,8 +815,26 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 	end
 end
 
-local function UpdateSlider(Instance, Step)
-	if Instance ~= nil and IsSliding then
+local function UpdateSlider(Instance)
+	if Instance ~= nil then
+		local MouseX, MouseY = Mouse.Position()
+		local MinX = Cursor.GetPosition()
+		local MaxX = MinX + Instance.W
+		local Ratio = Utility.Clamp((MouseX - MinX) / (MaxX - MinX), 0.0, 1.0)
+		local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
+		local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
+		local IsInteger = floor(Min) == Min and floor(Max) == Max
+		local Value = (Max - Min) * Ratio + Min
+		if IsInteger then
+			Instance.Text = string.format("%d", Value)
+		else
+			Instance.Text = string.format("%.3f", Value)
+		end
+	end
+end
+
+local function UpdateDrag(Instance, Step)
+	if Instance ~= nil then
 		local DeltaX, DeltaY = Mouse.GetDelta()
 		if DeltaX ~= 0.0 then
 			local Value = tonumber(Instance.Text)
@@ -825,6 +843,22 @@ local function UpdateSlider(Instance, Step)
 				Instance.Text = tostring(Value)
 				ValidateNumber(Instance)
 			end
+		end
+	end
+end
+
+local function DrawSlider(Instance)
+	if Instance ~= nil and Instance.NumbersOnly then
+		local Value = tonumber(Instance.Text)
+		if Value ~= nil then
+			local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
+			local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
+			local Ratio = (Value - Min) / (Max - Min)
+			local SliderSize = 6.0
+			local MinX, MinY = Cursor.GetPosition()
+			local MaxX, MaxY = MinX + Instance.W - SliderSize, MinY + Instance.H
+			local X = (MaxX - MinX) * Ratio + MinX
+			DrawCommands.Rectangle('fill', X, MinY + 1.0, SliderSize, Instance.H - 2.0, Style.InputSliderColor)
 		end
 	end
 end
@@ -877,6 +911,7 @@ function Input.Begin(Id, Options)
 	Options.Highlight = Options.Highlight == nil and nil or Options.Highlight
 	Options.Step = Options.Step == nil and 1.0 or Options.Step
 	Options.NoDrag = Options.NoDrag == nil and false or Options.NoDrag
+	Options.UseSlider = Options.UseSlider == nil and false or Options.UseSlider
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -1040,6 +1075,8 @@ function Input.Begin(Id, Options)
 		LastFocused = nil
 	end
 
+	local IsEditing = Instance == Focused and not IsSliding
+
 	if Instance == Focused then
 		local Back = false
 		local IgnoreBack = false
@@ -1170,7 +1207,13 @@ function Input.Begin(Id, Options)
 			UpdateMultiLinePosition(Instance)
 		end
 
-		UpdateSlider(Instance, Options.Step)
+		if IsSliding then
+			if Options.UseSlider then
+				UpdateSlider(Instance)
+			else
+				UpdateDrag(Instance, Options.Step)
+			end
+		end
 
 		if Mouse.IsReleased(1) then
 			DragSelect = false
@@ -1273,6 +1316,13 @@ function Input.Begin(Id, Options)
 			DrawCursor(Instance, X, Y, W, H)
 		end
 	end
+
+	if Options.UseSlider then
+		if not IsEditing then
+			DrawSlider(Instance)
+		end
+	end
+
 	if Instance.Text ~= "" then
 		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
 
