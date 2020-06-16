@@ -375,6 +375,9 @@ local DrawInput_Basic_Numbers_Clamped_Min = 0.0
 local DrawInput_Basic_Numbers_Clamped_Max = 1.0
 local DrawInput_Basic_Numbers_Clamped_Step = 0.01
 local DrawInput_Basic_Numbers_NoDrag = 50
+local DrawInput_Basic_Numbers_Slider = 50
+local DrawInput_Basic_Numbers_Slider_Min = 0
+local DrawInput_Basic_Numbers_Slider_Max = 100
 local DrawInput_MultiLine =
 [[
 function Foo()
@@ -505,6 +508,29 @@ local function DrawInput()
 
 	if Slab.Input('DrawInput_Basic_Numbers_NoDrag', {Text = tostring(DrawInput_Basic_Numbers_NoDrag), NumbersOnly = true, NoDrag = true}) then
 		DrawInput_Basic_Numbers_NoDrag = Slab.GetInputNumber()
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf(
+		"A slider can also be used for these numeric input controls. When configured this way, the value is altered based on where the " ..
+		"user clicks and drags inside the control.")
+
+	Slab.Text("Min")
+	Slab.SameLine()
+	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Min', DrawInput_Basic_Numbers_Slider_Min, nil, DrawInput_Basic_Numbers_Slider_Max, {W = 50}) then
+		DrawInput_Basic_Numbers_Slider_Min = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Max")
+	Slab.SameLine()
+	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Max', DrawInput_Basic_Numbers_Slider_Max, DrawInput_Basic_Numbers_Slider_Min, nil, {W = 50}) then
+		DrawInput_Basic_Numbers_Slider_Max = Slab.GetInputNumber()
+	end
+
+	if Slab.InputNumberSlider('DrawInput_Basic_Numbers_Slider', DrawInput_Basic_Numbers_Slider, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max) then
+		DrawInput_Basic_Numbers_Slider = Slab.GetInputNumber()
 	end
 
 	Slab.NewLine()

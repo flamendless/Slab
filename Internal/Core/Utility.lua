@@ -179,4 +179,8 @@ function Utility.IsOSX()
 	return love.system.getOS() == "OS X"
 end
 
+function Utility.Clamp(Value, Min, Max)
+	return Value < Min and Min or (Value > Max and Max or Value)
+end
+
 return Utility

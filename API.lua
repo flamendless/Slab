@@ -115,6 +115,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		GetTextHeight
 		CheckBox
 		Input
+		InputNumberDrag
+		InputNumberSlider
 		GetInputText
 		GetInputNumber
 		GetInputCursorPos
@@ -962,12 +964,69 @@ end
 			the word to highlight and the value should be a table defining the color.
 		Step: [Number] The step amount for numeric controls when the user click and drags. The default value is 1.0.
 		NoDrag: [Boolean] Determines whether this numberic control allows the user to click and drag to alter the value.
+		UseSlider: [Boolean] If enabled, displays a slider inside the input control. This will only be drawn if the NumbersOnly
+			option is set to true. The position of the slider inside the control determines the value based on the MinNumber
+			and MaxNumber option.
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
 --]]
 function Slab.Input(Id, Options)
 	return Input.Begin(Id, Options)
+end
+
+--[[
+	InputNumberDrag
+
+	This is a wrapper function for calling the Input function which sets the proper options to set up the input box for
+	displaying and editing numbers. The user will be able to click and drag the control to alter the value. Double-clicking
+	inside this control will allow for manually editing the value.
+
+	Id: [String] A string that uniquely identifies this Input within the context of the window.
+	Value: [Number] The value to display in the control.
+	Min: [Number] The minimum value that can be set for this number control. If nil, then this value will be set to -math.huge.
+	Max: [Number] The maximum value that can be set for this number control. If nil, then this value will be set to math.huge.
+	Options: [Table] List of options for how this input control is displayed. See Slab.Input for all options.
+
+	Return: [Boolean] Returns true whenever this valued is modified.
+--]]
+function Slab.InputNumberDrag(Id, Value, Min, Max, Step, Options)
+	Options = Options == nil and {} or Options
+	Options.Text = tostring(Value)
+	Options.MinNumber = Min
+	Options.MaxNumber = Max
+	Options.NumbersOnly = true
+	Options.UseSlider = false
+	Options.NoDrag = false
+	Options.ReturnOnText = false
+	return Slab.Input(Id, Options)
+end
+
+--[[
+	InputNumberSlider
+
+	This is a wrapper function for calling the Input function which sets the proper options to set up the input box for
+	displaying and editing numbers. This will also force the control to display a slider, which determines what the value
+	stored is based on the Min and Max options. Double-clicking inside this control will allow for manually editing
+	the value.
+
+	Id: [String] A string that uniquely identifies this Input within the context of the window.
+	Value: [Number] The value to display in the control.
+	Min: [Number] The minimum value that can be set for this number control. If nil, then this value will be set to -math.huge.
+	Max: [Number] The maximum value that can be set for this number control. If nil, then this value will be set to math.huge.
+	Options: [Table] List of options for how this input control is displayed. See Slab.Input for all options.
+
+	Return: [Boolean] Returns true whenever this valued is modified.
+--]]
+function Slab.InputNumberSlider(Id, Value, Min, Max, Options)
+	Options = Options == nil and {} or Options
+	Options.Text = tostring(Value)
+	Options.MinNumber = Min
+	Options.MaxNumber = Max
+	Options.NumbersOnly = true
+	Options.UseSlider = true
+	Options.ReturnOnText = false
+	return Slab.Input(Id, Options)
 end
 
 --[[
