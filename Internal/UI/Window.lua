@@ -687,7 +687,11 @@ end
 
 function Window.GetPosition()
 	if ActiveInstance ~= nil then
-		return ActiveInstance.X, ActiveInstance.Y
+		local X, Y = ActiveInstance.X, ActiveInstance.Y
+		if ActiveInstance.Title ~= "" then
+			Y = Y - Style.Font:getHeight()
+		end
+		return X, Y
 	end
 	return 0.0, 0.0
 end

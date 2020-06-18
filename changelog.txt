@@ -1,6 +1,5 @@
 v0.7.0 RELEASE
 ==========
-[Color Picker]: Set initial position.
 [Dock]: Initial implementation of docking.
 [Text]: Support for HTTP link.
 [Bug]: Issue #20
