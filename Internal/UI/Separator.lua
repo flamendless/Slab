@@ -36,6 +36,7 @@ function Separator.Begin(Options)
 	Options = Options == nil and {} or Options
 	Options.IncludeBorders = Options.IncludeBorders == nil and false or Options.IncludeBorders
 	Options.H = Options.H == nil and SIZE_Y or Options.H
+	Options.Thickness = Options.Thickness == nil and 1.0 or Options.Thickness
 
 	local X, Y = Cursor.GetPosition()
 	local W, H = 0.0, 0.0
@@ -48,9 +49,9 @@ function Separator.Begin(Options)
 		W, H = Window.GetBorderlessSize()
 	end
 
-	H = Options.H
+	H = math.max(Options.H, Options.Thickness)
 
-	DrawCommands.Line(X, Y + H * 0.5, X + W, Y + H * 0.5, 1.0, Style.SeparatorColor)
+	DrawCommands.Line(X, Y + H * 0.5, X + W, Y + H * 0.5, Options.Thickness, Style.SeparatorColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)
 	Cursor.AdvanceY(H)
