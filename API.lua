@@ -751,6 +751,7 @@ end
 		IncludeBorders: [Boolean] Whether to extend the separator to include the window borders. This is false by default.
 		H: [Number] The height of the separator. This doesn't change the line thickness, rather, specifies the cursor advancement
 			in the Y direction.
+		Thickness: [Number] The thickness of the line rendered. The default value is 1.0.
 
 	Return: None.
 --]]
