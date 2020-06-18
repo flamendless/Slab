@@ -219,6 +219,8 @@ end
 
 local function DrawStyleEditor()
 	Slab.BeginWindow('SlabDebug_StyleEditor', SlabDebug_StyleEditor)
+	local X, Y = Slab.GetWindowPosition()
+	local W, H = Slab.GetWindowSize()
 
 	local Style = Slab.GetStyle()
 	local Names = Style.API.GetStyleNames()
@@ -289,7 +291,7 @@ local function DrawStyleEditor()
 	Slab.EndWindow()
 
 	if Style_EditingColor ~= nil then
-		local Result = Slab.ColorPicker({Color = Style_ColorStore, Refresh = Refresh})
+		local Result = Slab.ColorPicker({Color = Style_ColorStore, X = X + W, Y = Y})
 		Style_EditingColor[1] = Result.Color[1]
 		Style_EditingColor[2] = Result.Color[2]
 		Style_EditingColor[3] = Result.Color[3]
