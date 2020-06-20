@@ -9,6 +9,7 @@ v0.7.0 RELEASE
 [Documentation]: Add new Input API functions to Input Wiki.
 [Documentation]: Update Style Wiki with information for InputSliderColor.
 [Documentation]: Update Separator function with Thickness option.
+[Documentation]: Update Input Wiki with IsAnyInputFocused function.
 
 BUGS
 ==========

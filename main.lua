@@ -27,8 +27,6 @@ SOFTWARE.
 local Slab = require 'Slab'
 local SlabTest = require 'SlabTest'
 
-local TypedText = 'Typed outside of Slab: '
-
 function love.load(args)
 	love.graphics.setBackgroundColor(0.4, 0.88, 1.0)
 	Slab.Initialize(args)
@@ -39,15 +37,6 @@ function love.update(dt)
 	SlabTest.Begin()
 end
 
-function love.textinput(InputText)
-    if not Slab.IsAnyInputFocused() then
-		TypedText = TypedText .. InputText
-    end
-end
-
 function love.draw()
 	Slab.Draw()
-
-	love.graphics.setColor(0,0,0,1)
-	love.graphics.print(TypedText, 20, love.graphics.getHeight()-20)
 end
