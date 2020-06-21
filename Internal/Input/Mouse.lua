@@ -24,10 +24,7 @@ SOFTWARE.
 
 --]]
 
-local Mouse = 
-{
-	
-}
+local Mouse = {}
 
 local State =
 {
@@ -79,6 +76,7 @@ function Mouse.Update()
 		Cursors.SizeNESW = love.mouse.getSystemCursor('sizenesw')
 		Cursors.SizeNWSE = love.mouse.getSystemCursor('sizenwse')
 		Cursors.IBeam = love.mouse.getSystemCursor('ibeam')
+		Cursors.Hand = love.mouse.getSystemCursor('hand')
 	end
 
 	Mouse.SetCursor('arrow')
@@ -145,6 +143,8 @@ function Mouse.UpdateCursor()
 			love.mouse.setCursor(Cursors.SizeNWSE)
 		elseif Type == 'ibeam' then
 			love.mouse.setCursor(Cursors.IBeam)
+		elseif Type == 'hand' then
+			love.mouse.setCursor(Cursors.Hand)
 		end
 	end
 end

@@ -43,8 +43,17 @@ function Text.Begin(Label, Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
+	Options.IsSelectable = Options.IsSelectable == nil and false or Options.IsSelectable
+	Options.IsSelectableTextOnly = Options.IsSelectableTextOnly == nil and false or Options.IsSelectableTextOnly
+	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.AddItem = Options.AddItem == nil and true or Options.AddItem
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
+	Options.URL = Options.URL == nil and nil or Options.URL
+
+	if Options.URL ~= nil then
+		Options.IsSelectableTextOnly = true
+		Options.Color = Style.TextURLColor
+	end
 
 	local W = Text.GetWidth(Label)
 	local H = Style.Font:getHeight()
@@ -64,14 +73,12 @@ function Text.Begin(Label, Options)
 		Window.SetHotItem(WinId)
 	end
 
+	local WinX, WinY, WinW, WinH = Window.GetBounds()
+	local CheckX = Options.IsSelectableTextOnly and X or WinX
+	local CheckW = Options.IsSelectableTextOnly and W or WinW
+	local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
+
 	if Options.IsSelectable or Options.IsSelected then
-		local WinX, WinY, WinW, WinH = Window.GetBounds()
-		
-		local CheckX = Options.IsSelectableTextOnly and X or WinX
-		local CheckW = Options.IsSelectableTextOnly and W or WinW
-
-		local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
-
 		if Hovered or Options.IsSelected then
 			DrawCommands.Rectangle('fill', CheckX, Y, CheckW + PadX, H, Options.HoverColor)
 		end
@@ -87,7 +94,19 @@ function Text.Begin(Label, Options)
 		end
 	end
 
+	if Hovered and Options.URL ~= nil then
+		Mouse.SetCursor('hand')
+
+		if Mouse.IsClicked(1) then
+			love.system.openURL(Options.URL)
+		end
+	end
+
 	DrawCommands.Print(Label, floor(X + PadX * 0.5), floor(Y), Color, Style.Font)
+
+	if Options.URL ~= nil then
+		DrawCommands.Line(X + PadX, Y + H, X + W, Y + H, 1.0, Color)
+	end
 
 	Cursor.SetItemBounds(X, Y, W + PadX, H)
 	Cursor.AdvanceY(H)

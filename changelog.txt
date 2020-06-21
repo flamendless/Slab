@@ -1,7 +1,6 @@
 v0.7.0 RELEASE
 ==========
 [Dock]: Initial implementation of docking.
-[Text]: Support for HTTP link.
 [Bug]: Issue #20
 [Documentation]: Update Wiki with shader documentation.
 [Documentation]: Update Input Wiki with information about 'Step' and 'NoDrag'. Provide example usage.
@@ -10,6 +9,8 @@ v0.7.0 RELEASE
 [Documentation]: Update Style Wiki with information for InputSliderColor.
 [Documentation]: Update Separator function with Thickness option.
 [Documentation]: Update Input Wiki with IsAnyInputFocused function.
+[Documentation]: Update Text Wiki with 'URL' option. Provide example usage.
+[Documentation]: Update Style Wiki with 'TextURLColor' setting.
 
 BUGS
 ==========

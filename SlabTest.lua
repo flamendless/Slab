@@ -180,6 +180,15 @@ local function DrawText()
 	if Slab.TextSelectable("This text has been clicked " .. DrawText_NumClicked_TextOnly .. " time(s).", {IsSelectableTextOnly = true}) then
 		DrawText_NumClicked_TextOnly = DrawText_NumClicked_TextOnly + 1
 	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Text controls can be configured to contain URL links. When this control is clicked, Slab will open the given URL " ..
+		"with the user's default web browser.")
+
+	Slab.Text("Love 2D", {URL = "http://love2d.org"})
 end
 
 local DrawCheckBox_Checked = false
