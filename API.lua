@@ -378,7 +378,10 @@ function Slab.Draw()
 		Button.ClearClicked()
 	end
 
+	love.graphics.push()
+	love.graphics.origin()
 	DrawCommands.Execute()
+	love.graphics.pop()
 
 	Stats.End(StatHandle)
 	Stats.End(FrameStatHandle)
