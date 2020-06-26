@@ -26,6 +26,7 @@ SOFTWARE.
 
 local FileSystem = {}
 
+local Bit = require('bit')
 local FFI = require('ffi')
 
 local function ShouldFilter(Name, Filter)
@@ -45,16 +46,20 @@ local function ShouldFilter(Name, Filter)
 end
 
 local GetDirectoryItems = nil
+local Exists = nil
+local IsDirectory = nil
 
 --[[
 	The following code is based on the following sources:
 
 	LoveFS v1.1
+	https://github.com/linux-man/lovefs
 	Pure Lua FileSystem Access
 	Under the MIT license.
 	copyright(c) 2016 Caldas Lopes aka linux-man
 
 	luapower/fs_posix
+	https://github.com/luapower/fs
 	portable filesystem API for LuaJIT / Linux & OSX backend
 	Written by Cosmin Apreutesei. Public Domain.
 --]]
@@ -132,6 +137,9 @@ if FFI.os == "Windows" then
 else
 	FFI.cdef[[
 		typedef struct DIR DIR;
+		typedef size_t time_t;
+		static const int S_IFREG = 0x8000;
+		static const int S_IFDIR = 0x4000;
 
 		DIR* opendir(const char* name);
 		int closedir(DIR* dirp);
@@ -148,7 +156,33 @@ else
 				char		d_name[1024];
 			};
 
+			struct stat {
+				uint32_t	st_dev;
+				uint16_t	st_mode;
+				uint16_t	st_nlink;
+				uint64_t	st_ino;
+				uint32_t	st_uid;
+				uint32_t	st_gid;
+				uint32_t	st_rdev;
+				time_t		st_atime;
+				long		st_atime_nsec;
+				time_t		st_mtime;
+				long		st_mtime_nsec;
+				time_t		st_ctime;
+				long		st_ctime_nsec;
+				time_t		st_btime;
+				long		st_btime_nsec;
+				int64_t		st_size;
+				int64_t		st_blocks;
+				int32_t		st_blksize;
+				uint32_t	st_flags;
+				uint32_t	st_gen;
+				int32_t		st_lspare;
+				int64_t		st_qspare[2];
+			};
+
 			struct dirent* readdir(DIR* dirp) asm("readdir$INODE64");
+			int stat64(const char* path, struct stat* buf);
 		]]
 	else
 		FFI.cdef[[
@@ -160,9 +194,33 @@ else
 				char			d_name[256];
 			};
 
+			struct stat {
+				uint64_t	st_dev;
+				uint64_t	st_ino;
+				uint64_t 	st_nlink;
+				uint32_t	st_mode;
+				uint32_t	st_uid;
+				uint32_t	st_gid;
+				uint32_t	__pad0;
+				uint64_t	st_rdev;
+				int64_t		st_size;
+				int64_t		st_blksize;
+				int64_t		st_blocks;
+				uint64_t	st_atime;
+				uint64_t	st_atime_nsec;
+				uint64_t	st_mtime;
+				uint64_t	st_mtime_nsec;
+				uint64_t	st_ctime;
+				uint64_t	st_ctime_nsec;
+				int64_t		__unused[3];
+			};
+
 			struct dirent* readdir(DIR* dirp) asm("readdir64");
+			int stat64(const char* path, struct stat* buf);
 		]]
 	end
+
+	local Stat = FFI.typeof('struct stat');
 
 	GetDirectoryItems = function(Directory, Options)
 		local Result = {}
@@ -192,6 +250,21 @@ else
 
 		return Result
 	end
+
+	Exists = function(Path)
+		local Buffer = Stat()
+		return FFI.C.stat64(Path, Buffer) == 0
+	end
+
+	IsDirectory = function(Path)
+		local Buffer = Stat()
+
+		if FFI.C.stat64(Path, Buffer) == 0 then
+			return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
+		end
+
+		return false
+	end
 end
 
 function FileSystem.Separator()
@@ -217,29 +290,11 @@ function FileSystem.GetDirectoryItems(Directory, Options)
 end
 
 function FileSystem.Exists(Path)
-	local Handle = io.open(Path)
-	if Handle ~= nil then
-		io.close(Handle)
-		return true
-	else
-		local OS = love.system.getOS()
-		if OS == "Windows" then
-			local OK, Error, Code = os.rename(Path, Path)
-			if OK then
-				return true
-			else
-				if Code == 13 then
-					return true
-				end
-			end
-		end
-	end
-
-	return false
+	return Exists(Path)
 end
 
 function FileSystem.IsDirectory(Path)
-	return FileSystem.Exists(Path .. FileSystem.Separator())
+	return IsDirectory(Path)
 end
 
 function FileSystem.Parent(Path)
