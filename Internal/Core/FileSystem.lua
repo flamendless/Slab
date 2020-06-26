@@ -78,10 +78,15 @@ if FFI.os == "Windows" then
 			wchar_t cAlternateFileName[28];
 		};
 		#pragma pack(pop)
+
+		typedef unsigned long DWORD;
+		static const DWORD FILE_ATTRIBUTE_DIRECTORY = 0x10;
+		static const DWORD INVALID_FILE_ATTRIBUTES = -1;
 		
 		void* FindFirstFileW(const wchar_t* pattern, struct WIN32_FIND_DATAW* fd);
 		bool FindNextFileW(void* ff, struct WIN32_FIND_DATAW* fd);
 		bool FindClose(void* ff);
+		DWORD GetFileAttributesW(const wchar_t* Path);
 		
 		int MultiByteToWideChar(unsigned int CodePage, uint32_t dwFlags, const char* lpMultiByteStr,
 			int cbMultiByte, const wchar_t* lpWideCharStr, int cchWideChar);
@@ -133,6 +138,16 @@ if FFI.os == "Windows" then
 		FFI.C.FindClose(FFI.gc(Handle, nil))
 
 		return Result
+	end
+
+	Exists = function(Path)
+		local Attributes = FFI.C.GetFileAttributesW(u2w(Path))
+		return Attributes ~= FFI.C.INVALID_FILE_ATTRIBUTES
+	end
+
+	IsDirectory = function(Path)
+		local Attributes = FFI.C.GetFileAttributesW(u2w(Path))
+		return Attributes ~= FFI.C.INVALID_FILE_ATTRIBUTES and Bit.band(Attributes, FFI.C.FILE_ATTRIBUTE_DIRECTORY) ~= 0
 	end
 else
 	FFI.cdef[[
