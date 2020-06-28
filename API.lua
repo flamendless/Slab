@@ -28,6 +28,9 @@ if SLAB_PATH == nil then
 	SLAB_PATH = (...):match("(.-)[^%.]+$") 
 end
 
+SLAB_FILE_PATH = debug.getinfo(1, 'S').source:match("^@(.+)/")
+SLAB_FILE_PATH = SLAB_FILE_PATH == nil and "" or SLAB_FILE_PATH
+
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
 local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')

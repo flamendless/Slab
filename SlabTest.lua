@@ -647,8 +647,8 @@ local function DrawInput()
 	end
 end
 
-local DrawImage_Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/power.png"
-local DrawImage_Path_Icons = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Textures/gameicons.png"
+local DrawImage_Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/power.png"
+local DrawImage_Path_Icons = SLAB_FILE_PATH .. "/Internal/Resources/Textures/gameicons.png"
 local DrawImage_Color = {1, 0, 0, 1}
 local DrawImage_Color_Edit = false
 local DrawImage_Scale = 1.0
@@ -962,7 +962,7 @@ local function DrawListBox()
 	Slab.EndListBox()
 end
 
-local DrawTree_Icon_Path = SLAB_PATH .. "/Internal/Resources/Textures/Folder.png"
+local DrawTree_Icon_Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"
 local DrawTree_Opened_Selected = 1
 
 local function DrawTree()
@@ -1830,7 +1830,7 @@ local DrawTooltip_CheckBox = false
 local DrawTooltip_Radio = 1
 local DrawTooltip_ComboBox_Items = {"Button", "Check Box", "Combo Box", "Image", "Input", "Text", "Tree"}
 local DrawTooltip_ComboBox_Selected = "Button"
-local DrawTooltip_Image = SLAB_PATH .. "/Internal/Resources/Textures/power.png"
+local DrawTooltip_Image = SLAB_FILE_PATH .. "/Internal/Resources/Textures/power.png"
 local DrawTooltip_Input = "This is an input box."
 
 local function DrawTooltip()
@@ -2092,7 +2092,7 @@ local function DrawLayout()
 end
 
 local DrawFonts_Roboto = nil
-local DrawFonts_Roboto_Path = string.gsub(SLAB_PATH, "%.", "/") .. "/Internal/Resources/Fonts/Roboto-Regular.ttf"
+local DrawFonts_Roboto_Path = SLAB_FILE_PATH .. "/Internal/Resources/Fonts/Roboto-Regular.ttf"
 
 local function DrawFonts()
 	if DrawFonts_Roboto == nil then

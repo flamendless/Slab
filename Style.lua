@@ -81,8 +81,7 @@ local Style =
 
 function API.Initialize()
 	local StylePath = "/Internal/Resources/Styles/"
-	local Path = SLAB_PATH .. StylePath
-	Path = string.gsub(Path, "%.", "/")
+	local Path = SLAB_FILE_PATH .. StylePath
 	-- Use love's filesystem functions to support both packaged and unpackaged builds
 	local Items = love.filesystem.getDirectoryItems(Path)
 
