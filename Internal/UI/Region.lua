@@ -533,6 +533,18 @@ function Region.GetHotInstanceId()
 	return ''
 end
 
+function Region.ClearHotInstance(Id)
+	if HotInstance ~= nil then
+		if Id ~= nil then
+			if HotInstance.Id == Id then
+				HotInstance = nil
+			end
+		else
+			HotInstance = nil
+		end
+	end
+end
+
 function Region.GetInstanceIds()
 	local Result = {}
 

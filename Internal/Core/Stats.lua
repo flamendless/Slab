@@ -36,6 +36,7 @@ local QueueEnabled = false
 local QueueDisable = false
 local Id = 1
 local QueueFlush = false
+local FrameNumber = 0
 
 local function GetCategory(Category)
 	assert(Category ~= nil, "Nil category given to Stats system.")
@@ -145,6 +146,8 @@ function Stats.GetCallCount(Name, Category)
 end
 
 function Stats.Reset()
+	FrameNumber = FrameNumber + 1
+
 	if QueueEnabled then
 		Enabled = true
 		QueueEnabled = false
@@ -218,6 +221,10 @@ end
 
 function Stats.Flush()
 	QueueFlush = true
+end
+
+function Stats.GetFrameNumber()
+	return FrameNumber
 end
 
 return Stats

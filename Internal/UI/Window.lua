@@ -45,7 +45,6 @@ local Stack = {}
 local StackLockId = nil
 local PendingStack = {}
 local ActiveInstance = nil
-local CurrentFrameNumber = 0
 
 local SizerType =
 {
@@ -338,10 +337,6 @@ function Window.Top()
 	return ActiveInstance
 end
 
-function Window.SetFrameNumber(FrameNumber)
-	CurrentFrameNumber = FrameNumber
-end
-
 function Window.IsObstructed(X, Y, SkipScrollCheck)
 	if Region.IsScrolling() then
 		return true
@@ -496,6 +491,7 @@ function Window.Begin(Id, Options)
 	end
 
 	if ActiveInstance.IsOpen then
+		local CurrentFrameNumber = Stats.GetFrameNumber()
 		ActiveInstance.IsAppearing = CurrentFrameNumber - ActiveInstance.FrameNumber > 1
 		ActiveInstance.FrameNumber = CurrentFrameNumber
 
@@ -860,8 +856,10 @@ function Window.Validate()
 
 	local ShouldUpdate = false
 	for I = #Stack, 1, -1 do
-		if Stack[I].FrameNumber ~= CurrentFrameNumber then
+		if Stack[I].FrameNumber ~= Stats.GetFrameNumber() then
 			Stack[I].StackIndex = 0
+			Region.ClearHotInstance(Stack[I].Id)
+			Region.ClearHotInstance(Stack[I].Id .. '_Title')
 			remove(Stack, I)
 			ShouldUpdate = true
 		end

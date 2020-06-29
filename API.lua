@@ -221,7 +221,6 @@ local Version_Major = 0
 local Version_Minor = 7
 local Version_Revision = 0
 
-local FrameNumber = 0
 local FrameStatHandle = nil
 
 -- The path to save the UI state to a file. This will default to the base source directory.
@@ -332,8 +331,6 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
-	FrameNumber = FrameNumber + 1
-
 	Stats.Reset()
 	FrameStatHandle = Stats.Begin('Frame', 'Slab')
 	local StatHandle = Stats.Begin('Update', 'Slab')
@@ -343,7 +340,6 @@ function Slab.Update(dt)
 	Input.Update(dt)
 	DrawCommands.Reset()
 	Window.Reset()
-	Window.SetFrameNumber(FrameNumber)
 	LayoutManager.Validate()
 
 	if MenuState.IsOpened then
