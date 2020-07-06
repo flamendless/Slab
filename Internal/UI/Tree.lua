@@ -41,15 +41,17 @@ local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Tree = {}
-local Instances = {}
+local Instances = setmetatable({}, {__mode = "k"})
 local Hierarchy = {}
 
 local Radius = 4.0
 
 local function GetInstance(Id)
+	local IdString = type(Id) == 'table' and tostring(IdString) or Id
+
 	if #Hierarchy > 0 then
 		local Top = Hierarchy[1]
-		Id = Top.Id .. "." .. Id
+		IdString = Top.Id .. "." .. IdString
 	end
 
 	if Instances[Id] == nil then
@@ -60,7 +62,7 @@ local function GetInstance(Id)
 		Instance.H = 0.0
 		Instance.IsOpen = false
 		Instance.WasOpen = false
-		Instance.Id = Id
+		Instance.Id = IdString
 		Instance.StatHandle = nil
 		Instance.TreeR = 0
 		Instance.TreeB = 0
@@ -73,18 +75,27 @@ end
 function Tree.Begin(Id, Options)
 	local StatHandle = Stats.Begin('Tree', 'Slab')
 
+	local IsTableId = type(Id) == 'table'
+	local IdLabel = IsTableId and tostring(Id) or Id
+
 	Options = Options == nil and {} or Options
-	Options.Label = Options.Label == nil and Id or Options.Label
+	Options.Label = Options.Label == nil and IdLabel or Options.Label
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or OpenWithHighlight
 	Options.Icon = Options.Icon == nil and nil or Options.Icon
 	Options.IconPath = Options.IconPath == nil and nil or Options.IconPath
 	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
-	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
+	Options.NoSavedSettings = Options.NoSavedSettings == nil and IsTableId or (Options.NoSavedSettings and not IsTableId)
 
-	local WinItemId = Window.GetItemId(Id)
-	local Instance = GetInstance(WinItemId)
+	local Instance = nil
+	local WinItemId = Window.GetItemId(IdLabel)
+
+	if IsTableId then
+		Instance = GetInstance(Id)
+	else
+		Instance = GetInstance(WinItemId)
+	end
 
 	Instance.WasOpen = Instance.IsOpen
 	Instance.StatHandle = StatHandle
@@ -258,6 +269,16 @@ function Tree.Load(Table)
 			end
 		end
 	end
+end
+
+function Tree.GetDebugInfo()
+	local Result = {}
+
+	for K, V in pairs(Instances) do
+		table.insert(Result, tostring(K))
+	end
+
+	return Result
 end
 
 return Tree

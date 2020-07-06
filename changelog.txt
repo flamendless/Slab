@@ -10,6 +10,7 @@ v0.7.0 RELEASE
 [Documentation]: Update Input Wiki with IsAnyInputFocused function.
 [Documentation]: Update Text Wiki with 'URL' option. Provide example usage.
 [Documentation]: Update Style Wiki with 'TextURLColor' setting.
+[Documentation]: Update Tree Wiki with documentation of Ids as tables. Provide example usage.
 [Readme]: Add links to LoveFS and luapower/fs Github pages and credit.
 [API]: Test packaged build with new SLAB_FILE_PATH changes.
 

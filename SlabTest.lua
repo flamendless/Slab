@@ -964,6 +964,7 @@ end
 
 local DrawTree_Icon_Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"
 local DrawTree_Opened_Selected = 1
+local DrawTree_Tables = nil
 
 local function DrawTree()
 	Slab.Textf(
@@ -1051,6 +1052,62 @@ local function DrawTree()
 		end
 
 		Slab.EndTree()
+	end
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Tree Ids can also be specified as a table. This allows the user to use a transient table to identify a particular tree " ..
+		"element. The tree system has been updated so that any Ids that are used as tables will have the key be removed when the " ..
+		"referenced table is garbage collected. This gives the user the ability to create thousands of tree elements and have " ..
+		"the tree system keep the number of persistent elements to a minimum. The default label used for these elements will be " ..
+		"the memory location of the table, so it is highly recommended to set the 'Label' option for the table. These table " ..
+		"elements will also be forced to disable saving settings to disk as the referenced key is a table and is transient. " ..
+		"As of version 0.7, this feature is only available for tree controls.")
+	Slab.NewLine()
+	Slab.Textf(
+		"The example below shows 5 tables that have been instanced and have an associated tree element. The right-click context " ..
+		"menu for the root allows for additions to this list. The right-click context menu for each item contains the option " ..
+		"to remove the individual element from the list and have that table garbage collected. This removal will also remove the " ..
+		"associated tree element.")
+
+	Slab.NewLine()
+
+	if DrawTree_Tables == nil then
+		DrawTree_Tables = {}
+		for I = 1, 5, 1 do
+			table.insert(DrawTree_Tables, {})
+		end
+	end
+
+	local RemoveIndex = -1
+	if Slab.BeginTree('Root', {IsOpen = true}) then
+		if Slab.BeginContextMenuItem() then
+			if Slab.MenuItem("Add") then
+				table.insert(DrawTree_Tables, {})
+			end
+
+			Slab.EndContextMenu()
+		end
+
+		for I, V in ipairs(DrawTree_Tables) do
+			Slab.BeginTree(V, {IsLeaf = true})
+
+			if Slab.BeginContextMenuItem() then
+				if Slab.MenuItem("Remove") then
+					RemoveIndex = I
+				end
+
+				Slab.EndContextMenu()
+			end
+		end
+
+		Slab.EndTree()
+	end
+
+	if RemoveIndex > 0 then
+		table.remove(DrawTree_Tables, RemoveIndex)
 	end
 end
 

@@ -1149,7 +1149,8 @@ end
 	order for this tree item to behave properly. The hot zone of this tree item will be the height of the label and the width
 	of the window by default.
 
-	Id: [String] A string uniquely identifying this tree item within the context of the window.
+	Id: [String/Table] A string or table uniquely identifying this tree item within the context of the window. If the given Id
+		is a table, then the internal Tree entry for this table will be removed once the table has been garbage collected.
 	Options: [Table] List of options for how this tree item will behave.
 		Label: [String] The text to be rendered for this tree item.
 		Tooltip: [String] The text to be rendered when the user hovers over this tree item.
