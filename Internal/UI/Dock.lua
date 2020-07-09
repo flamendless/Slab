@@ -35,6 +35,17 @@ local Instances = {}
 local Pending = nil
 local PendingWindow = nil
 
+local function GetInstance(Id)
+	if Instances[Id] == nil then
+		local Instance = {}
+		Instance.Id = Id
+		Instance.Window = nil
+		Instance.Reset = false
+		Instances[Id] = Instance
+	end
+	return Instances[Id]
+end
+
 local function GetOverlayBounds(Type)
 	local X, Y, W, H = 0, 0, 0, 0
 	local ViewW, ViewH = love.graphics.getWidth(), love.graphics.getHeight()
@@ -61,6 +72,11 @@ local function GetOverlayBounds(Type)
 end
 
 local function DrawOverlay(Type)
+	local Instance = GetInstance(Type)
+	if Instance ~= nil and Instance.Window ~= nil then
+		return
+	end
+
 	local X, Y, W, H = GetOverlayBounds(Type)
 	local Color = {0.29, 0.59, 0.83, 0.65}
 	local TitleH = 14
@@ -81,17 +97,6 @@ local function DrawOverlay(Type)
 	DrawCommands.Rectangle('line', X, Y, W, H, {0, 0, 0, 1})
 end
 
-local function GetInstance(Id)
-	if Instances[Id] == nil then
-		local Instance = {}
-		Instance.Id = Id
-		Instance.Windows = {}
-		Instance.Reset = false
-		Instances[Id] = Instance
-	end
-	return Instances[Id]
-end
-
 function Dock.DrawOverlay()
 	DrawCommands.SetLayer('Dock')
 	DrawCommands.Begin()
@@ -108,7 +113,7 @@ function Dock.Commit()
 		local Instance = GetInstance(Pending)
 
 		if PendingWindow ~= nil then
-			Instance.Windows[PendingWindow.Id] = PendingWindow
+			Instance.Window = PendingWindow
 			PendingWindow = nil
 			Instance.Reset = true
 		end
@@ -119,7 +124,7 @@ end
 
 function Dock.GetDock(WinId)
 	for K, V in pairs(Instances) do
-		if V.Windows[WinId] ~= nil then
+		if V.Window ~= nil and V.Window.Id == WinId then
 			return K
 		end
 	end
@@ -155,7 +160,7 @@ function Dock.AlterOptions(WinId, Options)
 	Options = Options == nil and {} or Options
 
 	for Id, Instance in pairs(Instances) do
-		if Instance.Windows[WinId] ~= nil then
+		if Instance.Window ~= nil and Instance.Window.Id == WinId then
 
 			Options.AllowMove = false
 			Options.Layer = 'Dock'
