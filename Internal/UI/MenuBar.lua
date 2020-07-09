@@ -54,6 +54,10 @@ function MenuBar.Begin(IsMainMenuBar)
 		Instance.Selected = nil
 	end
 
+	if IsMainMenuBar then
+		MenuState.MainMenuBarH = Style.Font:getHeight()
+	end
+
 	Window.Begin(Instance.Id,
 	{
 		X = X,

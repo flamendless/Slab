@@ -30,6 +30,7 @@ local max = math.max
 local floor = math.floor
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
@@ -45,6 +46,7 @@ local Stack = {}
 local StackLockId = nil
 local PendingStack = {}
 local ActiveInstance = nil
+local MovingInstance = nil
 
 local SizerType =
 {
@@ -419,6 +421,8 @@ function Window.Begin(Id, Options)
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
+
+	Dock.AlterOptions(Id, Options)
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -854,8 +858,13 @@ function Window.Validate()
 		assert(false, "EndWindow was not called for: " .. PendingStack[1].Id)
 	end
 
+	MovingInstance = nil
 	local ShouldUpdate = false
 	for I = #Stack, 1, -1 do
+		if Stack[I].IsMoving then
+			MovingInstance = Stack[I]
+		end
+
 		if Stack[I].FrameNumber ~= Stats.GetFrameNumber() then
 			Stack[I].StackIndex = 0
 			Region.ClearHotInstance(Stack[I].Id)
@@ -999,6 +1008,10 @@ function Window.Load(Table)
 			end
 		end
 	end
+end
+
+function Window.GetMovingInstance()
+	return MovingInstance
 end
 
 return Window

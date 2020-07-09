@@ -68,10 +68,11 @@ local Types =
 local Layers =
 {
 	Normal = 1,
-	ContextMenu = 2,
-	MainMenuBar = 3,
-	Dialog = 4,
-	Debug = 5
+	Dock = 2,
+	ContextMenu = 3,
+	MainMenuBar = 4,
+	Dialog = 5,
+	Debug = 6
 }
 
 local ActiveLayer = Layers.Normal
@@ -379,6 +380,7 @@ end
 function DrawCommands.Reset()
 	LayerTable = {}
 	LayerTable[Layers.Normal] = {}
+	LayerTable[Layers.Dock] = {}
 	LayerTable[Layers.ContextMenu] = {}
 	LayerTable[Layers.MainMenuBar] = {}
 	LayerTable[Layers.Dialog] = {}
@@ -430,6 +432,8 @@ end
 function DrawCommands.SetLayer(Layer)
 	if Layer == 'Normal' then
 		ActiveLayer = Layers.Normal
+	elseif Layer == 'Dock' then
+		ActiveLayer = Layers.Dock
 	elseif Layer == 'ContextMenu' then
 		ActiveLayer = Layers.ContextMenu
 	elseif Layer == 'MainMenuBar' then
@@ -712,6 +716,7 @@ function DrawCommands.Execute()
 	local StatHandle = Stats.Begin('Execute', StatsCategory)
 
 	DrawLayer(LayerTable[Layers.Normal], 'Normal')
+	DrawLayer(LayerTable[Layers.Dock], 'Dock')
 	DrawLayer(LayerTable[Layers.ContextMenu], 'ContextMenu')
 	DrawLayer(LayerTable[Layers.MainMenuBar], 'MainMenuBar')
 	DrawLayer(LayerTable[Layers.Dialog], 'Dialog')
@@ -726,6 +731,7 @@ function DrawCommands.GetDebugInfo()
 	local Result = {}
 
 	Result['Normal'] = GetLayerDebugInfo(LayerTable[Layers.Normal])
+	Result['Dock'] = GetLayerDebugInfo(LayerTable[Layers.Dock])
 	Result['ContextMenu'] = GetLayerDebugInfo(LayerTable[Layers.ContextMenu])
 	Result['MainMenuBar'] = GetLayerDebugInfo(LayerTable[Layers.MainMenuBar])
 	Result['Dialog'] = GetLayerDebugInfo(LayerTable[Layers.Dialog])

@@ -38,6 +38,7 @@ local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Config = require(SLAB_PATH .. '.Internal.Core.Config')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
+local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
@@ -365,6 +366,14 @@ function Slab.Draw()
 	local StatHandle = Stats.Begin('Draw', 'Slab')
 
 	Window.Validate()
+
+	local MovingInstance = Window.GetMovingInstance()
+	if MovingInstance ~= nil then
+		Dock.DrawOverlay()
+		Dock.SetPendingWindow(MovingInstance)
+	else
+		Dock.Commit()
+	end
 
 	if MenuState.RequestClose then
 		Menu.Close()

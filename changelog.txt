@@ -1,6 +1,9 @@
 v0.7.0 RELEASE
 ==========
-[Dock]: Initial implementation of docking.
+[Dock]: Tear away docked window.
+[Dock]: Prevent docking window into occupied dock.
+[Dock]: Save state for each dock.
+[Dock]: API function to configure which areas are dockable.
 [Documentation]: Update Wiki with shader documentation.
 [Documentation]: Update Input Wiki with information about 'Step' and 'NoDrag'. Provide example usage.
 [Documentation]: Update Input Wiki with information about 'UseSlider'. Provide example usage.
