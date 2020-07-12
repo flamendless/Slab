@@ -233,6 +233,7 @@ local function LoadState()
 	if INIStatePath ~= nil then
 		local Result, Error = Config.LoadFile(INIStatePath)
 		if Result ~= nil then
+			Dock.Load(Result)
 			Tree.Load(Result)
 			Window.Load(Result)
 		elseif Verbose then
@@ -244,6 +245,7 @@ end
 local function SaveState()
 	if INIStatePath ~= nil then
 		local Table = {}
+		Dock.Save(Table)
 		Tree.Save(Table)
 		Window.Save(Table)
 		Config.Save(INIStatePath, Table)

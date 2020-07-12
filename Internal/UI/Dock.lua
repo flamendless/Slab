@@ -113,7 +113,7 @@ function Dock.Commit()
 		local Instance = GetInstance(Pending)
 
 		if PendingWindow ~= nil then
-			Instance.Window = PendingWindow
+			Instance.Window = PendingWindow.Id
 			PendingWindow = nil
 			Instance.Reset = true
 		end
@@ -124,7 +124,7 @@ end
 
 function Dock.GetDock(WinId)
 	for K, V in pairs(Instances) do
-		if V.Window ~= nil and V.Window.Id == WinId then
+		if V.Window == WinId then
 			return K
 		end
 	end
@@ -160,7 +160,7 @@ function Dock.AlterOptions(WinId, Options)
 	Options = Options == nil and {} or Options
 
 	for Id, Instance in pairs(Instances) do
-		if Instance.Window ~= nil and Instance.Window.Id == WinId then
+		if Instance.Window == WinId then
 
 			Options.AllowMove = false
 			Options.Layer = 'Dock'
@@ -196,6 +196,28 @@ end
 
 function Dock.GetPendingWindow()
 	return PendingWindow
+end
+
+function Dock.Save(Table)
+	if Table ~= nil then
+		local Settings = {}
+		for K, V in pairs(Instances) do
+			Settings[K] = tostring(V.Window)
+		end
+		Table['Dock'] = Settings
+	end
+end
+
+function Dock.Load(Table)
+	if Table ~= nil then
+		local Settings = Table['Dock']
+		if Settings ~= nil then
+			for K, V in pairs(Settings) do
+				local Instance = GetInstance(K)
+				Instance.Window = V
+			end
+		end
+	end
 end
 
 return Dock
