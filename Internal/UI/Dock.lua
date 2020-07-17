@@ -28,6 +28,7 @@ local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 
 local Dock = {}
 
@@ -41,6 +42,11 @@ local function GetInstance(Id)
 		Instance.Id = Id
 		Instance.Window = nil
 		Instance.Reset = false
+		Instance.TearX = 0
+		Instance.TearY = 0
+		Instance.IsTearing = false
+		Instance.Torn = false
+		Instance.CachedOptions = nil
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -98,6 +104,8 @@ local function DrawOverlay(Type)
 end
 
 function Dock.DrawOverlay()
+	Pending = nil
+
 	DrawCommands.SetLayer('Dock')
 	DrawCommands.Begin()
 
@@ -106,6 +114,12 @@ function Dock.DrawOverlay()
 	DrawOverlay('Bottom')
 
 	DrawCommands.End()
+
+	if Mouse.IsReleased(1) then
+		for Id, Instance in pairs(Instances) do
+			Instance.IsTearing = false
+		end
+	end
 end
 
 function Dock.Commit()
@@ -162,28 +176,52 @@ function Dock.AlterOptions(WinId, Options)
 	for Id, Instance in pairs(Instances) do
 		if Instance.Window == WinId then
 
-			Options.AllowMove = false
-			Options.Layer = 'Dock'
-			if Id == 'Left' then
-				Options.SizerFilter = {'E'}
-			elseif Id == 'Right' then
-				Options.SizerFilter = {'W'}
-			elseif Id == 'Bottom' then
-				Options.SizerFilter = {'N'}
-			end
+			if Instance.Torn then
+				Instance.Window = nil
+				Utility.CopyValues(Options, Instance.CachedOptions)
+				Instance.CachedOptions = nil
+				Instance.Torn = false
+				Options.ResetSize = true
+			else
+				if Instance.Reset then
+					Instance.CachedOptions = {
+						X = Options.X,
+						Y = Options.Y,
+						W = Options.W,
+						H = Options.H,
+						AllowMove = Options.AllowMove,
+						Layer = Options.Layer,
+						SizerFilter = Utility.Copy(Options.SizerFilter),
+						AutoSizeWindow = Options.AutoSizeWindow,
+						AutoSizeWindowW = Options.AutoSizeWindowW,
+						AutoSizeWindowH = Options.AutoSizeWindowH,
+						AllowResize = Options.AllowResize
+					}
+				end
 
-			local X, Y, W, H = Dock.GetBounds(Id)
-			Options.X = X
-			Options.Y = Y
-			Options.W = W
-			Options.H = H
-			Options.AutoSizeWindow = false
-			Options.AutoSizeWindowW = false
-			Options.AutoSizeWindowH = false
-			Options.AllowResize = true
-			Options.ResetPosition = Instance.Reset
-			Options.ResetSize = Instance.Reset
-			Instance.Reset = false
+				Options.AllowMove = false
+				Options.Layer = 'Dock'
+				if Id == 'Left' then
+					Options.SizerFilter = {'E'}
+				elseif Id == 'Right' then
+					Options.SizerFilter = {'W'}
+				elseif Id == 'Bottom' then
+					Options.SizerFilter = {'N'}
+				end
+
+				local X, Y, W, H = Dock.GetBounds(Id)
+				Options.X = X
+				Options.Y = Y
+				Options.W = W
+				Options.H = H
+				Options.AutoSizeWindow = false
+				Options.AutoSizeWindowW = false
+				Options.AutoSizeWindowH = false
+				Options.AllowResize = true
+				Options.ResetPosition = Instance.Reset
+				Options.ResetSize = Instance.Reset
+				Instance.Reset = false
+			end
 
 			break
 		end
@@ -196,6 +234,42 @@ end
 
 function Dock.GetPendingWindow()
 	return PendingWindow
+end
+
+function Dock.IsTethered(WinId)
+	for Id, Instance in pairs(Instances) do
+		if Instance.Window == WinId then
+			return not Instance.Torn
+		end
+	end
+
+	return false
+end
+
+function Dock.BeginTear(WinId, X, Y)
+	for Id, Instance in pairs(Instances) do
+		if Instance.Window == WinId then
+			Instance.TearX = X
+			Instance.TearY = Y
+			Instance.IsTearing = true
+		end
+	end
+end
+
+function Dock.UpdateTear(WinId, X, Y)
+	for Id, Instance in pairs(Instances) do
+		if Instance.Window == WinId and Instance.IsTearing then
+			local Threshold = 25.0
+			local DistanceX = Instance.TearX - X
+			local DistanceY = Instance.TearY - Y
+			local DistanceSq = DistanceX * DistanceX + DistanceY * DistanceY
+
+			if DistanceSq >= Threshold * Threshold then
+				Instance.IsTearing = false
+				Instance.Torn = true
+			end
+		end
+	end
 end
 
 function Dock.Save(Table)

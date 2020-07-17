@@ -178,6 +178,10 @@ local function DecodeValue(Value)
 			return Boolean
 		end
 
+		if Value == "nil" then
+			return nil
+		end
+
 		local Array = DecodeArray(Value)
 		if Array ~= nil then
 			return Array

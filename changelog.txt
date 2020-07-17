@@ -1,8 +1,8 @@
 v0.7.0 RELEASE
 ==========
-[Dock]: Tear away docked window.
 [Dock]: API function to configure which areas are dockable.
 [Dock]: NoSavedSettings option for each dock.
+[Window]: When mouse leaves title area of moving window into another window's body, the moving window loses moving focus.
 [Documentation]: Update Wiki with shader documentation.
 [Documentation]: Update Input Wiki with information about 'Step' and 'NoDrag'. Provide example usage.
 [Documentation]: Update Input Wiki with information about 'UseSlider'. Provide example usage.

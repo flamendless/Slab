@@ -93,7 +93,6 @@ local function NewInstance(Id)
 	Instance.IsMoving = false
 	Instance.TitleDeltaX = 0.0
 	Instance.TitleDeltaY = 0.0
-	Instance.AllowMove = true
 	Instance.AllowResize = true
 	Instance.AllowFocus = true
 	Instance.SizerType = SizerType.None
@@ -149,22 +148,30 @@ local function Contains(Instance, X, Y)
 	return false
 end
 
-local function UpdateTitleBar(Instance, IsObstructed)
+local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
 	if IsObstructed then
 		return
 	end
 
-	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None and Instance.AllowMove then
+	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None then
 		local W = Instance.W
 		local H = Style.Font:getHeight()
 		local X = Instance.X
 		local Y = Instance.Y - H
+		local IsTethered = Dock.IsTethered(Instance.Id)
 
 		local MouseX, MouseY = Mouse.Position()
 
 		if Mouse.IsClicked(1) then
 			if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-				Instance.IsMoving = true
+				if AllowMove then
+					Instance.IsMoving = true
+				end
+
+				if IsTethered then
+					Dock.BeginTear(Instance.Id, MouseX, MouseY)
+				end
+
 				if Instance.AllowFocus then
 					PushToTop(Instance)
 				end
@@ -177,6 +184,12 @@ local function UpdateTitleBar(Instance, IsObstructed)
 			local DeltaX, DeltaY = Mouse.GetDelta()
 			Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
 			Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
+		elseif IsTethered then
+			Dock.UpdateTear(Instance.Id, MouseX, MouseY)
+
+			if not Dock.IsTethered(Instance.Id) then
+				Instance.IsMoving = true
+			end
 		end
 	end
 end
@@ -471,7 +484,6 @@ function Window.Begin(Id, Options)
 	ActiveInstance.ContentH = Options.ContentH
 	ActiveInstance.BackgroundColor = Options.BgColor
 	ActiveInstance.Title = Options.Title
-	ActiveInstance.AllowMove = Options.AllowMove
 	ActiveInstance.AllowResize = Options.AllowResize and not Options.AutoSizeWindow
 	ActiveInstance.AllowFocus = Options.AllowFocus
 	ActiveInstance.Border = Options.Border
@@ -533,7 +545,7 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance, IsObstructed)
+	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
@@ -933,6 +945,8 @@ function Window.GetInstanceInfo(Id)
 			break
 		end
 	end
+
+	insert(Result, "MovingInstance: " .. (MovingInstance ~= nil and MovingInstance.Id or "nil"))
 
 	if Instance ~= nil then
 		insert(Result, "Title: " .. Instance.Title)
