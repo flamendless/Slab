@@ -214,6 +214,10 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Shader:
 			PushShader
 			PopShader
+
+		Dock:
+			EnableDocks
+			DisableDocks
 --]]
 local Slab = {}
 
@@ -2176,6 +2180,32 @@ end
 --]]
 function Slab.PopShader()
 	DrawCommands.PopShader()
+end
+
+--[[
+	EnableDocks
+
+	Enables the docking functionality for a particular side of the viewport.
+
+	List: [String/Table] A single item or list of items to enable for docking. The valid options are 'Left', 'Right', or 'Bottom'.
+
+	Return: None.
+--]]
+function Slab.EnableDocks(List)
+	Dock.Toggle(List, true)
+end
+
+--[[
+	DisableDocks
+
+	Disables the docking functionality for a particular side of the viewport.
+
+	List: [String/Table] A single item or list of items to disable for docking. The valid options are 'Left', 'Right', or 'Bottom'.
+
+	Return: None.
+--]]
+function Slab.DisableDocks(List)
+	Dock.Toggle(List, false)
 end
 
 return Slab

@@ -36,6 +36,18 @@ local Instances = {}
 local Pending = nil
 local PendingWindow = nil
 
+local function IsValid(Id)
+	if Id == nil then
+		return false
+	end
+
+	if type(Id) ~= 'string' then
+		return false
+	end
+
+	return Id == 'Left' or Id == 'Bottom' or Id == 'Right'
+end
+
 local function GetInstance(Id)
 	if Instances[Id] == nil then
 		local Instance = {}
@@ -47,6 +59,7 @@ local function GetInstance(Id)
 		Instance.IsTearing = false
 		Instance.Torn = false
 		Instance.CachedOptions = nil
+		Instance.Enabled = true
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -80,6 +93,10 @@ end
 local function DrawOverlay(Type)
 	local Instance = GetInstance(Type)
 	if Instance ~= nil and Instance.Window ~= nil then
+		return
+	end
+
+	if not Instance.Enabled then
 		return
 	end
 
@@ -268,6 +285,22 @@ function Dock.UpdateTear(WinId, X, Y)
 				Instance.IsTearing = false
 				Instance.Torn = true
 			end
+		end
+	end
+end
+
+function Dock.Toggle(List, Enabled)
+	List = List == nil and {} or List
+	Enabled = Enabled == nil and true or Enabled
+
+	if type(List) == 'string' then
+		List = {List}
+	end
+
+	for I, V in ipairs(List) do
+		if IsValid(V) then
+			local Instance = GetInstance(V)
+			Instance.Enabled = Enabled
 		end
 	end
 end

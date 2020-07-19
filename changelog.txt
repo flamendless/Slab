@@ -1,6 +1,5 @@
 v0.7.0 RELEASE
 ==========
-[Dock]: API function to configure which areas are dockable.
 [Dock]: NoSavedSettings option for each dock.
 [Window]: When mouse leaves title area of moving window into another window's body, the moving window loses moving focus.
 [Documentation]: Update Wiki with shader documentation.
@@ -13,6 +12,7 @@ v0.7.0 RELEASE
 [Documentation]: Update Text Wiki with 'URL' option. Provide example usage.
 [Documentation]: Update Style Wiki with 'TextURLColor' setting.
 [Documentation]: Update Tree Wiki with documentation of Ids as tables. Provide example usage.
+[Documentation]: Dock Wiki with documentation for usage. Add documentation for EnableDocks/DisableDocks. Provide example usage.
 [Readme]: Add links to LoveFS and luapower/fs Github pages and credit.
 [API]: Test packaged build with new SLAB_FILE_PATH changes.
 
