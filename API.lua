@@ -218,6 +218,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		Dock:
 			EnableDocks
 			DisableDocks
+			SetDockOptions
 --]]
 local Slab = {}
 
@@ -2206,6 +2207,19 @@ end
 --]]
 function Slab.DisableDocks(List)
 	Dock.Toggle(List, false)
+end
+
+--[[
+	SetDockOptions
+
+	Set options for a dock type.
+
+	Type: [String] The type of dock to set options for. This can be 'Left', 'Right', or 'Bottom'.
+	Options: [Table] List of options that control how a dock behaves.
+		NoSavedSettings: [Boolean] Flag to disable saving a dock's settings to the state INI file.
+--]]
+function Slab.SetDockOptions(Type, Options)
+	Dock.SetOptions(Type, Options)
 end
 
 return Slab

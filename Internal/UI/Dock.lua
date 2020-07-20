@@ -60,6 +60,7 @@ local function GetInstance(Id)
 		Instance.Torn = false
 		Instance.CachedOptions = nil
 		Instance.Enabled = true
+		Instance.NoSavedSettings = false
 		Instances[Id] = Instance
 	end
 	return Instances[Id]
@@ -305,11 +306,23 @@ function Dock.Toggle(List, Enabled)
 	end
 end
 
+function Dock.SetOptions(Type, Options)
+	Options = Options == nil and {} or Options
+	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
+
+	if IsValid(Type) then
+		local Instance = GetInstance(Type)
+		Instance.NoSavedSettings = Options.NoSavedSettings
+	end
+end
+
 function Dock.Save(Table)
 	if Table ~= nil then
 		local Settings = {}
 		for K, V in pairs(Instances) do
-			Settings[K] = tostring(V.Window)
+			if not V.NoSavedSettings then
+				Settings[K] = tostring(V.Window)
+			end
 		end
 		Table['Dock'] = Settings
 	end
