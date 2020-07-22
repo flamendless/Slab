@@ -364,6 +364,10 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 			return true
 		end
 
+		if ActiveInstance.IsMoving then
+			return false
+		end
+
 		for I, V in ipairs(Stack) do
 			if V.Id == StackLockId then
 				FoundStackLock = true
