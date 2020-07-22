@@ -368,6 +368,21 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 			return false
 		end
 
+		-- Check if docked windows are obstructing floating windows.
+		for I, V in ipairs(Stack) do
+			if Dock.IsTethered(V.Id) then
+				if ActiveInstance == V then
+					return false
+				end
+
+				if Contains(V, X, Y) and V.CanObstruct and V.IsOpen then
+					return true
+				end
+			end
+		end
+
+		-- Proceed to check stack order of floating windows. Dialogs are pushed to the top of
+		-- the stack.
 		for I, V in ipairs(Stack) do
 			if V.Id == StackLockId then
 				FoundStackLock = true
