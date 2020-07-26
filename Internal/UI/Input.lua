@@ -825,10 +825,15 @@ local function UpdateSlider(Instance)
 		local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
 		local IsInteger = floor(Min) == Min and floor(Max) == Max
 		local Value = (Max - Min) * Ratio + Min
-		if IsInteger then
-			Instance.Text = string.format("%d", Value)
-		else
-			Instance.Text = string.format("%.3f", Value)
+		local OldText = Instance.Text
+		-- if IsInteger then
+		-- 	Instance.Text = string.format("%d", Value)
+		-- else
+		-- 	Instance.Text = string.format("%.3f", Value)
+		-- end
+		Instance.Text = tostring(Value)
+		if Instance.Text ~= OldText then
+			Instance.TextChanged = true
 		end
 	end
 end
@@ -842,6 +847,7 @@ local function UpdateDrag(Instance, Step)
 				Value = Value + Step * DeltaX
 				Instance.Text = tostring(Value)
 				ValidateNumber(Instance)
+				Instance.TextChanged = true
 			end
 		end
 	end

@@ -1019,7 +1019,7 @@ function Slab.InputNumberDrag(Id, Value, Min, Max, Step, Options)
 	Options.NumbersOnly = true
 	Options.UseSlider = false
 	Options.NoDrag = false
-	Options.ReturnOnText = false
+	-- Options.ReturnOnText = false
 	return Slab.Input(Id, Options)
 end
 
@@ -1046,7 +1046,7 @@ function Slab.InputNumberSlider(Id, Value, Min, Max, Options)
 	Options.MaxNumber = Max
 	Options.NumbersOnly = true
 	Options.UseSlider = true
-	Options.ReturnOnText = false
+	-- Options.ReturnOnText = false
 	return Slab.Input(Id, Options)
 end
 
