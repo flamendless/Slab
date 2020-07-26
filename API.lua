@@ -1403,27 +1403,39 @@ end
 	TODO: Iterate through nested tables.
 
 	Table: [Table] The list of properties to build widgets for.
+	Options: [Table] An optional table of Options for each key in Table. The special key '*' can be set as a
+		fallback set of Options.
+	Fallback: [Table] An optional table of Options used for any key not found in Options.
 
 	Return: None.
 --]]
-function Slab.Properties(Table)
+function Slab.Properties(Table, Options, Fallback)
 	if Table ~= nil then
 		for K, V in pairs(Table) do
 			local Type = type(V)
+			local Opt = (Options and Options[K]) or Fallback or {}
 			if Type == "boolean" then
-				if Slab.CheckBox(V, K) then
+				if Slab.CheckBox(V, K, Opt) then
 					Table[K] = not Table[K]
 				end
 			elseif Type == "number" then
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
-				if Slab.Input(K, {Text = tostring(V), NumbersOnly = true, ReturnOnText = false}) then
+				Opt.Text = tostring(V)
+				Opt.NumbersOnly = true
+				Opt.ReturnOnText = false
+				if Opt.UseSlider == nil then
+					Opt.UseSlider = Opt.MinNumber and Opt.MinNumber
+				end
+				if Slab.Input(K, Opt) then
 					Table[K] = Slab.GetInputNumber()
 				end
 			elseif Type == "string" then
 				Slab.Text(K .. ": ")
 				Slab.SameLine()
-				if Slab.Input(K, {Text = V, ReturnOnText = false}) then
+				Opt.Text = V
+				Opt.ReturnOnText = false
+				if Slab.Input(K, Opt) then
 					Table[K] = Slab.GetInputText()
 				end
 			end
