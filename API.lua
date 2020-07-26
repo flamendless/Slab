@@ -1016,6 +1016,7 @@ function Slab.InputNumberDrag(Id, Value, Min, Max, Step, Options)
 	Options.Text = tostring(Value)
 	Options.MinNumber = Min
 	Options.MaxNumber = Max
+	Options.Step = Step
 	Options.NumbersOnly = true
 	Options.UseSlider = false
 	Options.NoDrag = false
