@@ -1,6 +1,5 @@
 v0.7.1
 ==========
-[API]: Update version number.
 [Input]: InputNumberDrag too sensitive. Adjust sensitivity based on range.
 [Input]: 'Step' should be changed to 'Precision'.
 [Error]: Show messages for deprecated API.
