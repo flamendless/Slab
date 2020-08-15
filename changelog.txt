@@ -1,8 +1,14 @@
+v0.7.1
+==========
+[API]: Update version number.
+[Input]: InputNumberDrag too sensitive. Adjust sensitivity based on range.
+[Input]: 'Step' should be changed to 'Precision'.
+[Error]: Show messages for deprecated API.
+
 BUGS
 ==========
 [Combo Box]: Selectable text not expanding to full width of window.
 [File Dialog]: Excess right border.
-[File System][Mac]: 'Unknown primary or operator' error message.
 [List Box]: View transform pops while parent window is resizing when scroll is in non-zero position.
 [List Box]: Region size not reset when list items change.
 [List Box]: Window not properly auto-sized.
@@ -26,7 +32,6 @@ Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Documentation]: Command-line option to just dump all functions listed in API table.
 [Error]: Dialog that shows any error messages.
-[Error]: Show messages for deprecated API.
 [Graph]: Initial line graph implementation.
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
