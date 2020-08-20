@@ -402,6 +402,14 @@ function Slab.Draw()
 	Stats.End(FrameStatHandle)
 end
 
+function Slab.MousePressed(x, y, button, istouch, pressess)
+    Mouse.OnPressed(x, y, button, istouch, pressess)
+end
+
+function Slab.MouseReleased(x, y, button, istouch, pressess)
+    Mouse.OnReleased(x, y, button, istouch, pressess)
+end
+
 --[[
 	SetINIStatePath
 
@@ -1679,6 +1687,14 @@ function Slab.IsMouseDoubleClicked(Button)
 	return Mouse.IsDoubleClicked(Button and Button or 1)
 end
 
+function Slab.WasMousePressed(button, times)
+	return Mouse.WasPressed(button and button or 1, times and times or 1);
+end
+
+function Slab.WasMouseReleased(button, times)
+	return Mouse.WasReleased(button and button or 1, times and times or 1);
+end
+
 --[[
 	IsMouseDragging
 
@@ -1755,6 +1771,32 @@ end
 --]]
 function Slab.IsControlClicked(Button)
 	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+end
+
+function Slab.WasControlPressed(button, times)
+	local Result = Window.IsItemHot()
+
+	if not Slab.WasMousePressed(button, times) then return false; end
+	local press = Mouse.GetLastPress()
+	if not Result and not Window.IsObstructed(press.x, press.y) then
+		local X, Y = Window.GetPointPosition(press.x, press.y)
+		Result = Cursor.IsInItemBounds(X, Y)
+	end
+
+	return Result
+end
+
+function Slab.WasControlReleased(button, times)
+	local Result = Window.IsItemHot()
+
+	if not Slab.WasMouseReleased(button, times) then return false; end
+	local rel = Mouse.GetLastRelease()
+	if not Result and not Window.IsObstructed(rel.x, rel.y) then
+		local X, Y = Window.GetPointPosition(rel.x, rel.y)
+		Result = Cursor.IsInItemBounds(X, Y)
+	end
+
+	return Result
 end
 
 --[[

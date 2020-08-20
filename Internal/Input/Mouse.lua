@@ -26,6 +26,21 @@ SOFTWARE.
 
 local Mouse = {}
 
+local LastUpdateTime = 0;
+local CurrentUpdateTime = 0;
+
+local LastPress =
+{
+	time = 0,
+	times = 0
+}
+
+local LastRelease =
+{
+	time = 0,
+	times = 0
+}
+
 local State =
 {
 	Button = {},
@@ -50,7 +65,25 @@ local function UpdateClickTime(Button)
 	end
 end
 
+function Mouse.OnPressed(x, y, button, istouch, pressess)
+	LastPress.time = love.timer.getTime();
+	LastPress.x = x;
+	LastPress.y = y;
+	LastPress.button = button;
+	LastPress.times = pressess;
+end
+
+function Mouse.OnReleased(x, y, button, istouch, pressess)
+	LastRelease.time = love.timer.getTime();
+	LastRelease.x = x;
+	LastRelease.y = y;
+	LastRelease.button = button;
+	LastRelease.times = pressess;
+end
+
 function Mouse.Update()
+	LastUpdateTime = CurrentUpdateTime;
+	CurrentUpdateTime = love.timer.getTime();
 	local LastX, LastY = State.X, State.Y
 	State.X, State.Y = love.mouse.getPosition()
 	State.DeltaX, State.DeltaY = State.X - LastX, State.Y - LastY
@@ -80,6 +113,26 @@ function Mouse.Update()
 	end
 
 	Mouse.SetCursor('arrow')
+end
+
+function Mouse.GetLastPress()
+	return LastPress;
+end
+
+function Mouse.GetLastRelease()
+	return LastRelease;
+end
+
+-- local function DumpLastPress()
+-- 	print("Last press:", LastPress.time, LastPress.x, LastPress.y, LastPress.button, LastPress.times);
+-- end
+
+function Mouse.WasPressed(button, times)
+	return LastPress.time >= LastUpdateTime and LastPress.button == button and LastPress.times == times;
+end
+
+function Mouse.WasReleased(button, times)
+	return LastRelease.time >= LastUpdateTime and LastRelease.button == button and LastRelease.times == times;
 end
 
 function Mouse.IsPressed(Button)

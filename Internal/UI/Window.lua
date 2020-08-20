@@ -679,12 +679,16 @@ function Window.End()
 	end
 end
 
+function Window.GetPointPosition(x, y)
+	if ActiveInstance ~= nil then
+		x, y = Region.InverseTransform(ActiveInstance.Id, x, y)
+	end
+	return x, y
+end
+
 function Window.GetMousePosition()
 	local X, Y = Mouse.Position()
-	if ActiveInstance ~= nil then
-		X, Y = Region.InverseTransform(ActiveInstance.Id, X, Y)
-	end
-	return X, Y
+	return Window.GetPointPosition(X, Y)
 end
 
 function Window.GetWidth()
