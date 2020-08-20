@@ -45,6 +45,7 @@ local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
+local Messages = require(SLAB_PATH .. '.Internal.Core.Messages')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
 local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
@@ -80,6 +81,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 		SetINIStatePath
 		GetINIStatePath
 		SetVerbose
+		GetMessages
 
 		Style:
 			GetStyle
@@ -287,7 +289,8 @@ end
 	Initializes Slab and hooks into the required events. This function should be called in love.load.
 
 	args: [Table] The list of parameters passed in by the user on the command-line. This should be passed in from
-		love.load function.
+		love.load function. Below is a list of arguments available to modify Slab:
+		NoMessages: [String] Disables the messaging system that warns developers of any changes in the API.
 
 	Return: None.
 --]]
@@ -301,6 +304,15 @@ function Slab.Initialize(args)
 	-- the stored function once Slab is finished with its process.
 	QuitFn = love.quit
 	love.quit = OnQuit
+
+	args = args or {}
+	if type(args) == 'table' then
+		for I, V in ipairs(args) do
+			if string.lower(V) == 'nomessages' then
+				Messages.SetEnabled(false)
+			end
+		end
+	end
 
 	LoadState()
 end
@@ -435,6 +447,17 @@ end
 --]]
 function Slab.SetVerbose(IsVerbose)
 	Verbose = (IsVerbose == nil or type(IsVerbose) ~= 'boolean') and false or IsVerbose
+end
+
+--[[
+	GetMessages
+
+	Retrieves a list of existing messages that has been captured by Slab.
+
+	Return: [Table] List of messages that have been broadcasted from Slab.
+--]]
+function Slab.GetMessages()
+	return Messages.Get()
 end
 
 --[[

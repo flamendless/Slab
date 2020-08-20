@@ -2,7 +2,8 @@ v0.7.1
 ==========
 [Input]: InputNumberDrag too sensitive. Adjust sensitivity based on range.
 [Input]: 'Step' should be changed to 'Precision'.
-[Error]: Show messages for deprecated API.
+[Mouse]: Test with low framerates. Mouse/Keyboard input is updated via love.update. This is managed by love based on the FPS setting. Does love.mouse*/love.key* operate independently of framerate?
+[ListBox]: Nil width or height does not expand the list box to window width or height.
 
 BUGS
 ==========
@@ -21,6 +22,7 @@ TODO
 [Animation]: Initial animation support.
 [API]: Re-organize functions in categories and update comment.
 [API]: Get/Set cursor padding.
+[API]: Utilitze 'args' parameter for configuring docks, save state.
 [Column]: Investigate moving Column rendering to its own draw channel within an active batch to reduce scissor calls.
 [Column]: Move separator with mouse.
 Combo Box: Easy API with table of possible values.
@@ -31,6 +33,7 @@ Dialog: Function to close all dialog boxes.
 Dialog: Modal/Non-modal dialogs.
 [Documentation]: Command-line option to just dump all functions listed in API table.
 [Error]: Dialog that shows any error messages.
+[Frame]: API calls to setup frames (child regions in Dear ImGui). Can hook into Regions module and expose some functionality from this for this feature.
 [Graph]: Initial line graph implementation.
 [Input]: Drag select word versus character.
 [Input]: Auto-grow control with MulitLine.
