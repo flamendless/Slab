@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local abs = math.abs
 local insert = table.insert
 local min = math.min
 local max = math.max
@@ -70,6 +71,7 @@ local PendingCursorPos = -1
 local PendingCursorColumn = -1
 local PendingCursorLine = -1
 local IsSliding = false
+local DragDelta = 0
 
 local MIN_WIDTH = 150.0
 
@@ -837,11 +839,31 @@ local function UpdateDrag(Instance, Step)
 	if Instance ~= nil then
 		local DeltaX, DeltaY = Mouse.GetDelta()
 		if DeltaX ~= 0.0 then
-			local Value = tonumber(Instance.Text)
-			if Value ~= nil then
-				Value = Value + Step * DeltaX
-				Instance.Text = tostring(Value)
-				ValidateNumber(Instance)
+			-- The drag threshold will be calculated dynamically. This is achieved by taking the active monitor
+			-- width and dividing by the allowable range. The DPI scale is taken into account as well. The
+			-- threshold is clamped at 10 to prevent large requirements for drag effect.
+			local DPIScale = love.window.getDPIScale()
+			local Width, Height, Flags = love.window.getMode()
+			local DesktopWidth, DesktopHeight = love.window.getDesktopDimensions(Flags.display)
+			local Min = Instance.MinNumber or -huge
+			local Max = Instance.MaxNumber or huge
+			local Diff = Max - Min
+			local DragThreshold = 1.0
+
+			if Diff > 0 then
+				DragThreshold = floor(DesktopWidth / Diff) / DPIScale
+				DragThreshold = Utility.Clamp(DragThreshold, 1, 10)
+			end
+
+			DragDelta = DragDelta + DeltaX
+			if abs(DragDelta) > DragThreshold then
+				DragDelta = 0
+				local Value = tonumber(Instance.Text)
+				if Value ~= nil then
+					Value = Value + Step * (DeltaX < 0 and -1 or 1)
+					Instance.Text = tostring(Value)
+					ValidateNumber(Instance)
+				end
 			end
 		end
 	end
@@ -1189,6 +1211,7 @@ function Input.Begin(Id, Options)
 			if FocusedThisFrame then
 				if Options.NumbersOnly and not NumbersOnlyEntry and not Options.NoDrag then
 					IsSliding = true
+					DragDelta = 0
 				elseif Options.SelectOnFocus and Instance.Text ~= "" then
 					TextCursorAnchor = 0
 					TextCursorPos = #Instance.Text
