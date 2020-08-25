@@ -847,7 +847,7 @@ local function UpdateDrag(Instance, Step)
 			local DesktopWidth, DesktopHeight = love.window.getDesktopDimensions(Flags.display)
 			local Min = Instance.MinNumber or -huge
 			local Max = Instance.MaxNumber or huge
-			local Diff = Max - Min
+			local Diff = (Max - Min) / Step
 			local DragThreshold = 1.0
 
 			if Diff > 0 then
