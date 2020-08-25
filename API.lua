@@ -1030,6 +1030,7 @@ end
 	Value: [Number] The value to display in the control.
 	Min: [Number] The minimum value that can be set for this number control. If nil, then this value will be set to -math.huge.
 	Max: [Number] The maximum value that can be set for this number control. If nil, then this value will be set to math.huge.
+	Step: [Number] The amount to increase value when mouse delta reaches threshold.
 	Options: [Table] List of options for how this input control is displayed. See Slab.Input for all options.
 
 	Return: [Boolean] Returns true whenever this valued is modified.
@@ -1039,6 +1040,7 @@ function Slab.InputNumberDrag(Id, Value, Min, Max, Step, Options)
 	Options.Text = tostring(Value)
 	Options.MinNumber = Min
 	Options.MaxNumber = Max
+	Options.Step = Step
 	Options.NumbersOnly = true
 	Options.UseSlider = false
 	Options.NoDrag = false
