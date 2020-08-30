@@ -1061,6 +1061,7 @@ end
 	Min: [Number] The minimum value that can be set for this number control. If nil, then this value will be set to -math.huge.
 	Max: [Number] The maximum value that can be set for this number control. If nil, then this value will be set to math.huge.
 	Options: [Table] List of options for how this input control is displayed. See Slab.Input for all options.
+		Precision: [Number] An integer in the range [0..5]. This will set the size of the fractional component.
 
 	Return: [Boolean] Returns true whenever this valued is modified.
 --]]

@@ -1,6 +1,5 @@
 v0.7.1
 ==========
-[Input]: 'Step' should be changed to 'Precision'.
 [Mouse]: Test with low framerates. Mouse/Keyboard input is updated via love.update. This is managed by love based on the FPS setting. Does love.mouse*/love.key* operate independently of framerate?
 [ListBox]: Nil width or height does not expand the list box to window width or height.
 

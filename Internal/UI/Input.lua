@@ -817,7 +817,7 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 	end
 end
 
-local function UpdateSlider(Instance)
+local function UpdateSlider(Instance, Precision)
 	if Instance ~= nil then
 		local MouseX, MouseY = Mouse.Position()
 		local MinX = Cursor.GetPosition()
@@ -825,12 +825,11 @@ local function UpdateSlider(Instance)
 		local Ratio = Utility.Clamp((MouseX - MinX) / (MaxX - MinX), 0.0, 1.0)
 		local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
 		local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
-		local IsInteger = floor(Min) == Min and floor(Max) == Max
 		local Value = (Max - Min) * Ratio + Min
-		if IsInteger then
-			Instance.Text = string.format("%d", Value)
+		if Precision > 0 then
+			Instance.Text = string.format("%." .. Precision .. "f", Value)
 		else
-			Instance.Text = string.format("%.3f", Value)
+			Instance.Text = string.format("%d", Value)
 		end
 	end
 end
@@ -934,6 +933,7 @@ function Input.Begin(Id, Options)
 	Options.Step = Options.Step == nil and 1.0 or Options.Step
 	Options.NoDrag = Options.NoDrag == nil and false or Options.NoDrag
 	Options.UseSlider = Options.UseSlider == nil and false or Options.UseSlider
+	Options.Precision = Options.Precision == nil and 3 or math.floor(Utility.Clamp(Options.Precision, 0, 5))
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -1232,7 +1232,7 @@ function Input.Begin(Id, Options)
 
 		if IsSliding then
 			if Options.UseSlider then
-				UpdateSlider(Instance)
+				UpdateSlider(Instance, Options.Precision)
 			else
 				UpdateDrag(Instance, Options.Step)
 			end
