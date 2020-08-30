@@ -831,6 +831,7 @@ local function UpdateSlider(Instance, Precision)
 		else
 			Instance.Text = string.format("%d", Value)
 		end
+		ValidateNumber(Instance);
 	end
 end
 
@@ -1231,11 +1232,15 @@ function Input.Begin(Id, Options)
 		end
 
 		if IsSliding then
+			local Current = tonumber(Instance.Text)
+			
 			if Options.UseSlider then
 				UpdateSlider(Instance, Options.Precision)
 			else
 				UpdateDrag(Instance, Options.Step)
 			end
+
+			Instance.TextChanged = Current ~= tonumber(Instance.Text)
 		end
 
 		if Mouse.IsReleased(1) then
