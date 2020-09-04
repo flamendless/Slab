@@ -235,6 +235,9 @@ local FrameStatHandle = nil
 local INIStatePath = love.filesystem.getSourceBaseDirectory() .. "/Slab.ini"
 local QuitFn = nil
 local Verbose = false
+local Initialized = false
+local DidUpdate = false
+local DidDraw = false
 
 local function LoadState()
 	if INIStatePath ~= nil then
@@ -295,6 +298,10 @@ end
 	Return: None.
 --]]
 function Slab.Initialize(args)
+	if Initialized then
+		return
+	end
+
 	Style.API.Initialize()
 	love.handlers['textinput'] = TextInput
 	love.handlers['wheelmoved'] = WheelMoved
@@ -315,6 +322,8 @@ function Slab.Initialize(args)
 	end
 
 	LoadState()
+
+	Initialized = true
 end
 
 --[[
@@ -351,6 +360,10 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
+	if DidUpdate then
+		return
+	end
+
 	Stats.Reset()
 	FrameStatHandle = Stats.Begin('Frame', 'Slab')
 	local StatHandle = Stats.Begin('Update', 'Slab')
@@ -370,6 +383,9 @@ function Slab.Update(dt)
 	end
 
 	Stats.End(StatHandle)
+
+	DidUpdate = true
+	DidDraw = false
 end
 
 --[[
@@ -382,6 +398,10 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
+	if DidDraw then
+		return
+	end
+
 	local StatHandle = Stats.Begin('Draw', 'Slab')
 
 	Window.Validate()
@@ -412,6 +432,9 @@ function Slab.Draw()
 
 	Stats.End(StatHandle)
 	Stats.End(FrameStatHandle)
+
+	DidDraw = true
+	DidUpdate = false
 end
 
 --[[
