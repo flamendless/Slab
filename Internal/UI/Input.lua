@@ -916,7 +916,7 @@ function Input.Begin(Id, Options)
 	Options = Options == nil and {} or Options
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
-	Options.Text = Options.Text == nil and nil or Options.Text
+	Options.Text = Options.Text == nil and "" or tostring(Options.Text)
 	Options.TextColor = Options.TextColor == nil and nil or Options.TextColor
 	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
 	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
