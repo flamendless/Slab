@@ -409,14 +409,18 @@ function Dialog.FileDialog(Options)
 	Options.AllowMultiSelect = Options.AllowMultiSelect == nil and true or Options.AllowMultiSelect
 	Options.Directory = Options.Directory == nil and nil or Options.Directory
 	Options.Type = Options.Type == nil and 'openfile' or Options.Type
+	Options.Title = Options.Title == nil and nil or Options.Title
 	Options.Filters = Options.Filters == nil and {{"*.*", "All Files"}} or Options.Filters
 
-	local Title = "Open File"
-	if Options.Type == 'savefile' then
-		Options.AllowMultiSelect = false
-		Title = "Save File"
-	elseif Options.Type == 'opendirectory' then
-		Title = "Open Directory"
+	if Options.Title == nil then
+		Options.Title = "Open File"
+
+		if Options.Type == 'savefile' then
+			Options.AllowMultiSelect = false
+			Options.Title = "Save File"
+		elseif Options.Type == 'opendirectory' then
+			Title = "Open Directory"
+		end
 	end
 
 	local Result = {Button = "", Files = {}}
@@ -426,7 +430,7 @@ function Dialog.FileDialog(Options)
 	local W = love.graphics.getWidth() * 0.65
 	local H = love.graphics.getHeight() * 0.65
 	if Dialog.Begin('FileDialog', {
-		Title = Title,
+		Title = Options.Title,
 		AutoSizeWindow = false,
 		W = W,
 		H = H,
