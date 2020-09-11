@@ -294,6 +294,7 @@ end
 	args: [Table] The list of parameters passed in by the user on the command-line. This should be passed in from
 		love.load function. Below is a list of arguments available to modify Slab:
 		NoMessages: [String] Disables the messaging system that warns developers of any changes in the API.
+		NoDocks: [String] Disables all docks.
 
 	Return: None.
 --]]
@@ -317,6 +318,8 @@ function Slab.Initialize(args)
 		for I, V in ipairs(args) do
 			if string.lower(V) == 'nomessages' then
 				Messages.SetEnabled(false)
+			elseif string.lower(V) == 'nodocks' then
+				Slab.DisableDocks({'Left', 'Right', 'Bottom'})
 			end
 		end
 	end

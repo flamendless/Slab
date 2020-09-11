@@ -194,7 +194,7 @@ function Dock.AlterOptions(WinId, Options)
 	for Id, Instance in pairs(Instances) do
 		if Instance.Window == WinId then
 
-			if Instance.Torn then
+			if Instance.Torn or not Instance.Enabled then
 				Instance.Window = nil
 				Utility.CopyValues(Options, Instance.CachedOptions)
 				Instance.CachedOptions = nil
