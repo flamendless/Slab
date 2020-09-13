@@ -246,8 +246,8 @@ end
 
 local function DrawMenus()
 	Slab.Textf(
-		"Menus are windows that allow users to make a selection from a list of items. " ..
-		"Below are descriptions of the various menus and how they can be utilized.")
+		"Menus are windows that allow users to make a selection from a list of items. Items can be disabled to prevent " ..
+		"any interaction but will still be displayed. Below are descriptions of the various menus and how they can be utilized.")
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -317,8 +317,9 @@ local function DrawMenus()
 	if Slab.BeginContextMenuWindow() then
 		if Slab.BeginMenu("Window Menu 1") then
 			for I = 1, 5, 1 do
-				if Slab.MenuItem("Sub Window Option " .. I) then
-					DrawMenus_Window_Selected = "Sub Window Option " .. I .. " selected."
+				local Enabled = I % 2 ~= 0
+				if Slab.MenuItem("Sub Window Option " .. I, {Enabled = Enabled}) then
+					DrawMenus_Window_Selected = "Sub Window Option " .. I
 				end
 			end
 

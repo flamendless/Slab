@@ -235,6 +235,7 @@ function Menu.MenuItem(Label, Options)
 end
 
 function Menu.MenuItemChecked(Label, IsChecked, Options)
+	Options = AlterOptions(Options)
 	local X, Y = Cursor.GetPosition()
 	local Result = Menu.MenuItem(Label, Options)
 
