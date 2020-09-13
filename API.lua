@@ -707,11 +707,14 @@ end
 	the user more options are available. If this function returns true, the user must call EndMenu.
 
 	Label: [String] The label to display for this menu.
+	Options: [Table] List of options that control how this menu behaves.
+		Enabled: [Boolean] Determines if this menu is enabled. This value is true by default. Disabled items are displayed but
+			cannot be interacted with.
 
 	Return: [Boolean] Returns true if the menu item is being hovered.
 --]]
-function Slab.BeginMenu(Label)
-	return Menu.BeginMenu(Label)
+function Slab.BeginMenu(Label, Options)
+	return Menu.BeginMenu(Label, Options)
 end
 
 --[[
@@ -782,11 +785,14 @@ end
 	Adds a menu item to a given context menu.
 
 	Label: [String] The label to display to the user.
+	Options: [Table] List of options that control how this menu behaves.
+		Enabled: [Boolean] Determines if this menu is enabled. This value is true by default. Disabled items are displayed but
+			cannot be interacted with.
 
 	Return: [Boolean] Returns true if the user clicks on this menu item.
 --]]
-function Slab.MenuItem(Label)
-	return Menu.MenuItem(Label)
+function Slab.MenuItem(Label, Options)
+	return Menu.MenuItem(Label, Options)
 end
 
 --[[
@@ -803,11 +809,14 @@ end
 
 	Label: [String] The label to display to the user.
 	IsChecked: [Boolean] Determines if a check mark should be rendered next to the label.
+	Options: [Table] List of options that control how this menu behaves.
+		Enabled: [Boolean] Determines if this menu is enabled. This value is true by default. Disabled items are displayed but
+			cannot be interacted with.
 
 	Return: [Boolean] Returns true if the user clicks on this menu item.
 --]]
-function Slab.MenuItemChecked(Label, IsChecked)
-	return Menu.MenuItemChecked(Label, IsChecked)
+function Slab.MenuItemChecked(Label, IsChecked, Options)
+	return Menu.MenuItemChecked(Label, IsChecked, Options)
 end
 
 --[[

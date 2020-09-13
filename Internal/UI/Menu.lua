@@ -46,6 +46,29 @@ local CheckSize = 5.0
 local OpenedContextMenu = nil
 local CursorStack = {}
 
+local function IsItemHovered()
+	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
+	local MouseX, MouseY = Window.GetMousePosition()
+	return not Window.IsObstructedAtMouse()
+		and ItemX < MouseX and MouseX < ItemX + Window.GetWidth()
+		and ItemY < MouseY and MouseY < ItemY + ItemH
+end
+
+local function AlterOptions(Options)
+	Options = Options == nil and {} or Options
+	Options.Enabled = Options.Enabled == nil and true or Options.Enabled
+	Options.IsSelectable = Options.Enabled
+	Options.SelectOnHover = Options.Enabled
+
+	if Options.Enabled then
+		Options.Color = Style.TextColor
+	else
+		Options.Color = Style.TextDisabledColor
+	end
+
+	return Options
+end
+
 local function ConstrainPosition(X, Y, W, H)
 	local ResultX, ResultY = X, Y
 
@@ -96,17 +119,18 @@ local function BeginWindow(Id, X, Y)
 	})
 end
 
-function Menu.BeginMenu(Label)
+function Menu.BeginMenu(Label, Options)
 	local Result = false
 	local X, Y = Cursor.GetPosition()
 	local IsMenuBar = Window.IsMenuBar()
 	local Id = Window.GetId() .. "." .. Label
 	local Win = Window.Top()
 
-	local Options = {IsSelectable = true, SelectOnHover = true, IsSelected = Win.Selected == Id}
+	Options = AlterOptions(Options)
+	Options.IsSelected = Options.Enabled and Win.Selected == Id
 
 	if IsMenuBar then
-		Options.IsSelectableTextOnly = true
+		Options.IsSelectableTextOnly = Options.Enabled
 		Options.Pad = Pad * 2
 	else
 		Cursor.SetX(X + LeftPad)
@@ -115,21 +139,32 @@ function Menu.BeginMenu(Label)
 	local MenuX = 0.0
 	local MenuY = 0.0
 
+	-- 'Result' may be false if 'Enabled' is false. The hovered state is still required
+	-- so that will be handled differently.
 	Result = Text.Begin(Label, Options)
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	if IsMenuBar then
 		Cursor.SameLine()
 
-		if Result then
+		-- Menubar items don't extend to the width of the window since these items are layed out horizontally. Only
+		-- need to perform hover check on item bounds.
+		local Hovered = Cursor.IsInItemBounds(Window.GetMousePosition())
+		if Hovered then
 			if Mouse.IsClicked(1) then
-				MenuState.WasOpened = MenuState.IsOpened
-				MenuState.IsOpened = not MenuState.IsOpened
+				if Result then
+					MenuState.WasOpened = MenuState.IsOpened
+					MenuState.IsOpened = not MenuState.IsOpened
+
+					if MenuState.IsOpened then
+						MenuState.RequestClose = false
+					end
+				elseif MenuState.WasOpened then
+					MenuState.RequestClose = false
+				end
 			end
 		end
 
-		if MenuState.IsOpened then
-			MenuState.RequestClose = Mouse.IsClicked(1) and MenuState.WasOpened
-			
+		if MenuState.IsOpened and OpenedContextMenu == nil then
 			if Result then
 				Win.Selected = Id
 			end
@@ -155,6 +190,11 @@ function Menu.BeginMenu(Label)
 		end
 
 		Window.AddItem(ItemX, ItemY, ItemW + RightPad, ItemH)
+
+		-- Prevent closing the menu window if this item is clicked.
+		if IsItemHovered() and Mouse.IsClicked(1) then
+			MenuState.RequestClose = false
+		end
 	end
 
 	Result = Win.Selected == Id
@@ -169,9 +209,11 @@ function Menu.BeginMenu(Label)
 	return Result
 end
 
-function Menu.MenuItem(Label)
+function Menu.MenuItem(Label, Options)
+	Options = AlterOptions(Options)
+
 	Cursor.SetX(Cursor.GetX() + LeftPad)
-	local Result = Text.Begin(Label, {IsSelectable = true, SelectOnHover = true})
+	local Result = Text.Begin(Label, Options)
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	Window.AddItem(ItemX, ItemY, ItemW + RightPad, ItemH)
 
@@ -180,21 +222,25 @@ function Menu.MenuItem(Label)
 		Win.Selected = nil
 
 		Result = Mouse.IsClicked(1)
-		if Result then
-			MenuState.IsOpened = false
+		if Result and MenuState.WasOpened then
+			MenuState.RequestClose = true
+		end
+	else
+		if IsItemHovered() and Mouse.IsClicked(1) then
+			MenuState.RequestClose = false
 		end
 	end
 
 	return Result
 end
 
-function Menu.MenuItemChecked(Label, IsChecked)
+function Menu.MenuItemChecked(Label, IsChecked, Options)
 	local X, Y = Cursor.GetPosition()
-	local Result = Menu.MenuItem(Label)
+	local Result = Menu.MenuItem(Label, Options)
 
 	if IsChecked then
 		local H = Style.Font:getHeight()
-		DrawCommands.Check(X + LeftPad * 0.5, Y + H * 0.5, CheckSize, Style.TextColor)
+		DrawCommands.Check(X + LeftPad * 0.5, Y + H * 0.5, CheckSize, Options.Color)
 	end
 
 	return Result
