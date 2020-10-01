@@ -267,7 +267,8 @@ function Menu.BeginContextMenu(Options)
 	end
 
 	local IsOpening = false
-	if not Window.IsObstructedAtMouse() and Window.IsMouseHovered() and Mouse.IsClicked(2) then
+	local MouseIdx = Options.OnLeftClick and 1 or 2
+	if not Window.IsObstructedAtMouse() and Window.IsMouseHovered() and Mouse.IsClicked(MouseIdx) then
 		local IsValidWindow = Options.IsWindow and Window.GetHotItem() == nil
 		local IsValidItem = Options.IsItem
 

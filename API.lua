@@ -695,11 +695,13 @@ end
 			Slab.EndContextMenu()
 		end
 
+	OnLeftClick: [Boolean] if true, the menu will open when left-clicking. Default is right click.
+
 	Return: [Boolean] Returns true if the user right clicks on the previous item call. EndContextMenu must be called in order for
 		this to function properly.
 --]]
-function Slab.BeginContextMenuItem()
-	return Menu.BeginContextMenu({IsItem = true})
+function Slab.BeginContextMenuItem(OnLeftClick)
+	return Menu.BeginContextMenu({IsItem = true, OnLeftClick = OnLeftClick or false})
 end
 
 --[[
