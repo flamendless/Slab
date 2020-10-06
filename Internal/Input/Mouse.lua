@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local Common = require(SLAB_PATH .. '.Internal.Input.Common')
+
 local Mouse = {}
 
 local State =
@@ -64,7 +66,7 @@ local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMousePressed(X, Y, Button, IsTouch, Presses)
-	PushEvent('Pressed', X, Y, Button, IsTouch, Presses)
+	PushEvent(Common.Event.Pressed, X, Y, Button, IsTouch, Presses)
 
 	if MousePressedFn ~= nil then
 		MousePressedFn(X, Y, Button, IsTouch, Presses)
@@ -72,7 +74,7 @@ local function OnMousePressed(X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
-	PushEvent('Released', X, Y, Button, IsTouch, Presses)
+	PushEvent(Common.Event.Released, X, Y, Button, IsTouch, Presses)
 
 	if MouseReleasedFn ~= nil then
 		MouseReleasedFn(X, Y, Button, IsTouch, Presses)
@@ -138,7 +140,7 @@ function Mouse.IsClicked(Button)
 		return false
 	end
 
-	return Item.Type == 'Pressed'
+	return Item.Type == Common.Event.Pressed
 end
 
 function Mouse.IsDoubleClicked(Button)
@@ -148,7 +150,7 @@ function Mouse.IsDoubleClicked(Button)
 		return false
 	end
 
-	return Item.Type == 'Released' and Item.Presses % 2 == 0
+	return Item.Type == Common.Event.Released and Item.Presses % 2 == 0
 end
 
 function Mouse.IsReleased(Button)
@@ -158,7 +160,7 @@ function Mouse.IsReleased(Button)
 		return false
 	end
 
-	return Item.Type == 'Released'
+	return Item.Type == Common.Event.Released
 end
 
 function Mouse.Position()
