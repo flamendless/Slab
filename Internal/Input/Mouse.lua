@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local insert = table.insert
+
 local Common = require(SLAB_PATH .. '.Internal.Input.Common')
 
 local Mouse = {}
@@ -55,7 +57,7 @@ local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 end
 
 local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
-	table.insert(Events, {
+	insert(Events, {
 		Type = Type,
 		X = X,
 		Y = Y,

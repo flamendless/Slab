@@ -24,94 +24,85 @@ SOFTWARE.
 
 --]]
 
-local Keyboard = {}
-
 local insert = table.insert
 
-local State =
-{
-	Pressed = {},
-	WasPressed = {},
-	LastPressed = nil,
-	PressedTime = 0.0,
-	ShouldRepeat = false
-}
+local Common = require(SLAB_PATH .. '.Internal.Input.Common')
 
-local RepeatDelay = 0.6
-local RepeatTime = 0.075
+local Keyboard = {}
 
-local function InsertKey(Key)
-	if State.Pressed[Key] == nil then
-		State.Pressed[Key] = love.keyboard.isDown(Key)
-		State.WasPressed[Key] = false
+local KeyPressedFn = nil
+local KeyReleasedFn = nil
+local Events = {}
+local Keys = {}
+
+local function PushEvent(Type, Key, Scancode, IsRepeat)
+	insert(Events, {
+		Type = Type,
+		Key = Key,
+		Scancode = Scancode,
+		IsRepeat = IsRepeat
+	})
+end
+
+local function OnKeyPressed(Key, Scancode, IsRepeat)
+	PushEvent(Common.Event.Pressed, Key, Scancode, IsRepeat)
+end
+
+local function OnKeyReleased(Key, Scancode)
+	PushEvent(Common.Event.Released, Key, Scancode, false)
+end
+
+local function ProcessEvents()
+	Keys = {}
+
+	for I, V in ipairs(Events) do
+		if Keys[V.Scancode] == nil then
+			Keys[V.Scancode] = {}
+		end
+
+		local Key = Keys[V.Scancode]
+		Key.Type = V.Type
+		Key.Key = V.Key
+		Key.Scancode = V.Scancode
+		Key.IsRepeat = V.IsRepeat
 	end
+
+	Events = {}
+end
+
+function Keyboard.Initialize(Args)
+	KeyPressedFn = love.handlers['keypressed']
+	KeyReleasedFn = love.handlers['keyreleased']
+	love.handlers['keypressed'] = OnKeyPressed
+	love.handlers['keyreleased'] = OnKeyReleased
 end
 
 function Keyboard.Update()
-	for K, V in pairs(State.Pressed) do
-		State.WasPressed[K] = State.Pressed[K]
-		State.Pressed[K] = love.keyboard.isDown(K)
-
-		if Keyboard.IsPressed(K) then
-			State.LastPressed = K
-			State.PressedTime = love.timer.getTime()
-		end
-	end
-
-	if State.LastPressed ~= nil then
-		if not Keyboard.IsDown(State.LastPressed) then
-			State.LastPressed = nil
-			State.ShouldRepeat = false
-		end
-
-		local Elapsed = love.timer.getTime() - State.PressedTime
-		local Reset = false
-
-		if not State.ShouldRepeat then
-			if Elapsed >= RepeatDelay then
-				Reset = true
-				State.ShouldRepeat = true
-			end
-		else
-			if Elapsed >= RepeatTime then
-				Reset = true
-			end
-		end
-
-		if Reset then
-			State.PressedTime = love.timer.getTime()
-			State.Pressed[State.LastPressed] = false
-			State.WasPressed[State.LastPressed] = false
-		end
-	end
+	ProcessEvents()
 end
 
-function Keyboard.IsPressed(Key, CancelRepeat)
-	InsertKey(Key)
-	if Key == State.LastPressed and CancelRepeat then
-		State.LastPressed = nil
+function Keyboard.IsPressed(Key)
+	local Item = Keys[Key]
+
+	if Item == nil then
+		return false
 	end
-	return State.Pressed[Key] and not State.WasPressed[Key]
+
+	return Item.Type == Common.Event.Pressed
 end
 
 function Keyboard.IsReleased(Key)
-	InsertKey(Key)
-	return not State.Pressed[Key] and State.WasPressed[Key]
+	local Item = Keys[Key]
+
+	if Item == nil then
+		return false
+	end
+
+	return Item.Type == Common.Event.Released
 end
 
 function Keyboard.IsDown(Key)
-	InsertKey(Key)
-	return State.Pressed[Key] or love.keyboard.isDown(Key)
-end
-
-function Keyboard.Keys()
-	local Result = {}
-
-	for K, V in pairs(State.Pressed) do
-		insert(Result, K)
-	end
-
-	return Result
+	return love.keyboard.isScancodeDown(Key)
 end
 
 return Keyboard

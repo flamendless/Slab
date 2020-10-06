@@ -27,7 +27,6 @@ SOFTWARE.
 local Slab = require(SLAB_PATH .. '.Slab')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
-local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -39,7 +38,6 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 local SlabDebug = {}
 local SlabDebug_About = 'SlabDebug_About'
 local SlabDebug_Mouse = {Title = "Mouse", IsOpen = false}
-local SlabDebug_Keyboard = {Title = "Keyboard", IsOpen = false}
 local SlabDebug_Windows = {Title = "Windows", IsOpen = false}
 local SlabDebug_Regions = {Title = "Regions", IsOpen = false}
 local SlabDebug_Tooltip = {Title = "Tooltip", IsOpen = false}
@@ -372,23 +370,6 @@ function SlabDebug.Mouse()
 	Slab.EndWindow()
 end
 
-function SlabDebug.Keyboard()
-	Slab.BeginWindow('SlabDebug_Keyboard', SlabDebug_Keyboard)
-
-	Slab.BeginLayout('SlabDebug_Keyboard', {Columns = 2})
-	local Keys = Keyboard.Keys()
-	for I, V in ipairs(Keys) do
-		Slab.SetLayoutColumn(1)
-		Slab.Text(V)
-
-		Slab.SetLayoutColumn(2)
-		Slab.Text(tostring(Keyboard.IsDown(V)))
-	end
-	Slab.EndLayout()
-
-	Slab.EndWindow()
-end
-
 function SlabDebug.Windows()
 	Slab.BeginWindow('SlabDebug_Windows', SlabDebug_Windows)
 
@@ -614,7 +595,6 @@ function SlabDebug.Menu()
 		end
 
 		MenuItemWindow(SlabDebug_Mouse)
-		MenuItemWindow(SlabDebug_Keyboard)
 		MenuItemWindow(SlabDebug_Windows)
 		MenuItemWindow(SlabDebug_Regions)
 		MenuItemWindow(SlabDebug_Tooltip)
@@ -634,7 +614,6 @@ end
 function SlabDebug.Begin()
 	SlabDebug.About()
 	SlabDebug.Mouse()
-	SlabDebug.Keyboard()
 	SlabDebug.Windows()
 	SlabDebug.Regions()
 	SlabDebug.Tooltip()

@@ -324,6 +324,7 @@ function Slab.Initialize(args)
 		end
 	end
 
+	Keyboard.Initialize(args)
 	Mouse.Initialize(args)
 
 	LoadState()
@@ -1857,10 +1858,10 @@ end
 --[[
 	IsKeyDown
 
-	Checks to see if a specific key is held down. The key should be one of the love defined KeyConstant which the list can
-	be found at https://love2d.org/wiki/KeyConstant.
+	Checks to see if a specific key is held down. The key should be one of the love defined Scancode which the list can
+	be found at https://love2d.org/wiki/Scancode.
 
-	Key: [String] A love defined key constant.
+	Key: [String] A love defined key scancode.
 
 	Return: [Boolean] True if the key is held down. False otherwise.
 --]]
@@ -1871,24 +1872,24 @@ end
 --[[
 	IsKeyPressed
 
-	Checks to see if a specific key state went from up to down this frame. The key should be one of the love defined KeyConstant which the list can
-	be found at https://love2d.org/wiki/KeyConstant.
+	Checks to see if a specific key state went from up to down this frame. The key should be one of the love defined Scancode which the list can
+	be found at https://love2d.org/wiki/Scancode.
 
-	Key: [String] A love defined key constant.
+	Key: [String] A love defined scancode.
 
 	Return: [Boolean] True if the key state went from up to down this frame. False otherwise.
 --]]
 function Slab.IsKeyPressed(Key)
-	return Keyboard.IsPressed(Key, true)
+	return Keyboard.IsPressed(Key)
 end
 
 --[[
 	IsKeyPressed
 
-	Checks to see if a specific key state went from down to up this frame. The key should be one of the love defined KeyConstant which the list can
-	be found at https://love2d.org/wiki/KeyConstant.
+	Checks to see if a specific key state went from down to up this frame. The key should be one of the love defined Scancode which the list can
+	be found at https://love2d.org/wiki/Scancode.
 
-	Key: [String] A love defined key constant.
+	Key: [String] A love defined scancode.
 
 	Return: [Boolean] True if the key state went from down to up this frame. False otherwise.
 --]]
