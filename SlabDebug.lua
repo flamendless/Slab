@@ -365,7 +365,7 @@ function SlabDebug.Mouse()
 	Slab.Text("Delta Y: " .. DeltaY)
 
 	for I = 1, 3, 1 do
-		Slab.Text("Button " .. I .. ": " .. (Mouse.IsPressed(I) and "Pressed" or "Released"))
+		Slab.Text("Button " .. I .. ": " .. (Mouse.IsDown(I) and "Pressed" or "Released"))
 	end
 
 	Slab.Text("Hot Region: " .. Region.GetHotInstanceId())

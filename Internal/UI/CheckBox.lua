@@ -67,7 +67,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	if not IsObstructed and X <= MouseX and MouseX <= X + BoxW and Y <= MouseY and MouseY <= Y + BoxH then
 		Color = Style.ButtonHoveredColor
 
-		if Mouse.IsPressed(1) then
+		if Mouse.IsDown(1) then
 			Color = Style.ButtonPressedColor
 		elseif Mouse.IsReleased(1) then
 			Result = true

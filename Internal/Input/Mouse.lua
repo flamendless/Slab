@@ -28,45 +28,90 @@ local Mouse = {}
 
 local State =
 {
-	Button = {},
-	WasButton = {},
-	ClickTime = {},
-	LastClickTime = {},
 	X = 0.0,
 	Y = 0.0,
 	DeltaX = 0.0,
-	DeltaY = 0.0
+	DeltaY = 0.0,
+	AsyncDeltaX = 0.0,
+	AsyncDeltaY = 0.0,
+	Buttons = {}
 }
 
 local Cursors = nil
-local DoubleClickTime = 0.25
 local CurrentCursor = "arrow"
 local PendingCursor = ""
+local MouseMovedFn = nil
+local MousePressedFn = nil
+local MouseReleasedFn = nil
+local Events = {}
 
-local function UpdateClickTime(Button)
-	if Mouse.IsClicked(Button) then
-		State.LastClickTime[Button] = State.ClickTime[Button]
-		State.ClickTime[Button] = love.timer.getTime()
+local function OnMouseMoved(X, Y, DX, DY, IsTouch)
+	State.X = X
+	State.Y = Y
+	State.AsyncDeltaX = State.AsyncDeltaX + DX
+	State.AsyncDeltaY = State.AsyncDeltaY + DY
+end
+
+local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
+	table.insert(Events, {
+		Type = Type,
+		X = X,
+		Y = Y,
+		Button = Button,
+		IsTouch = IsTouch,
+		Presses = Presses
+	})
+end
+
+local function OnMousePressed(X, Y, Button, IsTouch, Presses)
+	PushEvent('Pressed', X, Y, Button, IsTouch, Presses)
+
+	if MousePressedFn ~= nil then
+		MousePressedFn(X, Y, Button, IsTouch, Presses)
 	end
 end
 
-function Mouse.Update()
-	local LastX, LastY = State.X, State.Y
-	State.X, State.Y = love.mouse.getPosition()
-	State.DeltaX, State.DeltaY = State.X - LastX, State.Y - LastY
-	local Button1 = love.mouse.isDown(1)
-	local Button2 = love.mouse.isDown(2)
-	local Button3 = love.mouse.isDown(3)
-	State.WasButton[1] = State.Button[1]
-	State.WasButton[2] = State.Button[2]
-	State.WasButton[3] = State.Button[3]
-	State.Button[1] = Button1
-	State.Button[2] = Button2
-	State.Button[3] = Button3
+local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
+	PushEvent('Released', X, Y, Button, IsTouch, Presses)
 
-	UpdateClickTime(1)
-	UpdateClickTime(2)
-	UpdateClickTime(3)
+	if MouseReleasedFn ~= nil then
+		MouseReleasedFn(X, Y, Button, IsTouch, Presses)
+	end
+end
+
+local function ProcessEvents()
+	State.Buttons = {}
+
+	for I, V in ipairs(Events) do
+		if State.Buttons[V.Button] == nil then
+			State.Buttons[V.Button] = {}
+		end
+
+		local Button = State.Buttons[V.Button]
+		Button.Type = V.Type
+		Button.IsTouch = V.IsTouch
+		Button.Presses = V.Presses
+	end
+
+	Events = {}
+end
+
+function Mouse.Initialize(Args)
+	MouseMovedFn = love.handlers['mousemoved']
+	MousePressedFn = love.handlers['mousepressed']
+	MouseReleasedFn = love.handlers['mousereleased']
+	love.handlers['mousemoved'] = OnMouseMoved
+	love.handlers['mousepressed'] = OnMousePressed
+	love.handlers['mousereleased'] = OnMouseReleased
+end
+
+function Mouse.Update()
+	ProcessEvents()
+
+	State.DeltaX = State.AsyncDeltaX
+	State.DeltaY = State.AsyncDeltaY
+	State.AsyncDeltaX = 0
+	State.AsyncDeltaY = 0
 
 	if Cursors == nil then
 		Cursors = {}
@@ -82,23 +127,38 @@ function Mouse.Update()
 	Mouse.SetCursor('arrow')
 end
 
-function Mouse.IsPressed(Button)
-	return State.Button[Button]
+function Mouse.IsDown(Button)
+	return love.mouse.isDown(Button)
 end
 
 function Mouse.IsClicked(Button)
-	return State.Button[Button] and not State.WasButton[Button]
+	local Item = State.Buttons[Button]
+
+	if Item == nil or Item.Presses == 0 then
+		return false
+	end
+
+	return Item.Type == 'Pressed'
 end
 
 function Mouse.IsDoubleClicked(Button)
-	if Mouse.IsClicked(Button) and State.LastClickTime[Button] ~= nil then
-		return love.timer.getTime() - State.LastClickTime[Button] <= DoubleClickTime
+	local Item = State.Buttons[Button]
+
+	if Item == nil or Item.Presses < 2 then
+		return false
 	end
-	return false
+
+	return Item.Type == 'Released' and Item.Presses % 2 == 0
 end
 
 function Mouse.IsReleased(Button)
-	return not State.Button[Button] and State.WasButton[Button]
+	local Item = State.Buttons[Button]
+
+	if Item == nil then
+		return false
+	end
+
+	return Item.Type == 'Released'
 end
 
 function Mouse.Position()
@@ -114,7 +174,7 @@ function Mouse.GetDelta()
 end
 
 function Mouse.IsDragging(Button)
-	return Mouse.IsPressed(Button) and Mouse.HasDelta()
+	return Mouse.IsDown(Button) and Mouse.HasDelta()
 end
 
 function Mouse.SetCursor(Type)

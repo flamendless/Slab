@@ -324,6 +324,8 @@ function Slab.Initialize(args)
 		end
 	end
 
+	Mouse.Initialize(args)
+
 	LoadState()
 
 	Initialized = true
@@ -1696,7 +1698,7 @@ end
 	Return: [Boolean] True if the given button is down. False otherwise.
 --]]
 function Slab.IsMouseDown(Button)
-	return Mouse.IsPressed(Button and Button or 1)
+	return Mouse.IsDown(Button and Button or 1)
 end
 
 --[[
