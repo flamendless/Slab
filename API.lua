@@ -1663,6 +1663,8 @@ end
 				element is the description of the filter e.g. {"*.lua", "Lua Files"}
 			String: If a raw string is used, then it should just be the filter. It is recommended to use the table option since a
 				description can be given for each filter.
+		IncludeParent: [Boolean] This option will include the parent '..' directory item in the file/dialog list. This option is
+			true by default.
 
 	Return: [Table] Returns items for how the user interacted with this file dialog.
 		Button: [String] The button the user clicked. Will either be OK or Cancel.

@@ -329,6 +329,108 @@ function FileSystem.Parent(Path)
 	return Result
 end
 
+--[[
+	IsAbsolute
+
+	Determines if the given path is an absolute path or a relative path. This is determined by checking if the
+	path starts with a drive letter on Windows, or the Unix root character '/'.
+
+	Path: [String] The path to check.
+
+	Return: [Boolean] True if the path is absolute, false if it is relative.
+--]]
+function FileSystem.IsAbsolute(Path)
+	if Path == nil or Path == "" then
+		return false
+	end
+
+	if FFI.os == "Windows" then
+		return string.match(Path, "(.:-)\\") ~= nil
+	end
+
+	return string.sub(Path, 1, 1) == FileSystem.Separator()
+end
+
+--[[
+	GetDrive
+
+	Attempts to retrieve the drive letter from the given absolute path. This function is targeted for
+	paths on Windows. Unix style paths will just return the root '/'.
+
+	Path: [String] The absolute path containing the drive letter.
+
+	Return: [String] The drive letter, colon, and path separator are returned. On Unix platforms, just the '/'
+		character is returned.
+--]]
+function FileSystem.GetDrive(Path)
+	if not FileSystem.IsAbsolute(Path) then
+		return ""
+	end
+
+	if FFI.os == "Windows" then
+		local Result = string.match(Path, "(.:-)\\")
+
+		if Result == nil then
+			Result = string.match(Path, "(.:-)" .. FileSystem.Separator())
+		end
+
+		if Result ~= nil then
+			return Result .. FileSystem.Separator()
+		end
+	end
+
+	return FileSystem.Separator()
+end
+
+--[[
+	Sanitize
+
+	This function will attempt to remove any '.' or '..' components in the path and will appropriately modify
+	the result to represent changes to the path based on if a '..' component is found. This function will keep
+	the path's scope (relative/absolute) during sanitization.
+
+	Path: [String] The path to be sanitized.
+
+	Return: [String] The sanitized path string.
+--]]
+function FileSystem.Sanitize(Path)
+	local Result = ""
+
+	local Items = {}
+	for Item in string.gmatch(Path, "([^" .. FileSystem.Separator() .. "]+)") do
+		-- Always add the first item. If the given path is relative, then this will help preserve that.
+		if #Items == 0 then
+			table.insert(Items, Item)
+		else
+			-- If the parent directory item is found, pop the last item off of the stack.
+			if Item == ".." then
+				table.remove(Items, #Items)
+			-- Ignore same directory item and push the item to the stack.
+			elseif Item ~= "." then
+				table.insert(Items, Item)
+			end
+		end
+	end
+
+	for I, Item in ipairs(Items) do
+		if Result == "" then
+			if Item == "." or Item == ".." then
+				Result = Item
+			else
+				if FileSystem.IsAbsolute(Path) then
+					Result = FileSystem.GetDrive(Path) .. Item
+				else
+					Result = Item
+				end
+			end
+		else
+			Result = Result .. FileSystem.Separator() .. Item
+		end
+	end
+
+	return Result
+end
+
 function FileSystem.GetBaseName(Path, RemoveExtension)
 	local Result = string.match(Path, "^.+/(.+)$")
 

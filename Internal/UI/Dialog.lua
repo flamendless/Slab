@@ -102,14 +102,10 @@ end
 local function OpenDirectory(Dir)
 	if ActiveInstance ~= nil and ActiveInstance.Directory ~= nil then
 		ActiveInstance.Parsed = false
-		if Dir == ".." then
-			ActiveInstance.Directory = FileSystem.Parent(ActiveInstance.Directory)
-		else
-			if string.sub(Dir, #Dir, #Dir) == FileSystem.Separator() then
-				Dir = string.sub(Dir, 1, #Dir - 1)
-			end
-			ActiveInstance.Directory = Dir
+		if string.sub(Dir, #Dir, #Dir) == FileSystem.Separator() then
+			Dir = string.sub(Dir, 1, #Dir - 1)
 		end
+		ActiveInstance.Directory = FileSystem.Sanitize(Dir)
 	end
 end
 
@@ -411,6 +407,7 @@ function Dialog.FileDialog(Options)
 	Options.Type = Options.Type == nil and 'openfile' or Options.Type
 	Options.Title = Options.Title == nil and nil or Options.Title
 	Options.Filters = Options.Filters == nil and {{"*.*", "All Files"}} or Options.Filters
+	Options.IncludeParent = Options.IncludeParent == nil and true or Options.IncludeParent
 
 	if Options.Title == nil then
 		Options.Title = "Open File"
@@ -513,8 +510,17 @@ function Dialog.FileDialog(Options)
 
 		LayoutManager.Begin('FileDialog_ListBox_Expand', {AnchorX = true, ExpandW = true})
 		ListBox.Begin('FileDialog_ListBox', {H = ListH, Clear = Clear})
+
 		local Index = 1
 		local ItemSelected = false
+		if Options.IncludeParent then
+			if FileDialogItem('Item_Parent', "..", true, Index) then
+				ItemSelected = true
+			end
+
+			Index = Index + 1
+		end
+
 		for I, V in ipairs(ActiveInstance.Directories) do
 			FileDialogItem('Item_' .. Index, V, true, Index)
 			Index = Index + 1
