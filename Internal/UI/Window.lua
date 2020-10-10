@@ -630,11 +630,17 @@ function Window.Begin(Id, Options)
 		Region.End()
 	end
 
+	local RegionW = ActiveInstance.W
+	local RegionH = ActiveInstance.H
+
+	if ActiveInstance.X + ActiveInstance.W > love.graphics.getWidth() then RegionW = love.graphics.getWidth() - ActiveInstance.X end
+	if ActiveInstance.Y + ActiveInstance.H > love.graphics.getHeight() then RegionH = love.graphics.getHeight() - ActiveInstance.Y end
+
 	Region.Begin(ActiveInstance.Id, {
 		X = ActiveInstance.X,
 		Y = ActiveInstance.Y,
-		W = ActiveInstance.W,
-		H = ActiveInstance.H,
+		W = RegionW,
+		H = RegionH,
 		ContentW = ActiveInstance.ContentW + ActiveInstance.Border,
 		ContentH = ActiveInstance.ContentH + ActiveInstance.Border,
 		BgColor = ActiveInstance.BackgroundColor,
