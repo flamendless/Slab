@@ -152,7 +152,7 @@ function Mouse.IsDoubleClicked(Button)
 		return false
 	end
 
-	return Item.Type == Common.Event.Released and Item.Presses % 2 == 0
+	return Item.Type == Common.Event.Pressed and Item.Presses % 2 == 0
 end
 
 function Mouse.IsReleased(Button)
