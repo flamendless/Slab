@@ -750,11 +750,13 @@ end
 			Slab.EndContextMenu()
 		end
 
+	Button: [Number] The mouse button to use for opening up this context menu.
+
 	Return: [Boolean] Returns true if the user right clicks on the previous item call. EndContextMenu must be called in order for
 		this to function properly.
 --]]
-function Slab.BeginContextMenuItem()
-	return Menu.BeginContextMenu({IsItem = true})
+function Slab.BeginContextMenuItem(Button)
+	return Menu.BeginContextMenu({IsItem = true, Button = Button})
 end
 
 --[[
@@ -764,11 +766,13 @@ end
 	of a window's widget calls so that Slab can catch any BeginContextMenuItem calls before this call. If this function returns true,
 	EndContextMenu must be called.
 
+	Button: [Number] The mouse button to use for opening up this context menu.
+
 	Return: [Boolean] Returns true if the user right clicks anywhere within the window. EndContextMenu must be called in order for this
 		to function properly.
 --]]
-function Slab.BeginContextMenuWindow()
-	return Menu.BeginContextMenu({IsWindow = true})
+function Slab.BeginContextMenuWindow(Button)
+	return Menu.BeginContextMenu({IsWindow = true, Button = Button})
 end
 
 --[[

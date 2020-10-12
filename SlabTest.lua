@@ -231,8 +231,8 @@ local DrawMenus_CheckBox = false
 local DrawMenus_ComboBox = {"Apple", "Banana", "Pear", "Orange", "Lemon"}
 local DrawMenus_ComboBox_Selected = "Apple"
 
-local function DrawContextMenuItem(Label)
-	if Slab.BeginContextMenuItem() then
+local function DrawContextMenuItem(Label, Button)
+	if Slab.BeginContextMenuItem(Button) then
 		for I = 1, 5, 1 do
 			local MenuLabel = Label .. " Option " .. I
 			if Slab.MenuItem(MenuLabel) then
@@ -302,6 +302,15 @@ local function DrawMenus()
 		Slab.EndComboBox()
 	end
 	DrawContextMenuItem("Combo Box")
+
+	Slab.NewLine()
+	Slab.Textf(
+		"Context menu items are usually opened with the right mouse button. This can be changed for context menus to be a differen " ..
+		"mouse button. The button below will open a context menu using the left mouse button.")
+
+	Slab.NewLine()
+	Slab.Button("Left Mouse")
+	DrawContextMenuItem("Left Mouse Button", 1)
 
 	Slab.NewLine()
 	Slab.Separator()

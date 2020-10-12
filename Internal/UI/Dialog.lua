@@ -416,7 +416,7 @@ function Dialog.FileDialog(Options)
 			Options.AllowMultiSelect = false
 			Options.Title = "Save File"
 		elseif Options.Type == 'opendirectory' then
-			Title = "Open Directory"
+			Options.Title = "Open Directory"
 		end
 	end
 

@@ -279,6 +279,9 @@ end
 
 function Menu.BeginContextMenu(Options)
 	Options = Options == nil and {} or Options
+	Options.IsItem = Options.IsItem == nil and false or Options.IsItem
+	Options.IsWindow = Options.IsWindow == nil and false or Options.IsWindow
+	Options.Button = Options.Button == nil and 2 or Options.Button
 
 	local BaseId = nil
 	local Id = nil
@@ -314,7 +317,7 @@ function Menu.BeginContextMenu(Options)
 	end
 
 	local IsOpening = false
-	if not Window.IsObstructedAtMouse() and Window.IsMouseHovered() and Mouse.IsClicked(2) then
+	if not Window.IsObstructedAtMouse() and Window.IsMouseHovered() and Mouse.IsClicked(Options.Button) then
 		local IsValidWindow = Options.IsWindow and Window.GetHotItem() == nil
 		local IsValidItem = Options.IsItem
 
