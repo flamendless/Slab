@@ -92,8 +92,8 @@ function Image.Begin(Id, Options)
 
 	local UseSubImage = false
 	if Options.SubW > 0.0 and Options.SubH > 0.0 then
-		W = Options.SubW
-		H = Options.SubH
+		W = Options.SubW * Options.ScaleX
+		H = Options.SubH * Options.ScaleY
 		UseSubImage = true
 	end
 
