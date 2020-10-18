@@ -780,18 +780,6 @@ function Window.GetId()
 	return ''
 end
 
-function Window.GetWindowAtMouse()
-	local X, Y = Mouse.Position()
-	local Instance = nil
-	for I, V in ipairs(Instances) do
-		local Child = GetHoveredInstance(V, X, Y)
-		if Child ~= nil then
-			Instance = Child
-		end
-	end
-	return Instance == nil and 'None' or Instance.Id
-end
-
 function Window.AddItem(X, Y, W, H, Id)
 	if ActiveInstance ~= nil then
 		ActiveInstance.LastItem = Id

@@ -1,6 +1,5 @@
 v0.7.1
 ==========
-[Window]: GetWindowAtMouse function uses deprecated GetHoveredInstance function.
 [ListBox]: Nil width or height does not expand the list box to window width or height.
 [Platform]: Test running on Android. Applies to issue #35.
 [Dock]: Unable to interact with menu when window is docked.
