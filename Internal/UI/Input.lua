@@ -1505,6 +1505,12 @@ function Input.IsFocused(Id)
 end
 
 function Input.SetFocused(Id)
+	if Id == nil then
+		Focused = nil
+		PendingFocus = nil
+		return
+	end
+
 	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
 	PendingFocus = Instance
 end

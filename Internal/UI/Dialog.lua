@@ -294,6 +294,7 @@ local function GetInstance(Id)
 		local Instance = {}
 		Instance.Id = Id
 		Instance.IsOpen = false
+		Instance.Opening = false
 		Instance.W = 0.0
 		Instance.H = 0.0
 		Instances[Id] = Instance
@@ -318,6 +319,11 @@ function Dialog.Begin(Id, Options)
 
 	Window.Begin(Instance.Id, Options)
 
+	if Instance.Opening then
+		Input.SetFocused(nil)
+		Instance.Opening = false
+	end
+
 	ActiveInstance = Instance
 	insert(InstanceStack, 1, ActiveInstance)
 
@@ -339,6 +345,7 @@ end
 function Dialog.Open(Id)
 	local Instance = GetInstance(Id)
 	if not Instance.IsOpen then
+		Instance.Opening = true
 		Instance.IsOpen = true
 		insert(Stack, 1, Instance)
 		Window.SetStackLock(Instance.Id)
