@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
+
 local Cursor = {}
 
 local min = math.min
@@ -49,6 +51,8 @@ local State =
 	PrevLineY = 0.0,
 	PrevLineH = 0.0
 }
+
+local Stack = {}
 
 function Cursor.SetPosition(X, Y)
 	State.PrevX = State.X
@@ -214,6 +218,18 @@ end
 
 function Cursor.Unindent(Width)
 	Cursor.Indent(-Width)
+end
+
+function Cursor.PushContext()
+	table.insert(Stack, 1, Utility.Copy(State))
+end
+
+function Cursor.PopContext()
+	if #Stack == 0 then
+		return
+	end
+
+	State = table.remove(Stack, 1)
 end
 
 return Cursor

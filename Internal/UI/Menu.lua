@@ -44,7 +44,6 @@ local LeftPad = 25.0
 local RightPad = 70.0
 local CheckSize = 5.0
 local OpenedContextMenu = nil
-local CursorStack = {}
 
 local function IsItemHovered()
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
@@ -102,6 +101,7 @@ local function BeginWindow(Id, X, Y)
 		X, Y = ConstrainPosition(X, Y, Instance.W, Instance.H)
 	end
 
+	Cursor.PushContext()
 	Window.Begin(Id,
 	{
 		X = X,
@@ -200,9 +200,6 @@ function Menu.BeginMenu(Label, Options)
 	Result = Win.Selected == Id
 
 	if Result then
-		local CursorX, CursorY = Cursor.GetPosition()
-		insert(CursorStack, 1, {X = CursorX, Y = CursorY})
-
 		BeginWindow(Id, MenuX, MenuY)
 	end
 
@@ -265,12 +262,7 @@ function Menu.EndMenu()
 	Instances[Id].H = Window.GetHeight()
 
 	Window.End()
-
-	if #CursorStack > 0 then
-		local Top = CursorStack[1]
-		Cursor.SetPosition(Top.X, Top.Y)
-		remove(CursorStack, 1)
-	end
+	Cursor.PopContext()
 end
 
 function Menu.Pad()
@@ -308,8 +300,6 @@ function Menu.BeginContextMenu(Options)
 
 	if MenuState.IsOpened and OpenedContextMenu ~= nil then
 		if OpenedContextMenu.Id == Id then
-			local CursorX, CursorY = Cursor.GetPosition()
-			insert(CursorStack, 1, {X = CursorX, Y = CursorY})
 			BeginWindow(OpenedContextMenu.Id, OpenedContextMenu.X, OpenedContextMenu.Y)
 			return true
 		end
