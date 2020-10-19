@@ -766,6 +766,17 @@ function Window.GetBorderlessSize()
 	return W, H
 end
 
+function Window.GetRemainingSize()
+	local W, H = Window.GetBorderlessSize()
+
+	if ActiveInstance ~= nil then
+		W = W - (Cursor.GetX() - ActiveInstance.X - ActiveInstance.Border)
+		H = H - (Cursor.GetY() - ActiveInstance.Y - ActiveInstance.Border)
+	end
+
+	return W, H
+end
+
 function Window.IsMenuBar()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.IsMenuBar

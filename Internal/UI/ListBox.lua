@@ -80,6 +80,8 @@ function ListBox.Begin(Id, Options)
 	Options.H = Options.H == nil and 150.0 or Options.H
 	Options.Clear = Options.Clear == nil and false or Options.Clear
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
+	Options.StretchW = Options.StretchW or false
+	Options.StretchH = Options.StretchH or false
 
 	local Instance = GetInstance(Window.GetItemId(Id))
 	local W = Options.W
@@ -91,6 +93,15 @@ function ListBox.Begin(Id, Options)
 
 	W, H = LayoutManager.ComputeSize(W, H)
 	LayoutManager.AddControl(W, H)
+
+	local RemainingW, RemainingH = Window.GetRemainingSize()
+	if Options.StretchW then
+		W = RemainingW
+	end
+
+	if Options.StretchH then
+		H = RemainingH
+	end
 
 	local X, Y = Cursor.GetPosition()
 	Instance.X = X

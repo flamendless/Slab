@@ -1520,12 +1520,13 @@ end
 
 	Id: [String] A string uniquely identifying this list box within the context of the current window.
 	Options: [Table] List of options controlling the behavior of the list box.
-		W: [Number] The width of the list box. If nil, then the width of the window is used.
-		H: [Number] The height of the list box. If nil, a default value of 150 is used. If H is 0, then
-			the list box will stretch to the height of the window.
+		W: [Number] The width of the list box. If nil, a default value of 150 is used.
+		H: [Number] The height of the list box. If nil, a default value of 150 is used.
 		Clear: [Boolean] Clears out the items in the list. It is recommended to only call this if the list items
 			has changed and should not be set to true on every frame.
 		Rounding: [Number] Amount of rounding to apply to the corners of the list box.
+		StretchW: [Boolean] Stretch the list box to fill the remaining width of the window.
+		StretchH: [Boolean] Stretch the list box to fill the remaining height of the window.
 
 	Return: None.
 --]]
