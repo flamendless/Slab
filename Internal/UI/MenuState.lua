@@ -28,7 +28,7 @@ local MenuState =
 {
 	IsOpened = false,
 	WasOpened = false,
-	RequireClose = false,
+	RequestClose = false,
 	MainMenuBarH = 0
 }
 

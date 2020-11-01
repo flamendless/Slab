@@ -357,9 +357,12 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 		return true
 	end
 
-	if ActiveInstance ~= nil then
-		local FoundStackLock = false
+	-- If there are no windows, then nothing can obstruct.
+	if #Stack == 0 then
+		return false
+	end
 
+	if ActiveInstance ~= nil then
 		if not ActiveInstance.IsOpen then
 			return true
 		end
@@ -368,38 +371,47 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 			return false
 		end
 
-		-- Check if docked windows are obstructing floating windows.
-		for I, V in ipairs(Stack) do
-			if Dock.IsTethered(V.Id) then
-				if ActiveInstance == V then
-					return false
-				end
-
-				if Contains(V, X, Y) and V.CanObstruct and V.IsOpen then
-					return true
-				end
-			end
+		if ActiveInstance.IsAppearing then
+			return true
 		end
 
-		-- Proceed to check stack order of floating windows. Dialogs are pushed to the top of
-		-- the stack.
+		-- Gather all potential windows that can obstruct the given position.
+		local List = {}
 		for I, V in ipairs(Stack) do
+			-- Stack locks prevents other windows to be considered. 
 			if V.Id == StackLockId then
-				FoundStackLock = true
-			elseif FoundStackLock then
-				return true
+				insert(List, V)
+				break
 			end
 
 			if Contains(V, X, Y) and V.CanObstruct then
-				if ActiveInstance == V then
-					if not SkipScrollCheck and Region.IsHoverScrollBar(ActiveInstance.Id) then
-						return true
-					end
+				insert(List, V)
+			end
+		end
 
-					return false
-				elseif V.IsOpen then
+		-- Certain layers are rendered on top of 'Normal' windows. Consider these windows first.
+		local Top = nil
+		for I, V in ipairs(List) do
+			if V.Layer ~= 'Normal' then
+				Top = V
+				break
+			end
+		end
+
+		-- If all windows are considered the normal layer, then just grab the window at the top of the stack.
+		if Top == nil then
+			Top = List[1]
+		end
+
+		if Top ~= nil then
+			if ActiveInstance == Top then
+				if not SkipScrollCheck and Region.IsHoverScrollBar(ActiveInstance.Id) then
 					return true
 				end
+
+				return false
+			elseif Top.IsOpen then
+				return true
 			end
 		end
 	end

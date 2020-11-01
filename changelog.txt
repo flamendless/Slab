@@ -1,7 +1,6 @@
 v0.7.1
 ==========
 [Platform]: Test running on Android. Applies to issue #35.
-[Dock]: Unable to interact with menu when window is docked.
 
 v0.8.0
 ==========
