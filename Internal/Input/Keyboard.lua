@@ -46,10 +46,18 @@ end
 
 local function OnKeyPressed(Key, Scancode, IsRepeat)
 	PushEvent(Common.Event.Pressed, Key, Scancode, IsRepeat)
+
+	if KeyPressedFn ~= nil then
+		KeyPressedFn(Key, Scancode, IsRepeat)
+	end
 end
 
 local function OnKeyReleased(Key, Scancode)
 	PushEvent(Common.Event.Released, Key, Scancode, false)
+
+	if KeyReleasedFn ~= nil then
+		KeyReleasedFn(Key, Scancode)
+	end
 end
 
 local function ProcessEvents()
