@@ -198,7 +198,7 @@ local function DrawScrollBars(Instance)
 		return
 	end
 
-	if HotInstance ~= Instance and ScrollInstance ~= Instance then
+	if HotInstance ~= Instance and ScrollInstance ~= Instance and not Utility.IsMobile() then
 		local dt = love.timer.getDelta()
 		Instance.ScrollAlphaX = max(Instance.ScrollAlphaX - dt, 0.0)
 		Instance.ScrollAlphaY = max(Instance.ScrollAlphaY - dt, 0.0)

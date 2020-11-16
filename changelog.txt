@@ -1,10 +1,7 @@
-v0.7.2
-==========
-[Platform]: Test running on Android. Applies to issue #35.
-
 v0.8.0
 ==========
 [API]: Make Update and Draw functions private.
+[Android]: Receive feedback and make fixes to errant behavior. Applies to issue #35.
 
 BUGS
 ==========

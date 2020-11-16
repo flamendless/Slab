@@ -50,6 +50,10 @@ local function DrawOverview()
 	Slab.Text("The current version of LÖVE is: ")
 	Slab.SameLine()
 	Slab.Text(Slab.GetLoveVersion(), {Color = {0, 1, 0, 1}})
+
+	Slab.Text("The current OS is: ")
+	Slab.SameLine()
+	Slab.Text(love.system.getOS(), {Color = {0, 1, 0, 1}})
 end
 
 local DrawButtons_NumClicked = 0
