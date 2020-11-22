@@ -290,6 +290,16 @@ function Dock.UpdateTear(WinId, X, Y)
 	end
 end
 
+function Dock.GetCachedOptions(WinId)
+	for Id, Instance in pairs(Instances) do
+		if Instance.Window == WinId then
+			return Instance.CachedOptions
+		end
+	end
+
+	return nil
+end
+
 function Dock.Toggle(List, Enabled)
 	List = List == nil and {} or List
 	Enabled = Enabled == nil and true or Enabled

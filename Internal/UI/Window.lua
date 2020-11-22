@@ -187,8 +187,14 @@ local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
 		elseif IsTethered then
 			Dock.UpdateTear(Instance.Id, MouseX, MouseY)
 
+			local Options = Dock.GetCachedOptions(Instance.Id)
 			if not Dock.IsTethered(Instance.Id) then
 				Instance.IsMoving = true
+
+				if Options ~= nil then
+					Instance.TitleDeltaX = MouseX - Options.X - (MouseX - Instance.X)
+					Instance.TitleDeltaY = MouseY - Options.Y - (MouseY - Instance.Y + H)
+				end
 			end
 		end
 	end
@@ -216,6 +222,10 @@ local function UpdateSize(Instance, IsObstructed)
 		end
 
 		if Instance.SizerType == SizerType.None and IsObstructed then
+			return
+		end
+
+		if MovingInstance ~= nil then
 			return
 		end
 
