@@ -35,6 +35,7 @@ local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local Button = {}
@@ -83,7 +84,9 @@ function Button.Begin(Label, Options)
 		Window.SetHotItem(Id)
 
 		if not Options.Disabled then
-			Color = Style.ButtonHoveredColor
+			if not Utility.IsMobile() then
+				Color = Style.ButtonHoveredColor
+			end
 
 			if ClickedId == Id then
 				Color = Style.ButtonPressedColor

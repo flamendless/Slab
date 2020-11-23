@@ -57,6 +57,7 @@ local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 --[[
@@ -1818,6 +1819,11 @@ end
 	Return: [Boolean] True if the last control is hovered, false otherwise.
 --]]
 function Slab.IsControlHovered()
+	-- Prevent hovered checks on mobile if user is not dragging a touch.
+	if Utility.IsMobile() and not Slab.IsMouseDown() then
+		return false
+	end
+
 	local Result = Window.IsItemHot()
 
 	if not Result and not Window.IsObstructedAtMouse() then
@@ -1861,6 +1867,11 @@ end
 	Return: [Boolean] True if any non-Slab area of the viewport is hovered. False otherwise.
 --]]
 function Slab.IsVoidHovered()
+	-- Prevent hovered checks on mobile if user is not dragging a touch.
+	if Utility.IsMobile() and not Slab.IsMouseDown() then
+		return false
+	end
+
 	return Region.GetHotInstanceId() == '' and not Region.IsScrolling()
 end
 
