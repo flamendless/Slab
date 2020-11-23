@@ -26,6 +26,7 @@ SOFTWARE.
 
 local FileSystem = {}
 
+local Syscalls = {}
 local Bit = require('bit')
 local FFI = require('ffi')
 
@@ -48,6 +49,14 @@ end
 local GetDirectoryItems = nil
 local Exists = nil
 local IsDirectory = nil
+
+local function Access(Table, Param)
+	return Table[Param];
+end
+
+local function ErrorAtAccess(Table, Param)
+	return not pcall(Access, Table, Param);
+end
 
 --[[
 	The following code is based on the following sources:
@@ -212,7 +221,7 @@ else
 			struct stat {
 				uint64_t	st_dev;
 				uint64_t	st_ino;
-				uint64_t 	st_nlink;
+				uint64_t	st_nlink;
 				uint32_t	st_mode;
 				uint32_t	st_uid;
 				uint32_t	st_gid;
@@ -231,11 +240,58 @@ else
 			};
 
 			struct dirent* readdir(DIR* dirp) asm("readdir64");
+			int syscall(int number, ...);
 			int stat64(const char* path, struct stat* buf);
 		]]
 	end
 
 	local Stat = FFI.typeof('struct stat');
+
+	if FFI.arch == "x86" then
+		Syscalls.SYS_stat = 106
+	elseif FFI.arch == "arm" and FFI.abi("eabi") then
+		Syscalls.SYS_stat = 106
+	elseif FFI.arch == "x64" then
+		Syscalls.SYS_stat = 4
+	end
+
+
+	if(ErrorAtAccess(FFI.C, "stat64")) then
+
+		local function SysStat(Path, Buffer)
+			return FFI.C.syscall(Syscalls.SYS_stat, Path, Buffer)
+		end
+
+		Exists = function(Path)
+			local Buffer = Stat()
+			return SysStat(Path, Buffer) == 0
+		end
+
+		IsDirectory = function(Path)
+			local Buffer = Stat()
+
+			if SysStat(Path, Buffer) == 0 then
+				return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
+			end
+			return false
+		end
+	else
+		Exists = function(Path)
+			local Buffer = Stat()
+			return FFI.C.stat64(Path, Buffer) == 0
+		end
+
+		IsDirectory = function(Path)
+			local Buffer = Stat()
+
+			if FFI.C.stat64(Path, Buffer) == 0 then
+				return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
+			end
+
+			return false
+		end
+	end
+
 
 	GetDirectoryItems = function(Directory, Options)
 		local Result = {}
@@ -266,20 +322,6 @@ else
 		return Result
 	end
 
-	Exists = function(Path)
-		local Buffer = Stat()
-		return FFI.C.stat64(Path, Buffer) == 0
-	end
-
-	IsDirectory = function(Path)
-		local Buffer = Stat()
-
-		if FFI.C.stat64(Path, Buffer) == 0 then
-			return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
-		end
-
-		return false
-	end
 end
 
 function FileSystem.Separator()
