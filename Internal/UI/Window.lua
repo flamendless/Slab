@@ -187,13 +187,17 @@ local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
 		elseif IsTethered then
 			Dock.UpdateTear(Instance.Id, MouseX, MouseY)
 
+			-- Retrieve the cached options to calculate torn off position. The cached options contain the
+			-- desired bounds for this window. The bounds that are a part of the Instance are the altered options
+			-- modified by the Dock module.
 			local Options = Dock.GetCachedOptions(Instance.Id)
 			if not Dock.IsTethered(Instance.Id) then
 				Instance.IsMoving = true
 
 				if Options ~= nil then
-					Instance.TitleDeltaX = MouseX - Options.X - (MouseX - Instance.X)
-					Instance.TitleDeltaY = MouseY - Options.Y - (MouseY - Instance.Y + H)
+					-- Properly place the window at the mouse position offset by the title width/height.
+					Instance.TitleDeltaX = MouseX - Options.X - floor(Options.W * 0.25)
+					Instance.TitleDeltaY = MouseY - Options.Y - floor(H * 0.5)
 				end
 			end
 		end
