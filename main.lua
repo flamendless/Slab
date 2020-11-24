@@ -28,7 +28,7 @@ local Slab = require 'Slab'
 local SlabTest = require 'SlabTest'
 
 function love.load(args)
-	love.graphics.setBackgroundColor(0.4, 0.88, 1.0)
+	love.graphics.setBackgroundColor(0.07, 0.07, 0.07)
 	Slab.Initialize(args)
 end
 
