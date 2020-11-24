@@ -27,6 +27,8 @@ SOFTWARE.
 local insert = table.insert
 
 local Common = require(SLAB_PATH .. '.Internal.Input.Common')
+local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
+local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 
 local Keyboard = {}
 
@@ -40,7 +42,8 @@ local function PushEvent(Type, Key, Scancode, IsRepeat)
 		Type = Type,
 		Key = Key,
 		Scancode = Scancode,
-		IsRepeat = IsRepeat
+		IsRepeat = IsRepeat,
+		Frame = Stats.GetFrameNumber()
 	})
 end
 
@@ -63,19 +66,31 @@ end
 local function ProcessEvents()
 	Keys = {}
 
+	-- Soft keyboards found on mobile/tablet devices will push keypressed/keyreleased events when the user
+	-- releases from the pressed key. All released events pushed as the same frame as the pressed events will be
+	-- pushed to the events table for the next frame to process.
+	local NextEvents = {}
+
 	for I, V in ipairs(Events) do
 		if Keys[V.Scancode] == nil then
 			Keys[V.Scancode] = {}
 		end
 
 		local Key = Keys[V.Scancode]
-		Key.Type = V.Type
-		Key.Key = V.Key
-		Key.Scancode = V.Scancode
-		Key.IsRepeat = V.IsRepeat
+
+		if Utility.IsMobile() and V.Type == Common.Event.Released and Key.Frame == V.Frame then
+			V.Frame = V.Frame + 1
+			insert(NextEvents, V)
+		else
+			Key.Type = V.Type
+			Key.Key = V.Key
+			Key.Scancode = V.Scancode
+			Key.IsRepeat = V.IsRepeat
+			Key.Frame = V.Frame
+		end
 	end
 
-	Events = {}
+	Events = NextEvents
 end
 
 function Keyboard.Initialize(Args)

@@ -1217,6 +1217,15 @@ function Input.Begin(Id, Options)
 					TextCursorAnchor = 0
 					TextCursorPos = #Instance.Text
 				end
+
+				-- Display the soft keyboard on mobile devices when an input control receives focus.
+				if Utility.IsMobile() and not Options.ReadOnly then
+					-- Always display for non numeric controls. If this control is a numeric input, check to make
+					-- sure the user requested to add text for this numeric control.
+					if not Options.NumbersOnly or NumbersOnlyEntry or Options.NoDrag then
+						love.keyboard.setTextInput(true)
+					end
+				end
 			else
 				local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
 				local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
@@ -1379,6 +1388,11 @@ function Input.Begin(Id, Options)
 
 		if not Options.MultiLine then
 			Region.ResetTransform(Instance.Id)
+		end
+
+		-- Close the soft keyboard on mobile platforms when an input control loses focus.
+		if Utility.IsMobile() then
+			love.keyboard.setTextInput(false)
 		end
 	end
 
