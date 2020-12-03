@@ -54,6 +54,10 @@ local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 	State.Y = Y
 	State.AsyncDeltaX = State.AsyncDeltaX + DX
 	State.AsyncDeltaY = State.AsyncDeltaY + DY
+
+	if MouseMovedFn ~= nil then
+		MouseMovedFn(X, Y, DX, DY, IsTouch)
+	end
 end
 
 local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
