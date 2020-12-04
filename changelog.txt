@@ -6,7 +6,6 @@ v0.8.0
 [Frame]: API calls to setup frames (child regions in Dear ImGui). Can hook into Regions module and expose some functionality from this for this feature. #46.
 [Input]: Multiline Input paste with newline charecters. #64.
 [Keyboard]: Support holding backspace. #65.
-[Window][PR]: Fix Window ResetLayout not resetting Size. #67. Needs investigation.
 [Window]: Add option to constrain window to viewport. #72.
 
 BUGS
