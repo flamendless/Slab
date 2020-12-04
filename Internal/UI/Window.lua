@@ -678,7 +678,7 @@ function Window.Begin(Id, Options)
 		NoOutline = Options.NoOutline
 	})
 
-	if Options.ResetSize then
+	if Options.ResetSize or Options.ResetLayout then
 		ActiveInstance.SizeDeltaX = 0.0
 		ActiveInstance.SizeDeltaY = 0.0
 	end
