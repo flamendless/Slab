@@ -276,7 +276,7 @@ function ColorPicker.Begin(Options)
 		CurrentColor[1] = Options.Color[1]
 		CurrentColor[2] = Options.Color[2]
 		CurrentColor[3] = Options.Color[3]
-		CurrentColor[4] = Options.Color[4]
+		CurrentColor[4] = Options.Color[4] or 1
 		UpdateSaturationColors()
 	end
 
@@ -384,7 +384,7 @@ function ColorPicker.Begin(Options)
 		local A = 1.0 - CurrentColor[4]
 		local AlphaY = A * AlphaH
 		DrawCommands.Line(X, Y + AlphaY, X + AlphaW, Y + AlphaY, 2.0, {A, A, A, 1.0})
-		
+
 		Y = Y + AlphaH + Cursor.PadY()
 	end
 
