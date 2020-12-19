@@ -462,15 +462,15 @@ function ColorPicker.Begin(Options)
 	Cursor.NewLine()
 
 	LayoutManager.Begin('ColorPicker_Buttons_Layout', {AlignX = 'right'})
-	local Result = {Button = "", Color = Utility.MakeColor(CurrentColor)}
+	local Result = {Button = false, Color = Utility.MakeColor(CurrentColor)}
 	if Button.Begin("OK") then
-		Result.Button = "OK"
+		Result.Button = true
 	end
 
 	LayoutManager.SameLine()
 
 	if Button.Begin("Cancel") then
-		Result.Button = "Cancel"
+		Result.Button = false
 		Result.Color = Utility.MakeColor(Options.Color)
 	end
 	LayoutManager.End()
