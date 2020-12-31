@@ -1345,6 +1345,10 @@ end
 		WrapY: [String] The vertical wrapping mode for this image. The available options are 'clamp', 'repeat', 
 			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
+		UseOutline: [Boolean] If set to true, a rectangle will be drawn around the given image. If 'SubW' or 'SubH' are specified, these
+			values will be used instead of the image's dimensions.
+		OutlineColor: [Table] The color used to draw the outline. Default color is black.
+		OutlineW: [Number] The width used for the outline. Default value is 1.
 
 	Return: None.
 --]]

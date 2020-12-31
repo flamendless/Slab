@@ -72,6 +72,9 @@ function Image.Begin(Id, Options)
 	Options.SubH = Options.SubH == nil and 0.0 or Options.SubH
 	Options.WrapH = Options.WrapH == nil and "clamp" or Options.WrapH
 	Options.WrapV = Options.WrapV == nil and "clamp" or Options.WrapV
+	Options.UseOutline = Options.UseOutline or false
+	Options.OutlineColor = Options.OutlineColor or {0, 0, 0, 1}
+	Options.OutlineW = Options.OutlineW or 1
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -122,6 +125,20 @@ function Image.Begin(Id, Options)
 			Options.Color)
 	else
 		DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+	end
+
+	if Options.UseOutline then
+		DrawCommands.Rectangle(
+			'line',
+			X,
+			Y,
+			UseSubImage and Options.SubW or W,
+			UseSubImage and Options.SubH or H,
+			Options.OutlineColor,
+			nil,
+			nil,
+			Options.OutlineW
+		)
 	end
 
 	Cursor.SetItemBounds(X, Y, W, H)

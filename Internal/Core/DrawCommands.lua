@@ -116,8 +116,11 @@ end
 local function DrawRect(Rect)
 	local StatHandle = Stats.Begin('DrawRect', StatsCategory)
 
+	local LineW = love.graphics.getLineWidth()
+	love.graphics.setLineWidth(Rect.LineW)
 	love.graphics.setColor(Rect.Color)
 	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
+	love.graphics.setLineWidth(LineW)
 
 	Stats.End(StatHandle)
 end
@@ -450,7 +453,7 @@ function DrawCommands.SetLayer(Layer)
 	end
 end
 
-function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius, Segments)
+function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius, Segments, LineW)
 	AssertActiveBatch()
 	if type(Radius) == 'table' then
 		Segments = Segments == nil and 10 or Segments
@@ -482,6 +485,7 @@ function DrawCommands.Rectangle(Mode, X, Y, Width, Height, Color, Radius, Segmen
 		Item.Height = Height
 		Item.Color = Color and Color or {0.0, 0.0, 0.0, 1.0}
 		Item.Radius = Radius and Radius or 0.0
+		Item.LineW = LineW or love.graphics.getLineWidth()
 		insert(ActiveBatch.Elements, Item)
 	end
 end

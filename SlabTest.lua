@@ -679,6 +679,10 @@ local DrawImage_Power_Off = {1, 0, 0, 1}
 local DrawImage_Icon_X = 0
 local DrawImage_Icon_Y = 0
 local DrawImage_Icon_Move = false
+local DrawImage_UseOutline = true
+local DrawImage_OutlineWidth = 1
+local DrawImage_OutlineColor = {0, 0, 0, 1}
+local DrawImage_OutlineColor_Edit = false
 
 local function DrawImage()
 	Slab.Textf(
@@ -710,6 +714,44 @@ local function DrawImage()
 	end
 
 	Slab.Image('DrawImage_Color', {Path = DrawImage_Path, Color = DrawImage_Color})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"An outline can be applied to the image. The color and width of the outline is customizable.")
+
+	Slab.Text("Use Outline")
+	Slab.SameLine()
+	if Slab.CheckBox(DrawImage_UseOutline) then
+		DrawImage_UseOutline = not DrawImage_UseOutline
+	end
+
+	Slab.SameLine()
+	Slab.Text("Width")
+	Slab.SameLine()
+	if Slab.Input('DrawImage_OutlineWidth', {Text = DrawImage_OutlineWidth, NumbersOnly = true, ReturnOnText = false, MinNumber = 1}) then
+		DrawImage_OutlineWidth = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	if Slab.Button("Color") then
+		DrawImage_OutlineColor_Edit = true
+	end
+
+	if DrawImage_OutlineColor_Edit then
+		local Result = Slab.ColorPicker({Color = DrawImage_OutlineColor})
+
+		if Result.Button ~= 0 then
+			DrawImage_OutlineColor_Edit = false
+
+			if Result.Button == 1 then
+				DrawImage_OutlineColor = Result.Color
+			end
+		end
+	end
+
+	Slab.Image('DrawImage_Outline', {Path = DrawImage_Path, UseOutline = DrawImage_UseOutline, OutlineW = DrawImage_OutlineWidth, OutlineColor = DrawImage_OutlineColor})
 
 	Slab.NewLine()
 	Slab.Separator()
