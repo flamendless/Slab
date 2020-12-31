@@ -72,6 +72,9 @@ function Image.Begin(Id, Options)
 	Options.SubH = Options.SubH == nil and 0.0 or Options.SubH
 	Options.WrapH = Options.WrapH == nil and "clamp" or Options.WrapH
 	Options.WrapV = Options.WrapV == nil and "clamp" or Options.WrapV
+	Options.RectMode = Options.RectMode == nil and "line" or Options.RectMode
+	Options.RectColor = Options.RectColor == nil and {1, 0, 0, 1} or Options.RectColor
+	Options.RectLineWidth = Options.RectLineWidth == nil and 1 or Options.RectLineWidth
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -95,6 +98,15 @@ function Image.Begin(Id, Options)
 		W = Options.SubW * Options.ScaleX
 		H = Options.SubH * Options.ScaleY
 		UseSubImage = true
+	end
+
+	local RW, RH
+
+	local UseRect = false
+	if Options.RectW > 0 and Options.RectH > 0 then
+		RW = Options.RectW * Options.ScaleX
+		RH = Options.RectH * Options.ScaleY
+		UseRect = true
 	end
 
 	LayoutManager.AddControl(W, H)
@@ -122,6 +134,20 @@ function Image.Begin(Id, Options)
 			Options.Color)
 	else
 		DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+	end
+
+	if UseRect then
+		DrawCommands.Rectangle(
+			Options.RectMode,
+			X + Options.RectX,
+			Y + Options.RectY,
+			RW,
+			RH,
+			Options.RectColor,
+			nil,
+			nil,
+			Options.RectLineWidth
+		)
 	end
 
 	Cursor.SetItemBounds(X, Y, W, H)

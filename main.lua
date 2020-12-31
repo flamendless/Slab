@@ -27,6 +27,13 @@ SOFTWARE.
 local Slab = require 'Slab'
 local SlabTest = require 'SlabTest'
 
+local spritesheet = love.graphics.newImage("spritesheet.png")
+local cols = 4
+local rows = 1
+local frame_size = 64
+local x_offset = 0
+local y_offset = 0
+
 function love.load(args)
 	love.graphics.setBackgroundColor(0.07, 0.07, 0.07)
 	Slab.Initialize(args)
@@ -34,6 +41,39 @@ end
 
 function love.update(dt)
 	Slab.Update(dt)
+
+	Slab.BeginWindow("Test", {Title = "Spritesheet Test"})
+	Slab.Image("Spritesheet", {
+		Image = spritesheet,
+		SubX = 0,
+		SubY = 0,
+		SubW = spritesheet:getWidth(),
+		SubH = spritesheet:getHeight(),
+		RectColor = {1, 1, 1, 1},
+		RectLineWidth = 2,
+		RectX = x_offset * frame_size,
+		RectY = y_offset * frame_size,
+		RectW = frame_size,
+		RectH = frame_size,
+	})
+
+	if Slab.Button("-") then
+		x_offset = x_offset - 1
+		if x_offset < 0 then
+			x_offset = cols - 1
+		end
+	end
+
+	Slab.SameLine()
+
+	if Slab.Button("+") then
+		x_offset = x_offset + 1
+		if x_offset > cols - 1 then
+			x_offset = 0
+		end
+	end
+
+	Slab.EndWindow()
 	SlabTest.Begin()
 end
 
