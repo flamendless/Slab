@@ -1650,7 +1650,9 @@ local DrawWindow_X = 900
 local DrawWindow_Y = 100
 local DrawWindow_W = 200
 local DrawWindow_H = 200
-local DrawWindow_Title = "Example"
+local DrawWindow_Title = "A"
+local DrawWindow_TitleAlignment = "center"
+local DrawWindow_TitleAlignment_Options = {'left', 'center', 'right'}
 local DrawWindow_ResetLayout = false
 local DrawWindow_ResetSize = false
 local DrawWindow_AutoSizeWindow = true
@@ -1703,6 +1705,19 @@ local function DrawWindow()
 	Slab.SameLine()
 	if Slab.CheckBox(DrawWindow_AllowMove, "Allow Move") then
 		DrawWindow_AllowMove = not DrawWindow_AllowMove
+	end
+
+	Slab.NewLine()
+
+	Slab.Textf("The text alignment of the title can also be changed.")
+	if Slab.BeginComboBox('DrawWindow_TitleAlignment', {Selected = DrawWindow_TitleAlignment}) then
+		for I, V in ipairs(DrawWindow_TitleAlignment_Options) do
+			if Slab.TextSelectable(V) then
+				DrawWindow_TitleAlignment = V
+			end
+		end
+
+		Slab.EndComboBox()
 	end
 
 	Slab.NewLine()
@@ -1874,7 +1889,8 @@ local function DrawWindow()
 	end
 
 	Slab.BeginWindow('DrawWindow_Example', {
-		Title = DrawWindow_Title, 
+		Title = DrawWindow_Title,
+		TitleAlign = DrawWindow_TitleAlignment,
 		X = DrawWindow_X,
 		Y = DrawWindow_Y,
 		W = DrawWindow_W,

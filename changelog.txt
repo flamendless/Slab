@@ -16,7 +16,6 @@ v0.8.0
 [Mouse]: Custom cursor image on actions (like resizing). #46.
 [Window][PR]: Fix Window ResetLayout not resetting Size. #67. Needs investigation.
 [Window]: Title frame editable height (just for better flexibility on smaller size devices). #46.
-[Window]: Title alignment (left, center, right). #46.
 
 BUGS
 ==========

@@ -460,6 +460,7 @@ function Window.Begin(Id, Options)
 	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
 	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
 	Options.Title = Options.Title == nil and "" or Options.Title
+	Options.TitleAlign = Options.TitleAlign == nil and 'center' or Options.TitleAlign
 	Options.AllowMove = Options.AllowMove == nil and true or Options.AllowMove
 	Options.AllowResize = Options.AllowResize == nil and true or Options.AllowResize
 	Options.AllowFocus = Options.AllowFocus == nil and true or Options.AllowFocus
@@ -596,7 +597,20 @@ function Window.Begin(Id, Options)
 
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
+		local CloseBgRadius = OffsetY * 0.4
 		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
+
+		-- Check for separate alignment.
+		if Options.TitleAlign == 'left' then
+			TitleX = floor(ActiveInstance.X + ActiveInstance.Border)
+		elseif Options.TitleAlign == 'right' then
+			TitleX = floor(ActiveInstance.X + ActiveInstance.W - Style.Font:getWidth(ActiveInstance.Title) - ActiveInstance.Border)
+
+			if ShowClose then
+				TitleX = floor(TitleX - CloseBgRadius * 2.0)
+			end
+		end
+
 		local TitleColor = ActiveInstance.BackgroundColor
 		if ActiveInstance == Stack[1] then
 			TitleColor = Style.WindowTitleFocusedColor
@@ -620,7 +634,6 @@ function Window.Begin(Id, Options)
 		DrawCommands.Print(ActiveInstance.Title, TitleX, floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
 
 		if ShowClose then
-			local CloseBgRadius = OffsetY * 0.4
 			local CloseSize = CloseBgRadius * 0.5
 			local CloseX = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - CloseBgRadius
 			local CloseY = ActiveInstance.Y - OffsetY * 0.5
