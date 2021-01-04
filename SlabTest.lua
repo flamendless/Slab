@@ -1651,8 +1651,11 @@ local DrawWindow_Y = 100
 local DrawWindow_W = 200
 local DrawWindow_H = 200
 local DrawWindow_Title = "A"
-local DrawWindow_TitleAlignment = "center"
-local DrawWindow_TitleAlignment_Options = {'left', 'center', 'right'}
+local DrawWindow_TitleH = nil
+local DrawWindow_TitleAlignmentX = 'center'
+local DrawWindow_TitleAlignmentY = 'center'
+local DrawWindow_TitleAlignmentX_Options = {'left', 'center', 'right'}
+local DrawWindow_TitleAlignmentY_Options = {'top', 'center', 'bottom'}
 local DrawWindow_ResetLayout = false
 local DrawWindow_ResetSize = false
 local DrawWindow_AutoSizeWindow = true
@@ -1682,6 +1685,9 @@ local function DrawWindow_SizerCheckBox(Key)
 end
 
 local function DrawWindow()
+	-- Ensure a valid height. This could be due to a first run.
+	DrawWindow_TitleH = DrawWindow_TitleH or Slab.GetStyle().Font:getHeight()
+
 	Slab.Textf(
 		"Windows are the basis for which all controls are rendered on and for all user interactions to occur. This area will contain information on the " ..
 		"various options that a window can take and what their expected behaviors will be. The window rendered to the right of this window will be affected " ..
@@ -1692,7 +1698,8 @@ local function DrawWindow()
 
 	Slab.Textf(
 		"The title of the window can be customized. If no title exists, then the title bar is not rendered and the window can not be moved. There is also an " ..
-		"option, AllowMove, to disable movement even with the title bar.")
+		"option, AllowMove, to disable movement even with the title bar. The height of the title bar is also adjustable. The default height will be the height of the " ..
+		"current font.")
 
 	Slab.NewLine()
 
@@ -1702,18 +1709,38 @@ local function DrawWindow()
 		DrawWindow_Title = Slab.GetInputText()
 	end
 
-	Slab.SameLine()
 	if Slab.CheckBox(DrawWindow_AllowMove, "Allow Move") then
 		DrawWindow_AllowMove = not DrawWindow_AllowMove
+	end
+
+	Slab.Text("Height")
+	Slab.SameLine()
+	if Slab.Input('DrawWindow_TitleHeight', {Text = DrawWindow_TitleH, ReturnOnText = false}) then
+		DrawWindow_TitleH = Slab.GetInputNumber()
 	end
 
 	Slab.NewLine()
 
 	Slab.Textf("The text alignment of the title can also be changed.")
-	if Slab.BeginComboBox('DrawWindow_TitleAlignment', {Selected = DrawWindow_TitleAlignment}) then
-		for I, V in ipairs(DrawWindow_TitleAlignment_Options) do
+	Slab.Text("Horizontal")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawWindow_TitleAlignmentX', {Selected = DrawWindow_TitleAlignmentX}) then
+		for I, V in ipairs(DrawWindow_TitleAlignmentX_Options) do
 			if Slab.TextSelectable(V) then
-				DrawWindow_TitleAlignment = V
+				DrawWindow_TitleAlignmentX = V
+			end
+		end
+
+		Slab.EndComboBox()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Vertical")
+	Slab.SameLine()
+	if Slab.BeginComboBox('DrawWindow_TitleAlignmentY', {Selected = DrawWindow_TitleAlignmentY}) then
+		for I, V in ipairs(DrawWindow_TitleAlignmentY_Options) do
+			if Slab.TextSelectable(V) then
+				DrawWindow_TitleAlignmentY = V
 			end
 		end
 
@@ -1890,7 +1917,9 @@ local function DrawWindow()
 
 	Slab.BeginWindow('DrawWindow_Example', {
 		Title = DrawWindow_Title,
-		TitleAlign = DrawWindow_TitleAlignment,
+		TitleH = DrawWindow_TitleH,
+		TitleAlignX = DrawWindow_TitleAlignmentX,
+		TitleAlignY = DrawWindow_TitleAlignmentY,
 		X = DrawWindow_X,
 		Y = DrawWindow_Y,
 		W = DrawWindow_W,

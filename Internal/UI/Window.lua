@@ -139,11 +139,7 @@ end
 
 local function Contains(Instance, X, Y)
 	if Instance ~= nil then
-		local OffsetY = 0.0
-		if Instance.Title ~= "" then
-			OffsetY = Style.Font:getHeight()
-		end
-		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - OffsetY <= Y and Y <= Instance.Y + Instance.H
+		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - Instance.TitleH <= Y and Y <= Instance.Y + Instance.H
 	end
 	return false
 end
@@ -155,7 +151,7 @@ local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
 
 	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None then
 		local W = Instance.W
-		local H = Style.Font:getHeight()
+		local H = Instance.TitleH
 		local X = Instance.X
 		local Y = Instance.Y - H
 		local IsTethered = Dock.IsTethered(Instance.Id)
@@ -239,7 +235,7 @@ local function UpdateSize(Instance, IsObstructed)
 		local H = Instance.H
 
 		if Instance.Title ~= "" then
-			local Offset = Style.Font:getHeight()
+			local Offset = Instance.TitleH
 			Y = Y - Offset
 			H = H + Offset
 		end
@@ -460,7 +456,9 @@ function Window.Begin(Id, Options)
 	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
 	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
 	Options.Title = Options.Title == nil and "" or Options.Title
-	Options.TitleAlign = Options.TitleAlign == nil and 'center' or Options.TitleAlign
+	Options.TitleAlignX = Options.TitleAlignX == nil and 'center' or Options.TitleAlignX
+	Options.TitleAlignY = Options.TitleAlignY == nil and 'center' or Options.TitleAlignY
+	Options.TitleH = Options.TitleH == nil and ((Options.Title ~= nil and Options.Title ~= "") and Style.Font:getHeight() or 0) or Options.TitleH
 	Options.AllowMove = Options.AllowMove == nil and true or Options.AllowMove
 	Options.AllowResize = Options.AllowResize == nil and true or Options.AllowResize
 	Options.AllowFocus = Options.AllowFocus == nil and true or Options.AllowFocus
@@ -530,6 +528,7 @@ function Window.Begin(Id, Options)
 	ActiveInstance.ContentH = Options.ContentH
 	ActiveInstance.BackgroundColor = Options.BgColor
 	ActiveInstance.Title = Options.Title
+	ActiveInstance.TitleH = Options.TitleH
 	ActiveInstance.AllowResize = Options.AllowResize and not Options.AutoSizeWindow
 	ActiveInstance.AllowFocus = Options.AllowFocus
 	ActiveInstance.Border = Options.Border
@@ -568,9 +567,8 @@ function Window.Begin(Id, Options)
 		ActiveInstance.ContentH = max(Options.ContentH, ActiveInstance.DeltaContentH)
 	end
 
-	local OffsetY = 0.0
+	local OffsetY = ActiveInstance.TitleH
 	if ActiveInstance.Title ~= "" then
-		OffsetY = Style.Font:getHeight()
 		ActiveInstance.Y = ActiveInstance.Y + OffsetY
 
 		if Options.AutoSizeWindow then
@@ -599,16 +597,24 @@ function Window.Begin(Id, Options)
 	if ActiveInstance.Title ~= "" then
 		local CloseBgRadius = OffsetY * 0.4
 		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
+		local TitleY = floor(ActiveInstance.Y - OffsetY * 0.5 - Style.Font:getHeight() * 0.5)
 
-		-- Check for separate alignment.
-		if Options.TitleAlign == 'left' then
+		-- Check for horizontal alignment.
+		if Options.TitleAlignX == 'left' then
 			TitleX = floor(ActiveInstance.X + ActiveInstance.Border)
-		elseif Options.TitleAlign == 'right' then
+		elseif Options.TitleAlignX == 'right' then
 			TitleX = floor(ActiveInstance.X + ActiveInstance.W - Style.Font:getWidth(ActiveInstance.Title) - ActiveInstance.Border)
 
 			if ShowClose then
 				TitleX = floor(TitleX - CloseBgRadius * 2.0)
 			end
+		end
+
+		-- Check for vertical alignment
+		if Options.TitleAlignY == 'top' then
+			TitleY = floor(ActiveInstance.Y - OffsetY)
+		elseif Options.TitleAlignY == 'bottom' then
+			TitleY = floor(ActiveInstance.Y - Style.Font:getHeight())
 		end
 
 		local TitleColor = ActiveInstance.BackgroundColor
@@ -631,7 +637,7 @@ function Window.Begin(Id, Options)
 			MouseY = MouseY,
 			IsObstructed = IsObstructed
 		})
-		DrawCommands.Print(ActiveInstance.Title, TitleX, floor(ActiveInstance.Y - OffsetY), Style.TextColor, Style.Font)
+		DrawCommands.Print(ActiveInstance.Title, TitleX, TitleY, Style.TextColor, Style.Font)
 
 		if ShowClose then
 			local CloseSize = CloseBgRadius * 0.5
@@ -756,7 +762,7 @@ end
 function Window.GetBounds(IgnoreTitleBar)
 	if ActiveInstance ~= nil then
 		IgnoreTitleBar = IgnoreTitleBar == nil and false or IgnoreTitleBar
-		local OffsetY = (ActiveInstance.Title ~= "" and not IgnoreTitleBar) and Style.Font:getHeight() or 0.0
+		local OffsetY = (ActiveInstance.Title ~= "" and not IgnoreTitleBar) and ActiveInstance.TitleH or 0.0
 		return ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, ActiveInstance.H + OffsetY
 	end
 	return 0.0, 0.0, 0.0, 0.0
@@ -764,11 +770,7 @@ end
 
 function Window.GetPosition()
 	if ActiveInstance ~= nil then
-		local X, Y = ActiveInstance.X, ActiveInstance.Y
-		if ActiveInstance.Title ~= "" then
-			Y = Y - Style.Font:getHeight()
-		end
-		return X, Y
+		return ActiveInstance.X, ActiveInstance.Y - ActiveInstance.TitleH
 	end
 	return 0.0, 0.0
 end
@@ -1013,6 +1015,7 @@ function Window.GetInstanceInfo(Id)
 
 	if Instance ~= nil then
 		insert(Result, "Title: " .. Instance.Title)
+		insert(Result, "TitleH: " .. Instance.TitleH)
 		insert(Result, "X: " .. Instance.X)
 		insert(Result, "Y: " .. Instance.Y)
 		insert(Result, "W: " .. Instance.W)

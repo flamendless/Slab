@@ -15,7 +15,6 @@ v0.8.0
 [Mouse]: Flag or settings to turn off cursor image change (like arrows for resizing etc.). #46.
 [Mouse]: Custom cursor image on actions (like resizing). #46.
 [Window][PR]: Fix Window ResetLayout not resetting Size. #67. Needs investigation.
-[Window]: Title frame editable height (just for better flexibility on smaller size devices). #46.
 
 BUGS
 ==========

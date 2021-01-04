@@ -542,8 +542,10 @@ end
 		ContentH: [Number] The starting height of the content contained within this window.
 		BgColor: [Table] The background color value for this window. Will use the default style WindowBackgroundColor if this is empty.
 		Title: [String] The title to display for this window. If emtpy, no title bar will be rendered and the window will not be movable.
-		TitleAlign: [String] Controls where the text should be displayed in the title bar. The available options are 'left', 'center', and 'right'. The
-			default is 'center'.
+		TitleH: [Number] The height of the title bar. By default, this will be the height of the current font set in the style. If no title is
+			set, this is ignored.
+		TitleAlignX: [String] Horizontal alignment of the title. The available options are 'left', 'center', and 'right'. The default is 'center'.
+		TitleAlignY: [String] Vertical alignment of the title. The available options are 'top', 'center', and 'bottom'. The default is 'center'.
 		AllowMove: [Boolean] Controls whether the window is movable within the title bar area. The default value is true.
 		AllowResize: [Boolean] Controls whether the window is resizable. The default value is true. AutoSizeWindow must be false for this to work.
 		AllowFocus: [Boolean] Controls whether the window can be focused. The default value is true.
