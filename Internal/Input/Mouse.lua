@@ -27,6 +27,7 @@ SOFTWARE.
 local insert = table.insert
 
 local Common = require(SLAB_PATH .. '.Internal.Input.Common')
+local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 
 local Mouse = {}
 
@@ -48,6 +49,11 @@ local MouseMovedFn = nil
 local MousePressedFn = nil
 local MouseReleasedFn = nil
 local Events = {}
+
+-- Custom cursors allow the developer to override any specific system cursor used. This system will also
+-- allow developers to set an empty image to hide the cursor for specific states, such as mouse resize.
+-- For more information, refer to the SetCustomCursor/ClearCustomCursor functions.
+local CustomCursors = {}
 
 local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 	State.X = X
@@ -131,6 +137,25 @@ function Mouse.Update()
 	Mouse.SetCursor('arrow')
 end
 
+function Mouse.Draw()
+	Mouse.UpdateCursor()
+
+	local CustomCursor = CustomCursors[CurrentCursor]
+	if CustomCursor ~= nil then
+		DrawCommands.SetLayer('Mouse')
+		DrawCommands.Begin()
+
+		if CustomCursor.Quad ~= nil then
+			local X, Y, W, H = CustomCursor.Quad:getViewport()
+			DrawCommands.SubImage(State.X, State.Y, CustomCursor.Image, X, Y, W, H)
+		else
+			DrawCommands.Image(State.X, State.Y, CustomCursor.Image)
+		end
+
+		DrawCommands.End()
+	end
+end
+
 function Mouse.IsDown(Button)
 	return love.mouse.isDown(Button)
 end
@@ -194,23 +219,51 @@ function Mouse.UpdateCursor()
 		CurrentCursor = PendingCursor
 		PendingCursor = ""
 
-		local Type = CurrentCursor
-		if Type == 'arrow' then
-			love.mouse.setCursor(Cursors.Arrow)
-		elseif Type == 'sizewe' then
-			love.mouse.setCursor(Cursors.SizeWE)
-		elseif Type == 'sizens' then
-			love.mouse.setCursor(Cursors.SizeNS)
-		elseif Type == 'sizenesw' then
-			love.mouse.setCursor(Cursors.SizeNESW)
-		elseif Type == 'sizenwse' then
-			love.mouse.setCursor(Cursors.SizeNWSE)
-		elseif Type == 'ibeam' then
-			love.mouse.setCursor(Cursors.IBeam)
-		elseif Type == 'hand' then
-			love.mouse.setCursor(Cursors.Hand)
+		if CustomCursors[CurrentCursor] ~= nil then
+			love.mouse.setVisible(false)
+		else
+			love.mouse.setVisible(true)
+			local Type = CurrentCursor
+			if Type == 'arrow' then
+				love.mouse.setCursor(Cursors.Arrow)
+			elseif Type == 'sizewe' then
+				love.mouse.setCursor(Cursors.SizeWE)
+			elseif Type == 'sizens' then
+				love.mouse.setCursor(Cursors.SizeNS)
+			elseif Type == 'sizenesw' then
+				love.mouse.setCursor(Cursors.SizeNESW)
+			elseif Type == 'sizenwse' then
+				love.mouse.setCursor(Cursors.SizeNWSE)
+			elseif Type == 'ibeam' then
+				love.mouse.setCursor(Cursors.IBeam)
+			elseif Type == 'hand' then
+				love.mouse.setCursor(Cursors.Hand)
+			end
 		end
 	end
+end
+
+function Mouse.SetCustomCursor(Type, Image, Quad)
+	-- If no image is supplied, then create a 1x1 image with no alpha. This is a way to disable certain system cursors.
+	if Image == nil then
+		local Data = love.image.newImageData(1, 1)
+		Image = love.graphics.newImage(Data)
+	end
+
+	if CustomCursors[Type] == nil then
+		CustomCursors[Type] = {}
+	end
+
+	CustomCursors[Type].Image = Image
+	CustomCursors[Type].Quad = Quad
+	PendingCursor = CurrentCursor
+	CurrentCursor = ""
+end
+
+function Mouse.ClearCustomCursor(Type)
+	CustomCursors[Type] = nil
+	PendingCursor = CurrentCursor
+	CurrentCursor = ""
 end
 
 return Mouse

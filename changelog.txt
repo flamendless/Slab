@@ -12,8 +12,7 @@ v0.8.0
 [Keyboard]: Support holding backspace. #65.
 [Menu]: `BeginMenu` and `ContextMenuWindow` missing top rounded corners. #63.
 [Mouse][PR]: Fixed OnMouseMoved not calling MouseMovedFn. #66.
-[Mouse]: Flag or settings to turn off cursor image change (like arrows for resizing etc.). #46.
-[Mouse]: Custom cursor image on actions (like resizing). #46.
+[Source]: Update copyright date of all files.
 [Window][PR]: Fix Window ResetLayout not resetting Size. #67. Needs investigation.
 
 BUGS

@@ -172,6 +172,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetMousePosition
 			GetMousePositionWindow
 			GetMouseDelta
+			SetCustomMouseCursor
+			ClearCustomMouseCursor
 
 		Control:
 			IsControlHovered
@@ -426,7 +428,7 @@ function Slab.Draw()
 		MenuBar.Clear()
 	end
 
-	Mouse.UpdateCursor()
+	Mouse.Draw()
 
 	if Mouse.IsReleased(1) then
 		Button.ClearClicked()
@@ -1813,6 +1815,30 @@ end
 --]]
 function Slab.GetMouseDelta()
 	return Mouse.GetDelta()
+end
+
+--[[
+	SetCustomMouseCursor
+
+	Overrides a system mouse cursor of the given type to render a custom image instead.
+
+	Type: [String] The system cursor type to replace. This can be one of the following values: 'arrow', 'sizewe', 'sizens', 'sizenesw', 'sizenwse', 'ibeam', 'hand'.
+	Image: [Table] An 'Image' object created from love.graphics.newImage. If this is nil, then an empty image is created and is drawn when the system cursor is activated.
+	Quad: [Table] A 'Quad' object created from love.graphics.newQuad. This allows support for setting UVs of an image to render.
+--]]
+function Slab.SetCustomMouseCursor(Type, Image, Quad)
+	Mouse.SetCustomCursor(Type, Image, Quad)
+end
+
+--[[
+	ClearCustomMouseCursor
+
+	Removes any override of a system mouse cursor with the given type and defaults to the OS specific mouse cursor.
+
+	Type: [String] The system cursor type to remove. This can be one of the following values: 'arrow', 'sizewe', 'sizens', 'sizenesw', 'sizenwse', 'ibeam', 'hand'.
+--]]
+function Slab.ClearCustomMouseCursor(Type)
+	Mouse.ClearCustomCursor(Type)
 end
 
 --[[

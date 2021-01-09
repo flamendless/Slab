@@ -73,7 +73,8 @@ local Layers =
 	ContextMenu = 3,
 	MainMenuBar = 4,
 	Dialog = 5,
-	Debug = 6
+	Debug = 6,
+	Mouse = 7
 }
 
 local ActiveLayer = Layers.Normal
@@ -386,6 +387,7 @@ function DrawCommands.Reset()
 	LayerTable[Layers.MainMenuBar] = {}
 	LayerTable[Layers.Dialog] = {}
 	LayerTable[Layers.Debug] = {}
+	LayerTable[Layers.Mouse] = {}
 	ActiveLayer = Layers.Normal
 	PendingBatches = {}
 	ActiveBatch = nil
@@ -443,6 +445,8 @@ function DrawCommands.SetLayer(Layer)
 		ActiveLayer = Layers.Dialog
 	elseif Layer == 'Debug' then
 		ActiveLayer = Layers.Debug
+	elseif Layer == 'Mouse' then
+		ActiveLayer = Layers.Mouse
 	end
 end
 
@@ -728,6 +732,7 @@ function DrawCommands.Execute()
 	DrawLayer(LayerTable[Layers.MainMenuBar], 'MainMenuBar')
 	DrawLayer(LayerTable[Layers.Dialog], 'Dialog')
 	DrawLayer(LayerTable[Layers.Debug], 'Debug')
+	DrawLayer(LayerTable[Layers.Mouse], 'Mouse')
 
 	love.graphics.setShader()
 
@@ -743,6 +748,7 @@ function DrawCommands.GetDebugInfo()
 	Result['MainMenuBar'] = GetLayerDebugInfo(LayerTable[Layers.MainMenuBar])
 	Result['Dialog'] = GetLayerDebugInfo(LayerTable[Layers.Dialog])
 	Result['Debug'] = GetLayerDebugInfo(LayerTable[Layers.Debug])
+	Result['Mouse'] = GetLayerDebugInfo(LayerTable[Layers.Mouse])
 
 	return Result
 end

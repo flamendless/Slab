@@ -1245,6 +1245,7 @@ local DrawInteraction_MouseDoubleClicked_Left = 0
 local DrawInteraction_MouseDoubleClicked_Right = 0
 local DrawInteraction_MouseDoubleClicked_Middle = 0
 local DrawInteraction_MouseVoidClicked_Left = 0
+local DrawInteraction_MouseCustomCursors = nil
 local DrawInteraction_KeyPressed_A = 0
 local DrawInteraction_KeyPressed_S = 0
 local DrawInteraction_KeyPressed_D = 0
@@ -1361,6 +1362,39 @@ local function DrawInteraction()
 
 	Slab.Text("Left Void Clicked: " .. DrawInteraction_MouseVoidClicked_Left)
 	Slab.Text("Is Void Hovered: " .. tostring(IsVoidHovered))
+
+	Slab.NewLine()
+	Slab.Textf(
+		"The rendered mouse can also be customized. This is done by overriding what the default system cursor displays. A custom Image " ..
+		"can be supplied but must be managed by the developer. Alternatively, 'nil' can be passed to disable rendering any cursor for a " ..
+		"given system cursor type. Below is a list of available system cursors that can be overridden. Each custom cursor is associated with " ..
+		"a test image for this example.")
+
+	if DrawInteraction_MouseCustomCursors == nil then
+		DrawInteraction_MouseCustomCursors = {}
+		local Image = love.graphics.newImage(DrawImage_Path_Icons)
+		DrawInteraction_MouseCustomCursors['arrow'] = {Image = Image, Quad = love.graphics.newQuad(100, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['sizewe'] = {Image = Image, Quad = love.graphics.newQuad(50, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['sizens'] = {Image = Image, Quad = love.graphics.newQuad(100, 50, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['sizenesw'] = {Image = Image, Quad = love.graphics.newQuad(150, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['sizenwse'] = {Image = Image, Quad = love.graphics.newQuad(200, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['ibeam'] = {Image = Image, Quad = love.graphics.newQuad(250, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+		DrawInteraction_MouseCustomCursors['hand'] = {Image = Image, Quad = love.graphics.newQuad(300, 0, 50, 50, Image:getWidth(), Image:getHeight())}
+	end
+
+	Slab.NewLine()
+
+	for K, V in pairs(DrawInteraction_MouseCustomCursors) do
+		if Slab.CheckBox(V.Enabled, K) then
+			V.Enabled = not V.Enabled
+
+			if V.Enabled then
+				Slab.SetCustomMouseCursor(K, V.Image, V.Quad)
+			else
+				Slab.ClearCustomMouseCursor(K)
+			end
+		end
+	end
 
 	Slab.NewLine()
 	Slab.Separator()
