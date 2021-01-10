@@ -48,6 +48,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	Options.Id = Options.Id == nil and Label or Options.Id
 	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
 	Options.Size = Options.Size == nil and 16 or Options.Size
+	Options.Disabled = Options.Disabled or false
 
 	local Id = Window.GetItemId(Options.Id and Options.Id or ('_' .. Label .. '_CheckBox'))
 	local BoxW, BoxH = Options.Size, Options.Size
@@ -59,12 +60,12 @@ function CheckBox.Begin(Enabled, Label, Options)
 	LayoutManager.AddControl(W, H)
 
 	local Result = false
-	local Color = Style.ButtonColor
+	local Color = Options.Disabled and Style.CheckBoxDisabledColor or Style.ButtonColor
 
 	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()
 	local IsObstructed = Window.IsObstructedAtMouse()
-	if not IsObstructed and X <= MouseX and MouseX <= X + BoxW and Y <= MouseY and MouseY <= Y + BoxH then
+	if not IsObstructed and not Options.Disabled and X <= MouseX and MouseX <= X + BoxW and Y <= MouseY and MouseY <= Y + BoxH then
 		Color = Style.ButtonHoveredColor
 
 		if Mouse.IsDown(1) then
@@ -82,7 +83,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 		local CursorY = Cursor.GetY()
 		Cursor.AdvanceX(BoxW + 2.0)
 		LayoutManager.Begin('Ignore', {Ignore = true})
-		Text.Begin(Label)
+		Text.Begin(Label, {Color = Options.Disabled and Style.TextDisabledColor or nil})
 		LayoutManager.End()
 		Cursor.SetY(CursorY)
 	end

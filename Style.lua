@@ -54,6 +54,7 @@ local Style =
 	ButtonPressedColor = {0.8, 0.8, 0.8, 1.0},
 	ButtonDisabledTextColor = {0.35, 0.35, 0.35, 1.0},
 	CheckBoxSelectedColor = {0.0, 0.0, 0.0, 1.0},
+	CheckBoxDisabledColor = {0.35, 0.35, 0.35, 1.0},
 	TextColor = {0.875, 0.875, 0.875, 1.0},
 	TextDisabledColor = {0.45, 0.45, 0.45, 1.0},
 	TextHoverBgColor = {0.5, 0.5, 0.5, 1.0},

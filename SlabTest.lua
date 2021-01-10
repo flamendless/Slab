@@ -214,6 +214,10 @@ local function DrawCheckBox()
 	if Slab.CheckBox(DrawCheckBox_Checked_NoLabel) then
 		DrawCheckBox_Checked_NoLabel = not DrawCheckBox_Checked_NoLabel
 	end
+
+	Slab.NewLine()
+	Slab.Text("A disabled check box.")
+	Slab.CheckBox(true, "Disabled", {Disabled = true})
 end
 
 local DrawRadioButton_Selected = 1

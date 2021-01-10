@@ -1005,6 +1005,7 @@ end
 		Id: [String] An optional Id that can be supplied by the user. By default, the Id will be the label.
 		Rounding: [Number] Amount of rounding to apply to the corners of the check box.
 		Size: [Number] The uniform size of the box. The default value is 16.
+		Disabled: [Boolean] Dictates whether this check box is enabled for interaction.
 
 	Return: [Boolean] Returns true if the user clicks within the check box.
 --]]

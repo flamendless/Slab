@@ -2,7 +2,6 @@ v0.8.0
 ==========
 [API]: Make Update and Draw functions private.
 [Android]: Receive feedback and make fixes to errant behavior. Applies to issue #35.
-[CheckBox]: CheckBox's option - disable flag. #68.
 [ColorPicker][PR]: Optional alpha value passing and return value use int instead of string. #69.
 [FileDialog]: "Up to" button in file dialogs. #61.
 [FileSystem][PR]: Fix FFI undefined symbol stat64 by falling back to syscall. #62. #37.
