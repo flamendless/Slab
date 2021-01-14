@@ -28,6 +28,7 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 local insert = table.insert
+local unpack = table.unpack
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
@@ -273,10 +274,10 @@ function ColorPicker.Begin(Options)
 	Window.Begin('ColorPicker', {Title = "Color Picker", X = Options.X, Y = Options.Y})
 
 	if Window.IsAppearing() or Options.Refresh then
-		CurrentColor[1] = Options.Color[1]
-		CurrentColor[2] = Options.Color[2]
-		CurrentColor[3] = Options.Color[3]
-		CurrentColor[4] = Options.Color[4]
+		CurrentColor[1] = Options.Color[1] or 0.0
+		CurrentColor[2] = Options.Color[2] or 0.0
+		CurrentColor[3] = Options.Color[3] or 0.0
+		CurrentColor[4] = Options.Color[4] or 1.0
 		UpdateSaturationColors()
 	end
 
@@ -462,15 +463,15 @@ function ColorPicker.Begin(Options)
 	Cursor.NewLine()
 
 	LayoutManager.Begin('ColorPicker_Buttons_Layout', {AlignX = 'right'})
-	local Result = {Button = "", Color = Utility.MakeColor(CurrentColor)}
+	local Result = {Button = 0, Color = Utility.MakeColor(CurrentColor)}
 	if Button.Begin("OK") then
-		Result.Button = "OK"
+		Result.Button = 1
 	end
 
 	LayoutManager.SameLine()
 
 	if Button.Begin("Cancel") then
-		Result.Button = "Cancel"
+		Result.Button = -1
 		Result.Color = Utility.MakeColor(Options.Color)
 	end
 	LayoutManager.End()

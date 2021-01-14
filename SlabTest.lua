@@ -649,8 +649,8 @@ local function DrawInput()
 	if DrawInput_Highlight_Table_Modify ~= nil then
 		local Result = Slab.ColorPicker({Color = DrawInput_Highlight_Table[DrawInput_Highlight_Table_Modify]})
 
-		if Result.Button ~= "" then
-			if Result.Button == "OK" then
+		if Result.Button ~= 0 then
+			if Result.Button == 1 then
 				DrawInput_Highlight_Table[DrawInput_Highlight_Table_Modify] = Result.Color
 			end
 
@@ -700,10 +700,10 @@ local function DrawImage()
 	if DrawImage_Color_Edit then
 		local Result = Slab.ColorPicker({Color = DrawImage_Color})
 
-		if Result.Button ~= "" then
+		if Result.Button ~= 0 then
 			DrawImage_Color_Edit = false
 
-			if Result.Button == "OK" then
+			if Result.Button == 1 then
 				DrawImage_Color = Result.Color
 			end
 		end
@@ -1488,10 +1488,10 @@ local function DrawShapes()
 	if DrawShapes_Rectangle_ChangeColor then
 		local Result = Slab.ColorPicker({Color = DrawShapes_Rectangle_Color})
 
-		if Result.Button ~= "" then
+		if Result.Button ~= 0 then
 			DrawShapes_Rectangle_ChangeColor = false
 
-			if Result.Button == "OK" then
+			if Result.Button == 1 then
 				DrawShapes_Rectangle_Color = Result.Color
 			end
 		end
@@ -1944,10 +1944,10 @@ local function DrawWindow()
 	if DrawWindow_BgColor_ChangeColor then
 		local Result = Slab.ColorPicker({Color = DrawWindow_BgColor})
 
-		if Result.Button ~= "" then
+		if Result.Button ~= 0 then
 			DrawWindow_BgColor_ChangeColor = false
 
-			if Result.Button == "OK" then
+			if Result.Button == 1 then
 				DrawWindow_BgColor = Result.Color
 			end
 		end

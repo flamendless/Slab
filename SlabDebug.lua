@@ -297,12 +297,12 @@ local function DrawStyleEditor()
 		Style_EditingColor[3] = Result.Color[3]
 		Style_EditingColor[4] = Result.Color[4]
 
-		if Result.Button ~= "" then
-			if Result.Button == "OK" then
+		if Result.Button ~= 0 then
+			if Result.Button == 1 then
 				Style.API.StoreCurrentStyle()
 			end
 
-			if Result.Button == "Cancel" then
+			if Result.Button == -1 then
 				RestoreEditColor()
 			end
 
