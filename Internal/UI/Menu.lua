@@ -95,7 +95,7 @@ local function ConstrainPosition(X, Y, W, H)
 	return ResultX, ResultY
 end
 
-local function BeginWindow(Id, X, Y)
+local function BeginWindow(Id, X, Y, RoundAllCorners)
 	local Instance = Instances[Id]
 	if Instance ~= nil then
 		X, Y = ConstrainPosition(X, Y, Instance.W, Instance.H)
@@ -114,7 +114,7 @@ local function BeginWindow(Id, X, Y)
 		AutoSizeWindow = true,
 		Layer = 'ContextMenu',
 		BgColor = Style.MenuColor,
-		Rounding = {0, 0, 2, 2},
+		Rounding = RoundAllCorners and {2, 2, 2, 2} or {0, 0, 2, 2},
 		NoSavedSettings = true
 	})
 end
@@ -200,7 +200,7 @@ function Menu.BeginMenu(Label, Options)
 	Result = Win.Selected == Id
 
 	if Result then
-		BeginWindow(Id, MenuX, MenuY)
+		BeginWindow(Id, MenuX, MenuY, not IsMenuBar)
 	end
 
 	return Result
@@ -300,7 +300,7 @@ function Menu.BeginContextMenu(Options)
 
 	if MenuState.IsOpened and OpenedContextMenu ~= nil then
 		if OpenedContextMenu.Id == Id then
-			BeginWindow(OpenedContextMenu.Id, OpenedContextMenu.X, OpenedContextMenu.Y)
+			BeginWindow(OpenedContextMenu.Id, OpenedContextMenu.X, OpenedContextMenu.Y, true)
 			return true
 		end
 		return false
