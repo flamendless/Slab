@@ -162,6 +162,7 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			CloseDialog
 			MessageBox
 			FileDialog
+			ColorPicker
 
 		Mouse:
 			IsMouseDown
@@ -1712,7 +1713,7 @@ end
 		Color: [Table] The color to modify. This should be in the format of 0-1 for each color component (RGBA).
 
 	Return: [Table] Returns the button and color the user has selected.
-		Button: [String] The button the user clicked. Will either be OK or Cancel.
+		Button: [Number] The button the user clicked. 1 - OK. 0 - No Interaction. -1 - Cancel.
 		Color: [Table] The new color the user has chosen. This will always be returned.
 --]]
 function Slab.ColorPicker(Options)
