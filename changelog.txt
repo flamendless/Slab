@@ -8,7 +8,6 @@ v0.8.0
 [Image][PR]: Image with rect. #70. #71.
 [Input]: Multiline Input paste with newline charecters. #64.
 [Keyboard]: Support holding backspace. #65.
-[Mouse][PR]: Fixed OnMouseMoved not calling MouseMovedFn. #66.
 [Source]: Update copyright date of all files.
 [Window][PR]: Fix Window ResetLayout not resetting Size. #67. Needs investigation.
 [Window]: Add option to constrain window to viewport. #72.
