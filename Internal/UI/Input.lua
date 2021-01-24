@@ -1226,6 +1226,9 @@ function Input.Begin(Id, Options)
 						love.keyboard.setTextInput(true)
 					end
 				end
+
+				-- Enable key repeat when an input control is focused.
+				love.keyboard.setKeyRepeat(true)
 			else
 				local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
 				local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
@@ -1394,6 +1397,9 @@ function Input.Begin(Id, Options)
 		if Utility.IsMobile() then
 			love.keyboard.setTextInput(false)
 		end
+
+		-- Restore the key repeat flag to the state before an input control gained focus.
+		love.keyboard.setKeyRepeat(false)
 	end
 
 	Stats.End(StatHandle)
