@@ -144,7 +144,7 @@ local function Contains(Instance, X, Y)
 	return false
 end
 
-local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
+local function UpdateTitleBar(Instance, IsObstructed, AllowMove, Constrain)
 	if IsObstructed then
 		return
 	end
@@ -178,8 +178,18 @@ local function UpdateTitleBar(Instance, IsObstructed, AllowMove)
 
 		if Instance.IsMoving then
 			local DeltaX, DeltaY = Mouse.GetDelta()
+			local TitleDeltaX, TitleDeltaY = Instance.TitleDeltaX, Instance.TitleDeltaY
 			Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
 			Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
+
+			if Constrain then
+				-- Constrain the position of the window to the viewport. The position at this point in the code has the delta already applied. This delta will need to be
+				-- removed to retrieve the original position, and clamp the delta based off of that posiiton.
+				local OriginX = Instance.X - TitleDeltaX
+				local OriginY = Instance.Y - TitleDeltaY - Instance.TitleH
+				Instance.TitleDeltaX = Utility.Clamp(Instance.TitleDeltaX, -OriginX, love.graphics.getWidth() - (OriginX + Instance.W))
+				Instance.TitleDeltaY = Utility.Clamp(Instance.TitleDeltaY, -OriginY + MenuState.MainMenuBarH, love.graphics.getHeight() - (OriginY + Instance.H + Instance.TitleH))
+			end
 		elseif IsTethered then
 			Dock.UpdateTear(Instance.Id, MouseX, MouseY)
 
@@ -478,6 +488,7 @@ function Window.Begin(Id, Options)
 	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
+	Options.ConstrainPosition = Options.ConstrainPosition or false
 
 	Dock.AlterOptions(Id, Options)
 
@@ -589,7 +600,7 @@ function Window.Begin(Id, Options)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
 	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove)
+	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove, Options.ConstrainPosition)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
@@ -1022,6 +1033,8 @@ function Window.GetInstanceInfo(Id)
 		insert(Result, "H: " .. Instance.H)
 		insert(Result, "ContentW: " .. Instance.ContentW)
 		insert(Result, "ContentH: " .. Instance.ContentH)
+		insert(Result, "TitleDeltaX: " .. Instance.TitleDeltaX)
+		insert(Result, "TitleDeltaY: " .. Instance.TitleDeltaY)
 		insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
 		insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
 		insert(Result, "DeltaContentW: " .. Instance.DeltaContentW)

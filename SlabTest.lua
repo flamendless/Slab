@@ -1746,6 +1746,7 @@ local DrawWindow_Border = 4.0
 local DrawWindow_BgColor = nil
 local DrawWindow_BgColor_ChangeColor = false
 local DrawWindow_NoOutline = false
+local DrawWindow_Constrain = false
 local DrawWindow_SizerFilter = {}
 local DrawWindow_SizerFiltersOptions = {
 	N = true,
@@ -1778,8 +1779,8 @@ local function DrawWindow()
 
 	Slab.Textf(
 		"The title of the window can be customized. If no title exists, then the title bar is not rendered and the window can not be moved. There is also an " ..
-		"option, AllowMove, to disable movement even with the title bar. The height of the title bar is also adjustable. The default height will be the height of the " ..
-		"current font.")
+		"option, AllowMove, to disable movement even with the title bar. The position of the window can be constrained to the viewport through the 'ConstrainPosition' " ..
+		"option. The height of the title bar is also adjustable. The default height will be the height of the current font.")
 
 	Slab.NewLine()
 
@@ -1791,6 +1792,10 @@ local function DrawWindow()
 
 	if Slab.CheckBox(DrawWindow_AllowMove, "Allow Move") then
 		DrawWindow_AllowMove = not DrawWindow_AllowMove
+	end
+
+	if Slab.CheckBox(DrawWindow_Constrain, "Constrain Position To Viewport") then
+		DrawWindow_Constrain = not DrawWindow_Constrain
 	end
 
 	Slab.Text("Height")
@@ -2013,7 +2018,8 @@ local function DrawWindow()
 		AllowFocus = DrawWindow_AllowFocus,
 		Border = DrawWindow_Border,
 		BgColor = DrawWindow_BgColor,
-		NoOutline = DrawWindow_NoOutline
+		NoOutline = DrawWindow_NoOutline,
+		ConstrainPosition = DrawWindow_Constrain
 	})
 	Slab.Text("Hello World")
 	Slab.EndWindow()

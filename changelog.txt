@@ -5,7 +5,6 @@ v0.8.0
 [FileDialog]: "Up to" button in file dialogs. #61.
 [Frame]: API calls to setup frames (child regions in Dear ImGui). Can hook into Regions module and expose some functionality from this for this feature. #46.
 [Input]: Multiline Input paste with newline charecters. #64.
-[Window]: Add option to constrain window to viewport. #72.
 
 BUGS
 ==========
