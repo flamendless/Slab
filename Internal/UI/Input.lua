@@ -994,7 +994,7 @@ function Input.Begin(Id, Options)
 	local Result = false
 
 	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Input')
 
 	Instance.W = W
 	Instance.H = H

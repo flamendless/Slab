@@ -57,7 +57,7 @@ function CheckBox.Begin(Enabled, Label, Options)
 	local H = max(BoxH, TextH)
 	local Radius = Options.Size * 0.5
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'CheckBox')
 
 	local Result = false
 	local Color = Options.Disabled and Style.CheckBoxDisabledColor or Style.ButtonColor

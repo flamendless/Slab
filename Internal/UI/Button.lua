@@ -71,7 +71,7 @@ function Button.Begin(Label, Options)
 	end
 
 	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Button')
 
 	local X, Y = Cursor.GetPosition()
 
@@ -149,7 +149,7 @@ function Button.BeginRadio(Label, Options)
 		H = max(H, TextH)
 	end
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Radio')
 
 	local X, Y = Cursor.GetPosition()
 	local CenterX, CenterY = X + Radius, Y + Radius

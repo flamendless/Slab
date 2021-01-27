@@ -55,7 +55,7 @@ function Shape.Rectangle(Options)
 
 	local W = Options.W
 	local H = Options.H
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Rectangle')
 
 	local X, Y = Cursor.GetPosition()
 
@@ -83,7 +83,7 @@ function Shape.Circle(Options)
 
 	local Diameter = Options.Radius * 2.0
 
-	LayoutManager.AddControl(Diameter, Diameter)
+	LayoutManager.AddControl(Diameter, Diameter, 'Circle')
 
 	local X, Y = Cursor.GetPosition()
 	local CenterX = X + Options.Radius
@@ -108,7 +108,7 @@ function Shape.Triangle(Options)
 
 	local Diameter = Options.Radius * 2.0
 
-	LayoutManager.AddControl(Diameter, Diameter)
+	LayoutManager.AddControl(Diameter, Diameter, 'Triangle')
 
 	local X, Y = Cursor.GetPosition()
 	local CenterX = X + Options.Radius
@@ -164,7 +164,7 @@ function Shape.Curve(Points, Options)
 	local W = abs(MaxX - MinX)
 	local H = abs(MaxY - MinY)
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Curve')
 
 	CurveX, CurveY = Cursor.GetPosition()
 	Curve:translate(CurveX, CurveY)
@@ -247,7 +247,7 @@ function Shape.Polygon(Points, Options)
 	local W = abs(MaxX - MinX)
 	local H = abs(MaxY - MinY)
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'Polygon')
 
 	MinX, MinY = huge, huge
 	MaxX, MaxY = 0, 0

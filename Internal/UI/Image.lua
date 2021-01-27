@@ -100,7 +100,8 @@ function Image.Begin(Id, Options)
 		UseSubImage = true
 	end
 
-	LayoutManager.AddControl(W, H)
+	W, H = LayoutManager.ComputeSize(W, H)
+	LayoutManager.AddControl(W, H, 'Image')
 
 	local X, Y = Cursor.GetPosition()
 	local MouseX, MouseY = Window.GetMousePosition()

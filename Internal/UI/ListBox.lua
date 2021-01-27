@@ -92,7 +92,7 @@ function ListBox.Begin(Id, Options)
 	end
 
 	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'ListBox')
 
 	local RemainingW, RemainingH = Window.GetRemainingSize()
 	if Options.StretchW then

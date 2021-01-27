@@ -133,7 +133,7 @@ function Tree.Begin(Id, Options)
 			ControlH = Instance.TreeB - Instance.Y
 		end
 
-		LayoutManager.AddControl(ControlW, ControlH)
+		LayoutManager.AddControl(ControlW, ControlH, 'Tree')
 
 		Instance.TreeR = 0
 		Instance.TreeB = 0

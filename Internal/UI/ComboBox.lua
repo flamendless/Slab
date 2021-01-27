@@ -74,7 +74,7 @@ function ComboBox.Begin(Id, Options)
 	local H = Style.Font:getHeight()
 
 	W = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'ComboBox')
 
 	local X, Y = Cursor.GetPosition()
 	local Radius = H * 0.35

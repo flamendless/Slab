@@ -59,7 +59,7 @@ function Text.Begin(Label, Options)
 	local H = Style.Font:getHeight()
 	local PadX = Options.Pad
 
-	LayoutManager.AddControl(W + PadX, H)
+	LayoutManager.AddControl(W + PadX, H, 'Text')
 
 	local Color = Options.Color
 	local Result = false
@@ -137,7 +137,7 @@ function Text.BeginFormatted(Label, Options)
 	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
 	local H = #Wrapped * Style.Font:getHeight()
 
-	LayoutManager.AddControl(Width, H)
+	LayoutManager.AddControl(Width, H, 'TextFormatted')
 
 	local X, Y = Cursor.GetPosition()
 
@@ -162,7 +162,7 @@ function Text.BeginObject(Object, Options)
 
 	local W, H = Object:getDimensions()
 
-	LayoutManager.AddControl(W, H)
+	LayoutManager.AddControl(W, H, 'TextObject')
 
 	local X, Y = Cursor.GetPosition()
 

@@ -130,7 +130,7 @@ local function GetColumnPosition(Instance)
 
 		for I = 1, Instance.ColumnNo - 1, 1 do
 			local Column = Instance.Columns[I]
-			TotalW = TotalW + Column.W
+			TotalW = TotalW + Column.W + Cursor.PadX() * 2
 		end
 
 		local AnchorX, AnchorY = Instance.X, Instance.Y
@@ -155,14 +155,11 @@ local function GetColumnSize(Instance)
 		local WinX, WinY, WinW, WinH = GetWindowBounds()
 		local Count = #Instance.Columns
 		local ColumnW = WinW / Count
-		local W, H = 0, GetLayoutH(Instance)
+		local W, H = ColumnW, GetLayoutH(Instance)
 
 		if not Window.IsAutoSize() then
-			W = ColumnW
 			H = WinH
 			Column.W = W
-		else
-			W = max(Column.W, ColumnW)
 		end
 
 		return W, H
@@ -266,7 +263,7 @@ local function AddControl(Instance, W, H, Type)
 			AlteredSize = Column.AlteredSize,
 			Type = Type
 		})
-		Row.W = Row.W + W + Cursor.PadX()
+		Row.W = Row.W + W
 		Row.H = max(Row.H, H)
 
 		Column.RowNo = RowNo + 1
@@ -287,6 +284,7 @@ local function GetInstance(Id)
 		Instance.AlignRowY = 'top'
 		Instance.Ignore = false
 		Instance.ExpandW = false
+		Instance.ExpandH = false
 		Instance.X = 0
 		Instance.Y = 0
 		Instance.Columns = {}
@@ -299,7 +297,7 @@ end
 
 function LayoutManager.AddControl(W, H, Type)
 	if Active ~= nil and not Active.Ignore then
-		AddControl(Active, W, H)
+		AddControl(Active, W, H, Type)
 	end
 end
 
@@ -318,6 +316,20 @@ function LayoutManager.ComputeSize(W, H)
 		if not Active.AnchorY then
 			RealH = WinH
 		end
+
+		-- Retrieve the calculated row width. This information is stored in the 'PendingRows'
+		-- field of the active column. This information is updated in the 'AddControl' function.
+		local Row = nil
+		local RemainingW = WinW
+		if Column.PendingRows ~= nil then
+			Row = Column.PendingRows[Column.RowNo]
+
+			if Row ~= nil then
+				RemainingW = WinW - Row.W
+			end
+		end
+
+		W = min(W, RemainingW)
 
 		if Window.IsAutoSize() then
 			local LayoutH = GetLayoutH(Active, false)
@@ -500,7 +512,8 @@ function LayoutManager.GetActiveSize()
 		return GetColumnSize(Active)
 	end
 
-	return 0, 0
+	local WinX, WinY, WinW, WinH = GetWindowBounds()
+	return WinW, WinH
 end
 
 function LayoutManager.Validate()
@@ -515,6 +528,46 @@ function LayoutManager.Validate()
 	end
 
 	assert(Message == nil, Message)
+end
+
+--[[
+	This function will return a map of table names with their debug information.
+--]]
+function LayoutManager.GetDebugInfo()
+	local Result = {}
+
+	for K, V in pairs(Instances) do
+		local Info = {}
+		insert(Info, "X: " .. V.X)
+		insert(Info, "Y: " .. V.Y)
+		insert(Info, "AlignX: " .. V.AlignX)
+		insert(Info, "AlignY: " .. V.AlignY)
+		insert(Info, "AlignRowY: " .. V.AlignRowY)
+		insert(Info, "Ignore: " .. tostring(V.Ignore))
+		insert(Info, "ExpandW: " .. tostring(V.ExpandW))
+		insert(Info, "ExpandH: " .. tostring(V.ExpandH))
+
+		insert(Info, "Columns: " .. #V.Columns)
+		for ColumnNo, Column in ipairs(V.Columns) do
+			insert(Info, "   " .. ColumnNo .. ": W: " .. Column.W .. " Rows: " .. (Column.Rows and #Column.Rows or 0))
+
+			if Column.Rows ~= nil then
+				for RowNo, Row in ipairs(Column.Rows) do
+					insert(Info, "      " .. RowNo .. ": W: " .. Row.W .. " H: " .. Row.H .. " Controls: " .. (Row.Controls and #Row.Controls or 0))
+
+					if Row.Controls ~= nil then
+						for ControlNo, Control in pairs(Row.Controls) do
+							insert(Info, "         " .. ControlNo .. ": " .. " W: " .. Control.W .. " H: " .. Control.H .. " Type: " .. tostring(Control.Type))
+						end
+					end
+				end
+			end
+		end
+
+		Result[K] = Info
+	end
+
+	return Result
 end
 
 return LayoutManager
