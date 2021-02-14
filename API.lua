@@ -240,8 +240,6 @@ local INIStatePath = love.filesystem.getSourceBaseDirectory() .. "/Slab.ini"
 local QuitFn = nil
 local Verbose = false
 local Initialized = false
-local DidUpdate = false
-local DidDraw = false
 
 local function LoadState()
 	if INIStatePath ~= nil then
@@ -370,11 +368,7 @@ end
 	Return: None.
 --]]
 function Slab.Update(dt)
-	if DidUpdate then
-		return
-	end
-
-	Stats.Reset()
+	Stats.Reset(false)
 	FrameStatHandle = Stats.Begin('Frame', 'Slab')
 	local StatHandle = Stats.Begin('Update', 'Slab')
 
@@ -393,9 +387,6 @@ function Slab.Update(dt)
 	end
 
 	Stats.End(StatHandle)
-
-	DidUpdate = true
-	DidDraw = false
 end
 
 --[[
@@ -408,10 +399,6 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
-	if DidDraw then
-		return
-	end
-
 	local StatHandle = Stats.Begin('Draw', 'Slab')
 
 	Window.Validate()
@@ -441,10 +428,13 @@ function Slab.Draw()
 	love.graphics.pop()
 
 	Stats.End(StatHandle)
-	Stats.End(FrameStatHandle)
 
-	DidDraw = true
-	DidUpdate = false
+	-- Only call end if 'Update' was called and a valid handle was retrieved. This can happen for developers using a custom
+	-- run function with a fixed update.
+	if FrameStatHandle ~= nil then
+		Stats.End(FrameStatHandle)
+		FrameStatHandle = nil
+	end
 end
 
 --[[

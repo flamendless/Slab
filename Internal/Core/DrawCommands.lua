@@ -357,6 +357,10 @@ local function AssertActiveBatch()
 end
 
 local function DrawLayer(Layer, Name)
+	if Layer == nil then
+		return
+	end
+
 	if Layer.Channels == nil then
 		return
 	end

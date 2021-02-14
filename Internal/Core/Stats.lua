@@ -145,7 +145,7 @@ function Stats.GetCallCount(Name, Category)
 	return Item.CallCount > 0 and Item.CallCount or Item.LastCallCount
 end
 
-function Stats.Reset()
+function Stats.Reset(Strict)
 	FrameNumber = FrameNumber + 1
 
 	if QueueEnabled then
@@ -178,7 +178,9 @@ function Stats.Reset()
 		Message = Message .. "\t" .. tostring(V.Name) .. " in " .. tostring(V.Category) .. "\n"
 	end
 
-	assert(Message == nil, Message)
+	if Strict then
+		assert(Message == nil, Message)
+	end
 
 	for K, V in pairs(Data) do
 		ResetCategory(K)
