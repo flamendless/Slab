@@ -40,7 +40,6 @@ local ImageCache = {}
 local function GetImage(Path)
 	if ImageCache[Path] == nil then
 		ImageCache[Path] = love.graphics.newImage(Path)
-		local WrapH, WrapV = ImageCache[Path]:getWrap()
 	end
 	return ImageCache[Path]
 end
@@ -75,6 +74,8 @@ function Image.Begin(Id, Options)
 	Options.UseOutline = Options.UseOutline or false
 	Options.OutlineColor = Options.OutlineColor or {0, 0, 0, 1}
 	Options.OutlineW = Options.OutlineW or 1
+	Options.W = Options.W or nil
+	Options.H = Options.H or nil
 
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
@@ -90,13 +91,22 @@ function Image.Begin(Id, Options)
 
 	Instance.Image:setWrap(Options.WrapH, Options.WrapV)
 
-	local W = Instance.Image:getWidth() * Options.ScaleX
-	local H = Instance.Image:getHeight() * Options.ScaleY
+	local W = Options.W or Instance.Image:getWidth()
+	local H = Options.H or Instance.Image:getHeight()
+
+	-- The final width and height setting will be what the developer requested if it exists. The scale factor will be calculated here.
+	Options.ScaleX = Options.W and (Options.W / Instance.Image:getWidth()) or Options.ScaleX
+	Options.ScaleY = Options.H and (Options.H / Instance.Image:getHeight()) or Options.ScaleY
+
+	W = W * Options.ScaleX
+	H = H * Options.ScaleY
 
 	local UseSubImage = false
 	if Options.SubW > 0.0 and Options.SubH > 0.0 then
-		W = Options.SubW * Options.ScaleX
-		H = Options.SubH * Options.ScaleY
+		Options.ScaleX = Options.W and (Options.W / Options.SubW) or Options.ScaleX
+		Options.ScaleY = Options.H and (Options.H / Options.SubH) or Options.ScaleY
+		W = Options.W or W
+		H = Options.H or H
 		UseSubImage = true
 	end
 

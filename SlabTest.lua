@@ -114,6 +114,14 @@ local function DrawButtons()
 
 	Slab.SameLine()
 	Slab.Button(DrawButtons_Enabled and "Enabled" or "Disabled", {Disabled = not DrawButtons_Enabled})
+
+	Slab.NewLine()
+	Slab.Separator()
+
+	Slab.Textf(
+		"Buttons can also display images instead of a text label. This can be down through the 'Image' option, which accepts a table " ..
+		"where the options are the same as those found in the 'Image' API function.")
+	Slab.Button("", {Image = {Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"}})
 end
 
 local DrawText_Width = 450.0

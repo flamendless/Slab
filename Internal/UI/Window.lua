@@ -119,6 +119,7 @@ local function NewInstance(Id)
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
 	Instance.NoSavedSettings = false
+	Instance.IDStack = {}
 	return Instance
 end
 
@@ -724,6 +725,10 @@ end
 function Window.End()
 	if ActiveInstance ~= nil then
 		local Handle = ActiveInstance.StatHandle
+
+		-- Clear the ID stack for this window. This information can be kept transient
+		ActiveInstance.IDStack = {}
+
 		Region.End()
 		DrawCommands.End(not ActiveInstance.IsOpen)
 		remove(PendingStack, 1)
@@ -744,7 +749,7 @@ end
 function Window.GetMousePosition()
 	local X, Y = Mouse.Position()
 	if ActiveInstance ~= nil then
-		X, Y = Region.InverseTransform(ActiveInstance.Id, X, Y)
+		X, Y = Region.InverseTransform(nil, X, Y)
 	end
 	return X, Y
 end
@@ -929,7 +934,14 @@ function Window.GetItemId(Id)
 		if ActiveInstance.Items[Id] == nil then
 			ActiveInstance.Items[Id] = ActiveInstance.Id .. '.' .. Id
 		end
-		return ActiveInstance.Items[Id]
+
+		-- Apply any custom ID to the current item.
+		local Result = ActiveInstance.Items[Id]
+		if #ActiveInstance.IDStack > 0 then
+			Result = Result .. ActiveInstance.IDStack[#ActiveInstance.IDStack]
+		end
+
+		return Result
 	end
 	return nil
 end
@@ -1044,6 +1056,7 @@ function Window.GetInstanceInfo(Id)
 		insert(Result, "Stack Index: " .. Instance.StackIndex)
 		insert(Result, "AutoSizeWindow: " .. tostring(Instance.AutoSizeWindow))
 		insert(Result, "AutoSizeContent: " .. tostring(Instance.AutoSizeContent))
+		insert(Result, "Hot Item: " .. tostring(Instance.HotItem))
 	end
 
 	return Result
@@ -1105,6 +1118,23 @@ end
 
 function Window.GetMovingInstance()
 	return MovingInstance
+end
+
+--[[
+	Allow developers to push/pop a custom ID to the stack. This can help with differentiating between controls with identical IDs i.e. text fields.
+--]]
+function Window.PushID(ID)
+	if ActiveInstance ~= nil then
+		insert(ActiveInstance.IDStack, ID)
+	end
+end
+
+function Window.PopID()
+	if ActiveInstance ~= nil and #ActiveInstance.IDStack > 0 then
+		return remove(ActiveInstance.IDStack)
+	end
+
+	return nil
 end
 
 return Window

@@ -29,6 +29,7 @@ local remove = table.remove
 local min = math.min
 local max = math.max
 local floor = math.floor
+local gmatch = string.gmatch
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
@@ -113,7 +114,8 @@ local function FileDialogItem(Id, Label, IsDirectory, Index)
 	ListBox.BeginItem(Id, {Selected = Utility.HasValue(ActiveInstance.Selected, Index)})
 
 	if IsDirectory then
-		Image.Begin('FileDialog_Folder', {Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"})
+		local FontH = Style.Font:getHeight()
+		Image.Begin('FileDialog_Folder', {Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png", SubX = 0.0, SubY = 0.0, SubW = 50.0, SubH = 50.0, W = FontH, H = FontH})
 		Cursor.SameLine({CenterY = true})
 	end
 
@@ -487,10 +489,79 @@ function Dialog.FileDialog(Options)
 		local ListH = WinH - Text.GetHeight() - ButtonH * 3.0 - Cursor.PadY() * 2.0
 		local PrevAnchorX = Cursor.GetAnchorX()
 
-		Text.Begin(ActiveInstance.Directory)
+		-- Parent directory button for quick access
+		local FontH = Style.Font:getHeight()
+		local UpImage = {Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png", SubX = 50.0, SubY = 0.0, SubW = 50.0, SubH = 50.0}
+		if Button.Begin("", {Image = UpImage, Color = {0, 0, 0, 0}, PadX = 2, PadY = 2, W = FontH, H = FontH}) then
+			local Destination = FileSystem.Sanitize(ActiveInstance.Directory .. FileSystem.Separator() .. "..")
 
+			-- Only attempt to move to parent directory if not the root drive.
+			if not FileSystem.IsDrive(Destination) then
+				OpenDirectory(Destination)
+			end
+		end
+
+		-- TODO: Place in region so that it can be scrolled.
+		Cursor.SameLine()
 		local CursorX, CursorY = Cursor.GetPosition()
+		local RemainingW, RemianingH = Window.GetRemainingSize()
 		local MouseX, MouseY = Window.GetMousePosition()
+
+		Region.Begin('FileDialog_BreadCrumbs', {
+			X = CursorX,
+			Y = CursorY,
+			W = RemainingW,
+			H = FontH,
+			AutoSizeContent = true,
+			NoBackground = true,
+			Intersect = true,
+			MouseX = MouseX,
+			MouseY = MouseY,
+			IsObstructed = Window.IsObstructedAtMouse(),
+			Rounding = Style.Rounding,
+			IgnoreScroll = true
+		})
+
+		-- Add some padding from left border. The cursor internally adds it's own padding.
+		Cursor.AdvanceX(0.0)
+
+		-- Gather each directory name and render as bread crumbs on top of each view.
+		local Tokens = {}
+		for Token in gmatch(ActiveInstance.Directory, "([^" .. FileSystem.Separator() .. "]+)") do insert(Tokens, Token) end
+		for I, Token in ipairs(Tokens) do
+			Window.PushID(Token .. '_Crumb')
+
+			local Clicked = Text.Begin(Token, {IsSelectableTextOnly = true})
+
+			-- Render an arrow between elements to provide spacing.
+			if I < #Tokens then
+				Cursor.SameLine()
+				Image.Begin(Token .. '_Crumb', {Path = UpImage.Path, SubX = 100.0, SubY = 0.0, SubW = 50.0, SubH = 50.0, W = FontH, H = FontH})
+				Cursor.SameLine()
+			end
+
+			if Clicked then
+				local Destination = nil
+				for J = 1, I, 1 do
+					Destination = Destination and (Destination .. FileSystem.Separator() .. Tokens[J]) or Tokens[J]
+				end
+
+				if Destination ~= nil then
+					OpenDirectory(Destination)
+				end
+			end
+			Window.PopID()
+		end
+
+		-- Move the region's scrollable area to always have the current directory in view.
+		local ContentW, ContentH = Region.GetContentSize()
+		Region.ResetTransform()
+		Region.Translate(nil, math.min(RemainingW - ContentW - 4.0, 0.0), 0.0)
+		Region.End()
+		Region.ApplyScissor()
+
+		CursorX, CursorY = Cursor.GetPosition()
+		MouseX, MouseY = Window.GetMousePosition()
 		Region.Begin('FileDialog_DirectoryExplorer', {
 			X = CursorX,
 			Y = CursorY,

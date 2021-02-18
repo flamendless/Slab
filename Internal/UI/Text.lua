@@ -43,8 +43,8 @@ function Text.Begin(Label, Options)
 	Options = Options == nil and {} or Options
 	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
 	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
-	Options.IsSelectable = Options.IsSelectable == nil and false or Options.IsSelectable
 	Options.IsSelectableTextOnly = Options.IsSelectableTextOnly == nil and false or Options.IsSelectableTextOnly
+	Options.IsSelectable = Options.IsSelectable == nil and Options.IsSelectableTextOnly or Options.IsSelectable
 	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.AddItem = Options.AddItem == nil and true or Options.AddItem
 	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor

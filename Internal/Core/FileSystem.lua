@@ -425,6 +425,21 @@ function FileSystem.GetDrive(Path)
 end
 
 --[[
+	Determines if the given path is a drive letter on Windows or the root directory on Unix.
+
+	Path: [String] The absolute path containing the drive letter.
+
+	Return: [Boolean] True if the given path is a drive.
+--]]
+function FileSystem.IsDrive(Path)
+	if Path == nil then
+		return false
+	end
+
+	return FileSystem.GetDrive(Path) == Path
+end
+
+--[[
 	Sanitize
 
 	This function will attempt to remove any '.' or '..' components in the path and will appropriately modify

@@ -855,6 +855,15 @@ end
 		W: [Number] Override the width of the button.
 		H: [Number] Override the height of the button.
 		Disabled: [Boolean] If true, the button is not interactable by the user.
+		Image: [Table] A table of options used to draw an image instead of a text label. Refer to the 'Image' documentation for a list
+			of available options.
+		Color: [Table]: The background color of the button when idle. The default value is the ButtonColor property in the Style's table.
+		HoverColor: [Table]: The background color of the button when a mouse is hovering the control. The default value is the ButtonHoveredColor property
+			in the Style's table.
+		PressColor: [Table]: The background color of the button when the button is pressed but not released. The default value is the ButtonPressedColor
+			property in the Style's table.
+		PadX: [Number] Amount of additional horizontal space the background will expand to from the center. The default value is 20.
+		PadY: [Number] Amount of additional vertical space the background will expand to from the center. The default value is 5.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
@@ -893,8 +902,8 @@ end
 		Pad: [Number] How far to pad the text from the left side of the current cursor position.
 		IsSelectable: [Boolean] Whether this text is selectable using the text's Y position and the window X and width as the
 			hot zone.
-		IsSelectableTextOnly: [Boolean] Only available if IsSelectable is true. Will use the text width instead of the
-			window width to determine the hot zone.
+		IsSelectableTextOnly: [Boolean] Will use the text width instead of the window width to determine the hot zone. Will set IsSelectable
+			to true if that option is missing.
 		IsSelected: [Boolean] Forces the hover background to be rendered.
 		SelectOnHover: [Boolean] Returns true if the user is hovering over the hot zone of this text.
 		HoverColor: [Table] The color to render the background if the IsSelected option is true.
@@ -1340,6 +1349,8 @@ end
 			values will be used instead of the image's dimensions.
 		OutlineColor: [Table] The color used to draw the outline. Default color is black.
 		OutlineW: [Number] The width used for the outline. Default value is 1.
+		W: [Number] The width the image should be resized to.
+		H: [Number] The height the image should be resized to.
 
 	Return: None.
 --]]

@@ -29,6 +29,7 @@ local max = math.max
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -55,6 +56,12 @@ function Button.Begin(Label, Options)
 	Options.W = Options.W == nil and nil or Options.W
 	Options.H = Options.H == nil and nil or Options.H
 	Options.Disabled = Options.Disabled == nil and false or Options.Disabled
+	Options.Image = Options.Image or nil
+	Options.Color = Options.Color or Style.ButtonColor
+	Options.HoverColor = Options.HoverColor or Style.ButtonHoveredColor
+	Options.PressColor = Options.PressColor or Style.ButtonPressedColor
+	Options.PadX = Options.PadX or Pad * 2.0
+	Options.PadY = Options.PadY or Pad * 0.5
 
 	local Id = Window.GetItemId(Label)
 	local W, H = Button.GetSize(Label)
@@ -62,13 +69,29 @@ function Button.Begin(Label, Options)
 	local FontHeight = Style.Font:getHeight()
 	local TextColor = Options.Disabled and Style.ButtonDisabledTextColor or nil
 
-	if Options.W ~= nil then
-		W = Options.W
+	-- If a valid image was specified, then adjust the button size to match the requested image size. Also takes into account any sub UVs.
+	local ImageW, ImageH = W, H
+	if Options.Image ~= nil then
+		local Object = Options.Image.Image and Options.Image.Image or Options.Image.Path
+		ImageW, ImageH = Image.GetSize(Object)
+
+		ImageW = Options.Image.SubW or ImageW
+		ImageH = Options.Image.SubH or ImageH
+
+		ImageW = Options.W or ImageW
+		ImageH = Options.H or ImageH
+
+		Options.Image.W = ImageW
+		Options.Image.H = ImageH
+
+		if ImageW > 0 and ImageH > 0 then
+			W = ImageW + Options.PadX
+			H = ImageH + Options.PadY
+		end
 	end
 
-	if Options.H ~= nil then
-		H = Options.H
-	end
+	W = Options.W or W
+	H = Options.H or H
 
 	W, H = LayoutManager.ComputeSize(W, H)
 	LayoutManager.AddControl(W, H, 'Button')
@@ -76,7 +99,7 @@ function Button.Begin(Label, Options)
 	local X, Y = Cursor.GetPosition()
 
 	local Result = false
-	local Color = Style.ButtonColor
+	local Color = Options.Color
 
 	local MouseX, MouseY = Window.GetMousePosition()
 	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
@@ -85,11 +108,11 @@ function Button.Begin(Label, Options)
 
 		if not Options.Disabled then
 			if not Utility.IsMobile() then
-				Color = Style.ButtonHoveredColor
+				Color = Options.HoverColor
 			end
 
 			if ClickedId == Id then
-				Color = Style.ButtonPressedColor
+				Color = Options.PressColor
 			end
 
 			if Mouse.IsClicked(1) then
@@ -106,14 +129,25 @@ function Button.Begin(Label, Options)
 	local LabelX = X + (W * 0.5) - (LabelW * 0.5)
 
 	if not Options.Invisible then
+		-- Draw the background.
 		DrawCommands.Rectangle('fill', X, Y, W, H, Color, Options.Rounding)
-		local X, Y = Cursor.GetPosition()
-		Cursor.SetX(floor(LabelX))
-		Cursor.SetY(floor(Y + (H * 0.5) - (FontHeight * 0.5)))
+
+		-- Draw the label or image. The layout of this control was already computed above. Ignore when adding sub-controls
+		-- such as text or an image.
+		local CursorX, CursorY = Cursor.GetPosition()
 		LayoutManager.Begin('Ignore', {Ignore = true})
-		Text.Begin(Label, {Color = TextColor})
+		if Options.Image ~= nil then
+			Cursor.SetX(X + W * 0.5 - ImageW * 0.5)
+			Cursor.SetY(Y + H * 0.5 - ImageH * 0.5)
+			Image.Begin(Id .. '_Image', Options.Image)
+		else
+			Cursor.SetX(floor(LabelX))
+			Cursor.SetY(floor(Y + (H * 0.5) - (FontHeight * 0.5)))
+			Text.Begin(Label, {Color = TextColor})
+		end
 		LayoutManager.End()
-		Cursor.SetPosition(X, Y)
+
+		Cursor.SetPosition(CursorX, CursorY)
 	end
 
 	Cursor.SetItemBounds(X, Y, W, H)
