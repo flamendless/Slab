@@ -47,6 +47,7 @@ local StackLockId = nil
 local PendingStack = {}
 local ActiveInstance = nil
 local MovingInstance = nil
+local IDStack = {}
 
 local SizerType =
 {
@@ -119,7 +120,6 @@ local function NewInstance(Id)
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
 	Instance.NoSavedSettings = false
-	Instance.IDStack = {}
 	return Instance
 end
 
@@ -726,8 +726,8 @@ function Window.End()
 	if ActiveInstance ~= nil then
 		local Handle = ActiveInstance.StatHandle
 
-		-- Clear the ID stack for this window. This information can be kept transient
-		ActiveInstance.IDStack = {}
+		-- Clear the ID stack for use with other windows. This information can be kept transient
+		IDStack = {}
 
 		Region.End()
 		DrawCommands.End(not ActiveInstance.IsOpen)
@@ -937,8 +937,8 @@ function Window.GetItemId(Id)
 
 		-- Apply any custom ID to the current item.
 		local Result = ActiveInstance.Items[Id]
-		if #ActiveInstance.IDStack > 0 then
-			Result = Result .. ActiveInstance.IDStack[#ActiveInstance.IDStack]
+		if #IDStack > 0 then
+			Result = Result .. IDStack[#IDStack]
 		end
 
 		return Result
@@ -1125,13 +1125,13 @@ end
 --]]
 function Window.PushID(ID)
 	if ActiveInstance ~= nil then
-		insert(ActiveInstance.IDStack, ID)
+		insert(IDStack, ID)
 	end
 end
 
 function Window.PopID()
-	if ActiveInstance ~= nil and #ActiveInstance.IDStack > 0 then
-		return remove(ActiveInstance.IDStack)
+	if #IDStack > 0 then
+		return remove(IDStack)
 	end
 
 	return nil

@@ -1,7 +1,6 @@
 v0.8.0
 ==========
 [API]: Make Update and Draw functions private.
-[API]: Expose PushID/PopID functions.
 [Android]: Receive feedback and make fixes to errant behavior. Applies to issue #35.
 [FileDialog]: "Up to" button in file dialogs. #61.
 [Frame]: API calls to setup frames (child regions in Dear ImGui). Can hook into Regions module and expose some functionality from this for this feature. #46.

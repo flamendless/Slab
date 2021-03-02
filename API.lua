@@ -97,6 +97,8 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 			GetWindowContentSize
 			GetWindowActiveSize
 			IsWindowAppearing
+			PushID
+			PopID
 
 		Menu:
 			BeginMainMenuBar
@@ -638,6 +640,33 @@ end
 --]]
 function Slab.IsWindowAppearing()
 	return Window.IsAppearing()
+end
+
+--[[
+	PushID
+
+	Pushes a custom ID onto a stack. This allows developers to differentiate between similar controls such as
+	text controls.
+
+	ID: [String] The custom ID to add.
+
+	Return: None.
+--]]
+function Slab.PushID(ID)
+	assert(type(ID) == 'string', "'ID' parameter must be a string value.")
+
+	Window.PushID(ID)
+end
+
+--[[
+	PopID
+
+	Pops the last custom ID from the stack.
+
+	Return: None.
+--]]
+function Slab.PopID()
+	Window.PopID()
 end
 
 --[[
