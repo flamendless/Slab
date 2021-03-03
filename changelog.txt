@@ -2,13 +2,11 @@ v0.8.0
 ==========
 [API]: Make Update and Draw functions private.
 [Android]: Receive feedback and make fixes to errant behavior. Applies to issue #35.
-[FileDialog]: "Up to" button in file dialogs. #61.
 [Frame]: API calls to setup frames (child regions in Dear ImGui). Can hook into Regions module and expose some functionality from this for this feature. #46.
 [Input]: Multiline Input paste with newline charecters. #64.
 [LayoutManager]: Right aligned controls are flush on the edge. Should flush with the window border.
 [Mouse/Keyboard]: Allow multiple 'Update' calls. This will conflict with the async input processing. Might need to keep a cache of the last async update and always apply that to every 'Update' call.
-[Resources]: Deprecate 'Folder.png' texture.
-[Tree]: Pass image options for 'Icon' similar to how button handles images.
+[Tree]: Convert arrows to use images.
 
 BUGS
 ==========

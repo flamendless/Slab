@@ -32,6 +32,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Messages = require(SLAB_PATH .. '.Internal.Core.Messages')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
@@ -83,10 +84,13 @@ function Tree.Begin(Id, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or OpenWithHighlight
 	Options.Icon = Options.Icon == nil and nil or Options.Icon
-	Options.IconPath = Options.IconPath == nil and nil or Options.IconPath
 	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
 	Options.NoSavedSettings = Options.NoSavedSettings == nil and IsTableId or (Options.NoSavedSettings and not IsTableId)
+
+	if Options.IconPath ~= nil then
+		Messages.Broadcast('Tree.Options.IconPath', "'IconPath' option has been deprecated since v0.8.0. Please use the 'Icon' option.")
+	end
 
 	local Instance = nil
 	local WinItemId = Window.GetItemId(IdLabel)
@@ -114,14 +118,8 @@ function Tree.Begin(Id, Options)
 		W = W + Diameter + Radius
 	end
 
-	local Icon = Options.Icon
-	if Icon == nil then
-		Icon = Options.IconPath
-	end
-
-	local ImageW, ImageH = Image.GetSize(Icon)
-	W = W + ImageW
-	H = max(H, ImageH)
+	-- Account for icon if one is requested.
+	W = Options.Icon and W + H or W
 
 	WinX = WinX + Window.GetBorder()
 	WinY = WinY + Window.GetBorder()
@@ -190,11 +188,11 @@ function Tree.Begin(Id, Options)
 
 	LayoutManager.Begin('Ignore', {Ignore = true})
 
-	if Options.Icon ~= nil or Options.IconPath ~= nil then
-		Image.Begin(Instance.Id .. '_Icon', {
-			Image = Options.Icon,
-			Path = Options.IconPath
-		})
+	if Options.Icon ~= nil then
+		-- Force the icon to be of the same size as the tree item.
+		Options.Icon.W = H
+		Options.Icon.H = H
+		Image.Begin(Instance.Id .. '_Icon', Options.Icon)
 
 		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 		Instance.H = max(Instance.H, ItemH)

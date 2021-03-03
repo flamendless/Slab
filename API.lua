@@ -1278,9 +1278,7 @@ end
 		OpenWithHighlight: [Boolean] If this is true, the tree will be expanded/collapsed when the user hovers over the hot
 			zone of this tree item. If this is false, the user must click the expand/collapse icon to interact with this tree
 			item.
-		Icon: [Object] A user supplied image. This must be a valid Love image or the call will assert.
-		IconPath: [String] If the Icon option is nil, then a path can be specified. Slab will load and
-			manage the image resource.
+		Icon: [Table] List of options to use for drawing the icon. Refer to the 'Image' documentation for more information.
 		IsSelected: [Boolean] If true, will render a highlight rectangle around the tree item.
 		IsOpen: [Boolean] Will force the tree item to be expanded.
 		NoSavedSettings: [Boolean] Flag to disable saving this tree's settings to the state INI file.
