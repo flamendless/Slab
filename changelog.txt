@@ -6,7 +6,6 @@ v0.8.0
 [Input]: Multiline Input paste with newline charecters. #64.
 [LayoutManager]: Right aligned controls are flush on the edge. Should flush with the window border.
 [Mouse/Keyboard]: Allow multiple 'Update' calls. This will conflict with the async input processing. Might need to keep a cache of the last async update and always apply that to every 'Update' call.
-[Tree]: Convert arrows to use images.
 
 BUGS
 ==========

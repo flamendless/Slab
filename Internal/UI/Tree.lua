@@ -28,6 +28,7 @@ local max = math.max
 local insert = table.insert
 local remove = table.remove
 
+local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
@@ -112,10 +113,9 @@ function Tree.Begin(Id, Options)
 	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
 	local W = Text.GetWidth(Options.Label)
 	local H = max(Style.Font:getHeight(), Instance.H)
-	local Diameter = Radius * 2.0
 
 	if not Options.IsLeaf then
-		W = W + Diameter + Radius
+		W = W + H + Radius
 	end
 
 	-- Account for icon if one is requested.
@@ -144,7 +144,7 @@ function Tree.Begin(Id, Options)
 
 	local X, Y = Cursor.GetPosition()
 	if Root ~= Instance then
-		X = Root ~= Instance and (Root.X + Diameter * #Hierarchy)
+		X = Root ~= Instance and (Root.X + H * #Hierarchy)
 		Cursor.SetX(X)
 	end
 	local TriX, TriY = X + Radius, Y + H * 0.5
@@ -163,16 +163,30 @@ function Tree.Begin(Id, Options)
 
 	local IsExpanderClicked = false
 	if not Options.IsLeaf then
-		if not IsObstructed and X <= TMouseX and TMouseX <= X + Diameter and Y <= TMouseY and TMouseY <= Y + H then
-			if Mouse.IsClicked(1) and not Options.OpenWithHighlight then
-				Instance.IsOpen = not Instance.IsOpen
-				Window.SetHotItem(nil)
-				IsExpanderClicked = true
-			end
+		-- Render the triangle depending on if the tree item is open/closed.
+		local SubX = Instance.IsOpen and 0.0 or 200.0
+		local SubY = Instance.IsOpen and 100.0 or 50.0
+		local ExpandIconOptions =
+		{
+			Image = {Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubX = SubX, SubY = SubY, SubW = 50.0, SubH = 50.0},
+			W = H,
+			H = H,
+			PadX = 0.0,
+			PadY = 0.0,
+			Color = {0, 0, 0, 0},
+			HoverColor = {0, 0, 0, 0},
+			PressColor = {0, 0, 0, 0}
+		}
+		if Button.Begin(Instance.Id .. '_Expand', ExpandIconOptions) and not Options.OpenWithHighlight then
+			Instance.IsOpen = not Instance.IsOpen
+			Window.SetHotItem(nil)
+			IsExpanderClicked = true
 		end
 
-		local Dir = Instance.IsOpen and 180 or 90
-		DrawCommands.Triangle('fill', TriX, TriY, Radius, Dir, Style.TextColor)
+		Cursor.SameLine()
+	else
+		-- Advance the cursor for leaf nodes so text aligns with other items that are not leaf nodes.
+		Cursor.AdvanceX(H + Cursor.PadX())
 	end
 
 	if not Instance.IsOpen and Instance.WasOpen then
@@ -180,7 +194,6 @@ function Tree.Begin(Id, Options)
 		Region.ResetContentSize()
 	end
 
-	Cursor.AdvanceX(Diameter)
 	Instance.X = X
 	Instance.Y = Y
 	Instance.W = W
