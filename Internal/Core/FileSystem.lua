@@ -577,4 +577,15 @@ function FileSystem.SaveContents(Path, Contents)
 	return Result, Error
 end
 
+function FileSystem.GetClipboard()
+	local Contents = love.system.getClipboardText()
+
+	if Contents ~= nil then
+		-- Remove Windows style newlines.
+		Contents = string.gsub(Contents, "\r\n", "\n")
+	end
+
+	return Contents
+end
+
 return FileSystem

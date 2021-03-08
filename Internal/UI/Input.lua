@@ -39,6 +39,7 @@ local find = string.find
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
@@ -1117,7 +1118,7 @@ function Input.Begin(Id, Options)
 			end
 
 			if Keyboard.IsPressed('v') then
-				local Text = love.system.getClipboardText()
+				local Text = FileSystem.GetClipboard()
 				Input.Text(Text)
 				TextCursorPos = min(TextCursorPos + #Text - 1, #Instance.Text)
 			end
