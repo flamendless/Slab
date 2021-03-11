@@ -917,23 +917,23 @@ function Input.Begin(Id, Options)
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
 	Options.Text = Options.Text == nil and "" or tostring(Options.Text)
-	Options.TextColor = Options.TextColor == nil and nil or Options.TextColor
+	Options.TextColor = Options.TextColor
 	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
 	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
 	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
-	Options.W = Options.W == nil and nil or Options.W
-	Options.H = Options.H == nil and nil or Options.H
-	Options.ReadOnly = Options.ReadOnly == nil and false or Options.ReadOnly
-	Options.Align = Options.Align == nil and nil or Options.Align
+	Options.W = Options.W
+	Options.H = Options.H
+	Options.ReadOnly = Options.ReadOnly or false
+	Options.Align = Options.Align
 	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
-	Options.MinNumber = Options.MinNumber == nil and nil or Options.MinNumber
-	Options.MaxNumber = Options.MaxNumber == nil and nil or Options.MaxNumber
-	Options.MultiLine = Options.MultiLine == nil and false or Options.MultiLine
+	Options.MinNumber = Options.MinNumber
+	Options.MaxNumber = Options.MaxNumber
+	Options.MultiLine = Options.MultiLine or false
 	Options.MultiLineW = Options.MultiLineW == nil and huge or Options.MultiLineW
-	Options.Highlight = Options.Highlight == nil and nil or Options.Highlight
+	Options.Highlight = Options.Highlight
 	Options.Step = Options.Step == nil and 1.0 or Options.Step
-	Options.NoDrag = Options.NoDrag == nil and false or Options.NoDrag
-	Options.UseSlider = Options.UseSlider == nil and false or Options.UseSlider
+	Options.NoDrag = Options.NoDrag or false
+	Options.UseSlider = Options.UseSlider or false
 	Options.Precision = Options.Precision == nil and 3 or math.floor(Utility.Clamp(Options.Precision, 0, 5))
 
 	if type(Options.MinNumber) ~= "number" then
