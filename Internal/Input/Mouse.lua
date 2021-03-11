@@ -55,7 +55,12 @@ local Events = {}
 -- For more information, refer to the SetCustomCursor/ClearCustomCursor functions.
 local CustomCursors = {}
 
+local function TransformPoint(X,Y)
+	return X,Y
+end
+
 local function OnMouseMoved(X, Y, DX, DY, IsTouch)
+	X, Y = TransformPoint(X, Y)
 	State.X = X
 	State.Y = Y
 	State.AsyncDeltaX = State.AsyncDeltaX + DX
@@ -78,6 +83,7 @@ local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMousePressed(X, Y, Button, IsTouch, Presses)
+	X, Y = TransformPoint(X, Y)
 	PushEvent(Common.Event.Pressed, X, Y, Button, IsTouch, Presses)
 
 	if MousePressedFn ~= nil then
@@ -86,6 +92,7 @@ local function OnMousePressed(X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
+	X, Y = TransformPoint(X, Y)
 	PushEvent(Common.Event.Released, X, Y, Button, IsTouch, Presses)
 
 	if MouseReleasedFn ~= nil then
@@ -110,7 +117,9 @@ local function ProcessEvents()
 	Events = {}
 end
 
-function Mouse.Initialize(Args)
+function Mouse.Initialize(Args, TransformPointToSlab)
+	TransformPoint = TransformPointToSlab or TransformPoint
+
 	MouseMovedFn = love.handlers['mousemoved']
 	MousePressedFn = love.handlers['mousepressed']
 	MouseReleasedFn = love.handlers['mousereleased']
