@@ -398,6 +398,7 @@ local DrawInput_Basic_Numbers_Clamped_Max = 1.0
 local DrawInput_Basic_Numbers_Clamped_Step = 0.01
 local DrawInput_Basic_Numbers_NoDrag = 50
 local DrawInput_Basic_Numbers_Slider = 50
+local DrawInput_Basic_Numbers_Slider_Handle = 50
 local DrawInput_Basic_Numbers_Slider_Min = 0
 local DrawInput_Basic_Numbers_Slider_Max = 100
 local DrawInput_MultiLine =
@@ -553,6 +554,11 @@ local function DrawInput()
 
 	if Slab.InputNumberSlider('DrawInput_Basic_Numbers_Slider', DrawInput_Basic_Numbers_Slider, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max) then
 		DrawInput_Basic_Numbers_Slider = Slab.GetInputNumber()
+	end
+
+	Slab.Text("Sliders can also be drawn with a handle")
+	if Slab.InputNumberSlider('DrawInput_Basic_Numbers_Slider_Handle', DrawInput_Basic_Numbers_Slider_Handle, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max, {DrawSliderAsHandle = true}) then
+		DrawInput_Basic_Numbers_Slider_Handle = Slab.GetInputNumber()
 	end
 
 	Slab.NewLine()

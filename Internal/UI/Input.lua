@@ -869,7 +869,7 @@ local function UpdateDrag(Instance, Step)
 	end
 end
 
-local function DrawSlider(Instance)
+local function DrawSlider(Instance, DrawSliderAsHandle)
 	if Instance ~= nil and Instance.NumbersOnly then
 		local Value = tonumber(Instance.Text)
 		if Value ~= nil then
@@ -880,7 +880,12 @@ local function DrawSlider(Instance)
 			local MinX, MinY = Cursor.GetPosition()
 			local MaxX, MaxY = MinX + Instance.W - SliderSize, MinY + Instance.H
 			local X = (MaxX - MinX) * Ratio + MinX
-			DrawCommands.Rectangle('fill', X, MinY + 1.0, SliderSize, Instance.H - 2.0, Style.InputSliderColor)
+			if DrawSliderAsHandle then
+				DrawCommands.Rectangle('fill', X, MinY + 1.0, SliderSize, Instance.H - 2.0, Style.InputSliderColor)
+			else
+				local Padding = 2
+				DrawCommands.Rectangle('fill', MinX+Padding, MinY+Padding, Padding + (Instance.W - Padding * 3) * Ratio, Instance.H - (Padding * 2), Style.InputSliderColor)
+			end
 		end
 	end
 end
@@ -1356,7 +1361,7 @@ function Input.Begin(Id, Options)
 
 	if Options.UseSlider then
 		if not IsEditing then
-			DrawSlider(Instance)
+			DrawSlider(Instance, Options.DrawSliderAsHandle)
 		end
 	end
 
