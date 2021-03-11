@@ -540,14 +540,14 @@ local function DrawInput()
 
 	Slab.Text("Min")
 	Slab.SameLine()
-	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Min', DrawInput_Basic_Numbers_Slider_Min, nil, DrawInput_Basic_Numbers_Slider_Max, {W = 50}) then
+	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Min', DrawInput_Basic_Numbers_Slider_Min, nil, DrawInput_Basic_Numbers_Slider_Max, nil, {W = 50}) then
 		DrawInput_Basic_Numbers_Slider_Min = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Max")
 	Slab.SameLine()
-	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Max', DrawInput_Basic_Numbers_Slider_Max, DrawInput_Basic_Numbers_Slider_Min, nil, {W = 50}) then
+	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Max', DrawInput_Basic_Numbers_Slider_Max, DrawInput_Basic_Numbers_Slider_Min, nil, nil, {W = 50}) then
 		DrawInput_Basic_Numbers_Slider_Max = Slab.GetInputNumber()
 	end
 
