@@ -913,28 +913,28 @@ function Input.Begin(Id, Options)
 
 	local StatHandle = Stats.Begin('Input', 'Slab')
 
-	Options = Options == nil and {} or Options
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
+	Options = Options or {}
+	Options.Tooltip = Options.Tooltip or ""
 	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
-	Options.Text = Options.Text == nil and "" or tostring(Options.Text)
+	Options.Text = Options.Text and tostring(Options.Text) or ""
 	Options.TextColor = Options.TextColor
-	Options.BgColor = Options.BgColor == nil and Style.InputBgColor or Options.BgColor
-	Options.SelectColor = Options.SelectColor == nil and Style.InputSelectColor or Options.SelectColor
+	Options.BgColor = Options.BgColor or Style.InputBgColor
+	Options.SelectColor = Options.SelectColor or Style.InputSelectColor
 	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
 	Options.W = Options.W
 	Options.H = Options.H
 	Options.ReadOnly = Options.ReadOnly or false
 	Options.Align = Options.Align
-	Options.Rounding = Options.Rounding == nil and Style.InputBgRounding or Options.Rounding
+	Options.Rounding = Options.Rounding or Style.InputBgRounding
 	Options.MinNumber = Options.MinNumber
 	Options.MaxNumber = Options.MaxNumber
 	Options.MultiLine = Options.MultiLine or false
-	Options.MultiLineW = Options.MultiLineW == nil and huge or Options.MultiLineW
+	Options.MultiLineW = Options.MultiLineW or huge
 	Options.Highlight = Options.Highlight
-	Options.Step = Options.Step == nil and 1.0 or Options.Step
+	Options.Step = Options.Step or 1.0
 	Options.NoDrag = Options.NoDrag or false
 	Options.UseSlider = Options.UseSlider or false
-	Options.Precision = Options.Precision == nil and 3 or math.floor(Utility.Clamp(Options.Precision, 0, 5))
+	Options.Precision = Options.Precision and math.floor(Utility.Clamp(Options.Precision, 0, 5)) or 3
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
