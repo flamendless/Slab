@@ -484,6 +484,13 @@ function Region.GetContentSize()
 	return 0.0, 0.0
 end
 
+function Region.GetContentBounds()
+	if ActiveInstance ~= nil then
+		return ActiveInstance.X, ActiveInstance.Y, ActiveInstance.ContentW, ActiveInstance.ContentH
+	end
+	return 0.0, 0.0, 0.0, 0.0
+end
+
 function Region.Contains(X, Y)
 	if ActiveInstance ~= nil then
 		return ActiveInstance.X <= X and X <= ActiveInstance.X + ActiveInstance.W and ActiveInstance.Y <= Y and Y <= ActiveInstance.Y + ActiveInstance.H

@@ -31,6 +31,7 @@ local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
@@ -73,7 +74,7 @@ function Text.Begin(Label, Options)
 		Window.SetHotItem(WinId)
 	end
 
-	local WinX, WinY, WinW, WinH = Window.GetBounds()
+	local WinX, WinY, WinW, WinH = Region.GetContentBounds()
 	local CheckX = Options.IsSelectableTextOnly and X or WinX
 	local CheckW = Options.IsSelectableTextOnly and W or WinW
 	local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
