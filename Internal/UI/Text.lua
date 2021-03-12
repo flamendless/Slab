@@ -26,6 +26,7 @@ SOFTWARE.
 
 local floor = math.floor
 local insert = table.insert
+local max = math.max
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
@@ -76,7 +77,8 @@ function Text.Begin(Label, Options)
 
 	local WinX, WinY, WinW, WinH = Region.GetContentBounds()
 	local CheckX = Options.IsSelectableTextOnly and X or WinX
-	local CheckW = Options.IsSelectableTextOnly and W or WinW
+	-- The region's width may have been reset prior to the first control being added. Account for this discrepency.
+	local CheckW = Options.IsSelectableTextOnly and W or max(WinW, W)
 	local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
 
 	if Options.IsSelectable or Options.IsSelected then
