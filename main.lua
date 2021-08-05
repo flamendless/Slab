@@ -27,6 +27,18 @@ SOFTWARE.
 local Slab = require 'Slab'
 local SlabTest = require 'SlabTest'
 
+local props = {
+	{ID = "a", Value = 1},
+	{ID = "b", Value = "test"},
+	{ID = "c", Value = true},
+}
+local common = {
+	a = {
+		MinNumber = 0,
+		MaxNumber = 10,
+	},
+}
+
 function love.load(args)
 	love.graphics.setBackgroundColor(0.07, 0.07, 0.07)
 	Slab.Initialize(args)
@@ -34,7 +46,9 @@ end
 
 function love.update(dt)
 	Slab.Update(dt)
-	SlabTest.Begin()
+	Slab.BeginWindow("test", {Title = "Test"})
+	Slab.Properties(props, common)
+	Slab.EndWindow()
 end
 
 function love.draw()
