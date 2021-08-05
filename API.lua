@@ -2223,22 +2223,6 @@ function Slab.SetLayoutColumn(Index)
 end
 
 --[[
-	SetNextLayoutColumn
-
-	Sets the current active column to the next column.
-
-	Return: None.
---]]
-function Slab.SetNextLayoutColumn(Columns)
-	-- local current = LayoutManager.GetCurrentColumn()
-	-- local index = current + 1
-	-- if index > Columns then
-	-- 	index = 1
-	-- end
-	-- LayoutManager.SetColumn(index)
-end
-
---[[
 	GetLayoutSize
 
 	Retrieves the size of the active layout. If there are columns, then the size of the column is returned.
