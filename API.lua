@@ -1523,31 +1523,33 @@ function Slab.Properties(Table, Options, Fallback)
 	Fallback = Fallback or {}
 
 	if Table ~= nil then
-		for K, V in pairs(Table) do
+		for I, T in ipairs(Table) do
+			local V = T.Value
 			local Type = type(V)
-			local ItemOptions = Options[K] or Fallback
+			local ID = T.ID
+			local ItemOptions = Options[ID] or Fallback
 			if Type == "boolean" then
-				if Slab.CheckBox(V, K, ItemOptions) then
-					Table[K] = not Table[K]
+				if Slab.CheckBox(V, ID, ItemOptions) then
+					T.Value = not T.Value
 				end
 			elseif Type == "number" then
-				Slab.Text(K .. ": ")
+				Slab.Text(ID .. ": ")
 				Slab.SameLine()
 				ItemOptions.Text = V
 				ItemOptions.NumbersOnly = true
 				ItemOptions.ReturnOnText = false
 				ItemOptions.UseSlider = ItemOptions.MinNumber and ItemOptions.MaxNumber
-				if Slab.Input(K, ItemOptions) then
-					Table[K] = Slab.GetInputNumber()
+				if Slab.Input(ID, ItemOptions) then
+					T.Value = Slab.GetInputNumber()
 				end
 			elseif Type == "string" then
-				Slab.Text(K .. ": ")
+				Slab.Text(ID .. ": ")
 				Slab.SameLine()
 				ItemOptions.Text = V
 				ItemOptions.NumbersOnly = false
 				ItemOptions.ReturnOnText = false
-				if Slab.Input(K, ItemOptions) then
-					Table[K] = Slab.GetInputText()
+				if Slab.Input(ID, ItemOptions) then
+					T.Value = Slab.GetInputText()
 				end
 			end
 		end
