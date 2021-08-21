@@ -1142,6 +1142,7 @@ end
 	Max: [Number] The maximum value that can be set for this number control. If nil, then this value will be set to math.huge.
 	Options: [Table] List of options for how this input control is displayed. See Slab.Input for all options.
 		Precision: [Number] An integer in the range [0..5]. This will set the size of the fractional component.
+		NeedDrag: [Boolean] This will determine if slider needs to be dragged before changing value, otherwise just clicking in the slider will adjust the value into the clicked value. Default is true.
 
 	Return: [Boolean] Returns true whenever this valued is modified.
 --]]

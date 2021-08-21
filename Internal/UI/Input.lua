@@ -201,7 +201,7 @@ local function MoveToEnd(Instance)
 				Count = Count + len(V)
 				if I == TextCursorPosLineNumber then
 					TextCursorPos = Count - 1
-					
+
 					if I == #Instance.Lines then
 						TextCursorPos = Count
 					end
@@ -757,7 +757,7 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 							local FoundEnd = Found + len(K)
 							local Prev = sub(Instance.Text, Found - 1, Found - 1)
 							local Next = sub(Instance.Text, FoundEnd, FoundEnd)
-							
+
 							if Found == 1 then
 								Prev = nil
 							end
@@ -820,25 +820,32 @@ end
 
 local function UpdateSlider(Instance, Precision)
 	if Instance ~= nil then
-		local MouseX, MouseY = Mouse.Position()
-		local MinX = Cursor.GetPosition()
-		local MaxX = MinX + Instance.W
-		local Ratio = Utility.Clamp((MouseX - MinX) / (MaxX - MinX), 0.0, 1.0)
-		local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
-		local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
-		local Value = (Max - Min) * Ratio + Min
-		if Precision > 0 then
-			Instance.Text = string.format("%." .. Precision .. "f", Value)
-		else
-			Instance.Text = string.format("%d", Value)
+		local Flag = true
+		if Instance.NeedDrag then
+			local DeltaX = Mouse.GetDelta()
+			Flag = DeltaX ~= 0.0
 		end
-		ValidateNumber(Instance);
+		if Flag then
+			local MouseX, MouseY = Mouse.Position()
+			local MinX = Cursor.GetPosition()
+			local MaxX = MinX + Instance.W
+			local Ratio = Utility.Clamp((MouseX - MinX) / (MaxX - MinX), 0.0, 1.0)
+			local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
+			local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
+			local Value = (Max - Min) * Ratio + Min
+			if Precision > 0 then
+				Instance.Text = string.format("%." .. Precision .. "f", Value)
+			else
+				Instance.Text = string.format("%d", Value)
+			end
+			ValidateNumber(Instance);
+		end
 	end
 end
 
 local function UpdateDrag(Instance, Step)
 	if Instance ~= nil then
-		local DeltaX, DeltaY = Mouse.GetDelta()
+		local DeltaX = Mouse.GetDelta()
 		if DeltaX ~= 0.0 then
 			-- The drag threshold will be calculated dynamically. This is achieved by taking the active monitor
 			-- width and dividing by the allowable range. The DPI scale is taken into account as well. The
@@ -941,6 +948,7 @@ function Input.Begin(Id, Options)
 	Options.NoDrag = Options.NoDrag or false
 	Options.UseSlider = Options.UseSlider or false
 	Options.Precision = Options.Precision and math.floor(Utility.Clamp(Options.Precision, 0, 5)) or 3
+	Options.NeedDrag = Options.NeedDrag == nil and true or Options.NeedDrag
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
@@ -961,6 +969,7 @@ function Input.Begin(Id, Options)
 	Instance.MinNumber = Options.MinNumber
 	Instance.MaxNumber = Options.MaxNumber
 	Instance.MultiLine = Options.MultiLine
+	Instance.NeedDrag = Options.NeedDrag
 
 	if Instance.MultiLineW ~= Options.MultiLineW then
 		Instance.Lines = nil
@@ -990,7 +999,7 @@ function Input.Begin(Id, Options)
 	end
 
 	if Instance.MinNumber ~= nil and Instance.MaxNumber ~= nil then
-		assert(Instance.MinNumber <= Instance.MaxNumber, 
+		assert(Instance.MinNumber <= Instance.MaxNumber,
 			"Invalid MinNumber and MaxNumber passed to Input control '" .. Instance.Id .. "'. MinNumber: " .. Instance.MinNumber .. " MaxNumber: " .. Instance.MaxNumber)
 	end
 
@@ -1251,7 +1260,7 @@ function Input.Begin(Id, Options)
 
 		if IsSliding then
 			local Current = tonumber(Instance.Text)
-			
+
 			if Options.UseSlider then
 				UpdateSlider(Instance, Options.Precision)
 			else
