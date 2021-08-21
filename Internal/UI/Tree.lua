@@ -83,7 +83,7 @@ function Tree.Begin(Id, Options)
 	Options = Options == nil and {} or Options
 	Options.Label = Options.Label == nil and IdLabel or Options.Label
 	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or OpenWithHighlight
+	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or Options.OpenWithHighlight
 	Options.Icon = Options.Icon == nil and nil or Options.Icon
 	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
 	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
@@ -177,6 +177,7 @@ function Tree.Begin(Id, Options)
 			HoverColor = {0, 0, 0, 0},
 			PressColor = {0, 0, 0, 0}
 		}
+
 		if Button.Begin(Instance.Id .. '_Expand', ExpandIconOptions) and not Options.OpenWithHighlight then
 			Instance.IsOpen = not Instance.IsOpen
 			Window.SetHotItem(nil)
@@ -222,10 +223,6 @@ function Tree.Begin(Id, Options)
 
 	Cursor.SetY(Instance.Y)
 	Cursor.AdvanceY(H)
-
-	if Options.IsOpen then
-		Instance.IsOpen = true
-	end
 
 	if Instance.IsOpen then
 		insert(Hierarchy, 1, Instance)
