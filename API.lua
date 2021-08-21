@@ -2310,6 +2310,17 @@ function Slab.GetColumnCount()
 end
 
 --[[
+	GetCurrentColumnIndex
+
+	Retrieves the current index of the active column.
+
+	Return: [Number] The current index of the active column of the active layout. 0 is returned if no layout or column is active.
+--]]
+function Slab.GetCurrentColumnIndex()
+	return LayoutManager.GetCurrentColumnIndex()
+end
+
+--[[
 	SetScrollSpeed
 
 	Sets the speed of scrolling when using the mouse wheel.

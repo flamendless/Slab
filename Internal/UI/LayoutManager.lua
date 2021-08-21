@@ -524,6 +524,14 @@ function LayoutManager.GetColumnCount()
 	return 0
 end
 
+function LayoutManager.GetCurrentColumnIndex()
+	if Active ~= nil then
+		return Active.ColumnNo
+	end
+
+	return 0
+end
+
 function LayoutManager.Validate()
 	local Message = nil
 
