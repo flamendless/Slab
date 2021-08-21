@@ -893,6 +893,7 @@ end
 			property in the Style's table.
 		PadX: [Number] Amount of additional horizontal space the background will expand to from the center. The default value is 20.
 		PadY: [Number] Amount of additional vertical space the background will expand to from the center. The default value is 5.
+		VLines: [Number] Number of lines in a multiline button text. The default value is 1.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
