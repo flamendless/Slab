@@ -2299,6 +2299,17 @@ function Slab.GetLayoutSize()
 end
 
 --[[
+	GetLayoutColumnCount
+
+	Retrieves the size of the active layout's columns.
+
+	Return: [Number] The number of columns of the active layout. 0 is returned if no layout is active.
+--]]
+function Slab.GetColumnCount()
+	return LayoutManager.GetColumnCount()
+end
+
+--[[
 	SetScrollSpeed
 
 	Sets the speed of scrolling when using the mouse wheel.
