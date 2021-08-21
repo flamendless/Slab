@@ -62,11 +62,13 @@ function Button.Begin(Label, Options)
 	Options.PressColor = Options.PressColor or Style.ButtonPressedColor
 	Options.PadX = Options.PadX or Pad * 2.0
 	Options.PadY = Options.PadY or Pad * 0.5
+	Options.VLines = Options.VLines or 1
 
 	local Id = Window.GetItemId(Label)
 	local W, H = Button.GetSize(Label)
+	H = H * Options.VLines
 	local LabelW = Style.Font:getWidth(Label)
-	local FontHeight = Style.Font:getHeight()
+	local FontHeight = Style.Font:getHeight() * Options.VLines
 	local TextColor = Options.Disabled and Style.ButtonDisabledTextColor or nil
 
 	-- If a valid image was specified, then adjust the button size to match the requested image size. Also takes into account any sub UVs.
