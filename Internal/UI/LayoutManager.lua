@@ -516,14 +516,6 @@ function LayoutManager.GetActiveSize()
 	return WinW, WinH
 end
 
-function LayoutManager.GetColumnCount()
-	if Active ~= nil then
-		return #Active.Columns
-	end
-
-	return 0
-end
-
 function LayoutManager.GetCurrentColumnIndex()
 	if Active ~= nil then
 		return Active.ColumnNo
