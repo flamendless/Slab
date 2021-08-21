@@ -117,8 +117,8 @@ local function ProcessEvents()
 	Events = {}
 end
 
-function Mouse.Initialize(Args, TransformPointToSlab)
-	TransformPoint = TransformPointToSlab or TransformPoint
+function Mouse.Initialize(Args)
+	TransformPoint = Args.TransformPointToSlab or TransformPoint
 
 	MouseMovedFn = love.handlers['mousemoved']
 	MousePressedFn = love.handlers['mousepressed']
