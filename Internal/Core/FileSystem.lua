@@ -91,12 +91,12 @@ if FFI.os == "Windows" then
 		typedef unsigned long DWORD;
 		static const DWORD FILE_ATTRIBUTE_DIRECTORY = 0x10;
 		static const DWORD INVALID_FILE_ATTRIBUTES = -1;
-		
+
 		void* FindFirstFileW(const wchar_t* pattern, struct WIN32_FIND_DATAW* fd);
 		bool FindNextFileW(void* ff, struct WIN32_FIND_DATAW* fd);
 		bool FindClose(void* ff);
 		DWORD GetFileAttributesW(const wchar_t* Path);
-		
+
 		int MultiByteToWideChar(unsigned int CodePage, uint32_t dwFlags, const char* lpMultiByteStr,
 			int cbMultiByte, const wchar_t* lpWideCharStr, int cchWideChar);
 		int WideCharToMultiByte(unsigned int CodePage, uint32_t dwFlags, const wchar_t* lpWideCharStr,
@@ -135,7 +135,7 @@ if FFI.os == "Windows" then
 				if Name ~= "." and Name ~= ".." then
 					local AddDirectory = (FindData.dwFileAttributes == 16 or FindData.dwFileAttributes == 17) and Options.Directories
 					local AddFile = FindData.dwFileAttributes == 32 and Options.Files
-					
+
 					if (AddDirectory or AddFile) and not ShouldFilter(Name, Options.Filter) then
 						table.insert(Result, Name)
 					end

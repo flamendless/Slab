@@ -49,7 +49,7 @@ function Separator.Begin(Options)
 		W = W + Window.GetBorder() * 2
 		X = X - Window.GetBorder()
 	end
-	
+
 	DrawCommands.Line(X, Y + H * 0.5, X + W, Y + H * 0.5, Options.Thickness, Style.SeparatorColor)
 
 	Cursor.SetItemBounds(X, Y, W, H)

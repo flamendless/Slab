@@ -149,7 +149,7 @@ local function GetTriangleVertices(X, Y, Radius, Rotation)
 		X + PX2, Y + PY2,
 		X + PX3, Y + PY3
 	}
-	
+
 	return Result
 end
 

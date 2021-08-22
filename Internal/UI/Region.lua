@@ -350,7 +350,7 @@ function Region.End()
 	DrawScrollBars(ActiveInstance)
 
 	if HotInstance == ActiveInstance
-		and WheelInstance == nil 
+		and WheelInstance == nil
 		and (WheelX ~= 0.0 or WheelY ~= 0.0)
 		and not ActiveInstance.IgnoreScroll then
 		WheelInstance = ActiveInstance

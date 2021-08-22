@@ -399,7 +399,7 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 		-- Gather all potential windows that can obstruct the given position.
 		local List = {}
 		for I, V in ipairs(Stack) do
-			-- Stack locks prevents other windows to be considered. 
+			-- Stack locks prevents other windows to be considered.
 			if V.Id == StackLockId then
 				insert(List, V)
 				break
@@ -655,7 +655,7 @@ function Window.Begin(Id, Options)
 			local CloseSize = CloseBgRadius * 0.5
 			local CloseX = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - CloseBgRadius
 			local CloseY = ActiveInstance.Y - OffsetY * 0.5
-			local IsCloseHovered = 
+			local IsCloseHovered =
 				CloseX - CloseBgRadius <= MouseX and MouseX <= CloseX + CloseBgRadius and
 				CloseY - OffsetY * 0.5 <= MouseY and MouseY <= CloseY + CloseBgRadius and
 				not IsObstructed

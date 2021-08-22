@@ -141,7 +141,7 @@ function Stats.GetCallCount(Name, Category)
 	end
 
 	local Item = GetItem(Name, Category)
-	
+
 	return Item.CallCount > 0 and Item.CallCount or Item.LastCallCount
 end
 
