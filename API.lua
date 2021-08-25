@@ -2404,7 +2404,7 @@ end
 
 	Type: [String] The type of dock to set options for. This can be 'Left', 'Right', or 'Bottom'.
 --]]
-function Slab.WindowToDoc(Type)
+function Slab.WindowToDock(Type)
 	Window.ToDock(Type)
 end
 
