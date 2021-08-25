@@ -1137,4 +1137,14 @@ function Window.PopID()
 	return nil
 end
 
+function Window.ToDock(Type)
+	local ActiveInstance = GetInstance()
+	local MovingInstance = Window.GetMovingInstance()
+	if MovingInstance and MovingInstance == ActiveInstance then
+		return
+	end
+	Dock.SetPendingWindow(ActiveInstance, Type)
+	Dock.Override()
+end
+
 return Window

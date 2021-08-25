@@ -2397,4 +2397,15 @@ function Slab.SetDockOptions(Type, Options)
 	Dock.SetOptions(Type, Options)
 end
 
+--[[
+	WindowToDoc
+
+	Programatically set a window to dock.
+
+	Type: [String] The type of dock to set options for. This can be 'Left', 'Right', or 'Bottom'.
+--]]
+function Slab.WindowToDoc(Type)
+	Window.ToDock(Type)
+end
+
 return Slab

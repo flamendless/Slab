@@ -140,6 +140,20 @@ function Dock.DrawOverlay()
 	end
 end
 
+function Dock.Override()
+	if Pending ~= nil and PendingWindow ~= nil then
+		local Instance = GetInstance(Pending)
+
+		if PendingWindow ~= nil then
+			Instance.Window = PendingWindow.Id
+			PendingWindow = nil
+			Instance.Reset = true
+		end
+
+		Pending = nil
+	end
+end
+
 function Dock.Commit()
 	if Pending ~= nil and PendingWindow ~= nil and Mouse.IsReleased(1) then
 		local Instance = GetInstance(Pending)
@@ -246,8 +260,9 @@ function Dock.AlterOptions(WinId, Options)
 	end
 end
 
-function Dock.SetPendingWindow(Instance)
+function Dock.SetPendingWindow(Instance, Type)
 	PendingWindow = Instance
+	Pending = Type
 end
 
 function Dock.GetPendingWindow()
