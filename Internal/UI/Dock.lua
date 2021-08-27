@@ -178,7 +178,7 @@ function Dock.GetDock(WinId)
 	return nil
 end
 
-function Dock.GetBounds(Type)
+function Dock.GetBounds(Type, Options)
 	local X, Y, W, H = 0, 0, 0, 0
 	local ViewW, ViewH = love.graphics.getWidth(), love.graphics.getHeight()
 	local MainMenuBarH = MenuState.MainMenuBarH
@@ -186,17 +186,17 @@ function Dock.GetBounds(Type)
 
 	if Type == 'Left' then
 		Y = MainMenuBarH
-		W = 150
+		W = Options.W or 150
 		H = ViewH - Y - TitleH
 	elseif Type == 'Right' then
 		X = ViewW - 150
 		Y = MainMenuBarH
-		W = 150
+		W = Options.W or 150
 		H = ViewH - Y - TitleH
 	elseif Type == 'Bottom' then
 		Y = ViewH - 150
 		W = ViewW
-		H = 150
+		H = Options.H or 150
 	end
 
 	return X, Y, W, H
@@ -241,7 +241,7 @@ function Dock.AlterOptions(WinId, Options)
 					Options.SizerFilter = {'N'}
 				end
 
-				local X, Y, W, H = Dock.GetBounds(Id)
+				local X, Y, W, H = Dock.GetBounds(Id, Options)
 				Options.X = X
 				Options.Y = Y
 				Options.W = W

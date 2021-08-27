@@ -256,7 +256,7 @@ end
 function Tree.Save(Table)
 	if Table ~= nil then
 		local Settings = {}
-		for K, V in pairs(Instances) do
+		for K, V in ipairs(Instances) do
 			if not V.NoSavedSettings then
 				Settings[V.Id] = {
 					IsOpen = V.IsOpen

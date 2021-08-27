@@ -128,7 +128,7 @@ local function GetInstance(Id)
 		return ActiveInstance
 	end
 
-	for K, V in pairs(Instances) do
+	for I, V in ipairs(Instances) do
 		if V.Id == Id then
 			return V
 		end
@@ -492,6 +492,7 @@ function Window.Begin(Id, Options)
 	Options.ConstrainPosition = Options.ConstrainPosition or false
 
 	Dock.AlterOptions(Id, Options)
+	-- print(Options.W)
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -1139,6 +1140,7 @@ end
 
 function Window.ToDock(Type)
 	local ActiveInstance = GetInstance()
+	ActiveInstance.W = 720
 	Dock.SetPendingWindow(ActiveInstance, Type)
 	Dock.Override()
 end
