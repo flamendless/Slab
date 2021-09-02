@@ -115,6 +115,11 @@ local function UpdateScrollBars(Instance, IsObstructed)
 	if WheelInstance == Instance then
 		Instance.HoverScrollX = WheelX ~= 0.0
 		Instance.HoverScrollY = WheelY ~= 0.0
+
+		if not Instance.HoverScrollX and Instance.HoverScrollY and not Instance.HasScrollY then
+			Instance.HoverScrollX = Instance.HoverScrollY
+			WheelX = -WheelY
+		end
 	end
 
 	if not IsObstructed and Contains(Instance, X, Y) or (Instance.HoverScrollX or Instance.HoverScrollY) then

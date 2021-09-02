@@ -493,7 +493,6 @@ function Window.Begin(Id, Options)
 	Options.ConstrainPosition = Options.ConstrainPosition or false
 
 	Dock.AlterOptions(Id, Options)
-	-- print(Options.W)
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -649,7 +648,7 @@ function Window.Begin(Id, Options)
 			IgnoreScroll = true,
 			MouseX = MouseX,
 			MouseY = MouseY,
-			IsObstructed = IsObstructed
+			IsObstructed = IsObstructed,
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, TitleY, Style.TextColor, Style.Font)
 
