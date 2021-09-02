@@ -140,7 +140,8 @@ end
 
 local function Contains(Instance, X, Y)
 	if Instance ~= nil then
-		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - Instance.TitleH <= Y and Y <= Instance.Y + Instance.H
+		local TitleH = Instance.TitleH or 0
+		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - TitleH <= Y and Y <= Instance.Y + Instance.H
 	end
 	return false
 end
