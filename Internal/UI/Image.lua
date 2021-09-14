@@ -88,7 +88,7 @@ function Image.Begin(Id, Options)
 		else
 			Instance.Image = Options.Image
 		end
-	else
+	elseif Options.Image then
 		if Instance.Image ~= Options.Image then
 			Instance.Image = Options.Image
 		end
