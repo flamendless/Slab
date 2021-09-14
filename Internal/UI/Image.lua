@@ -80,11 +80,16 @@ function Image.Begin(Id, Options)
 	local Instance = GetInstance(Id)
 	local WinItemId = Window.GetItemId(Id)
 
+
 	if Instance.Image == nil then
 		if Options.Image == nil then
 			assert(Options.Path ~= nil, "Path to an image is required if no image is set!")
 			Instance.Image = GetImage(Options.Path)
 		else
+			Instance.Image = Options.Image
+		end
+	else
+		if Instance.Image ~= Options.Image then
 			Instance.Image = Options.Image
 		end
 	end
