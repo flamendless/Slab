@@ -566,6 +566,7 @@ end
 			the corner of the window and is updated when this button is pressed to reflect the new open state of this window.
 		NoSavedSettings: [Boolean] Flag to disable saving this window's settings to the state INI file.
 		ConstrainPosition: [Boolean] Flag to constrain the position of the window to the bounds of the viewport.
+		ShowMinimize: [Boolean] Flag to show a minimize button in the title bar of the window. Default is `true`.
 
 	Return: [Boolean] The open state of this window. Useful for simplifying API calls by storing the result in a flag instead of a table.
 		EndWindow must still be called regardless of the result for this value.

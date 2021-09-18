@@ -119,6 +119,7 @@ local function NewInstance(Id)
 	Instance.StatHandle = nil
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
+	Instance.IsContentOpen = true
 	Instance.NoSavedSettings = false
 	return Instance
 end
@@ -147,8 +148,10 @@ local function Contains(Instance, X, Y)
 end
 
 local function UpdateTitleBar(Instance, IsObstructed, AllowMove, Constrain)
-	if IsObstructed then
-		return
+	if Instance.IsContentOpen == nil or Instance.IsContentOpen then
+		if IsObstructed then
+			return
+		end
 	end
 
 	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None then
@@ -370,6 +373,38 @@ local function UpdateSize(Instance, IsObstructed)
 	end
 end
 
+local function DrawButton(Type, ActiveInstance, Options, Radius, OffsetX, OffsetY, HoverColor, Color)
+	local IsClicked = false
+	local MouseX, MouseY = Mouse.Position()
+	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
+	if Type == "Minimize" then
+		IsObstructed = false
+	end
+	local Size = Radius * 0.5
+	local X = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - Radius * (OffsetX)
+	local Y = ActiveInstance.Y - OffsetY * 0.5
+	local IsHovered =
+		X - Radius <= MouseX and MouseX <= X + Radius and
+		Y - OffsetY * 0.5 <= MouseY and MouseY <= Y + Radius and
+		not IsObstructed
+
+	if IsHovered then
+		DrawCommands.Circle('fill', X, Y, Radius, HoverColor)
+
+		if Mouse.IsClicked(1) then
+			IsClicked = true
+		end
+	end
+
+	if Type == "Close" then
+		DrawCommands.Cross(X, Y, Size, Color)
+	elseif Type == "Minimize" then
+		DrawCommands.Line(X - Size, Y, X + Size, Y, Size, Color)
+	end
+
+	return IsClicked
+end
+
 function Window.Top()
 	return ActiveInstance
 end
@@ -386,6 +421,10 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 
 	if ActiveInstance ~= nil then
 		if not ActiveInstance.IsOpen then
+			return true
+		end
+
+		if ActiveInstance.IsContentOpen == false then
 			return true
 		end
 
@@ -491,6 +530,7 @@ function Window.Begin(Id, Options)
 	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
 	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
 	Options.ConstrainPosition = Options.ConstrainPosition or false
+	Options.ShowMinimize = Options.ShowMinimize == nil and true or Options.ShowMinimize
 
 	Dock.AlterOptions(Id, Options)
 
@@ -557,11 +597,17 @@ function Window.Begin(Id, Options)
 	ActiveInstance.CanObstruct = Options.CanObstruct
 	ActiveInstance.StatHandle = StatHandle
 	ActiveInstance.NoSavedSettings = Options.NoSavedSettings
+	ActiveInstance.ShowMinimize = Options.ShowMinimize
 
 	local ShowClose = false
 	if Options.IsOpen ~= nil and type(Options.IsOpen) == 'boolean' then
 		ActiveInstance.IsOpen = Options.IsOpen
 		ShowClose = true
+	end
+
+	local ShowMinimize = Options.ShowMinimize
+	if Options.IsContentOpen ~= nil and type(Options.IsContentOpen) == "boolean" then
+		ActiveInstance.IsContentOpen = Options.IsContentOpen
 	end
 
 	if ActiveInstance.IsOpen then
@@ -609,6 +655,7 @@ function Window.Begin(Id, Options)
 	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
 	if ActiveInstance.Title ~= "" then
 		local CloseBgRadius = OffsetY * 0.4
+		local MinimizeBgRadius = OffsetY * 0.4
 		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
 		local TitleY = floor(ActiveInstance.Y - OffsetY * 0.5 - Style.Font:getHeight() * 0.5)
 
@@ -620,6 +667,9 @@ function Window.Begin(Id, Options)
 
 			if ShowClose then
 				TitleX = floor(TitleX - CloseBgRadius * 2.0)
+			end
+			if ShowMinimize then
+				TitleX = floor(TitleX - MinimizeBgRadius * 2.0)
 			end
 		end
 
@@ -652,37 +702,42 @@ function Window.Begin(Id, Options)
 		})
 		DrawCommands.Print(ActiveInstance.Title, TitleX, TitleY, Style.TextColor, Style.Font)
 
-		if ShowClose then
-			local CloseSize = CloseBgRadius * 0.5
-			local CloseX = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - CloseBgRadius
-			local CloseY = ActiveInstance.Y - OffsetY * 0.5
-			local IsCloseHovered =
-				CloseX - CloseBgRadius <= MouseX and MouseX <= CloseX + CloseBgRadius and
-				CloseY - OffsetY * 0.5 <= MouseY and MouseY <= CloseY + CloseBgRadius and
-				not IsObstructed
-
-			if IsCloseHovered then
-				DrawCommands.Circle(
-					'fill',
-					CloseX,
-					CloseY,
-					CloseBgRadius,
-					Style.WindowCloseBgColor
-				)
-
-				if Mouse.IsClicked(1) then
-					ActiveInstance.IsOpen = false
-					ActiveInstance.IsMoving = false
-					Options.IsOpen = false
-				end
+		local OffsetX = 1
+		if ShowMinimize then
+			OffsetX = ShowClose and 4 or 1
+			local IsClicked = DrawButton(
+				"Minimize",
+				ActiveInstance,
+				Options,
+				MinimizeBgRadius,
+				OffsetX,
+				OffsetY,
+				Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
+				Style.WindowMinimizeColor or Style.WindowCloseColor
+			)
+			if IsClicked then
+				ActiveInstance.IsContentOpen = not ActiveInstance.IsContentOpen
+				ActiveInstance.IsMoving = false
 			end
+		end
 
-			DrawCommands.Cross(
-				CloseX,
-				CloseY,
-				CloseSize,
+		if ShowClose then
+			OffsetX = 1
+			local IsClicked = DrawButton(
+				"Close",
+				ActiveInstance,
+				Options,
+				CloseBgRadius,
+				OffsetX,
+				OffsetY,
+				Style.WindowCloseBgColor,
 				Style.WindowCloseColor
 			)
+			if IsClicked then
+				ActiveInstance.IsOpen = false
+				ActiveInstance.IsMoving = false
+				Options.IsOpen = false
+			end
 		end
 
 		Region.End()
@@ -693,6 +748,13 @@ function Window.Begin(Id, Options)
 
 	if ActiveInstance.X + ActiveInstance.W > love.graphics.getWidth() then RegionW = love.graphics.getWidth() - ActiveInstance.X end
 	if ActiveInstance.Y + ActiveInstance.H > love.graphics.getHeight() then RegionH = love.graphics.getHeight() - ActiveInstance.Y end
+
+	if ActiveInstance.IsContentOpen == false then
+		RegionW = 0
+		RegionH = 0
+		ActiveInstance.ContentW = 0
+		ActiveInstance.ContentH = 0
+	end
 
 	Region.Begin(ActiveInstance.Id, {
 		X = ActiveInstance.X,
