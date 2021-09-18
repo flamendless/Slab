@@ -218,8 +218,9 @@ local function AddControl(Instance, W, H, Type)
 			end
 		end
 
-		Cursor.SetX(WinX + X)
-		Cursor.SetY(WinY + Y)
+		local Border = Window.GetBorder()
+		Cursor.SetX(WinX + X - Border)
+		Cursor.SetY(WinY + Y - Border)
 
 		if H < RowH then
 			if Instance.AlignRowY == 'center' then
