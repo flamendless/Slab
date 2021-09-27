@@ -2251,7 +2251,7 @@ end
 	GetStats
 
 	Get the love.graphics.getStats of the Slab.
-	Stats.SetEnabled(true) must be previously set to enable this
+	Stats.SetEnabled(true) must be previously set to enable this.
 	Must be called in love.draw (recommended at the end of draw)
 
 	Return: Table.
@@ -2266,8 +2266,7 @@ end
 
 	Calculate the passed love.graphics.getStats table of love by subtracting
 	the stats of Slab.
-
-	Stats.SetEnabled(true) must be previously set to enable this
+	Stats.SetEnabled(true) must be previously set to enable this.
 	Must be called in love.draw (recommended at the end of draw)
 
 	Return: Table.
