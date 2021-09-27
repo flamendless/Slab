@@ -30,6 +30,8 @@ end
 
 SLAB_FILE_PATH = debug.getinfo(1, 'S').source:match("^@(.+)/")
 SLAB_FILE_PATH = SLAB_FILE_PATH == nil and "" or SLAB_FILE_PATH
+local StatsData = {}
+local PrevStatsData = {}
 
 local Button = require(SLAB_PATH .. '.Internal.UI.Button')
 local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
@@ -401,6 +403,10 @@ end
 	Return: None.
 --]]
 function Slab.Draw()
+	if Stats.IsEnabled() then
+		PrevStatsData = love.graphics.getStats(PrevStatsData)
+	end
+
 	local StatHandle = Stats.Begin('Draw', 'Slab')
 
 	Window.Validate()
@@ -436,6 +442,13 @@ function Slab.Draw()
 	if FrameStatHandle ~= nil then
 		Stats.End(FrameStatHandle)
 		FrameStatHandle = nil
+	end
+
+	if Stats.IsEnabled() then
+		StatsData = love.graphics.getStats(StatsData)
+		for k, v in pairs(StatsData) do
+			StatsData[k] = v - PrevStatsData[k]
+		end
 	end
 end
 
@@ -2232,6 +2245,39 @@ end
 --]]
 function Slab.FlushStats()
 	Stats.Flush()
+end
+
+--[[
+	GetStats
+
+	Get the love.graphics.getStats of the Slab.
+	Stats.SetEnabled(true) must be previously set to enable this
+	Must be called in love.draw (recommended at the end of draw)
+
+	Return: Table.
+--]]
+
+function Slab.GetStats()
+	return StatsData
+end
+
+--[[
+	CalculateStats
+
+	Calculate the passed love.graphics.getStats table of love by subtracting
+	the stats of Slab.
+
+	Stats.SetEnabled(true) must be previously set to enable this
+	Must be called in love.draw (recommended at the end of draw)
+
+	Return: Table.
+--]]
+
+function Slab.CalculateStats(LoveStats)
+	for k, v in pairs(LoveStats) do
+		LoveStats[k] = v - StatsData[k]
+	end
+	return LoveStats
 end
 
 --[[
