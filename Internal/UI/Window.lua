@@ -120,6 +120,7 @@ local function NewInstance(Id)
 	Instance.IsAppearing = false
 	Instance.IsOpen = true
 	Instance.IsContentOpen = true
+	Instance.IsMinimized = false
 	Instance.NoSavedSettings = false
 	return Instance
 end
@@ -376,8 +377,10 @@ end
 local function DrawButton(Type, ActiveInstance, Options, Radius, OffsetX, OffsetY, HoverColor, Color)
 	local IsClicked = false
 	local MouseX, MouseY = Mouse.Position()
-	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
-	if Type == "Minimize" then
+	local IsObstructed
+	if Type == "Close" then
+		IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
+	elseif Type == "Minimize" then
 		IsObstructed = false
 	end
 	local Size = Radius * 0.5
@@ -399,7 +402,11 @@ local function DrawButton(Type, ActiveInstance, Options, Radius, OffsetX, Offset
 	if Type == "Close" then
 		DrawCommands.Cross(X, Y, Size, Color)
 	elseif Type == "Minimize" then
-		DrawCommands.Line(X - Size, Y, X + Size, Y, Size, Color)
+		if ActiveInstance.IsMinimized then
+			DrawCommands.Rectangle("line", X - Size, Y - Size, Size * 2, Size * 2, Color)
+		else
+			DrawCommands.Line(X - Size, Y, X + Size, Y, Size, Color)
+		end
 	end
 
 	return IsClicked
@@ -718,6 +725,7 @@ function Window.Begin(Id, Options)
 			if IsClicked then
 				ActiveInstance.IsContentOpen = not ActiveInstance.IsContentOpen
 				ActiveInstance.IsMoving = false
+				ActiveInstance.IsMinimized = not ActiveInstance.IsMinimized
 			end
 		end
 
