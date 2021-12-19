@@ -1,3 +1,24 @@
+v0.9.0
+==========
+[Stats] Added GetStats and CalculateStats. See fixed #91 (@flamendless)
+[Window]: Added minimize/maximize button in title bar to hide/show contents #100 (@flamendless)
+[Slab Logo]: Added Slab logo. Credits to ig@haven.graphicdesigns
+[Window]: Allow horizontal scrolling when there is no vertical scrolling possible #87 (@flamendless)
+[Dock]: Dock now follows Window's option for W and H #92 (@flamendless)
+[Dock]: Allow to programmatically set a window to a dock #92 (@flamendless)
+[Input]: Added NeedDrag option to InputNumberSlider
+[Button]: Added VLines option for multiline button label #81 (@flamendless)
+[Layout]: Added GetCurrentColumnIndex #89 (@flamendless)
+[Properties]: Improved Properties to use ordered table #93 (@flamendless)
+[Mouse]: Read mouse arguments out of Args table #94 (@idbrii)
+
+BUGFIXES
+==========
+[Dialog]: MessageBox expands if there are multiple buttons #99 (@flamendless)
+[Image]: Cache not updating correctly when Image object is passed #98 (@flamendless)
+[ContextMenu]: Context Menu now works with void spaces again #96 (@flamendless)
+[Tree]: Not returning IsOpen flag correctly #90 (@flamendless)
+
 v0.8.0
 ==========
 [API]: Make Update and Draw functions private.
