@@ -72,7 +72,7 @@ local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 end
 
 local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
-	insert(Events, {
+	insert(Events, 1, {
 		Type = Type,
 		X = X,
 		Y = Y,
@@ -101,20 +101,29 @@ local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
 end
 
 local function ProcessEvents()
-	State.Buttons = {}
+	for k, v in pairs(State.Buttons) do
+		v.Type = Common.Event.None
+	end
+	local wasPressed = false
 
-	for I, V in ipairs(Events) do
-		if State.Buttons[V.Button] == nil then
-			State.Buttons[V.Button] = {}
+	for i = #Events, 1, -1 do
+		local ev = Events[i]
+
+		-- delay release events until next frame
+		if ev.Type == Common.Event.Released and wasPressed then break end
+		wasPressed = ev.Type == Common.Event.Pressed
+
+		if State.Buttons[ev.Button] == nil then
+			State.Buttons[ev.Button] = {}
 		end
 
-		local Button = State.Buttons[V.Button]
-		Button.Type = V.Type
-		Button.IsTouch = V.IsTouch
-		Button.Presses = V.Presses
-	end
+		local button = State.Buttons[ev.Button]
+		button.Type = ev.Type
+		button.IsTouch = ev.IsTouch
+		button.Presses = ev.Presses
 
-	Events = {}
+		Events[i] = nil
+	end
 end
 
 function Mouse.Initialize(Args)
