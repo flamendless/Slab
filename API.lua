@@ -234,7 +234,7 @@ local Slab = {}
 
 -- Slab version numbers.
 local Version_Major = 0
-local Version_Minor = 8
+local Version_Minor = 9
 local Version_Revision = 0
 
 local FrameStatHandle = nil
