@@ -119,7 +119,8 @@ local function DrawRect(Rect)
 	local LineW = love.graphics.getLineWidth()
 	love.graphics.setLineWidth(Rect.LineW)
 	love.graphics.setColor(Rect.Color)
-	love.graphics.rectangle(Rect.Mode, Rect.X, Rect.Y, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
+	local pixelOffset = Rect.Mode == 'line' and .5 or 0
+	love.graphics.rectangle(Rect.Mode, Rect.X + pixelOffset, Rect.Y + pixelOffset, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
 	love.graphics.setLineWidth(LineW)
 
 	Stats.End(StatHandle)
