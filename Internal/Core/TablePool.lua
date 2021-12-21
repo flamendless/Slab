@@ -24,13 +24,37 @@ SOFTWARE.
 
 --]]
 
-local Common = {}
+local insert = table.insert
 
-Common.Event =
-{
-	None = 0,
-	Pressed = 1,
-	Released = 2
-}
+local TablePool = {}
+TablePool.__index = TablePool
 
-return Common
+function TablePool:pull()
+	local count = #self
+	if count == 0 then return {} end
+
+	local result = self[count]
+	self[count] = nil
+	return result
+end
+
+function TablePool:pullClean()
+	local count = #self
+	if count == 0 then return {} end
+
+	local result = self[count]
+	self[count] = nil
+
+	for k in pairs(result) do
+		result[k] = nil
+	end
+	return result
+end
+
+function TablePool:push(t)
+	insert(self, t)
+end
+
+return function()
+	return setmetatable({}, TablePool)
+end
