@@ -239,8 +239,8 @@ local Version_Revision = 0
 
 local FrameStatHandle = nil
 
--- The path to save the UI state to a file. This will default to the base source directory.
-local INIStatePath = love.filesystem.getSourceBaseDirectory() .. "/Slab.ini"
+-- The path to save the UI state to a file. This will default to the save directory.
+local INIStatePath = love.filesystem.getSaveDirectory() .. "/Slab.ini"
 local QuitFn = nil
 local Verbose = false
 local Initialized = false
