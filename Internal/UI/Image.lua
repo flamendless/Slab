@@ -32,137 +32,137 @@ local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local IdCache = require(SLAB_PATH .. '.Internal.Core.IdCache')
 
 local Image = {}
-local Instances = {}
-local ImageCache = {}
+local instances = {}
+local imageCache = {}
+local idCache = IdCache()
 
-local function GetImage(Path)
-	if ImageCache[Path] == nil then
-		ImageCache[Path] = love.graphics.newImage(Path)
+local EMPTY = {}
+local WHITE = { 1, 1, 1, 1 }
+local BLACK = { 0, 0, 0, 1 }
+
+local function GetImage(path)
+	if imageCache[path] == nil then
+		imageCache[path] = love.graphics.newImage(path)
 	end
-	return ImageCache[Path]
+	return imageCache[path]
 end
 
-local function GetInstance(Id)
-	local Key = Window.GetId() .. '.' .. Id
-	if Instances[Key] == nil then
-		local Instance = {}
-		Instance.Id = Id
-		Instance.Image = nil
-		Instances[Key] = Instance
-	end
-	return Instances[Key]
+local function GetInstance(id)
+	local key = idCache:get(Window.GetId(), id)
+	local instance = instances[key]
+
+	if instance then return instance end
+
+	instance = {}
+	instance.Id = id
+	instance.Image = nil
+	instances[key] = instance
+
+	return instance
 end
 
-function Image.Begin(Id, Options)
-	local StatHandle = Stats.Begin('Image', 'Slab')
+function Image.Begin(id, options)
+	local statHandle = Stats.Begin('Image', 'Slab')
 
-	Options = Options == nil and {} or Options
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.Rotation = Options.Rotation == nil and 0 or Options.Rotation
-	Options.Scale = Options.Scale == nil and 1 or Options.Scale
-	Options.ScaleX = Options.ScaleX == nil and Options.Scale or Options.ScaleX
-	Options.ScaleY = Options.ScaleY == nil and Options.Scale or Options.ScaleY
-	Options.Color = Options.Color == nil and {1.0, 1.0, 1.0, 1.0} or Options.Color
-	Options.SubX = Options.SubX == nil and 0.0 or Options.SubX
-	Options.SubY = Options.SubY == nil and 0.0 or Options.SubY
-	Options.SubW = Options.SubW == nil and 0.0 or Options.SubW
-	Options.SubH = Options.SubH == nil and 0.0 or Options.SubH
-	Options.WrapH = Options.WrapH == nil and "clamp" or Options.WrapH
-	Options.WrapV = Options.WrapV == nil and "clamp" or Options.WrapV
-	Options.UseOutline = Options.UseOutline or false
-	Options.OutlineColor = Options.OutlineColor or {0, 0, 0, 1}
-	Options.OutlineW = Options.OutlineW or 1
-	Options.W = Options.W or nil
-	Options.H = Options.H or nil
+	options = options or EMPTY
+	local rotation = options.Rotation or 0
+	local scale = options.Scale or 1
+	local scaleX = options.ScaleX or scale
+	local scaleY = options.ScaleY or scale
+	local color = options.Color or WHITE
+	local subW = options.SubW or 0.0
+	local subH = options.SubH or 0.0
 
-	local Instance = GetInstance(Id)
-	local WinItemId = Window.GetItemId(Id)
+	local instance = GetInstance(id)
+	local winItemId = Window.GetItemId(id)
 
 
-	if Instance.Image == nil then
-		if Options.Image == nil then
-			assert(Options.Path ~= nil, "Path to an image is required if no image is set!")
-			Instance.Image = GetImage(Options.Path)
+	if instance.Image == nil then
+		if options.Image == nil then
+			assert(options.Path ~= nil, "Path to an image is required if no image is set!")
+			instance.Image = GetImage(options.Path)
 		else
-			Instance.Image = Options.Image
+			instance.Image = options.Image
 		end
-	elseif Options.Image then
-		if Instance.Image ~= Options.Image then
-			Instance.Image = Options.Image
+	elseif options.Image then
+		if instance.Image ~= options.Image then
+			instance.Image = options.Image
 		end
 	end
 
-	Instance.Image:setWrap(Options.WrapH, Options.WrapV)
+	instance.Image:setWrap(options.WrapH or "clamp", options.WrapV or "clamp")
 
-	local W = Options.W or Instance.Image:getWidth()
-	local H = Options.H or Instance.Image:getHeight()
+	local w = options.W or instance.Image:getWidth()
+	local h = options.H or instance.Image:getHeight()
 
 	-- The final width and height setting will be what the developer requested if it exists. The scale factor will be calculated here.
-	Options.ScaleX = Options.W and (Options.W / Instance.Image:getWidth()) or Options.ScaleX
-	Options.ScaleY = Options.H and (Options.H / Instance.Image:getHeight()) or Options.ScaleY
+	scaleX = options.W and (options.W / instance.Image:getWidth()) or scaleX
+	scaleY = options.H and (options.H / instance.Image:getHeight()) or scaleY
 
-	W = W * Options.ScaleX
-	H = H * Options.ScaleY
+	w = w * scaleX
+	h = h * scaleY
 
-	local UseSubImage = false
-	if Options.SubW > 0.0 and Options.SubH > 0.0 then
-		Options.ScaleX = Options.W and (Options.W / Options.SubW) or Options.ScaleX
-		Options.ScaleY = Options.H and (Options.H / Options.SubH) or Options.ScaleY
-		W = Options.W or W
-		H = Options.H or H
-		UseSubImage = true
+	local useSubImage = subW > 0.0 and subH > 0.0
+	if useSubImage then
+		scaleX = options.W and (options.W / subW) or scaleX
+		scaleY = options.H and (options.H / subH) or scaleY
+		w = options.W or w
+		h = options.H or h
 	end
 
-	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H, 'Image')
+	w, h = LayoutManager.ComputeSize(w, h)
+	LayoutManager.AddControl(w, h, 'Image')
 
-	local X, Y = Cursor.GetPosition()
-	local MouseX, MouseY = Window.GetMousePosition()
+	local x, y = Cursor.GetPosition()
+	do
+		local mouseX, mouseY = Window.GetMousePosition()
 
-	if not Window.IsObstructedAtMouse() and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(WinItemId)
+		if not Window.IsObstructedAtMouse() and x <= mouseX and mouseX <= x + w and y <= mouseY and mouseY <= y + h then
+			Tooltip.Begin(options.Tooltip or "")
+			Window.SetHotItem(winItemId)
+		end
 	end
 
-	if UseSubImage then
+	if useSubImage then
 		DrawCommands.SubImage(
-			X,
-			Y,
-			Instance.Image,
-			Options.SubX,
-			Options.SubY,
-			Options.SubW,
-			Options.SubH,
-			Options.Rotation,
-			Options.ScaleX,
-			Options.ScaleY,
-			Options.Color)
+			x,
+			y,
+			instance.Image,
+			options.SubX or 0,
+			options.SubY or 0,
+			subW,
+			subH,
+			rotation,
+			scaleX,
+			scaleY,
+			color)
 	else
-		DrawCommands.Image(X, Y, Instance.Image, Options.Rotation, Options.ScaleX, Options.ScaleY, Options.Color)
+		DrawCommands.Image(x, y, instance.Image, rotation, scaleX, scaleY, color)
 	end
 
-	if Options.UseOutline then
+	if options.UseOutline then
 		DrawCommands.Rectangle(
 			'line',
-			X,
-			Y,
-			UseSubImage and Options.SubW or W,
-			UseSubImage and Options.SubH or H,
-			Options.OutlineColor,
+			x,
+			y,
+			useSubImage and subW or w,
+			useSubImage and subH or h,
+			options.OutlineColor or BLACK,
 			nil,
 			nil,
-			Options.OutlineW
+			options.OutlineW or 1
 		)
 	end
 
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(H)
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.AdvanceY(h)
 
-	Window.AddItem(X, Y, W, H, WinItemId)
+	Window.AddItem(x, y, w, h, winItemId)
 
-	Stats.End(StatHandle)
+	Stats.End(statHandle)
 end
 
 function Image.GetSize(Image)
