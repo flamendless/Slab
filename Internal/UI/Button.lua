@@ -163,7 +163,7 @@ function Button.BeginRadio(label, options)
 	label = label or ""
 
 	options = options or EMPTY
-	local index = options.index or 0
+	local index = options.Index or 0
 	local selectedIndex = options.SelectedIndex or 0
 
 	local result = false
