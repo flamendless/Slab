@@ -63,7 +63,7 @@ local SizerType =
 }
 
 local function UpdateStackIndex()
-	for I = 1, #Stack, 1 do
+	for I = 1, #Stack do
 		Stack[I].StackIndex = #Stack - I + 1
 	end
 end
@@ -659,7 +659,7 @@ function Window.Begin(Id, Options)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
-	DrawCommands.Begin({Channel = ActiveInstance.StackIndex})
+	DrawCommands.Begin(ActiveInstance.StackIndex)
 	if ActiveInstance.Title ~= "" then
 		local CloseBgRadius = OffsetY * 0.4
 		local MinimizeBgRadius = OffsetY * 0.4
