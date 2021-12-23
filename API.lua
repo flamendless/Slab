@@ -240,31 +240,38 @@ local Version_Revision = 0
 local FrameStatHandle = nil
 
 -- The path to save the UI state to a file. This will default to the save directory.
-local INIStatePath = love.filesystem.getSaveDirectory() .. "/Slab.ini"
+local INIStatePath = "Slab.ini"
+local IsDefault = true
 local QuitFn = nil
 local Verbose = false
 local Initialized = false
 
 local function LoadState()
-	if INIStatePath ~= nil then
-		local Result, Error = Config.LoadFile(INIStatePath)
-		if Result ~= nil then
-			Dock.Load(Result)
-			Tree.Load(Result)
-			Window.Load(Result)
-		elseif Verbose then
-			print("Failed to load INI file '" .. INIStatePath .. "': " .. Error)
-		end
+	if INIStatePath == nil then return end
+
+	local Result, Error = Config.LoadFile(INIStatePath, IsDefault)
+	if Result ~= nil then
+		Dock.Load(Result)
+		Tree.Load(Result)
+		Window.Load(Result)
+	end
+
+	if Verbose then
+		print("Load INI file:", INIStatePath, "Error:", Error)
 	end
 end
 
 local function SaveState()
-	if INIStatePath ~= nil then
-		local Table = {}
-		Dock.Save(Table)
-		Tree.Save(Table)
-		Window.Save(Table)
-		Config.Save(INIStatePath, Table)
+	if INIStatePath == nil then return end
+
+	local Table = {}
+	Dock.Save(Table)
+	Tree.Save(Table)
+	Window.Save(Table)
+	local Result, Error = Config.Save(INIStatePath, Table, IsDefault)
+
+	if Verbose then
+		print("Save INI file:", INIStatePath, "Error:", Error)
 	end
 end
 
@@ -461,6 +468,7 @@ end
 --]]
 function Slab.SetINIStatePath(Path)
 	INIStatePath = Path
+	IsDefault = false
 end
 
 --[[

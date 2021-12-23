@@ -552,26 +552,36 @@ function FileSystem.RemoveExtension(Path)
 	return Result
 end
 
-function FileSystem.ReadContents(Path, IsBinary)
-	local Result = nil
+function FileSystem.ReadContents(Path, IsBinary, IsDefault)
+	local Result, Error
 
-	local Mode = IsBinary and "rb" or "r"
-	local Handle, Error = io.open(Path, Mode)
-	if Handle ~= nil then
-		Result = Handle:read("*a")
-		Handle:close()
+	if IsDefault then
+		Result, Error = love.filesystem.read(Path)
+	else
+		local Handle
+		local Mode = IsBinary and "rb" or "r"
+		Handle, Error = io.open(Path, Mode)
+		if Handle ~= nil then
+			Result = Handle:read("*a")
+			Handle:close()
+		end
 	end
 
 	return Result, Error
 end
 
-function FileSystem.SaveContents(Path, Contents)
-	local Result = false
-	local Handle, Error = io.open(Path, "w")
-	if Handle ~= nil then
-		Handle:write(Contents)
-		Handle:close()
-		Result = true
+function FileSystem.SaveContents(Path, Contents, IsDefault)
+	local Result, Error
+
+	if IsDefault then
+		Result, Error = love.filesystem.write(Path, Contents)
+	else
+		local Handle, Error = io.open(Path, "w")
+		if Handle ~= nil then
+			Handle:write(Contents)
+			Handle:close()
+			Result = true
+		end
 	end
 
 	return Result, Error
