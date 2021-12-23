@@ -343,9 +343,11 @@ end
 
 function Dock.Save(Table)
 	if Table ~= nil then
+		local taken = {}
 		local Settings = {}
 		for K, V in pairs(Instances) do
-			if not V.NoSavedSettings then
+			if not V.NoSavedSettings and not taken[V.Window] then
+				taken[V.Window] = true
 				Settings[K] = tostring(V.Window)
 			end
 		end

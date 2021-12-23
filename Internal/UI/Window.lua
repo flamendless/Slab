@@ -1211,6 +1211,7 @@ end
 function Window.ToDock(Type)
 	local ActiveInstance = GetInstance()
 	ActiveInstance.W = 720
+	ActiveInstance.H = 720
 	Dock.SetPendingWindow(ActiveInstance, Type)
 	Dock.Override()
 end
