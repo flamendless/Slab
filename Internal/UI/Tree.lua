@@ -41,6 +41,7 @@ local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local IdCache = require(SLAB_PATH .. '.Internal.Core.IdCache')
 
 local Tree = {}
 local Instances = setmetatable({}, {__mode = "k"})
@@ -48,12 +49,17 @@ local Hierarchy = {}
 
 local Radius = 4.0
 
+local idCache = IdCache()
+local EMPTY = {}
+local IGNORE = { Ignore = true }
+local CENTERY = { CenterY = true }
+local TRANSPARENT = { 0, 0, 0, 0 }
+
 local function GetInstance(Id)
-	local IdString = type(Id) == 'table' and tostring(IdString) or Id
+	local IdString = tostring(Id)
 
 	if #Hierarchy > 0 then
-		local Top = Hierarchy[1]
-		IdString = Top.Id .. "." .. IdString
+		IdString = idCache:get(Hierarchy[1].Id, IdString)
 	end
 
 	if Instances[Id] == nil then
@@ -78,16 +84,12 @@ function Tree.Begin(Id, Options)
 	local StatHandle = Stats.Begin('Tree', 'Slab')
 
 	local IsTableId = type(Id) == 'table'
-	local IdLabel = IsTableId and tostring(Id) or Id
+	local IdLabel = tostring(Id)
 
-	Options = Options == nil and {} or Options
-	Options.Label = Options.Label == nil and IdLabel or Options.Label
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or Options.OpenWithHighlight
-	Options.Icon = Options.Icon == nil and nil or Options.Icon
-	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
-	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
-	Options.NoSavedSettings = Options.NoSavedSettings == nil and IsTableId or (Options.NoSavedSettings and not IsTableId)
+	Options = Options or EMPTY
+	local label = Options.Label or IdLabel
+	local icon = Options.Icon
+	local openWithHighlight = Options.OpenWithHighlight == nil or Options.OpenWithHighlight
 
 	if Options.IconPath ~= nil then
 		Messages.Broadcast('Tree.Options.IconPath', "'IconPath' option has been deprecated since v0.8.0. Please use the 'Icon' option.")
@@ -104,14 +106,14 @@ function Tree.Begin(Id, Options)
 
 	Instance.WasOpen = Instance.IsOpen
 	Instance.StatHandle = StatHandle
-	Instance.NoSavedSettings = Options.NoSavedSettings
+	Instance.NoSavedSettings = Options.NoSavedSettings or IsTableId
 
 	local MouseX, MouseY = Mouse.Position()
 	local TMouseX, TMouseY = Region.InverseTransform(nil, MouseX, MouseY)
 	local WinX, WinY = Window.GetPosition()
 	local WinW, WinH = Window.GetBorderlessSize()
 	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
-	local W = Text.GetWidth(Options.Label)
+	local W = Text.GetWidth(label)
 	local H = max(Style.Font:getHeight(), Instance.H)
 
 	if not Options.IsLeaf then
@@ -119,7 +121,7 @@ function Tree.Begin(Id, Options)
 	end
 
 	-- Account for icon if one is requested.
-	W = Options.Icon and W + H or W
+	W = icon and W + H or W
 
 	WinX = WinX + Window.GetBorder()
 	WinY = WinY + Window.GetBorder()
@@ -156,7 +158,7 @@ function Tree.Begin(Id, Options)
 	end
 
 	if IsHot then
-		if Mouse.IsClicked(1) and not Options.IsLeaf and Options.OpenWithHighlight then
+		if Mouse.IsClicked(1) and not Options.IsLeaf and openWithHighlight then
 			Instance.IsOpen = not Instance.IsOpen
 		end
 	end
@@ -164,21 +166,30 @@ function Tree.Begin(Id, Options)
 	local IsExpanderClicked = false
 	if not Options.IsLeaf then
 		-- Render the triangle depending on if the tree item is open/closed.
-		local SubX = Instance.IsOpen and 0.0 or 200.0
-		local SubY = Instance.IsOpen and 100.0 or 50.0
-		local ExpandIconOptions =
-		{
-			Image = {Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubX = SubX, SubY = SubY, SubW = 50.0, SubH = 50.0},
-			W = H,
-			H = H,
-			PadX = 0.0,
-			PadY = 0.0,
-			Color = {0, 0, 0, 0},
-			HoverColor = {0, 0, 0, 0},
-			PressColor = {0, 0, 0, 0}
-		}
+		local SubX = Instance.IsOpen and 0 or 200
+		local SubY = Instance.IsOpen and 100 or 50
 
-		if Button.Begin(Instance.Id .. '_Expand', ExpandIconOptions) and not Options.OpenWithHighlight then
+		local ExpandIconOptions = Instance.ExpandIconOptions
+		if not ExpandIconOptions then
+			ExpandIconOptions = {
+				Image = { Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubW = 50, SubH = 50 },
+				PadX = 0,
+				PadY = 0,
+				Color = TRANSPARENT,
+				HoverColor = TRANSPARENT,
+				PressColor = TRANSPARENT,
+				IconId = Instance.Id .. '_Open',
+				ExpandId = Instance.Id .. '_Expand',
+			}
+			Instance.ExpandIconOptions = ExpandIconOptions
+		end
+
+		ExpandIconOptions.Image.SubX = SubX
+		ExpandIconOptions.Image.SubY = SubY
+		ExpandIconOptions.W = H
+		ExpandIconOptions.H = H
+
+		if Button.Begin(ExpandIconOptions.ExpandId, ExpandIconOptions) and not openWithHighlight then
 			Instance.IsOpen = not Instance.IsOpen
 			Window.SetHotItem(nil)
 			IsExpanderClicked = true
@@ -200,20 +211,20 @@ function Tree.Begin(Id, Options)
 	Instance.W = W
 	Instance.H = H
 
-	LayoutManager.Begin('Ignore', {Ignore = true})
+	LayoutManager.Begin('Ignore', IGNORE)
 
-	if Options.Icon ~= nil then
+	if icon ~= nil then
 		-- Force the icon to be of the same size as the tree item.
-		Options.Icon.W = H
-		Options.Icon.H = H
-		Image.Begin(Instance.Id .. '_Icon', Options.Icon)
+		icon.W = H
+		icon.H = H
+		Image.Begin(ExpandIconOptions.IconId, icon)
 
 		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 		Instance.H = max(Instance.H, ItemH)
-		Cursor.SameLine({CenterY = true})
+		Cursor.SameLine(CENTERY)
 	end
 
-	Text.Begin(Options.Label)
+	Text.Begin(label)
 
 	LayoutManager.End()
 
@@ -229,7 +240,7 @@ function Tree.Begin(Id, Options)
 	end
 
 	if IsHot then
-		Tooltip.Begin(Options.Tooltip)
+		Tooltip.Begin(Options.Tooltip or "")
 
 		if not IsExpanderClicked then
 			Window.SetHotItem(WinItemId)
