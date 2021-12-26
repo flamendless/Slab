@@ -24,27 +24,21 @@ SOFTWARE.
 
 --]]
 
-local insert = table.insert
-
 local TablePool = {}
 TablePool.__index = TablePool
 
 function TablePool:pull()
-	local count = #self
+	local count = self[0]
 	if count == 0 then return {} end
 
 	local result = self[count]
-	self[count] = nil
+	self[count], self[0] = nil, count - 1
+
 	return result
 end
 
 function TablePool:pullClean()
-	local count = #self
-	if count == 0 then return {} end
-
-	local result = self[count]
-	self[count] = nil
-
+	local result = self:pull()
 	for k in pairs(result) do
 		result[k] = nil
 	end
@@ -52,9 +46,10 @@ function TablePool:pullClean()
 end
 
 function TablePool:push(t)
-	insert(self, t)
+	local count = self[0] + 1
+	self[count], self[0] = t, count
 end
 
 return function()
-	return setmetatable({}, TablePool)
+	return setmetatable({ [0] = 0 }, TablePool)
 end
