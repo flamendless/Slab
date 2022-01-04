@@ -29,15 +29,20 @@ local Utility = {}
 local abs = math.abs
 local remove = table.remove
 
-function Utility.MakeColor(Color)
-	local Copy = {0.0, 0.0, 0.0, 1.0}
-	if Color ~= nil then
-		Copy[1] = Color[1]
-		Copy[2] = Color[2]
-		Copy[3] = Color[3]
-		Copy[4] = Color[4]
+function Utility.MakeColor(color, target)
+	target = target or {}
+	if color then
+		target[1] = color[1]
+		target[2] = color[2]
+		target[3] = color[3]
+		target[4] = color[4]
+	else
+		target[1] = 0
+		target[2] = 0
+		target[3] = 0
+		target[4] = 1
 	end
-	return Copy
+	return target
 end
 
 function Utility.HSVtoRGB(H, S, V)
