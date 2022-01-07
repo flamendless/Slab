@@ -140,7 +140,7 @@ function Button.Begin(label, options)
 			Cursor.SetX(floor(labelX))
 			Cursor.SetY(floor(y + (h * 0.5) - (fontHeight * 0.5)))
 			labelColor.color = disabled and Style.ButtonDisabledTextColor or nil
-			Text.Begin(label, LabelColor)
+			Text.Begin(label, labelColor)
 		end
 		LayoutManager.End()
 
