@@ -38,6 +38,7 @@ local Region = require(SLAB_PATH .. ".Internal.UI.Region")
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Style = require(SLAB_PATH .. ".Style")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local IdCache = require(SLAB_PATH .. ".Internal.Core.IdCache")
 
 local Window = {}
 
@@ -48,375 +49,387 @@ local PendingStack = {}
 local ActiveInstance = nil
 local MovingInstance = nil
 local IDStack = {}
+local idCache = IdCache()
 
-local SizerType =
+local SizerNone = 0
+local SizerN = 1
+local SizerE = 2
+local SizerS = 3
+local SizerW = 4
+local SizerNE = 5
+local SizerSE = 6
+local SizerSW = 7
+local SizerNW = 8
+
+local SizerCursor =
 {
-	None = 0,
-	N = 1,
-	E = 2,
-	S = 3,
-	W = 4,
-	NE = 5,
-	SE = 6,
-	SW = 7,
-	NW = 8
+	[SizerNW] = 'sizenwse',
+	[SizerNE] = 'sizenesw',
+	[SizerSE] = 'sizenwse',
+	[SizerSW] = 'sizenesw',
+	[SizerW]  = 'sizewe',
+	[SizerE]  = 'sizewe',
+	[SizerN]  = 'sizens',
+	[SizerS]  = 'sizens',
 }
 
+local EMPTY = {}
+
+local TitleRounding = { 0, 0, 0, 0 }
+local BodyRounding = { 0, 0, 0, 0 }
+
 local function UpdateStackIndex()
-	for I = 1, #Stack do
-		Stack[I].StackIndex = #Stack - I + 1
+	for i = 1, #Stack do
+		Stack[i].StackIndex = #Stack - i + 1
 	end
 end
 
-local function PushToTop(Instance)
-	for I, V in ipairs(Stack) do
-		if Instance == V then
-			remove(Stack, I)
+local function PushToTop(instance)
+	for i, v in ipairs(Stack) do
+		if instance == v then
+			remove(Stack, i)
 			break
 		end
 	end
 
-	insert(Stack, 1, Instance)
+	insert(Stack, 1, instance)
 
 	UpdateStackIndex()
 end
 
-local function NewInstance(Id)
-	local Instance = {}
-	Instance.Id = Id
-	Instance.X = 0.0
-	Instance.Y = 0.0
-	Instance.W = 200.0
-	Instance.H = 200.0
-	Instance.ContentW = 0.0
-	Instance.ContentH = 0.0
-	Instance.Title = ""
-	Instance.IsMoving = false
-	Instance.TitleDeltaX = 0.0
-	Instance.TitleDeltaY = 0.0
-	Instance.AllowResize = true
-	Instance.AllowFocus = true
-	Instance.SizerType = SizerType.None
-	Instance.SizerFilter = nil
-	Instance.SizeDeltaX = 0.0
-	Instance.SizeDeltaY = 0.0
-	Instance.HasResized = false
-	Instance.DeltaContentW = 0.0
-	Instance.DeltaContentH = 0.0
-	Instance.BackgroundColor = Style.WindowBackgroundColor
-	Instance.Border = 4.0
-	Instance.Children = {}
-	Instance.LastItem = nil
-	Instance.HotItem = nil
-	Instance.ContextHotItem = nil
-	Instance.Items = {}
-	Instance.Layer = 'Normal'
-	Instance.StackIndex = 0
-	Instance.CanObstruct = true
-	Instance.FrameNumber = 0
-	Instance.LastCursorX = 0
-	Instance.LastCursorY = 0
-	Instance.StatHandle = nil
-	Instance.IsAppearing = false
-	Instance.IsOpen = true
-	Instance.IsContentOpen = true
-	Instance.IsMinimized = false
-	Instance.NoSavedSettings = false
-	return Instance
+local function NewInstance(id)
+	local instance = {
+		Id = id,
+		X = 0,
+		Y = 0,
+		W = 200,
+		H = 200,
+		ContentW = 0,
+		ContentH = 0,
+		Title = "",
+		IsMoving = false,
+		TitleDeltaX = 0,
+		TitleDeltaY = 0,
+		AllowResize = true,
+		AllowFocus = true,
+		SizerType = SizerNone,
+		SizerFilter = nil,
+		SizeDeltaX = 0,
+		SizeDeltaY = 0,
+		HasResized = false,
+		DeltaContentW = 0,
+		DeltaContentH = 0,
+		BackgroundColor = Style.WindowBackgroundColor,
+		Border = 4,
+		Children = {},
+		LastItem = nil,
+		HotItem = nil,
+		ContextHotItem = nil,
+		Items = {},
+		Layer = 'Normal',
+		StackIndex = 0,
+		CanObstruct = true,
+		FrameNumber = 0,
+		LastCursorX = 0,
+		LastCursorY = 0,
+		StatHandle = nil,
+		IsAppearing = false,
+		IsOpen = true,
+		IsContentOpen = true,
+		IsMinimized = false,
+		NoSavedSettings = false,
+		TitleId = id .. '_Title',
+		TitleRegion = {
+			NoBackground = true,
+			NoOutline = true,
+			IgnoreScroll = true,
+		},
+		InstanceRegion = {},
+	}
+	return instance
 end
 
-local function GetInstance(Id)
-	if Id == nil then
+local function GetInstance(id)
+	if id == nil then
 		return ActiveInstance
 	end
 
-	for I, V in ipairs(Instances) do
-		if V.Id == Id then
-			return V
+	for i, v in ipairs(Instances) do
+		if v.Id == id then
+			return v
 		end
 	end
-	local Instance = NewInstance(Id)
-	insert(Instances, Instance)
-	return Instance
+	local instance = NewInstance(id)
+	insert(Instances, instance)
+	return instance
 end
 
-local function Contains(Instance, X, Y)
-	if Instance ~= nil then
-		local TitleH = Instance.TitleH or 0
-		return Instance.X <= X and X <= Instance.X + Instance.W and Instance.Y - TitleH <= Y and Y <= Instance.Y + Instance.H
+local function Contains(instance, x, y)
+	if instance ~= nil then
+		local titleH = instance.TitleH or 0
+		return instance.X <= x and x <= instance.X + instance.W and instance.Y - titleH <= y and y <= instance.Y + instance.H
 	end
 	return false
 end
 
-local function UpdateTitleBar(Instance, IsObstructed, AllowMove, Constrain)
-	if Instance.IsContentOpen == nil or Instance.IsContentOpen then
-		if IsObstructed then
-			return
-		end
+local function UpdateTitleBar(instance, isObstructed, allowMove, constrain)
+	if isObstructed and (instance.IsContentOpen == nil or instance.IsContentOpen) then
+		return
 	end
 
-	if Instance ~= nil and Instance.Title ~= "" and Instance.SizerType == SizerType.None then
-		local W = Instance.W
-		local H = Instance.TitleH
-		local X = Instance.X
-		local Y = Instance.Y - H
-		local IsTethered = Dock.IsTethered(Instance.Id)
+	if instance ~= nil and instance.Title ~= "" and instance.SizerType == SizerNone then
+		local w = instance.W
+		local h = instance.TitleH
+		local x = instance.X
+		local y = instance.Y - h
+		local isTethered = Dock.IsTethered(instance.Id)
 
-		local MouseX, MouseY = Mouse.Position()
+		local mouseX, mouseY = Mouse.Position()
 
 		if Mouse.IsClicked(1) then
-			if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-				if AllowMove then
-					Instance.IsMoving = true
+			if x <= mouseX and mouseX <= x + w and y <= mouseY and mouseY <= y + h then
+				if allowMove then
+					instance.IsMoving = true
 				end
 
-				if IsTethered then
-					Dock.BeginTear(Instance.Id, MouseX, MouseY)
+				if isTethered then
+					Dock.BeginTear(instance.Id, mouseX, mouseY)
 				end
 
-				if Instance.AllowFocus then
-					PushToTop(Instance)
+				if instance.AllowFocus then
+					PushToTop(instance)
 				end
 			end
 		elseif Mouse.IsReleased(1) then
-			Instance.IsMoving = false
+			instance.IsMoving = false
 		end
 
-		if Instance.IsMoving then
-			local DeltaX, DeltaY = Mouse.GetDelta()
-			local TitleDeltaX, TitleDeltaY = Instance.TitleDeltaX, Instance.TitleDeltaY
-			Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
-			Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
+		if instance.IsMoving then
+			local deltaX, deltaY = Mouse.GetDelta()
+			local titleDeltaX, titleDeltaY = instance.TitleDeltaX, instance.TitleDeltaY
+			instance.TitleDeltaX = instance.TitleDeltaX + deltaX
+			instance.TitleDeltaY = instance.TitleDeltaY + deltaY
 
-			if Constrain then
+			if constrain then
 				-- Constrain the position of the window to the viewport. The position at this point in the code has the delta already applied. This delta will need to be
 				-- removed to retrieve the original position, and clamp the delta based off of that posiiton.
-				local OriginX = Instance.X - TitleDeltaX
-				local OriginY = Instance.Y - TitleDeltaY - Instance.TitleH
-				Instance.TitleDeltaX = Utility.Clamp(Instance.TitleDeltaX, -OriginX, love.graphics.getWidth() - (OriginX + Instance.W))
-				Instance.TitleDeltaY = Utility.Clamp(Instance.TitleDeltaY, -OriginY + MenuState.MainMenuBarH, love.graphics.getHeight() - (OriginY + Instance.H + Instance.TitleH))
+				local originX = instance.X - titleDeltaX
+				local originY = instance.Y - titleDeltaY - instance.TitleH
+				instance.TitleDeltaX = Utility.Clamp(instance.TitleDeltaX, -originX, love.graphics.getWidth() - (originX + instance.W))
+				instance.TitleDeltaY = Utility.Clamp(instance.TitleDeltaY, -originY + MenuState.MainMenuBarH, love.graphics.getHeight() - (originY + instance.H + instance.TitleH))
 			end
-		elseif IsTethered then
-			Dock.UpdateTear(Instance.Id, MouseX, MouseY)
+		elseif isTethered then
+			Dock.UpdateTear(instance.Id, mouseX, mouseY)
 
 			-- Retrieve the cached options to calculate torn off position. The cached options contain the
 			-- desired bounds for this window. The bounds that are a part of the Instance are the altered options
 			-- modified by the Dock module.
-			local Options = Dock.GetCachedOptions(Instance.Id)
-			if not Dock.IsTethered(Instance.Id) then
-				Instance.IsMoving = true
+			local options = Dock.GetCachedOptions(instance.Id)
+			if not Dock.IsTethered(instance.Id) then
+				instance.IsMoving = true
 
-				if Options ~= nil then
+				if options ~= nil then
 					-- Properly place the window at the mouse position offset by the title width/height.
-					Instance.TitleDeltaX = MouseX - Options.X - floor(Options.W * 0.25)
-					Instance.TitleDeltaY = MouseY - Options.Y - floor(H * 0.5)
+					instance.TitleDeltaX = mouseX - x - floor(w * 0.25)
+					instance.TitleDeltaY = mouseY - y - floor(h * 0.5)
 				end
 			end
 		end
 	end
 end
 
-local function IsSizerEnabled(Instance, Sizer)
-	if Instance ~= nil then
-		if #Instance.SizerFilter > 0 then
-			for I, V in ipairs(Instance.SizerFilter) do
-				if V == Sizer then
-					return true
-				end
-			end
-			return false
-		end
+local function IsSizerEnabled(instance, sizer)
+	if not instance then
+		return false
+	end
+
+	if #instance.SizerFilter == 0 then
 		return true
 	end
+
+	for i, v in ipairs(instance.SizerFilter) do
+		if v == sizer then
+			return true
+		end
+	end
+
 	return false
 end
 
-local function UpdateSize(Instance, IsObstructed)
-	if Instance ~= nil and Instance.AllowResize then
-		if Region.IsHoverScrollBar(Instance.Id) then
-			return
+local function UpdateSize(instance, isObstructed)
+	if not instance or not instance.AllowResize then
+		return
+	end
+
+	if Region.IsHoverScrollBar(instance.Id) then
+		return
+	end
+
+	if instance.SizerType == SizerNone and isObstructed then
+		return
+	end
+
+	if MovingInstance ~= nil then
+		return
+	end
+
+	local x, y, w, h = instance.X, instance.Y, instance.W, instance.H
+
+	if instance.Title ~= "" then
+		y = y - instance.TitleH
+		h = h + instance.TitleH
+	end
+
+	local mouseX, mouseY = Mouse.Position()
+	local newSizerType = SizerNone
+	local scrollPad = Region.GetScrollPad()
+
+	if x <= mouseX and mouseX <= x + w and y <= mouseY and mouseY <= y + h then
+		if x <= mouseX and mouseX <= x + scrollPad and y <= mouseY and mouseY <= y + scrollPad and IsSizerEnabled(instance, "NW") then
+			newSizerType = SizerNW
+		elseif x + w - scrollPad <= mouseX and mouseX <= x + w and y <= mouseY and mouseY <= y + scrollPad and IsSizerEnabled(instance, "NE") then
+			newSizerType = SizerNE
+		elseif x + w - scrollPad <= mouseX and mouseX <= x + w and y + h - scrollPad <= mouseY and mouseY <= y + h and IsSizerEnabled(instance, "SE") then
+			newSizerType = SizerSE
+		elseif x <= mouseX and mouseX <= x + scrollPad and y + h - scrollPad <= mouseY and mouseY <= y + h and IsSizerEnabled(instance, "SW") then
+			newSizerType = SizerSW
+		elseif x <= mouseX and mouseX <= x + scrollPad and IsSizerEnabled(instance, "W") then
+			newSizerType = SizerW
+		elseif x + w - scrollPad <= mouseX and mouseX <= x + w and IsSizerEnabled(instance, "E") then
+			newSizerType = SizerE
+		elseif y <= mouseY and mouseY <= y + scrollPad and IsSizerEnabled(instance, "N") then
+			newSizerType = SizerN
+		elseif y + h - scrollPad <= mouseY and mouseY <= y + h and IsSizerEnabled(instance, "S") then
+			newSizerType = SizerS
 		end
 
-		if Instance.SizerType == SizerType.None and IsObstructed then
-			return
+		if SizerCursor[newSizerType] then
+			Mouse.SetCursor(SizerCursor[newSizerType])
 		end
+	end
 
-		if MovingInstance ~= nil then
-			return
-		end
+	if Mouse.IsClicked(1) then
+		instance.SizerType = newSizerType
+	elseif Mouse.IsReleased(1) then
+		instance.SizerType = SizerNone
+	end
 
-		local X = Instance.X
-		local Y = Instance.Y
-		local W = Instance.W
-		local H = Instance.H
+	if instance.SizerType ~= SizerNone then
+		local deltaX, deltaY = Mouse.GetDelta()
 
-		if Instance.Title ~= "" then
-			local Offset = Instance.TitleH
-			Y = Y - Offset
-			H = H + Offset
-		end
+		if instance.W <= instance.Border then
+			if (instance.SizerType == SizerW or
+				instance.SizerType == SizerNW or
+				instance.SizerType == SizerSW) and
+				deltaX > 0 then
+				deltaX = 0
+			end
 
-		local MouseX, MouseY = Mouse.Position()
-		local NewSizerType = SizerType.None
-		local ScrollPad = Region.GetScrollPad()
-
-		if X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-			if X <= MouseX and MouseX <= X + ScrollPad and Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "NW") then
-				Mouse.SetCursor('sizenwse')
-				NewSizerType = SizerType.NW
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "NE") then
-				Mouse.SetCursor('sizenesw')
-				NewSizerType = SizerType.NE
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "SE") then
-				Mouse.SetCursor('sizenwse')
-				NewSizerType = SizerType.SE
-			elseif X <= MouseX and MouseX <= X + ScrollPad and Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "SW") then
-				Mouse.SetCursor('sizenesw')
-				NewSizerType = SizerType.SW
-			elseif X <= MouseX and MouseX <= X + ScrollPad and IsSizerEnabled(Instance, "W") then
-				Mouse.SetCursor('sizewe')
-				NewSizerType = SizerType.W
-			elseif X + W - ScrollPad <= MouseX and MouseX <= X + W and IsSizerEnabled(Instance, "E") then
-				Mouse.SetCursor('sizewe')
-				NewSizerType = SizerType.E
-			elseif Y <= MouseY and MouseY <= Y + ScrollPad and IsSizerEnabled(Instance, "N") then
-				Mouse.SetCursor('sizens')
-				NewSizerType = SizerType.N
-			elseif Y + H - ScrollPad <= MouseY and MouseY <= Y + H and IsSizerEnabled(Instance, "S") then
-				Mouse.SetCursor('sizens')
-				NewSizerType = SizerType.S
+			if (instance.SizerType == SizerE or
+				instance.SizerType == SizerNE or
+				instance.SizerType == SizerSE) and
+				deltaX < 0 then
+				deltaX = 0
 			end
 		end
 
-		if Mouse.IsClicked(1) then
-			Instance.SizerType = NewSizerType
-		elseif Mouse.IsReleased(1) then
-			Instance.SizerType = SizerType.None
+		if instance.H <= instance.Border then
+			if (instance.SizerType == SizerN or
+				instance.SizerType == SizerNW or
+				instance.SizerType == SizerNE) and
+				deltaY > 0 then
+				deltaY = 0
+			end
+
+			if (instance.SizerType == SizerS or
+				instance.SizerType == SizerSE or
+				instance.SizerType == SizerSW) and
+				deltaY < 0 then
+				deltaY = 0
+			end
 		end
 
-		if Instance.SizerType ~= SizerType.None then
-			local DeltaX, DeltaY = Mouse.GetDelta()
+		if deltaX ~= 0 or deltaY ~= 0 then
+			instance.HasResized = true
+			instance.DeltaContentW = 0
+			instance.DeltaContentH = 0
+		end
 
-			if Instance.W <= Instance.Border then
-				if (Instance.SizerType == SizerType.W or
-					Instance.SizerType == SizerType.NW or
-					Instance.SizerType == SizerType.SW) and
-					DeltaX > 0.0 then
-					DeltaX = 0.0
-				end
+		if instance.SizerType == SizerN then
+			instance.TitleDeltaY = instance.TitleDeltaY + deltaY
+			instance.SizeDeltaY = instance.SizeDeltaY - deltaY
+		elseif instance.SizerType == SizerE then
+			instance.SizeDeltaX = instance.SizeDeltaX + deltaX
+		elseif instance.SizerType == SizerS then
+			instance.SizeDeltaY = instance.SizeDeltaY + deltaY
+		elseif instance.SizerType == SizerW then
+			instance.TitleDeltaX = instance.TitleDeltaX + deltaX
+			instance.SizeDeltaX = instance.SizeDeltaX - deltaX
+		elseif instance.SizerType == SizerNW then
+			instance.TitleDeltaX = instance.TitleDeltaX + deltaX
+			instance.SizeDeltaX = instance.SizeDeltaX - deltaX
+			instance.TitleDeltaY = instance.TitleDeltaY + deltaY
+			instance.SizeDeltaY = instance.SizeDeltaY - deltaY
+		elseif instance.SizerType == SizerNE then
+			instance.SizeDeltaX = instance.SizeDeltaX + deltaX
+			instance.TitleDeltaY = instance.TitleDeltaY + deltaY
+			instance.SizeDeltaY = instance.SizeDeltaY - deltaY
+		elseif instance.SizerType == SizerSE then
+			instance.SizeDeltaX = instance.SizeDeltaX + deltaX
+			instance.SizeDeltaY = instance.SizeDeltaY + deltaY
+		elseif instance.SizerType == SizerSW then
+			instance.TitleDeltaX = instance.TitleDeltaX + deltaX
+			instance.SizeDeltaX = instance.SizeDeltaX - deltaX
+			instance.SizeDeltaY = instance.SizeDeltaY + deltaY
+		end
 
-				if (Instance.SizerType == SizerType.E or
-					Instance.SizerType == SizerType.NE or
-					Instance.SizerType == SizerType.SE) and
-					DeltaX < 0.0 then
-					DeltaX = 0.0
-				end
-			end
-
-			if Instance.H <= Instance.Border then
-				if (Instance.SizerType == SizerType.N or
-					Instance.SizerType == SizerType.NW or
-					Instance.SizerType == SizerType.NE) and
-					DeltaY > 0.0 then
-					DeltaY = 0.0
-				end
-
-				if (Instance.SizerType == SizerType.S or
-					Instance.SizerType == SizerType.SE or
-					Instance.SizerType == SizerType.SW) and
-					DeltaY < 0.0 then
-					DeltaY = 0.0
-				end
-			end
-
-			if DeltaX ~= 0.0 or DeltaY ~= 0.0 then
-				Instance.HasResized = true
-				Instance.DeltaContentW = 0.0
-				Instance.DeltaContentH = 0.0
-			end
-
-			if Instance.SizerType == SizerType.N then
-				Mouse.SetCursor('sizens')
-				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
-				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
-			elseif Instance.SizerType == SizerType.E then
-				Mouse.SetCursor('sizewe')
-				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
-			elseif Instance.SizerType == SizerType.S then
-				Mouse.SetCursor('sizens')
-				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
-			elseif Instance.SizerType == SizerType.W then
-				Mouse.SetCursor('sizewe')
-				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
-				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
-			elseif Instance.SizerType == SizerType.NW then
-				Mouse.SetCursor('sizenwse')
-				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
-				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
-				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
-				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
-			elseif Instance.SizerType == SizerType.NE then
-				Mouse.SetCursor('sizenesw')
-				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
-				Instance.TitleDeltaY = Instance.TitleDeltaY + DeltaY
-				Instance.SizeDeltaY = Instance.SizeDeltaY - DeltaY
-			elseif Instance.SizerType == SizerType.SE then
-				Mouse.SetCursor('sizenwse')
-				Instance.SizeDeltaX = Instance.SizeDeltaX + DeltaX
-				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
-			elseif Instance.SizerType == SizerType.SW then
-				Mouse.SetCursor('sizenesw')
-				Instance.TitleDeltaX = Instance.TitleDeltaX + DeltaX
-				Instance.SizeDeltaX = Instance.SizeDeltaX - DeltaX
-				Instance.SizeDeltaY = Instance.SizeDeltaY + DeltaY
-			end
+		if SizerCursor[instance.SizerType] then
+			Mouse.SetCursor(SizerCursor[instance.SizerType])
 		end
 	end
 end
 
-local function DrawButton(Type, ActiveInstance, Options, Radius, OffsetX, OffsetY, HoverColor, Color)
-	local IsClicked = false
-	local MouseX, MouseY = Mouse.Position()
-	local IsObstructed
-	if Type == "Close" then
-		IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
-	elseif Type == "Minimize" then
-		IsObstructed = false
+local function DrawButton(type, activeInstance, options, radius, offsetX, offsetY, hoverColor, color)
+	local isClicked = false
+	local mouseX, mouseY = Mouse.Position()
+	local isObstructed = false
+	if type == "Close" then
+		isObstructed = Window.IsObstructed(mouseX, mouseY, true)
 	end
-	local Size = Radius * 0.5
-	local X = ActiveInstance.X + ActiveInstance.W - ActiveInstance.Border - Radius * (OffsetX)
-	local Y = ActiveInstance.Y - OffsetY * 0.5
-	local IsHovered =
-		X - Radius <= MouseX and MouseX <= X + Radius and
-		Y - OffsetY * 0.5 <= MouseY and MouseY <= Y + Radius and
-		not IsObstructed
+	local size = radius * 0.5
+	local x = activeInstance.X + activeInstance.W - activeInstance.Border - radius * offsetX
+	local y = activeInstance.Y - offsetY * 0.5
+	local isHovered =
+		x - radius <= mouseX and mouseX <= x + radius and
+		y - offsetY * 0.5 <= mouseY and mouseY <= y + radius and
+		not isObstructed
 
-	if IsHovered then
-		DrawCommands.Circle('fill', X, Y, Radius, HoverColor)
+	if isHovered then
+		DrawCommands.Circle('fill', x, y, radius, hoverColor)
 
 		if Mouse.IsClicked(1) then
-			IsClicked = true
+			isClicked = true
 		end
 	end
 
-	if Type == "Close" then
-		DrawCommands.Cross(X, Y, Size, Color)
-	elseif Type == "Minimize" then
-		if ActiveInstance.IsMinimized then
-			DrawCommands.Rectangle("line", X - Size, Y - Size, Size * 2, Size * 2, Color)
+	if type == "Close" then
+		DrawCommands.Cross(x, y, size, color)
+	elseif type == "Minimize" then
+		if activeInstance.IsMinimized then
+			DrawCommands.Rectangle("line", x - size, y - size, size * 2, size * 2, color)
 		else
-			DrawCommands.Line(X - Size, Y, X + Size, Y, Size, Color)
+			DrawCommands.Line(x - size, y, x + size, y, size, color)
 		end
 	end
 
-	return IsClicked
+	return isClicked
 end
 
 function Window.Top()
 	return ActiveInstance
 end
 
-function Window.IsObstructed(X, Y, SkipScrollCheck)
+function Window.IsObstructed(x, y, skipScrollCheck)
 	if Region.IsScrolling() then
 		return true
 	end
@@ -444,41 +457,41 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 		end
 
 		-- Gather all potential windows that can obstruct the given position.
-		local List = {}
-		for I, V in ipairs(Stack) do
+		local list = {}
+		for i, v in ipairs(Stack) do
 			-- Stack locks prevents other windows to be considered.
-			if V.Id == StackLockId then
-				insert(List, V)
+			if v.Id == StackLockId then
+				insert(list, v)
 				break
 			end
 
-			if Contains(V, X, Y) and V.CanObstruct then
-				insert(List, V)
+			if Contains(v, x, y) and v.CanObstruct then
+				insert(list, v)
 			end
 		end
 
 		-- Certain layers are rendered on top of 'Normal' windows. Consider these windows first.
-		local Top = nil
-		for I, V in ipairs(List) do
-			if V.Layer ~= 'Normal' then
-				Top = V
+		local top = nil
+		for i, v in ipairs(list) do
+			if v.Layer ~= 'Normal' then
+				top = v
 				break
 			end
 		end
 
 		-- If all windows are considered the normal layer, then just grab the window at the top of the stack.
-		if Top == nil then
-			Top = List[1]
+		if top == nil then
+			top = list[1]
 		end
 
-		if Top ~= nil then
-			if ActiveInstance == Top then
-				if not SkipScrollCheck and Region.IsHoverScrollBar(ActiveInstance.Id) then
+		if top ~= nil then
+			if ActiveInstance == top then
+				if not skipScrollCheck and Region.IsHoverScrollBar(ActiveInstance.Id) then
 					return true
 				end
 
 				return false
-			elseif Top.IsOpen then
+			elseif top.IsOpen then
 				return true
 			end
 		end
@@ -488,139 +501,137 @@ function Window.IsObstructed(X, Y, SkipScrollCheck)
 end
 
 function Window.IsObstructedAtMouse()
-	local X, Y = Mouse.Position()
-	return Window.IsObstructed(X, Y)
+	local x, y = Mouse.Position()
+	return Window.IsObstructed(x, y)
 end
 
 function Window.Reset()
-	PendingStack = {}
+	for i = 1, #PendingStack do
+		PendingStack[i] = nil
+	end
+
 	ActiveInstance = GetInstance('Global')
 	ActiveInstance.W = love.graphics.getWidth()
 	ActiveInstance.H = love.graphics.getHeight()
-	ActiveInstance.Border = 0.0
+	ActiveInstance.Border = 0
 	ActiveInstance.NoSavedSettings = true
 	insert(PendingStack, 1, ActiveInstance)
 end
 
-function Window.Begin(Id, Options)
-	local StatHandle = Stats.Begin('Window', 'Slab')
+function Window.Begin(id, options)
+	local statHandle = Stats.Begin('Window', 'Slab')
 
-	Options = Options == nil and {} or Options
-	Options.X = Options.X == nil and 50.0 or Options.X
-	Options.Y = Options.Y == nil and 50.0 or Options.Y
-	Options.W = Options.W == nil and 200.0 or Options.W
-	Options.H = Options.H == nil and 200.0 or Options.H
-	Options.ContentW = Options.ContentW == nil and 0.0 or Options.ContentW
-	Options.ContentH = Options.ContentH == nil and 0.0 or Options.ContentH
-	Options.BgColor = Options.BgColor == nil and Style.WindowBackgroundColor or Options.BgColor
-	Options.Title = Options.Title == nil and "" or Options.Title
-	Options.TitleAlignX = Options.TitleAlignX == nil and 'center' or Options.TitleAlignX
-	Options.TitleAlignY = Options.TitleAlignY == nil and 'center' or Options.TitleAlignY
-	Options.TitleH = Options.TitleH == nil and ((Options.Title ~= nil and Options.Title ~= "") and Style.Font:getHeight() or 0) or Options.TitleH
-	Options.AllowMove = Options.AllowMove == nil and true or Options.AllowMove
-	Options.AllowResize = Options.AllowResize == nil and true or Options.AllowResize
-	Options.AllowFocus = Options.AllowFocus == nil and true or Options.AllowFocus
-	Options.Border = Options.Border == nil and 4.0 or Options.Border
-	Options.NoOutline = Options.NoOutline == nil and false or Options.NoOutline
-	Options.IsMenuBar = Options.IsMenuBar == nil and false or Options.IsMenuBar
-	Options.AutoSizeWindow = Options.AutoSizeWindow == nil and true or Options.AutoSizeWindow
-	Options.AutoSizeWindowW = Options.AutoSizeWindowW == nil and Options.AutoSizeWindow or Options.AutoSizeWindowW
-	Options.AutoSizeWindowH = Options.AutoSizeWindowH == nil and Options.AutoSizeWindow or Options.AutoSizeWindowH
-	Options.AutoSizeContent = Options.AutoSizeContent == nil and true or Options.AutoSizeContent
-	Options.Layer = Options.Layer == nil and 'Normal' or Options.Layer
-	Options.ResetPosition = Options.ResetPosition == nil and false or Options.ResetPosition
-	Options.ResetSize = Options.ResetSize == nil and Options.AutoSizeWindow or Options.ResetSize
-	Options.ResetContent = Options.ResetContent == nil and Options.AutoSizeContent or Options.ResetContent
-	Options.ResetLayout = Options.ResetLayout == nil and false or Options.ResetLayout
-	Options.SizerFilter = Options.SizerFilter == nil and {} or Options.SizerFilter
-	Options.CanObstruct = Options.CanObstruct == nil and true or Options.CanObstruct
-	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
-	Options.NoSavedSettings = Options.NoSavedSettings == nil and false or Options.NoSavedSettings
-	Options.ConstrainPosition = Options.ConstrainPosition or false
-	Options.ShowMinimize = Options.ShowMinimize == nil and true or Options.ShowMinimize
+	options = options or EMPTY
+	local x = options.X or 50
+	local y = options.Y or 50
+	local w = options.W or 200
+	local h = options.H or 200
+	local contentW = options.ContentW or 0
+	local contentH = options.ContentH or 0
+	local bgColor = options.BgColor or Style.WindowBackgroundColor
+	local title = options.Title or ""
+	local titleAlignX = options.TitleAlignX or 'center'
+	local titleAlignY = options.TitleAlignY or 'center'
+	local titleH = options.TitleH == nil and ((title ~= nil and title ~= "") and Style.Font:getHeight() or 0) or options.TitleH
+	local allowMove = options.AllowMove == nil or options.AllowMove
+	local allowResize = options.AllowResize == nil or options.AllowResize
+	local allowFocus = options.AllowFocus == nil or options.AllowFocus
+	local border = options.Border or 4
+	local autoSizeWindow = options.AutoSizeWindow == nil or options.AutoSizeWindow
+	local autoSizeWindowW = options.AutoSizeWindowW or autoSizeWindow
+	local autoSizeWindowH = options.AutoSizeWindowH or autoSizeWindow
+	local autoSizeContent = options.AutoSizeContent == nil or options.AutoSizeContent
+	local layer = options.Layer or 'Normal'
+	local resetSize = options.ResetSize or autoSizeWindow
+	local resetContent = options.ResetContent or autoSizeContent
+	local sizerFilter = options.SizerFilter or EMPTY
+	local canObstruct = options.CanObstruct == nil or options.CanObstruct
+	local rounding = options.Rounding or Style.WindowRounding
+	local showMinimize = options.ShowMinimize == nil or options.ShowMinimize
 
-	Dock.AlterOptions(Id, Options)
+	Dock.AlterOptions(id, options)
 
-	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
-	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
+	TitleRounding[1], TitleRounding[2] = rounding, rounding
+	BodyRounding[3], BodyRounding[4] = rounding, rounding
 
-	if type(Options.Rounding) == 'table' then
-		TitleRounding = Options.Rounding
-		BodyRounding = Options.Rounding
-	elseif Options.Title == "" then
-		BodyRounding = Options.Rounding
+	local titleRounding, bodyRounding = TitleRounding, BodyRounding
+
+	if type(rounding) == 'table' then
+		titleRounding = rounding
+		bodyRounding = rounding
+	elseif title == "" then
+		bodyRounding = rounding
 	end
 
-	local Instance = GetInstance(Id)
-	insert(PendingStack, 1, Instance)
+	local instance = GetInstance(id)
+	insert(PendingStack, 1, instance)
 
 	if ActiveInstance ~= nil then
-		ActiveInstance.Children[Id] = Instance
+		ActiveInstance.Children[id] = instance
 	end
 
-	ActiveInstance = Instance
-	if Options.AutoSizeWindowW then
-		Options.W = 0.0
+	ActiveInstance = instance
+	if autoSizeWindowW then
+		w = 0
 	end
 
-	if Options.AutoSizeWindowH then
-		Options.H = 0.0
+	if autoSizeWindowH then
+		h = 0
 	end
 
-	if Options.ResetPosition or Options.ResetLayout then
-		ActiveInstance.TitleDeltaX = 0.0
-		ActiveInstance.TitleDeltaY = 0.0
+	if options.ResetPosition or options.ResetLayout then
+		ActiveInstance.TitleDeltaX = 0
+		ActiveInstance.TitleDeltaY = 0
 	end
 
-	if ActiveInstance.AutoSizeWindow ~= Options.AutoSizeWindow and Options.AutoSizeWindow then
-		Options.ResetSize = true
+	if ActiveInstance.AutoSizeWindow ~= autoSizeWindow and autoSizeWindow then
+		resetSize = true
 	end
 
-	if ActiveInstance.Border ~= Options.Border then
-		Options.ResetSize = true
+	if ActiveInstance.Border ~= border then
+		resetSize = true
 	end
 
-	ActiveInstance.X = ActiveInstance.TitleDeltaX + Options.X
-	ActiveInstance.Y = ActiveInstance.TitleDeltaY + Options.Y
-	ActiveInstance.W = max(ActiveInstance.SizeDeltaX + Options.W + Options.Border, Options.Border)
-	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + Options.H + Options.Border, Options.Border)
-	ActiveInstance.ContentW = Options.ContentW
-	ActiveInstance.ContentH = Options.ContentH
-	ActiveInstance.BackgroundColor = Options.BgColor
-	ActiveInstance.Title = Options.Title
-	ActiveInstance.TitleH = Options.TitleH
-	ActiveInstance.AllowResize = Options.AllowResize and not Options.AutoSizeWindow
-	ActiveInstance.AllowFocus = Options.AllowFocus
-	ActiveInstance.Border = Options.Border
-	ActiveInstance.IsMenuBar = Options.IsMenuBar
-	ActiveInstance.AutoSizeWindow = Options.AutoSizeWindow
-	ActiveInstance.AutoSizeWindowW = Options.AutoSizeWindowW
-	ActiveInstance.AutoSizeWindowH = Options.AutoSizeWindowH
-	ActiveInstance.AutoSizeContent = Options.AutoSizeContent
-	ActiveInstance.Layer = Options.Layer
+	ActiveInstance.X = ActiveInstance.TitleDeltaX + x
+	ActiveInstance.Y = ActiveInstance.TitleDeltaY + y
+	ActiveInstance.W = max(ActiveInstance.SizeDeltaX + w + border, border)
+	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + h + border, border)
+	ActiveInstance.ContentW = contentW
+	ActiveInstance.ContentH = contentH
+	ActiveInstance.BackgroundColor = bgColor
+	ActiveInstance.Title = title
+	ActiveInstance.TitleH = titleH
+	ActiveInstance.AllowResize = allowResize and not autoSizeWindow
+	ActiveInstance.AllowFocus = allowFocus
+	ActiveInstance.Border = border
+	ActiveInstance.IsMenuBar = options.IsMenuBar
+	ActiveInstance.AutoSizeWindow = autoSizeWindow
+	ActiveInstance.AutoSizeWindowW = autoSizeWindowW
+	ActiveInstance.AutoSizeWindowH = autoSizeWindowH
+	ActiveInstance.AutoSizeContent = autoSizeContent
+	ActiveInstance.Layer = layer
 	ActiveInstance.HotItem = nil
-	ActiveInstance.SizerFilter = Options.SizerFilter
+	ActiveInstance.SizerFilter = sizerFilter
 	ActiveInstance.HasResized = false
-	ActiveInstance.CanObstruct = Options.CanObstruct
-	ActiveInstance.StatHandle = StatHandle
-	ActiveInstance.NoSavedSettings = Options.NoSavedSettings
-	ActiveInstance.ShowMinimize = Options.ShowMinimize
+	ActiveInstance.CanObstruct = canObstruct
+	ActiveInstance.StatHandle = statHandle
+	ActiveInstance.NoSavedSettings = options.NoSavedSettings
+	ActiveInstance.ShowMinimize = showMinimize
 
-	local ShowClose = false
-	if Options.IsOpen ~= nil and type(Options.IsOpen) == 'boolean' then
-		ActiveInstance.IsOpen = Options.IsOpen
-		ShowClose = true
+	local showClose = false
+	if options.IsOpen ~= nil and type(options.IsOpen) == 'boolean' then
+		ActiveInstance.IsOpen = options.IsOpen
+		showClose = true
 	end
 
-	local ShowMinimize = Options.ShowMinimize
-	if Options.IsContentOpen ~= nil and type(Options.IsContentOpen) == "boolean" then
-		ActiveInstance.IsContentOpen = Options.IsContentOpen
+	if options.IsContentOpen ~= nil and type(options.IsContentOpen) == "boolean" then
+		ActiveInstance.IsContentOpen = options.IsContentOpen
 	end
 
 	if ActiveInstance.IsOpen then
-		local CurrentFrameNumber = Stats.GetFrameNumber()
-		ActiveInstance.IsAppearing = CurrentFrameNumber - ActiveInstance.FrameNumber > 1
-		ActiveInstance.FrameNumber = CurrentFrameNumber
+		local currentFrameNumber = Stats.GetFrameNumber()
+		ActiveInstance.IsAppearing = currentFrameNumber - ActiveInstance.FrameNumber > 1
+		ActiveInstance.FrameNumber = currentFrameNumber
 
 		if ActiveInstance.StackIndex == 0 then
 			insert(Stack, 1, ActiveInstance)
@@ -629,251 +640,259 @@ function Window.Begin(Id, Options)
 	end
 
 	if ActiveInstance.AutoSizeContent then
-		ActiveInstance.ContentW = max(Options.ContentW, ActiveInstance.DeltaContentW)
-		ActiveInstance.ContentH = max(Options.ContentH, ActiveInstance.DeltaContentH)
+		ActiveInstance.ContentW = max(contentW, ActiveInstance.DeltaContentW)
+		ActiveInstance.ContentH = max(contentH, ActiveInstance.DeltaContentH)
 	end
 
-	local OffsetY = ActiveInstance.TitleH
+	local offsetY = ActiveInstance.TitleH
 	if ActiveInstance.Title ~= "" then
-		ActiveInstance.Y = ActiveInstance.Y + OffsetY
+		ActiveInstance.Y = ActiveInstance.Y + offsetY
 
-		if Options.AutoSizeWindow then
-			local TitleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2.0
-			ActiveInstance.W = max(ActiveInstance.W, TitleW)
+		if autoSizeWindow then
+			local titleW = Style.Font:getWidth(ActiveInstance.Title) + ActiveInstance.Border * 2
+			ActiveInstance.W = max(ActiveInstance.W, titleW)
 		end
 	end
 
-	local MouseX, MouseY = Mouse.Position()
-	local IsObstructed = Window.IsObstructed(MouseX, MouseY, true)
-	if (ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not IsObstructed and Contains(ActiveInstance, MouseX, MouseY)) or
+	local mouseX, mouseY = Mouse.Position()
+	local isObstructed = Window.IsObstructed(mouseX, mouseY, true)
+	if (ActiveInstance.AllowFocus and Mouse.IsClicked(1) and not isObstructed and Contains(ActiveInstance, mouseX, mouseY)) or
 		ActiveInstance.IsAppearing then
 		PushToTop(ActiveInstance)
 	end
 
-	Instance.LastCursorX, Instance.LastCursorY = Cursor.GetPosition()
+	instance.LastCursorX, instance.LastCursorY = Cursor.GetPosition()
 	Cursor.SetPosition(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 	Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
 
-	UpdateSize(ActiveInstance, IsObstructed)
-	UpdateTitleBar(ActiveInstance, IsObstructed, Options.AllowMove, Options.ConstrainPosition)
+	UpdateSize(ActiveInstance, isObstructed)
+	UpdateTitleBar(ActiveInstance, isObstructed, allowMove, options.ConstrainPosition)
 
 	DrawCommands.SetLayer(ActiveInstance.Layer)
 
 	DrawCommands.Begin(ActiveInstance.StackIndex)
 	if ActiveInstance.Title ~= "" then
-		local CloseBgRadius = OffsetY * 0.4
-		local MinimizeBgRadius = OffsetY * 0.4
-		local TitleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
-		local TitleY = floor(ActiveInstance.Y - OffsetY * 0.5 - Style.Font:getHeight() * 0.5)
+		local closeBgRadius = offsetY * 0.4
+		local minimizeBgRadius = offsetY * 0.4
+		local titleX = floor(ActiveInstance.X + (ActiveInstance.W * 0.5) - (Style.Font:getWidth(ActiveInstance.Title) * 0.5))
+		local titleY = floor(ActiveInstance.Y - offsetY * 0.5 - Style.Font:getHeight() * 0.5)
 
 		-- Check for horizontal alignment.
-		if Options.TitleAlignX == 'left' then
-			TitleX = floor(ActiveInstance.X + ActiveInstance.Border)
-		elseif Options.TitleAlignX == 'right' then
-			TitleX = floor(ActiveInstance.X + ActiveInstance.W - Style.Font:getWidth(ActiveInstance.Title) - ActiveInstance.Border)
+		if titleAlignX == 'left' then
+			titleX = floor(ActiveInstance.X + ActiveInstance.Border)
+		elseif titleAlignX == 'right' then
+			titleX = floor(ActiveInstance.X + ActiveInstance.W - Style.Font:getWidth(ActiveInstance.Title) - ActiveInstance.Border)
 
-			if ShowClose then
-				TitleX = floor(TitleX - CloseBgRadius * 2.0)
+			if showClose then
+				titleX = floor(titleX - closeBgRadius * 2)
 			end
-			if ShowMinimize then
-				TitleX = floor(TitleX - MinimizeBgRadius * 2.0)
+			if showMinimize then
+				titleX = floor(titleX - minimizeBgRadius * 2)
 			end
 		end
 
 		-- Check for vertical alignment
-		if Options.TitleAlignY == 'top' then
-			TitleY = floor(ActiveInstance.Y - OffsetY)
-		elseif Options.TitleAlignY == 'bottom' then
-			TitleY = floor(ActiveInstance.Y - Style.Font:getHeight())
+		if titleAlignY == 'top' then
+			titleY = floor(ActiveInstance.Y - offsetY)
+		elseif titleAlignY == 'bottom' then
+			titleY = floor(ActiveInstance.Y - Style.Font:getHeight())
 		end
 
-		local TitleColor = ActiveInstance.BackgroundColor
+		local titleColor = ActiveInstance.BackgroundColor
 		if ActiveInstance == Stack[1] then
-			TitleColor = Style.WindowTitleFocusedColor
+			titleColor = Style.WindowTitleFocusedColor
 		end
-		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, TitleColor, TitleRounding)
-		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, OffsetY, nil, TitleRounding)
-		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1.0)
+		DrawCommands.Rectangle('fill', ActiveInstance.X, ActiveInstance.Y - offsetY, ActiveInstance.W, offsetY, titleColor, titleRounding)
+		DrawCommands.Rectangle('line', ActiveInstance.X, ActiveInstance.Y - offsetY, ActiveInstance.W, offsetY, nil, titleRounding)
+		DrawCommands.Line(ActiveInstance.X, ActiveInstance.Y, ActiveInstance.X + ActiveInstance.W, ActiveInstance.Y, 1)
 
-		Region.Begin(ActiveInstance.Id .. '_Title', {
-			X = ActiveInstance.X,
-			Y = ActiveInstance.Y - OffsetY,
-			W = ActiveInstance.W,
-			H = OffsetY,
-			NoBackground = true,
-			NoOutline = true,
-			IgnoreScroll = true,
-			MouseX = MouseX,
-			MouseY = MouseY,
-			IsObstructed = IsObstructed,
-		})
-		DrawCommands.Print(ActiveInstance.Title, TitleX, TitleY, Style.TextColor, Style.Font)
+		do
+			local titleRegion = ActiveInstance.TitleRegion
+			titleRegion.X = ActiveInstance.X
+			titleRegion.MouseX = mouseX
+			titleRegion.MouseY = mouseY
+			titleRegion.IsObstructed = isObstructed
+			titleRegion.Y = ActiveInstance.Y - offsetY
+			titleRegion.W = ActiveInstance.W
+			titleRegion.H = offsetY
 
-		local OffsetX = 1
-		if ShowMinimize then
-			OffsetX = ShowClose and 4 or 1
-			local IsClicked = DrawButton(
+			Region.Begin(ActiveInstance.TitleId, titleRegion)
+		end
+
+		DrawCommands.Print(ActiveInstance.Title, titleX, titleY, Style.TextColor, Style.Font)
+
+		local offsetX = 1
+		if showMinimize then
+			offsetX = showClose and 4 or 1
+			local isClicked = DrawButton(
 				"Minimize",
 				ActiveInstance,
-				Options,
-				MinimizeBgRadius,
-				OffsetX,
-				OffsetY,
+				options,
+				minimizeBgRadius,
+				offsetX,
+				offsetY,
 				Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
 				Style.WindowMinimizeColor or Style.WindowCloseColor
 			)
-			if IsClicked then
+			if isClicked then
 				ActiveInstance.IsContentOpen = not ActiveInstance.IsContentOpen
 				ActiveInstance.IsMoving = false
 				ActiveInstance.IsMinimized = not ActiveInstance.IsMinimized
 			end
 		end
 
-		if ShowClose then
-			OffsetX = 1
-			local IsClicked = DrawButton(
+		if showClose then
+			offsetX = 1
+			local isClicked = DrawButton(
 				"Close",
 				ActiveInstance,
-				Options,
-				CloseBgRadius,
-				OffsetX,
-				OffsetY,
+				options,
+				closeBgRadius,
+				offsetX,
+				offsetY,
 				Style.WindowCloseBgColor,
 				Style.WindowCloseColor
 			)
-			if IsClicked then
+			if isClicked then
 				ActiveInstance.IsOpen = false
 				ActiveInstance.IsMoving = false
-				Options.IsOpen = false
+				options.IsOpen = false
 			end
 		end
 
 		Region.End()
 	end
 
-	local RegionW = ActiveInstance.W
-	local RegionH = ActiveInstance.H
+	local regionW = ActiveInstance.W
+	local regionH = ActiveInstance.H
 
-	if ActiveInstance.X + ActiveInstance.W > love.graphics.getWidth() then RegionW = love.graphics.getWidth() - ActiveInstance.X end
-	if ActiveInstance.Y + ActiveInstance.H > love.graphics.getHeight() then RegionH = love.graphics.getHeight() - ActiveInstance.Y end
+	if ActiveInstance.X + ActiveInstance.W > love.graphics.getWidth() then regionW = love.graphics.getWidth() - ActiveInstance.X end
+	if ActiveInstance.Y + ActiveInstance.H > love.graphics.getHeight() then regionH = love.graphics.getHeight() - ActiveInstance.Y end
 
 	if ActiveInstance.IsContentOpen == false then
-		RegionW = 0
-		RegionH = 0
+		regionW = 0
+		regionH = 0
 		ActiveInstance.ContentW = 0
 		ActiveInstance.ContentH = 0
 	end
 
-	Region.Begin(ActiveInstance.Id, {
-		X = ActiveInstance.X,
-		Y = ActiveInstance.Y,
-		W = RegionW,
-		H = RegionH,
-		ContentW = ActiveInstance.ContentW + ActiveInstance.Border,
-		ContentH = ActiveInstance.ContentH + ActiveInstance.Border,
-		BgColor = ActiveInstance.BackgroundColor,
-		IsObstructed = IsObstructed,
-		MouseX = MouseX,
-		MouseY = MouseY,
-		ResetContent = ActiveInstance.HasResized,
-		Rounding = BodyRounding,
-		NoOutline = Options.NoOutline
-	})
+	do
+		local region = ActiveInstance.InstanceRegion
+		region.X = ActiveInstance.X
+		region.Y = ActiveInstance.Y
+		region.W = regionW
+		region.H = regionH
+		region.ContentW = ActiveInstance.ContentW + ActiveInstance.Border
+		region.ContentH = ActiveInstance.ContentH + ActiveInstance.Border
+		region.BgColor = ActiveInstance.BackgroundColor
+		region.IsObstructed = isObstructed
+		region.MouseX = mouseX
+		region.MouseY = mouseY
+		region.ResetContent = ActiveInstance.HasResized
+		region.Rounding = bodyRounding
+		region.NoOutline = options.NoOutline
 
-	if Options.ResetSize or Options.ResetLayout then
-		ActiveInstance.SizeDeltaX = 0.0
-		ActiveInstance.SizeDeltaY = 0.0
+		Region.Begin(ActiveInstance.Id, region)
 	end
 
-	if Options.ResetContent or Options.ResetLayout then
-		ActiveInstance.DeltaContentW = 0.0
-		ActiveInstance.DeltaContentH = 0.0
+	if resetSize or options.ResetLayout then
+		ActiveInstance.SizeDeltaX = 0
+		ActiveInstance.SizeDeltaY = 0
+	end
+
+	if resetContent or options.ResetLayout then
+		ActiveInstance.DeltaContentW = 0
+		ActiveInstance.DeltaContentH = 0
 	end
 
 	return ActiveInstance.IsOpen
 end
 
 function Window.End()
-	if ActiveInstance ~= nil then
-		local Handle = ActiveInstance.StatHandle
-
-		-- Clear the ID stack for use with other windows. This information can be kept transient
-		IDStack = {}
-
-		Region.End()
-		DrawCommands.End(not ActiveInstance.IsOpen)
-		remove(PendingStack, 1)
-
-		Cursor.SetPosition(ActiveInstance.LastCursorX, ActiveInstance.LastCursorY)
-		ActiveInstance = nil
-		if #PendingStack > 0 then
-			ActiveInstance = PendingStack[1]
-			Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
-			DrawCommands.SetLayer(ActiveInstance.Layer)
-			Region.ApplyScissor()
-		end
-
-		Stats.End(Handle)
+	if not ActiveInstance then
+		return
 	end
+
+	local handle = ActiveInstance.StatHandle
+
+	-- Clear the ID stack for use with other windows. This information can be kept transient
+	for i = 1, #IDStack do
+		IDStack[i] = nil
+	end
+
+	Region.End()
+	DrawCommands.End(not ActiveInstance.IsOpen)
+	remove(PendingStack, 1)
+
+	Cursor.SetPosition(ActiveInstance.LastCursorX, ActiveInstance.LastCursorY)
+	ActiveInstance = nil
+	if #PendingStack > 0 then
+		ActiveInstance = PendingStack[1]
+		Cursor.SetAnchor(ActiveInstance.X + ActiveInstance.Border, ActiveInstance.Y + ActiveInstance.Border)
+		DrawCommands.SetLayer(ActiveInstance.Layer)
+		Region.ApplyScissor()
+	end
+
+	Stats.End(handle)
 end
 
 function Window.GetMousePosition()
-	local X, Y = Mouse.Position()
+	local x, y = Mouse.Position()
 	if ActiveInstance ~= nil then
-		X, Y = Region.InverseTransform(nil, X, Y)
+		x, y = Region.InverseTransform(nil, x, y)
 	end
-	return X, Y
+	return x, y
 end
 
 function Window.GetWidth()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.W
 	end
-	return 0.0
+	return 0
 end
 
 function Window.GetHeight()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.H
 	end
-	return 0.0
+	return 0
 end
 
 function Window.GetBorder()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.Border
 	end
-	return 0.0
+	return 0
 end
 
 function Window.GetBounds(IgnoreTitleBar)
 	if ActiveInstance ~= nil then
 		IgnoreTitleBar = IgnoreTitleBar == nil and false or IgnoreTitleBar
-		local OffsetY = (ActiveInstance.Title ~= "" and not IgnoreTitleBar) and ActiveInstance.TitleH or 0.0
-		return ActiveInstance.X, ActiveInstance.Y - OffsetY, ActiveInstance.W, ActiveInstance.H + OffsetY
+		local offsetY = (ActiveInstance.Title ~= "" and not IgnoreTitleBar) and ActiveInstance.TitleH or 0
+		return ActiveInstance.X, ActiveInstance.Y - offsetY, ActiveInstance.W, ActiveInstance.H + offsetY
 	end
-	return 0.0, 0.0, 0.0, 0.0
+	return 0, 0, 0, 0
 end
 
 function Window.GetPosition()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.X, ActiveInstance.Y - ActiveInstance.TitleH
 	end
-	return 0.0, 0.0
+	return 0, 0
 end
 
 function Window.GetSize()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.W, ActiveInstance.H
 	end
-	return 0.0, 0.0
+	return 0, 0
 end
 
 function Window.GetContentSize()
 	if ActiveInstance ~= nil then
 		return ActiveInstance.ContentW, ActiveInstance.ContentH
 	end
-	return 0.0, 0.0
+	return 0, 0
 end
 
 --[[
@@ -881,28 +900,28 @@ end
 	bounds without expanding the bounds of the window by removing borders.
 --]]
 function Window.GetBorderlessSize()
-	local W, H = 0.0, 0.0
+	local w, h = 0, 0
 
 	if ActiveInstance ~= nil then
-		W = max(ActiveInstance.W, ActiveInstance.ContentW)
-		H = max(ActiveInstance.H, ActiveInstance.ContentH)
+		w = max(ActiveInstance.W, ActiveInstance.ContentW)
+		h = max(ActiveInstance.H, ActiveInstance.ContentH)
 
-		W = max(0.0, W - ActiveInstance.Border * 2.0)
-		H = max(0.0, H - ActiveInstance.Border * 2.0)
+		w = max(0, w - ActiveInstance.Border * 2)
+		h = max(0, h - ActiveInstance.Border * 2)
 	end
 
-	return W, H
+	return w, h
 end
 
 function Window.GetRemainingSize()
-	local W, H = Window.GetBorderlessSize()
+	local w, h = Window.GetBorderlessSize()
 
 	if ActiveInstance ~= nil then
-		W = W - (Cursor.GetX() - ActiveInstance.X - ActiveInstance.Border)
-		H = H - (Cursor.GetY() - ActiveInstance.Y - ActiveInstance.Border)
+		w = w - (Cursor.GetX() - ActiveInstance.X - ActiveInstance.Border)
+		h = h - (Cursor.GetY() - ActiveInstance.Y - ActiveInstance.Border)
 	end
 
-	return W, H
+	return w, h
 end
 
 function Window.IsMenuBar()
@@ -919,43 +938,43 @@ function Window.GetId()
 	return ''
 end
 
-function Window.AddItem(X, Y, W, H, Id)
+function Window.AddItem(x, y, w, h, id)
 	if ActiveInstance ~= nil then
-		ActiveInstance.LastItem = Id
+		ActiveInstance.LastItem = id
 		if Region.IsActive(ActiveInstance.Id) then
 			if ActiveInstance.AutoSizeWindowW then
-				ActiveInstance.SizeDeltaX = max(ActiveInstance.SizeDeltaX, X + W - ActiveInstance.X)
+				ActiveInstance.SizeDeltaX = max(ActiveInstance.SizeDeltaX, x + w - ActiveInstance.X)
 			end
 
 			if ActiveInstance.AutoSizeWindowH then
-				ActiveInstance.SizeDeltaY = max(ActiveInstance.SizeDeltaY, Y + H - ActiveInstance.Y)
+				ActiveInstance.SizeDeltaY = max(ActiveInstance.SizeDeltaY, y + h - ActiveInstance.Y)
 			end
 
 			if ActiveInstance.AutoSizeContent then
-				ActiveInstance.DeltaContentW = max(ActiveInstance.DeltaContentW, X + W - ActiveInstance.X)
-				ActiveInstance.DeltaContentH = max(ActiveInstance.DeltaContentH, Y + H - ActiveInstance.Y)
+				ActiveInstance.DeltaContentW = max(ActiveInstance.DeltaContentW, x + w - ActiveInstance.X)
+				ActiveInstance.DeltaContentH = max(ActiveInstance.DeltaContentH, y + h - ActiveInstance.Y)
 			end
 		else
-			Region.AddItem(X, Y, W, H)
+			Region.AddItem(x, y, w, h)
 		end
 	end
 end
 
-function Window.WheelMoved(X, Y)
-	Region.WheelMoved(X, Y)
+function Window.WheelMoved(x, y)
+	Region.WheelMoved(x, y)
 end
 
-function Window.TransformPoint(X, Y)
+function Window.TransformPoint(x, y)
 	if ActiveInstance ~= nil then
-		return Region.Transform(ActiveInstance.Id, X, Y)
+		return Region.Transform(ActiveInstance.Id, x, y)
 	end
-	return 0.0, 0.0
+	return 0, 0
 end
 
 function Window.ResetContentSize()
 	if ActiveInstance ~= nil then
-		ActiveInstance.DeltaContentW = 0.0
-		ActiveInstance.DeltaContentH = 0.0
+		ActiveInstance.DeltaContentW = 0
+		ActiveInstance.DeltaContentH = 0
 	end
 end
 
@@ -994,25 +1013,25 @@ end
 
 function Window.IsMouseHovered()
 	if ActiveInstance ~= nil then
-		local X, Y = Mouse.Position()
-		return Contains(ActiveInstance, X, Y)
+		local x, y = Mouse.Position()
+		return Contains(ActiveInstance, x, y)
 	end
 	return false
 end
 
-function Window.GetItemId(Id)
+function Window.GetItemId(id)
 	if ActiveInstance ~= nil then
-		if ActiveInstance.Items[Id] == nil then
-			ActiveInstance.Items[Id] = ActiveInstance.Id .. '.' .. Id
+		if ActiveInstance.Items[id] == nil then
+			ActiveInstance.Items[id] = idCache:get(ActiveInstance.Id, id)
 		end
 
 		-- Apply any custom ID to the current item.
-		local Result = ActiveInstance.Items[Id]
+		local result = ActiveInstance.Items[id]
 		if #IDStack > 0 then
-			Result = Result .. IDStack[#IDStack]
+			result = result .. IDStack[#IDStack]
 		end
 
-		return Result
+		return result
 	end
 	return nil
 end
@@ -1030,22 +1049,22 @@ function Window.Validate()
 	end
 
 	MovingInstance = nil
-	local ShouldUpdate = false
-	for I = #Stack, 1, -1 do
-		if Stack[I].IsMoving then
-			MovingInstance = Stack[I]
+	local shouldUpdate = false
+	for i = #Stack, 1, -1 do
+		if Stack[i].IsMoving then
+			MovingInstance = Stack[i]
 		end
 
-		if Stack[I].FrameNumber ~= Stats.GetFrameNumber() then
-			Stack[I].StackIndex = 0
-			Region.ClearHotInstance(Stack[I].Id)
-			Region.ClearHotInstance(Stack[I].Id .. '_Title')
-			remove(Stack, I)
-			ShouldUpdate = true
+		if Stack[i].FrameNumber ~= Stats.GetFrameNumber() then
+			Stack[i].StackIndex = 0
+			Region.ClearHotInstance(Stack[i].Id)
+			Region.ClearHotInstance(Stack[i].TitleId)
+			remove(Stack, i)
+			shouldUpdate = true
 		end
 	end
 
-	if ShouldUpdate then
+	if shouldUpdate then
 		UpdateStackIndex()
 	end
 end
@@ -1057,15 +1076,15 @@ function Window.HasResized()
 	return false
 end
 
-function Window.SetStackLock(Id)
-	StackLockId = Id
+function Window.SetStackLock(id)
+	StackLockId = id
 end
 
-function Window.PushToTop(Id)
-	local Instance = GetInstance(Id)
+function Window.PushToTop(id)
+	local instance = GetInstance(id)
 
-	if Instance ~= nil then
-		PushToTop(Instance)
+	if instance ~= nil then
+		PushToTop(instance)
 	end
 end
 
@@ -1085,66 +1104,66 @@ function Window.GetLayer()
 end
 
 function Window.GetInstanceIds()
-	local Result = {}
+	local result = {}
 
-	for I, V in ipairs(Instances) do
-		insert(Result, V.Id)
+	for i, v in ipairs(Instances) do
+		insert(result, v.Id)
 	end
 
-	return Result
+	return result
 end
 
-function Window.GetInstanceInfo(Id)
-	local Result = {}
+function Window.GetInstanceInfo(id)
+	local result = {}
 
-	local Instance = nil
-	for I, V in ipairs(Instances) do
-		if V.Id == Id then
-			Instance = V
+	local instance = nil
+	for i, v in ipairs(Instances) do
+		if v.Id == id then
+			instance = v
 			break
 		end
 	end
 
-	insert(Result, "MovingInstance: " .. (MovingInstance ~= nil and MovingInstance.Id or "nil"))
+	insert(result, "MovingInstance: " .. (MovingInstance ~= nil and MovingInstance.Id or "nil"))
 
-	if Instance ~= nil then
-		insert(Result, "Title: " .. Instance.Title)
-		insert(Result, "TitleH: " .. Instance.TitleH)
-		insert(Result, "X: " .. Instance.X)
-		insert(Result, "Y: " .. Instance.Y)
-		insert(Result, "W: " .. Instance.W)
-		insert(Result, "H: " .. Instance.H)
-		insert(Result, "ContentW: " .. Instance.ContentW)
-		insert(Result, "ContentH: " .. Instance.ContentH)
-		insert(Result, "TitleDeltaX: " .. Instance.TitleDeltaX)
-		insert(Result, "TitleDeltaY: " .. Instance.TitleDeltaY)
-		insert(Result, "SizeDeltaX: " .. Instance.SizeDeltaX)
-		insert(Result, "SizeDeltaY: " .. Instance.SizeDeltaY)
-		insert(Result, "DeltaContentW: " .. Instance.DeltaContentW)
-		insert(Result, "DeltaContentH: " .. Instance.DeltaContentH)
-		insert(Result, "Border: " .. Instance.Border)
-		insert(Result, "Layer: " .. Instance.Layer)
-		insert(Result, "Stack Index: " .. Instance.StackIndex)
-		insert(Result, "AutoSizeWindow: " .. tostring(Instance.AutoSizeWindow))
-		insert(Result, "AutoSizeContent: " .. tostring(Instance.AutoSizeContent))
-		insert(Result, "Hot Item: " .. tostring(Instance.HotItem))
+	if instance ~= nil then
+		insert(result, "Title: " .. instance.Title)
+		insert(result, "TitleH: " .. instance.TitleH)
+		insert(result, "X: " .. instance.X)
+		insert(result, "Y: " .. instance.Y)
+		insert(result, "W: " .. instance.W)
+		insert(result, "H: " .. instance.H)
+		insert(result, "ContentW: " .. instance.ContentW)
+		insert(result, "ContentH: " .. instance.ContentH)
+		insert(result, "TitleDeltaX: " .. instance.TitleDeltaX)
+		insert(result, "TitleDeltaY: " .. instance.TitleDeltaY)
+		insert(result, "SizeDeltaX: " .. instance.SizeDeltaX)
+		insert(result, "SizeDeltaY: " .. instance.SizeDeltaY)
+		insert(result, "DeltaContentW: " .. instance.DeltaContentW)
+		insert(result, "DeltaContentH: " .. instance.DeltaContentH)
+		insert(result, "Border: " .. instance.Border)
+		insert(result, "Layer: " .. instance.Layer)
+		insert(result, "Stack Index: " .. instance.StackIndex)
+		insert(result, "AutoSizeWindow: " .. tostring(instance.AutoSizeWindow))
+		insert(result, "AutoSizeContent: " .. tostring(instance.AutoSizeContent))
+		insert(result, "Hot Item: " .. tostring(instance.HotItem))
 	end
 
-	return Result
+	return result
 end
 
 function Window.GetStackDebug()
-	local Result = {}
+	local result = {}
 
-	for I, V in ipairs(Stack) do
-		Result[I] = tostring(V.StackIndex) .. ": " .. V.Id
+	for i, v in ipairs(Stack) do
+		result[i] = tostring(v.StackIndex) .. ": " .. v.Id
 
-		if V.Id == StackLockId then
-			Result[I] = Result[I] .. " (Locked)"
+		if v.Id == StackLockId then
+			result[i] = result[i] .. " (Locked)"
 		end
 	end
 
-	return Result
+	return result
 end
 
 function Window.IsAutoSize()
@@ -1157,31 +1176,31 @@ end
 
 function Window.Save(Table)
 	if Table ~= nil then
-		local Settings = {}
-		for I, V in ipairs(Instances) do
-			if not V.NoSavedSettings then
-				Settings[V.Id] = {
-					X = V.TitleDeltaX,
-					Y = V.TitleDeltaY,
-					W = V.SizeDeltaX,
-					H = V.SizeDeltaY
+		local settings = {}
+		for i, v in ipairs(Instances) do
+			if not v.NoSavedSettings then
+				settings[v.Id] = {
+					X = v.TitleDeltaX,
+					Y = v.TitleDeltaY,
+					W = v.SizeDeltaX,
+					H = v.SizeDeltaY
 				}
 			end
 		end
-		Table['Window'] = Settings
+		Table['Window'] = settings
 	end
 end
 
 function Window.Load(Table)
 	if Table ~= nil then
-		local Settings = Table['Window']
-		if Settings ~= nil then
-			for K, V in pairs(Settings) do
-				local Instance = GetInstance(K)
-				Instance.TitleDeltaX = V.X
-				Instance.TitleDeltaY = V.Y
-				Instance.SizeDeltaX = V.W
-				Instance.SizeDeltaY = V.H
+		local settings = Table['Window']
+		if settings ~= nil then
+			for k, v in pairs(settings) do
+				local instance = GetInstance(k)
+				instance.TitleDeltaX = v.X
+				instance.TitleDeltaY = v.Y
+				instance.SizeDeltaX = v.W
+				instance.SizeDeltaY = v.H
 			end
 		end
 	end
@@ -1194,9 +1213,9 @@ end
 --[[
 	Allow developers to push/pop a custom ID to the stack. This can help with differentiating between controls with identical IDs i.e. text fields.
 --]]
-function Window.PushID(ID)
+function Window.PushID(id)
 	if ActiveInstance ~= nil then
-		insert(IDStack, ID)
+		insert(IDStack, id)
 	end
 end
 
@@ -1208,11 +1227,11 @@ function Window.PopID()
 	return nil
 end
 
-function Window.ToDock(Type)
-	local ActiveInstance = GetInstance()
-	ActiveInstance.W = 720
-	ActiveInstance.H = 720
-	Dock.SetPendingWindow(ActiveInstance, Type)
+function Window.ToDock(type)
+	local activeInstance = GetInstance()
+	activeInstance.W = 720
+	activeInstance.H = 720
+	Dock.SetPendingWindow(activeInstance, type)
 	Dock.Override()
 end
 
