@@ -522,6 +522,11 @@ function Window.Begin(id, options)
 	local statHandle = Stats.Begin('Window', 'Slab')
 
 	options = options or EMPTY
+
+	if not Mouse.IsDragging(1) then
+		Dock.AlterOptions(id, options)
+	end
+
 	local x = options.X or 50
 	local y = options.Y or 50
 	local w = options.W or 200
@@ -548,8 +553,6 @@ function Window.Begin(id, options)
 	local canObstruct = options.CanObstruct == nil or options.CanObstruct
 	local rounding = options.Rounding or Style.WindowRounding
 	local showMinimize = options.ShowMinimize == nil or options.ShowMinimize
-
-	Dock.AlterOptions(id, options)
 
 	TitleRounding[1], TitleRounding[2] = rounding, rounding
 	BodyRounding[3], BodyRounding[4] = rounding, rounding

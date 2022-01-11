@@ -143,13 +143,9 @@ end
 function Dock.Override()
 	if Pending ~= nil and PendingWindow ~= nil then
 		local Instance = GetInstance(Pending)
-
-		if PendingWindow ~= nil then
-			Instance.Window = PendingWindow.Id
-			PendingWindow = nil
-			Instance.Reset = true
-		end
-
+		Instance.Window = PendingWindow.Id
+		Instance.Reset = true
+		PendingWindow = nil
 		Pending = nil
 	end
 end
@@ -157,13 +153,9 @@ end
 function Dock.Commit()
 	if Pending ~= nil and PendingWindow ~= nil and Mouse.IsReleased(1) then
 		local Instance = GetInstance(Pending)
-
-		if PendingWindow ~= nil then
-			Instance.Window = PendingWindow.Id
-			PendingWindow = nil
-			Instance.Reset = true
-		end
-
+		Instance.Window = PendingWindow.Id
+		Instance.Reset = true
+		PendingWindow = nil
 		Pending = nil
 	end
 end
@@ -262,7 +254,7 @@ end
 
 function Dock.SetPendingWindow(Instance, Type)
 	PendingWindow = Instance
-	Pending = Type
+	Pending = Type or Pending
 end
 
 function Dock.GetPendingWindow()
