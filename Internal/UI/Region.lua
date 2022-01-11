@@ -66,22 +66,22 @@ end
 
 local function IsScrollHovered(instance, x, y)
 	local hasScrollX, hasScrollY = false, false
+	if not instance then return end
 
-	if instance ~= nil then
-		if instance.HasScrollX then
-			local posY = instance.Y + instance.H - ScrollPad - ScrollBarSize
-			local sizeX = GetXScrollSize(instance)
-			local posX = instance.ScrollPosX
-			hasScrollX = instance.X + posX <= x and x < instance.X + posX + sizeX and posY <= y and y < posY + ScrollBarSize
-		end
-
-		if instance.hasScrollY then
-			local posX = instance.X + instance.W - ScrollPad - ScrollBarSize
-			local sizeY = GetYScrollSize(instance)
-			local posY = instance.ScrollPosY
-			hasScrollY = posX <= x and x < posX + ScrollBarSize and instance.Y + posY <= y and y < instance.Y + posY + sizeY
-		end
+	if instance.HasScrollX then
+		local posY = instance.Y + instance.H - ScrollPad - ScrollBarSize
+		local sizeX = GetXScrollSize(instance)
+		local posX = instance.ScrollPosX
+		hasScrollX = instance.X + posX <= x and x < instance.X + posX + sizeX and posY <= y and y < posY + ScrollBarSize
 	end
+
+	if instance.HasScrollY then
+		local posX = instance.X + instance.W - ScrollPad - ScrollBarSize
+		local sizeY = GetYScrollSize(instance)
+		local posY = instance.ScrollPosY
+		hasScrollY = posX <= x and x < posX + ScrollBarSize and instance.Y + posY <= y and y < instance.Y + posY + sizeY
+	end
+
 	return hasScrollX, hasScrollY
 end
 
