@@ -37,165 +37,172 @@ local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 local ListBox = {}
 local Instances = {}
 local ActiveInstance = nil
+local EMPTY = {}
+local IGNORE = { Ignore = true }
 
-local function GetItemInstance(Instance, Id)
-	if Instance ~= nil then
-		if Instance.Items[Id] == nil then
-			local Item = {}
-			Item.Id = Id
-			Item.X = 0.0
-			Item.Y = 0.0
-			Item.W = 0.0
-			Item.H = 0.0
-			Instance.Items[Id] = Item
+local function GetItemInstance(instance, id)
+	if not instance then
+		return
+	end
+
+	if instance.Items[id] == nil then
+		instance.Items[id] = {
+			Id = id,
+			X = 0,
+			Y = 0,
+			W = 0,
+			H = 0,
+		}
+	end
+	return instance.Items[id]
+end
+
+local function GetInstance(id)
+	if Instances[id] == nil then
+		Instances[id] = {
+			Id = id,
+			X = 0,
+			Y = 0,
+			W = 0,
+			H = 0,
+			Items = {},
+			ActiveItem = nil,
+			HotItem = nil,
+			Selected = false,
+			StatHandle = nil,
+			Region = {
+				AutoSizeContent = true,
+				NoBackground = true,
+				Intersect = true,
+			},
+		}
+	end
+	return Instances[id]
+end
+
+function ListBox.Begin(id, options)
+	local statHandle = Stats.Begin('ListBox', 'Slab')
+
+	options = options or EMPTY
+	local w = options.W or 150
+	local h = options.H or 150
+	local rounding = options.Rounding or Style.WindowRounding
+
+	local instance = GetInstance(Window.GetItemId(id))
+
+	if options.Clear then
+		for i = 1, #instance.Items do
+			instance.Items[i] = nil
 		end
-		return Instance.Items[Id]
-	end
-	return nil
-end
-
-local function GetInstance(Id)
-	if Instances[Id] == nil then
-		local Instance = {}
-		Instance.Id = Id
-		Instance.X = 0.0
-		Instance.Y = 0.0
-		Instance.W = 0.0
-		Instance.H = 0.0
-		Instance.Items = {}
-		Instance.ActiveItem = nil
-		Instance.HotItem = nil
-		Instance.Selected = false
-		Instance.StatHandle = nil
-		Instances[Id] = Instance
-	end
-	return Instances[Id]
-end
-
-function ListBox.Begin(Id, Options)
-	local StatHandle = Stats.Begin('ListBox', 'Slab')
-
-	Options = Options == nil and {} or Options
-	Options.W = Options.W == nil and 150.0 or Options.W
-	Options.H = Options.H == nil and 150.0 or Options.H
-	Options.Clear = Options.Clear == nil and false or Options.Clear
-	Options.Rounding = Options.Rounding == nil and Style.WindowRounding or Options.Rounding
-	Options.StretchW = Options.StretchW or false
-	Options.StretchH = Options.StretchH or false
-
-	local Instance = GetInstance(Window.GetItemId(Id))
-	local W = Options.W
-	local H = Options.H
-
-	if Options.Clear then
-		Instance.Items = {}
 	end
 
-	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H, 'ListBox')
+	w, h = LayoutManager.ComputeSize(w, h)
+	LayoutManager.AddControl(w, h, 'ListBox')
 
-	local RemainingW, RemainingH = Window.GetRemainingSize()
-	if Options.StretchW then
-		W = RemainingW
+	do
+		local remainingW, remainingH = Window.GetRemainingSize()
+		if options.StretchW then
+			w = remainingW
+		end
+
+		if options.StretchH then
+			h = remainingH
+		end
 	end
 
-	if Options.StretchH then
-		H = RemainingH
+	local x, y = Cursor.GetPosition()
+	instance.X = x
+	instance.Y = y
+	instance.W = w
+	instance.H = h
+	instance.StatHandle = statHandle
+	ActiveInstance = instance
+
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.AdvanceY(0)
+
+	Window.AddItem(x, y, w, h, instance.Id)
+
+	local isObstructed = Window.IsObstructedAtMouse()
+
+	local mouseX, mouseY = Window.GetMousePosition()
+	do
+		local tx, ty = Window.TransformPoint(x, y)
+		local region = instance.Region
+		region.X = x
+		region.Y = y
+		region.W = w
+		region.H = h
+		region.SX = tx
+		region.SY = ty
+		region.MouseX = mouseX
+		region.MouseY = mouseY
+		region.ResetContent = Window.HasResized()
+		region.IsObstructed = isObstructed
+		region.Rounding = rounding
+		Region.Begin(instance.Id, region)
 	end
 
-	local X, Y = Cursor.GetPosition()
-	Instance.X = X
-	Instance.Y = Y
-	Instance.W = W
-	Instance.H = H
-	Instance.StatHandle = StatHandle
-	ActiveInstance = Instance
-
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(0.0)
-
-	Window.AddItem(X, Y, W, H, Instance.Id)
-
-	local IsObstructed = Window.IsObstructedAtMouse()
-
-	local TX, TY = Window.TransformPoint(X, Y)
-	local MouseX, MouseY = Window.GetMousePosition()
-	Region.Begin(Instance.Id, {
-		X = X,
-		Y = Y,
-		W = W,
-		H = H,
-		SX = TX,
-		SY = TY,
-		AutoSizeContent = true,
-		NoBackground = true,
-		Intersect = true,
-		MouseX = MouseX,
-		MouseY = MouseY,
-		ResetContent = Window.HasResized(),
-		IsObstructed = IsObstructed,
-		Rounding = Options.Rounding
-	})
-
-	Instance.HotItem = nil
-	local InRegion = Region.Contains(MouseX, MouseY)
-	MouseX, MouseY = Region.InverseTransform(Instance.Id, MouseX, MouseY)
-	for K, V in pairs(Instance.Items) do
-		if not IsObstructed
-			and not Region.IsHoverScrollBar(Instance.Id)
-			and V.X <= MouseX and MouseX <= V.X + Instance.W and V.Y <= MouseY and MouseY <= V.Y + V.H
-			and InRegion
+	instance.HotItem = nil
+	mouseX, mouseY = Region.InverseTransform(instance.Id, mouseX, mouseY)
+	for k, v in pairs(instance.Items) do
+		if not isObstructed
+			and not Region.IsHoverScrollBar(instance.Id)
+			and v.X <= mouseX and mouseX <= v.X + instance.W and v.Y <= mouseY and mouseY <= v.Y + v.H
+			and Region.Contains(mouseX, mouseY)
 			then
-			Instance.HotItem = V
+			instance.HotItem = v
 		end
 
-		if Instance.HotItem == V or V.Selected then
-			DrawCommands.Rectangle('fill', V.X, V.Y, Instance.W, V.H, Style.TextHoverBgColor)
+		if instance.HotItem == v or v.Selected then
+			DrawCommands.Rectangle('fill', v.X, v.Y, instance.W, v.H, Style.TextHoverBgColor)
 		end
 	end
 
-	LayoutManager.Begin('Ignore', {Ignore = true})
+	LayoutManager.Begin('Ignore', IGNORE)
 end
 
-function ListBox.BeginItem(Id, Options)
-	Options = Options == nil and {} or Options
-	Options.Selected = Options.Selected == nil and false or Options.Selected
+function ListBox.BeginItem(id, options)
+	options = options or EMPTY
 
 	assert(ActiveInstance ~= nil, "Trying to call BeginListBoxItem outside of BeginListBox.")
-	assert(ActiveInstance.ActiveItem == nil,
-		"BeginListBoxItem was called for item '" .. (ActiveInstance.ActiveItem ~= nil and ActiveInstance.ActiveItem.Id or "nil") ..
-			"' without a call to EndListBoxItem.")
-	local Item = GetItemInstance(ActiveInstance, Id)
-	Item.X = ActiveInstance.X
-	Item.Y = Cursor.GetY()
-	Cursor.SetX(Item.X)
-	Cursor.AdvanceX(0.0)
-	ActiveInstance.ActiveItem = Item
-	ActiveInstance.ActiveItem.Selected = Options.Selected
+	if ActiveInstance.ActiveItem ~= nil then
+		error(("BeginListBoxItem was called for item '%s' without a call to EndListBoxItem."):format(
+			ActiveInstance.ActiveItem.Id or "nil"
+		))
+	end
+	local item = GetItemInstance(ActiveInstance, id)
+	item.X = ActiveInstance.X
+	item.Y = Cursor.GetY()
+	Cursor.SetX(item.X)
+	Cursor.AdvanceX(0)
+	ActiveInstance.ActiveItem = item
+	ActiveInstance.ActiveItem.Selected = options.Selected
 end
 
-function ListBox.IsItemClicked(Button, IsDoubleClick)
+function ListBox.IsItemClicked(button, isDoubleClick)
 	assert(ActiveInstance ~= nil, "Trying to call IsItemClicked outside of BeginListBox.")
 	assert(ActiveInstance.ActiveItem ~= nil, "IsItemClicked was called outside of BeginListBoxItem.")
-	if ActiveInstance.HotItem == ActiveInstance.ActiveItem then
-		Button = Button == nil and 1 or Button
-		if IsDoubleClick then
-			return Mouse.IsDoubleClicked(Button)
-		else
-			return Mouse.IsClicked(Button)
-		end
+	if ActiveInstance.HotItem ~= ActiveInstance.ActiveItem then
+		return false
 	end
-	return false
+
+	button = button or 1
+	if isDoubleClick then
+		return Mouse.IsDoubleClicked(button)
+	else
+		return Mouse.IsClicked(button)
+	end
 end
 
 function ListBox.EndItem()
 	assert(ActiveInstance ~= nil, "Trying to call BeginListBoxItem outside of BeginListBox.")
 	assert(ActiveInstance.ActiveItem ~= nil, "Trying to call EndListBoxItem without calling BeginListBoxItem.")
-	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-	ActiveInstance.ActiveItem.W = ItemW
+	local itemX, itemY, itemW, itemH = Cursor.GetItemBounds()
+	ActiveInstance.ActiveItem.W = itemW
 	ActiveInstance.ActiveItem.H = Cursor.GetLineHeight()
 	Cursor.SetY(ActiveInstance.ActiveItem.Y + ActiveInstance.ActiveItem.H)
-	Cursor.AdvanceY(0.0)
+	Cursor.AdvanceY(0)
 	ActiveInstance.ActiveItem = nil
 end
 
