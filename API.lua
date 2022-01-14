@@ -1114,6 +1114,8 @@ end
 		UseSlider: [Boolean] If enabled, displays a slider inside the input control. This will only be drawn if the NumbersOnly
 			option is set to true. The position of the slider inside the control determines the value based on the MinNumber
 			and MaxNumber option.
+		IsPassword: [Boolean] If enabled, mask the text with another character. Default is false.
+		PasswordChar: [Char/String] Sets the character or string to use along with IsPassword flag. Default is "*"
 
 	Return: [Boolean] Returns true if the user has pressed the return key while focused on this input box. If ReturnOnText
 		is set to true, then this function will return true whenever the user has input any character into the input box.
