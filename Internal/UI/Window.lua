@@ -539,7 +539,9 @@ function Window.Begin(Id, Options)
 	Options.ConstrainPosition = Options.ConstrainPosition or false
 	Options.ShowMinimize = Options.ShowMinimize == nil and true or Options.ShowMinimize
 
-	Dock.AlterOptions(Id, Options)
+	if not Mouse.IsDragging(1) then
+		Dock.AlterOptions(id, options)
+	end
 
 	local TitleRounding = {Options.Rounding, Options.Rounding, 0, 0}
 	local BodyRounding = {0, 0, Options.Rounding, Options.Rounding}
@@ -1208,10 +1210,11 @@ function Window.PopID()
 	return nil
 end
 
-function Window.ToDock(Type)
-	local ActiveInstance = GetInstance()
-	ActiveInstance.W = 720
-	Dock.SetPendingWindow(ActiveInstance, Type)
+function Window.ToDock(type)
+	local activeInstance = GetInstance()
+	activeInstance.W = 720
+	activeInstance.H = 720
+	Dock.SetPendingWindow(activeInstance, type)
 	Dock.Override()
 end
 

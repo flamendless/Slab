@@ -143,13 +143,9 @@ end
 function Dock.Override()
 	if Pending ~= nil and PendingWindow ~= nil then
 		local Instance = GetInstance(Pending)
-
-		if PendingWindow ~= nil then
-			Instance.Window = PendingWindow.Id
-			PendingWindow = nil
-			Instance.Reset = true
-		end
-
+		Instance.Window = PendingWindow.Id
+		Instance.Reset = true
+		PendingWindow = nil
 		Pending = nil
 	end
 end
@@ -157,13 +153,9 @@ end
 function Dock.Commit()
 	if Pending ~= nil and PendingWindow ~= nil and Mouse.IsReleased(1) then
 		local Instance = GetInstance(Pending)
-
-		if PendingWindow ~= nil then
-			Instance.Window = PendingWindow.Id
-			PendingWindow = nil
-			Instance.Reset = true
-		end
-
+		Instance.Window = PendingWindow.Id
+		Instance.Reset = true
+		PendingWindow = nil
 		Pending = nil
 	end
 end
@@ -262,7 +254,7 @@ end
 
 function Dock.SetPendingWindow(Instance, Type)
 	PendingWindow = Instance
-	Pending = Type
+	Pending = Type or Pending
 end
 
 function Dock.GetPendingWindow()
@@ -343,9 +335,13 @@ end
 
 function Dock.Save(Table)
 	if Table ~= nil then
+		local taken = {}
 		local Settings = {}
 		for K, V in pairs(Instances) do
-			if not V.NoSavedSettings then
+			if not V.NoSavedSettings and V.Window and not taken[V.Window] then
+				if V.Window then
+					taken[V.Window] = true
+				end
 				Settings[K] = tostring(V.Window)
 			end
 		end
