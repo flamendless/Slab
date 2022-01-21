@@ -24,209 +24,171 @@ SOFTWARE.
 
 --]]
 
-local Stats = {}
-
 local insert = table.insert
 local max = math.max
+local format = string.format
 
-local Data = {}
-local Pending = {}
-local Enabled = false
-local QueueEnabled = false
-local QueueDisable = false
-local Id = 1
-local QueueFlush = false
-local FrameNumber = 0
+local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
-local function GetCategory(Category)
-	assert(Category ~= nil, "Nil category given to Stats system.")
-	assert(Category ~= '', "Empty category given to Stats system.")
-	assert(type(Category) == 'string', "Category given is not of type string. Type given is '" .. type(Category) .. "'.")
+local Stats = {}
 
-	if Data[Category] == nil then
-		Data[Category] = {}
+local data, pending = {}, {}
+local enabled = false
+local q_enabled, q_disable = false, false
+local id = 1
+local q_flush = false
+local frame_n = 0
+
+local function GetCategory(category)
+	assert(category ~= nil, "Nil category given to Stats system.")
+	assert(category ~= "", "Empty category given to Stats system.")
+	assert(type(category) == "string", "Category given is not of type string. Type given is '" .. type(Category) .. "'.")
+	if not data[category] then
+		data[category] = {}
 	end
-
-	return Data[Category]
+	return data[category]
 end
 
-local function ResetCategory(Category)
-	local Instance = Data[Category]
+local function ResetCategory(instance)
+	if not instance then return end
+	for k, v in pairs(instance) do
+		v.last_time = v.time
+		v.last_call_count = v.call_count
+		v.max_time = max(v.max_time, v.time)
+		v.time = 0
+		v.call_count = 0
+	end
+end
 
-	if Instance ~= nil then
-		for K, V in pairs(Instance) do
-			V.LastTime = V.Time
-			V.LastCallCount = V.CallCount
-			V.MaxTime = max(V.MaxTime, V.Time)
-			V.Time = 0.0
-			V.CallCount = 0
+local function GetItem(name, category)
+	assert(name ~= nil, "Nil name given to Stats system.")
+	assert(name ~= "", "Empty name given to Stats system.")
+
+	local cat = GetCategory(category)
+	if not cat[name] then
+		cat[name] = {
+			time = 0,
+			max_time = 0,
+			call_count = 0,
+			last_time = 0,
+			last_call_count = 0,
+		}
+	end
+	return cat[name]
+end
+
+function Stats.Begin(name, category)
+	if not enabled then return end
+	local handle = id
+	id = id + 1
+	local instance = {start_time = love.timer.getTime(), name = name, category = category}
+	pending[handle] = instance
+	return handle
+end
+
+function Stats.End(handle)
+	if not enabled then return end
+	assert(handle ~= nil, "Nil handle given to Stats.End.")
+	local instance = pending[handle]
+	assert(instance ~= nil, "Invalid handle given to Stats.End.")
+	pending[handle] = nil
+	local elapsed = love.timer.getTime() - instance.start_time
+	local item = GetItem(instance.name, instance.category)
+	item.call_count = item.call_count + 1
+	item.time = item.time + elapsed
+end
+
+local C_NONE = 0
+function Stats.GetTime(name, category)
+	if not enabled then return C_NONE end
+	local item = GetItem(name, category)
+	return item.time > C_NONE and item.time or item.last_time
+end
+
+function Stats.GetMaxTime(name, category)
+	if not enabled then return C_NONE end
+	local item = GetItem(name, category)
+	return item.max_time
+end
+
+function Stats.GetCallCount(name, category)
+	if not enabled then return C_NONE end
+	local item = GetItem(name, category)
+	return item.call_count > 0 and item.call_count or item.last_call_count
+end
+
+function Stats.Reset(strict)
+	frame_n = frame_n + 1
+
+	if q_enabled then
+		enabled = true
+		q_enabled = false
+	end
+
+	if q_disable then
+		enabled = false
+		q_disable = false
+	end
+
+	if q_flush then
+		Utility.ClearTable(data)
+		Utility.ClearTable(pending)
+		id = 1
+		q_flush = false
+	end
+
+	if not enabled then return end
+
+	if strict then
+		local message
+		for k, v in pairs(pending) do
+			if not message then
+				message = "Stats.End were not called for the given stats: \n"
+			end
+			message = format("%s\t%s in %s\n", message, tostring(v.name), tostring(v.category))
 		end
+		assert(message == nil, message)
+	end
+
+	for _, v in pairs(data) do
+		ResetCategory(v)
 	end
 end
 
-local function GetItem(Name, Category)
-	assert(Name ~= nil, "Nil name given to Stats system.")
-	assert(Name ~= '', "Empty name given to Stats system.")
-
-	local Cat = GetCategory(Category)
-
-	if Cat[Name] == nil then
-		local Instance = {}
-		Instance.Time = 0.0
-		Instance.MaxTime = 0.0
-		Instance.CallCount = 0
-		Instance.LastTime = 0.0
-		Instance.LastCallCount = 0.0
-		Cat[Name] = Instance
-	end
-
-	return Cat[Name]
-end
-
-function Stats.Begin(Name, Category)
-	if not Enabled then
-		return
-	end
-
-	local Handle = Id
-	Id = Id + 1
-
-	local Instance = {StartTime = love.timer.getTime(), Name = Name, Category = Category}
-	Pending[Handle] = Instance
-
-	return Handle
-end
-
-function Stats.End(Handle)
-	if not Enabled then
-		return
-	end
-
-	assert(Handle ~= nil, "Nil handle given to Stats.End.")
-
-	local Instance = Pending[Handle]
-	assert(Instance ~= nil, "Invalid handle given to Stats.End.")
-	Pending[Handle] = nil
-
-	local Elapsed = love.timer.getTime() - Instance.StartTime
-
-	local Item = GetItem(Instance.Name, Instance.Category)
-	Item.CallCount = Item.CallCount + 1
-	Item.Time = Item.Time + Elapsed
-end
-
-function Stats.GetTime(Name, Category)
-	if not Enabled then
-		return 0.0
-	end
-
-	local Item = GetItem(Name, Category)
-
-	return Item.Time > 0.0 and Item.Time or Item.LastTime
-end
-
-function Stats.GetMaxTime(Name, Category)
-	if not Enabled then
-		return 0.0
-	end
-
-	local Item = GetItem(Name, Category)
-
-	return Item.MaxTime
-end
-
-function Stats.GetCallCount(Name, Category)
-	if not Enabled then
-		return 0
-	end
-
-	local Item = GetItem(Name, Category)
-
-	return Item.CallCount > 0 and Item.CallCount or Item.LastCallCount
-end
-
-function Stats.Reset(Strict)
-	FrameNumber = FrameNumber + 1
-
-	if QueueEnabled then
-		Enabled = true
-		QueueEnabled = false
-	end
-
-	if QueueDisable then
-		Enabled = false
-		QueueDisable = false
-	end
-
-	if QueueFlush then
-		Data = {}
-		Pending = {}
-		Id = 1
-		QueueFlush = false
-	end
-
-	if not Enabled then
-		return
-	end
-
-	local Message = nil
-	for K, V in pairs(Pending) do
-		if Message == nil then
-			Message = "Stats.End were not called for the given stats: \n"
-		end
-
-		Message = Message .. "\t" .. tostring(V.Name) .. " in " .. tostring(V.Category) .. "\n"
-	end
-
-	if Strict then
-		assert(Message == nil, Message)
-	end
-
-	for K, V in pairs(Data) do
-		ResetCategory(K)
-	end
-end
-
-function Stats.SetEnabled(IsEnabled)
-	QueueEnabled = IsEnabled
-
-	if not QueueEnabled then
-		QueueDisable = true
+function Stats.SetEnabled(is_enabled)
+	q_enabled = is_enabled
+	if not q_enabled then
+		q_disable = true
 	end
 end
 
 function Stats.IsEnabled()
-	return Enabled
+	return enabled
 end
 
 function Stats.GetCategories()
-	local Result = {}
-
-	for K, V in pairs(Data) do
-		insert(Result, K)
+	local res = {}
+	for k, v in pairs(data) do
+		insert(res, k)
 	end
-
-	return Result
+	return res
 end
 
-function Stats.GetItems(Category)
-	local Result = {}
-
-	local Instance = GetCategory(Category)
-
-	for K, V in pairs(Instance) do
-		insert(Result, K)
+function Stats.GetItems(category)
+	local res = {}
+	local instance = GetCategory(category)
+	for k, v in pairs(instance) do
+		insert(res, k)
 	end
-
-	return Result
+	return res
 end
 
 function Stats.Flush()
-	QueueFlush = true
+	q_flush = true
 end
 
 function Stats.GetFrameNumber()
-	return FrameNumber
+	return frame_n
 end
 
 return Stats
