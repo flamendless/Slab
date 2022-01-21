@@ -106,12 +106,7 @@ end
 
 local function DecodeBoolean(value)
 	local l_str = lower(value)
-	if l_str == "true" then
-		return true
-	elseif l_str == "false" then
-		return false
-	end
-	return nil
+	return l_str == "true" or (str ~= "false" and nil)
 end
 
 local function DecodeArray(value)
