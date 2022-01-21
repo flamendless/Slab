@@ -26,257 +26,256 @@ SOFTWARE.
 
 local insert = table.insert
 
-local Common = require(SLAB_PATH .. '.Internal.Input.Common')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Common = require(SLAB_PATH .. ".Internal.Input.Common")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local TablePool = require(SLAB_PATH .. "Internal.Core.TablePool")
 
 local Mouse = {}
 
-local State =
-{
-	X = 0.0,
-	Y = 0.0,
-	DeltaX = 0.0,
-	DeltaY = 0.0,
-	AsyncDeltaX = 0.0,
-	AsyncDeltaY = 0.0,
-	Buttons = {}
+local state = {
+	x = 0, y = 0, dx = 0, dy = 0,
+	async_dx = 0, async_dy = 0,
+	buttons = {},
 }
 
-local Cursors = nil
-local CurrentCursor = "arrow"
-local PendingCursor = ""
-local MouseMovedFn = nil
-local MousePressedFn = nil
-local MouseReleasedFn = nil
-local Events = {}
+local EMPTY_STR = ""
+local system_cursors = {
+	arrow = "arrow",
+	sizewe = "sizewe",
+	sizens = "sizens",
+	sizenesw = "sizenesw",
+	sizenwse = "sizenwse",
+	ibeam = "ibeam",
+	hand = "hand",
+}
+local cursors
+local current_cursor = "arrow"
+local pending_cursor = EMPTY_STR
+local fn_mouse_moved, fn_mouse_pressed, fn_mouse_released
+local events = {}
+local pool = TablePool()
 
 -- Custom cursors allow the developer to override any specific system cursor used. This system will also
 -- allow developers to set an empty image to hide the cursor for specific states, such as mouse resize.
 -- For more information, refer to the SetCustomCursor/ClearCustomCursor functions.
-local CustomCursors = {}
+local custom_cursors = {}
 
-local function TransformPoint(X,Y)
-	return X,Y
+local function TransformPoint(x, y)
+	return x, y
 end
 
-local function OnMouseMoved(X, Y, DX, DY, IsTouch)
-	X, Y = TransformPoint(X, Y)
-	State.X = X
-	State.Y = Y
-	State.AsyncDeltaX = State.AsyncDeltaX + DX
-	State.AsyncDeltaY = State.AsyncDeltaY + DY
+local function OnMouseMoved(x, y, dx, dy, is_touch)
+	x, y = TransformPoint(x, y)
+	state.x, state.y = x, y
+	state.async_dx = state.async_dx + dx
+	state.async_dy = state.async_dy + dy
 
-	if MouseMovedFn ~= nil then
-		MouseMovedFn(X, Y, DX, DY, IsTouch)
+	if fn_mouse_moved then
+		fn_mouse_moved(x, y, dx, dy, is_touch)
 	end
 end
 
-local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
-	insert(Events, {
-		Type = Type,
-		X = X,
-		Y = Y,
-		Button = Button,
-		IsTouch = IsTouch,
-		Presses = Presses
-	})
+local function PushEvent(ev_type, x, y, button, is_touch, presses)
+	local ev = pool:pop()
+	ev.type = ev_type
+	ev.x, ev.y = x, y
+	ev.button = button
+	ev.is_touch = is_touch
+	ev.presses = presses
+	insert(events, 1, ev)
 end
 
-local function OnMousePressed(X, Y, Button, IsTouch, Presses)
-	X, Y = TransformPoint(X, Y)
-	PushEvent(Common.Event.Pressed, X, Y, Button, IsTouch, Presses)
+local function OnMousePressed(x, y, button, is_touch, presses)
+	x, y = TransformPoint(x, y)
+	PushEvent(Common.Event.Pressed, x, y, button, is_touch, presses)
 
-	if MousePressedFn ~= nil then
-		MousePressedFn(X, Y, Button, IsTouch, Presses)
+	if fn_mouse_pressed then
+		fn_mouse_pressed(x, y, button, is_touch, presses)
 	end
 end
 
-local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
-	X, Y = TransformPoint(X, Y)
-	PushEvent(Common.Event.Released, X, Y, Button, IsTouch, Presses)
+local function OnMouseReleased(x, y, button, is_touch, presses)
+	x, y = TransformPoint(x, y)
+	PushEvent(Common.Event.Released, x, y, button, is_touch, presses)
 
-	if MouseReleasedFn ~= nil then
-		MouseReleasedFn(X, Y, Button, IsTouch, Presses)
+	if fn_mouse_released then
+		fn_mouse_released(x, y, button, is_touch, presses)
 	end
 end
 
 local function ProcessEvents()
-	State.Buttons = {}
-
-	for I, V in ipairs(Events) do
-		if State.Buttons[V.Button] == nil then
-			State.Buttons[V.Button] = {}
-		end
-
-		local Button = State.Buttons[V.Button]
-		Button.Type = V.Type
-		Button.IsTouch = V.IsTouch
-		Button.Presses = V.Presses
+	for k, v in pairs(state.buttons) do
+		v.type = Common.Event.None
 	end
 
-	Events = {}
+	local was_pressed = false
+
+	for i = #events, 1, -1 do
+		local ev = events[i]
+
+		if ev.type == Common.Event.Released and was_pressed then
+			break
+		end
+
+		was_pressed = ev.type == Common.Event.Pressed
+
+		local buttons = state.buttons
+		local ev_btn = ev.button
+		if buttons[ev_btn] == nil then
+			buttons[ev_btn] = {}
+		end
+
+		local button = buttons[ev_btn]
+		button.type = ev.type
+		button.is_touch = ev.is_touch
+		button.presses = ev.presses
+		pool:push(ev)
+		events[i] = nil
+	end
 end
 
 function Mouse.Initialize(Args)
 	TransformPoint = Args.TransformPointToSlab or TransformPoint
 
-	MouseMovedFn = love.handlers['mousemoved']
-	MousePressedFn = love.handlers['mousepressed']
-	MouseReleasedFn = love.handlers['mousereleased']
-	love.handlers['mousemoved'] = OnMouseMoved
-	love.handlers['mousepressed'] = OnMousePressed
-	love.handlers['mousereleased'] = OnMouseReleased
+	local handlers = love.handlers
+	fn_mouse_moved = handlers.mousemoved
+	fn_mouse_pressed = handlers.mousepressed
+	fn_mouse_released = handlers.mousereleased
+
+	love.handlers.mousemoved = OnMouseMoved
+	love.handlers.mousepressed = OnMousePressed
+	love.handlers.mousereleased = OnMouseReleased
 end
 
 function Mouse.Update()
 	ProcessEvents()
 
-	State.DeltaX = State.AsyncDeltaX
-	State.DeltaY = State.AsyncDeltaY
-	State.AsyncDeltaX = 0
-	State.AsyncDeltaY = 0
+	state.dx, state.dy = state.async_dx, state.async_dy
+	state.async_dx, state.async_dy = 0, 0
 
-	if Cursors == nil then
-		Cursors = {}
-		Cursors.Arrow = love.mouse.getSystemCursor('arrow')
-		Cursors.SizeWE = love.mouse.getSystemCursor('sizewe')
-		Cursors.SizeNS = love.mouse.getSystemCursor('sizens')
-		Cursors.SizeNESW = love.mouse.getSystemCursor('sizenesw')
-		Cursors.SizeNWSE = love.mouse.getSystemCursor('sizenwse')
-		Cursors.IBeam = love.mouse.getSystemCursor('ibeam')
-		Cursors.Hand = love.mouse.getSystemCursor('hand')
+	if not cursors then
+		cursors = {}
+		for k in pairs(system_cursors) do
+			cursors[k] = love.mouse.getSystemCursor(k)
+		end
 	end
 
-	Mouse.SetCursor('arrow')
+	Mouse.SetCursor("arrow")
 end
 
 function Mouse.Draw()
 	Mouse.UpdateCursor()
 
-	local CustomCursor = CustomCursors[CurrentCursor]
-	if CustomCursor ~= nil then
-		DrawCommands.SetLayer('Mouse')
+	local custom_cursor = custom_cursors[current_cursor]
+	if custom_cursor then
+		DrawCommands.SetLayer("Mouse")
 		DrawCommands.Begin()
 
-		if CustomCursor.Quad ~= nil then
-			local X, Y, W, H = CustomCursor.Quad:getViewport()
-			DrawCommands.SubImage(State.X, State.Y, CustomCursor.Image, X, Y, W, H)
+		if custom_cursor.quad then
+			local x, y, w, h = custom_cursor.quad:getViewport()
+			DrawCommands.SubImage(state.x, state.y, custom_cursor.image, x, y, w, h)
 		else
-			DrawCommands.Image(State.X, State.Y, CustomCursor.Image)
+			DrawCommands.Image(state.x, state.y, custom_cursor.image)
 		end
 
 		DrawCommands.End()
 	end
 end
 
-function Mouse.IsDown(Button)
-	return love.mouse.isDown(Button)
+function Mouse.IsDown(button)
+	return love.mouse.isDown(button)
 end
 
-function Mouse.IsClicked(Button)
-	local Item = State.Buttons[Button]
+function Mouse.IsClicked(button)
+	local item = state.buttons[button]
 
-	if Item == nil or Item.Presses == 0 then
+	if (not item) or (item.presses == 0) then
 		return false
 	end
 
-	return Item.Type == Common.Event.Pressed
+	return item.type == Common.Event.Pressed
 end
 
-function Mouse.IsDoubleClicked(Button)
-	local Item = State.Buttons[Button]
+function Mouse.IsDoubleClicked(button)
+	local item = state.buttons[button]
 
-	if Item == nil or Item.Presses < 2 then
+	if (not item) or item.presses < 2 then
 		return false
 	end
 
-	return Item.Type == Common.Event.Pressed and Item.Presses % 2 == 0
+	return (item.type == Common.Event.Pressed) and (item.presses % 2 == 0)
 end
 
-function Mouse.IsReleased(Button)
-	local Item = State.Buttons[Button]
+function Mouse.IsReleased(button)
+	local item = state.buttons[button]
 
-	if Item == nil then
+	if not item then
 		return false
 	end
 
-	return Item.Type == Common.Event.Released
+	return item.type == Common.Event.Released
 end
 
 function Mouse.Position()
-	return State.X, State.Y
+	return state.x, state.y
 end
 
 function Mouse.HasDelta()
-	return State.DeltaX ~= 0.0 or State.DeltaY ~= 0.0
+	return state.dx ~= 0 or state.dy ~= 0
 end
 
 function Mouse.GetDelta()
-	return State.DeltaX, State.DeltaY
+	return state.dx, state.dy
 end
 
-function Mouse.IsDragging(Button)
-	return Mouse.IsDown(Button) and Mouse.HasDelta()
+function Mouse.IsDragging(button)
+	return Mouse.IsDown(button) and Mouse.HasDelta()
 end
 
-function Mouse.SetCursor(Type)
-	if Cursors == nil then
+function Mouse.SetCursor(type)
+	if not cursors then
 		return
 	end
 
-	PendingCursor = Type
+	pending_cursor = type
 end
 
 function Mouse.UpdateCursor()
-	if PendingCursor ~= "" and PendingCursor ~= CurrentCursor then
-		CurrentCursor = PendingCursor
-		PendingCursor = ""
+	if (pending_cursor ~= EMPTY_STR) and (pending_cursor ~= custom_cursor) then
+		custom_cursor = pending_cursor
+		pending_cursor = EMPTY_STR
 
-		if CustomCursors[CurrentCursor] ~= nil then
+		if custom_cursors[custom_cursor] then
 			love.mouse.setVisible(false)
 		else
 			love.mouse.setVisible(true)
-			local Type = CurrentCursor
-			if Type == 'arrow' then
-				love.mouse.setCursor(Cursors.Arrow)
-			elseif Type == 'sizewe' then
-				love.mouse.setCursor(Cursors.SizeWE)
-			elseif Type == 'sizens' then
-				love.mouse.setCursor(Cursors.SizeNS)
-			elseif Type == 'sizenesw' then
-				love.mouse.setCursor(Cursors.SizeNESW)
-			elseif Type == 'sizenwse' then
-				love.mouse.setCursor(Cursors.SizeNWSE)
-			elseif Type == 'ibeam' then
-				love.mouse.setCursor(Cursors.IBeam)
-			elseif Type == 'hand' then
-				love.mouse.setCursor(Cursors.Hand)
-			end
+			local current = current_cursor
+			love.mouse.setCursor(cursors[current])
 		end
 	end
 end
 
-function Mouse.SetCustomCursor(Type, Image, Quad)
+function Mouse.SetCustomCursor(type, image, quad)
 	-- If no image is supplied, then create a 1x1 image with no alpha. This is a way to disable certain system cursors.
-	if Image == nil then
-		local Data = love.image.newImageData(1, 1)
-		Image = love.graphics.newImage(Data)
+	if not image then
+		local data = love.image.newImageData(1, 1)
+		image = love.graphics.newImage(data)
 	end
 
-	if CustomCursors[Type] == nil then
-		CustomCursors[Type] = {}
+	if not custom_cursors[type] then
+		custom_cursors[type] = {}
 	end
 
-	CustomCursors[Type].Image = Image
-	CustomCursors[Type].Quad = Quad
-	PendingCursor = CurrentCursor
-	CurrentCursor = ""
+	custom_cursors[type].image = image
+	custom_cursors[type].quad = quad
+	pending_cursor = current_cursor
+	current_cursor = EMPTY_STR
 end
 
-function Mouse.ClearCustomCursor(Type)
-	CustomCursors[Type] = nil
-	PendingCursor = CurrentCursor
-	CurrentCursor = ""
+function Mouse.ClearCustomCursor(type)
+	custom_cursors[type] = nil
+	pending_cursor = current_cursor
+	current_cursor = EMPTY_STR
 end
 
 return Mouse

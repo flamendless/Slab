@@ -26,8 +26,8 @@ SOFTWARE.
 
 local Common = {}
 
-Common.Event =
-{
+Common.Event = {
+	None = 0,
 	Pressed = 1,
 	Released = 2
 }
