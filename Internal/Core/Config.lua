@@ -291,14 +291,9 @@ function Config.Decode(Stream)
 	return Result, Error
 end
 
-function Config.LoadFile(Path, UseLoveFS)
+function Config.LoadFile(Path, IsDefault)
 	local Result = nil
-	local Contents, Error = nil, nil
-	if UseLoveFS then
-		Contents, Error = love.filesystem.read('string', Path)
-	else
-		Contents, Error = FileSystem.ReadContents(Path)
-	end
+	local Contents, Error = FileSystem.ReadContents(Path, nil, IsDefault)
 	if Contents ~= nil then
 		Result, Error = Config.Decode(Contents)
 	end
@@ -306,12 +301,11 @@ function Config.LoadFile(Path, UseLoveFS)
 	return Result, Error
 end
 
-function Config.Save(Path, Table)
-	local Result = false
-	local Error = ""
+function Config.Save(Path, Table, IsDefault)
+	local Result, Error = false
 	if Table ~= nil then
 		local Contents = Config.Encode(Table)
-		Result, Error = FileSystem.SaveContents(Path, Contents)
+		Result, Error = FileSystem.SaveContents(Path, Contents, IsDefault)
 	else
 		Error = "Invalid table given to Config.Save!"
 	end

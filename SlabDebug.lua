@@ -428,7 +428,7 @@ end
 
 function SlabDebug.DrawCommands()
 	Slab.BeginWindow('SlabDebug_DrawCommands', SlabDebug_DrawCommands)
-	
+
 	local Info = DrawCommands.GetDebugInfo()
 	for K, V in pairs(Info) do
 		DrawCommands_Item(V, K)
@@ -597,7 +597,7 @@ function SlabDebug.LayoutManager()
 			if SlabDebug_LayoutManager_Selected == nil then
 				SlabDebug_LayoutManager_Selected = K
 			end
-		
+
 			if Slab.TextSelectable(K) then
 				SlabDebug_LayoutManager_Selected = K
 			end
