@@ -36,37 +36,31 @@ local insert = table.insert
 
 local Messages = {}
 
-local Enabled = true
-local Cache = {}
+local enabled = true
+local cache = {}
 
-function Messages.Broadcast(Id, Message)
-	if not Enabled then
-		return
-	end
-
-	assert(Id ~= nil, "Id is invalid.")
-	assert(type(Id) == 'string', "Id is not a string type.")
-	assert(Message ~= nil, "Message is invalid.")
-	assert(type(Message) == 'string', "Message is not a string type.")
-
-	if Cache[Id] == nil then
-		Cache[Id] = Message
-		print(Message)
+function Messages.Broadcast(id, message)
+	if not enabled then return end
+	assert(id ~= nil, "Id is invalid.")
+	assert(type(id) == "string", "Id is not a string type.")
+	assert(message ~= nil, "Message is invalid.")
+	assert(type(message) == 'string', "Message is not a string type.")
+	if not cache[id] then
+		cache[id] = message
+		print(message)
 	end
 end
 
 function Messages.Get()
-	local Result = {}
-
-	for K, V in pairs(Cache) do
-		insert(Result, V)
+	local res = {}
+	for k, v in pairs(cache) do
+		insert(res, v)
 	end
-
-	return Result
+	return res
 end
 
-function Messages.SetEnabled(InEnabled)
-	Enabled = InEnabled
+function Messages.SetEnabled(is_enabled)
+	enabled = is_enabled
 end
 
 return Messages
