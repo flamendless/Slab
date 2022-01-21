@@ -168,7 +168,7 @@ function Mouse.Draw()
 
 	local custom_cursor = custom_cursors[current_cursor]
 	if custom_cursor then
-		DrawCommands.SetLayer("Mouse")
+		DrawCommands.SetLayer(DrawCommands.layers.mouse)
 		DrawCommands.Begin()
 
 		if custom_cursor.quad then
