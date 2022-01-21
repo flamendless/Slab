@@ -75,6 +75,7 @@ local IsSliding = false
 local DragDelta = 0
 
 local MIN_WIDTH = 150.0
+local DEF_PW_CHAR = "*"
 
 local function SanitizeText(Data)
 	local Result = false
@@ -949,6 +950,13 @@ function Input.Begin(Id, Options)
 	Options.UseSlider = Options.UseSlider or false
 	Options.Precision = Options.Precision and math.floor(Utility.Clamp(Options.Precision, 0, 5)) or 3
 	Options.NeedDrag = Options.NeedDrag == nil and true or Options.NeedDrag
+	Options.IsPassword = not not Options.IsPassword --default is false
+	Options.PasswordChar = Options.IsPassword and Options.PasswordChar or DEF_PW_CHAR
+
+	if Options.IsPassword then
+		Options.OrigText = Options.Text
+		Options.Text = string.rep(Options.PasswordChar, #Options.Text)
+	end
 
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
