@@ -24,151 +24,131 @@ SOFTWARE.
 
 --]]
 
-local Utility = {}
-
 local abs = math.abs
+local floor = math.floor
+local fmod = math.fmod
 local remove = table.remove
 
-function Utility.MakeColor(Color)
-	local Copy = {0.0, 0.0, 0.0, 1.0}
-	if Color ~= nil then
-		Copy[1] = Color[1]
-		Copy[2] = Color[2]
-		Copy[3] = Color[3]
-		Copy[4] = Color[4]
+local Utility = {}
+
+function Utility.MakeColor(color)
+	local copy = {0, 0, 0, 1}
+	if color then
+		copy[1] = color[1]
+		copy[2] = color[2]
+		copy[3] = color[3]
+		copy[4] = color[4]
 	end
-	return Copy
+	return copy
 end
 
-function Utility.HSVtoRGB(H, S, V)
-	if S == 0.0 then
-		return V, V, V
-	end
+function Utility.HSVtoRGB(h, s, v)
+	if s == 0 then return v, v, v end
+	h = fmod(h, 1)/(60/360)
+	local i = floor(h)
+	local f = h - i
+	local p = v * (1 - s)
+	local q = v * (1 - s * f)
+	local t = v * (1 - s * (1 - f))
+	local r, g, b
 
-	H = math.fmod(H, 1.0) / (60.0/360.0)
-	local I = math.floor(H)
-	local F = H - I
-	local P = V * (1.0 - S)
-	local Q = V * (1.0 - S * F)
-	local T = V * (1.0 - S * (1.0 - F))
-
-	local R, G, B = 0, 0, 0
-
-	if I == 0 then
-		R, G, B = V, T, P
-	elseif I == 1 then
-		R, G, B = Q, V, P
-	elseif I == 2 then
-		R, G, B = P, V, T
-	elseif I == 3 then
-		R, G, B = P, Q, V
-	elseif I == 4 then
-		R, G, B = T, P, V
+	if i == 0 then
+		r, g, b = v, t, p
+	elseif i == 1 then
+		r, g, b = q, v, p
+	elseif i == 2 then
+		r, g, b = p, v, t
+	elseif i == 3 then
+		r, g, b = p, q, v
+	elseif i == 4 then
+		r, g, b = t, p, v
 	else
-		R, G, B = V, P, Q
+		r, g, b = v, p, q
 	end
-
 	return R, G, B
 end
 
-function Utility.RGBtoHSV(R, G, B)
-	local K = 0.0
-
-	if G < B then
-		local T = G
-		G = B
-		B = T
-		K = -1.0
+function Utility.RGBtoHSV(r, g, b)
+	local k = 0
+	if g < b then
+		local t = g
+		g = b
+		b = t
+		k = -1
 	end
 
-	if R < G then
-		local T = R
-		R = G
-		G = T
-		K = -2.0 / 6.0 - K
+	if r < g then
+		local t = r
+		r = g
+		g = t
+		k = -2/6 - k
 	end
 
-	local Chroma = R - (G < B and G or B)
-	local H = abs(K + (G - B) / (6.0 * Chroma + 1e-20))
-	local S = Chroma / (R + 1e-20)
-	local V = R
-
-	return H, S, V
+	local chroma = r - (g < b and g or b)
+	local h = abs(k + (g - b)/(6 * chroma + 1e-20))
+	local s = chroma/(r + 1e-20)
+	local v = r
+	return h, s, v
 end
 
-function Utility.HasValue(Table, Value)
-	for I, V in ipairs(Table) do
-		if V == Value then
+function Utility.HasValue(tbl, value)
+	for i, v in ipairs(tbl) do
+		if v == value then
 			return true
 		end
 	end
-
 	return false
 end
 
-function Utility.Remove(Table, Value)
-	for I, V in ipairs(Table) do
-		if V == Value then
-			remove(Table, I)
+function Utility.Remove(tbl, value)
+	for i, v in ipairs(tbl) do
+		if v == value then
+			remove(tbl, i)
 			break
 		end
 	end
 end
 
-function Utility.CopyValues(A, B)
-	if type(A) ~= "table" or type(B) ~= "table" then
-		return
-	end
-
-	for K, V in pairs(A, B) do
-		local Other = B[K]
-
-		if Other ~= nil then
-			A[K] = Utility.Copy(Other)
+function Utility.CopyValues(a, b)
+	if type(a) ~= "table" or type(b) ~= "table" then return end
+	for k, v in pairs(a) do
+		local other = b[k]
+		if other then
+			a[k] = Utility.Copy(other)
 		end
 	end
 end
 
-function Utility.Copy(Original)
-	local Copy = nil
-
-	if type(Original) == "table" then
-		Copy = {}
-
-		for K, V in next, Original, nil do
-			Copy[Utility.Copy(K)] = Utility.Copy(V)
+function Utility.Copy(orig)
+	local copy
+	if type(orig) == "table" then
+		copy = {}
+		for k, v in next, orig, nil do
+			copy[Utility.Copy(k)] = Utility.Copy(v)
 		end
 	else
-		Copy = Original
+		copy = orig
 	end
-
-	return Copy
+	return copy
 end
 
-function Utility.Contains(Table, Value)
-	if Table == nil then
-		return false
-	end
-
-	for I, V in ipairs(Table) do
-		if Value == V then
+function Utility.Contains(tbl, value)
+	if not tbl then return false end
+	for _, v in ipairs(tbl) do
+		if v == v then
 			return true
 		end
 	end
-
 	return false
 end
 
-function Utility.TableCount(Table)
-	local Result = 0
-
-	if Table ~= nil then
-		for K, V in pairs(Table) do
-			Result = Result + 1
-		end
+function Utility.TableCount(tbl)
+	if not table then return 0 end
+	local res = 0
+	for k, v in pairs(tbl) do
+		res = res + 1
 	end
-
-	return Result
+	return res
 end
 
 function Utility.IsWindows()
@@ -183,8 +163,14 @@ function Utility.IsMobile()
 	return love.system.getOS() == "Android" or love.system.getOS() == "iOS"
 end
 
-function Utility.Clamp(Value, Min, Max)
-	return Value < Min and Min or (Value > Max and Max or Value)
+function Utility.Clamp(value, min, max)
+	return value < min and min or (value > max and max or value)
+end
+
+function Utility.ClearTable(t)
+	for k in pairs(t) do
+		t[k] = nil
+	end
 end
 
 return Utility
