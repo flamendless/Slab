@@ -30,6 +30,7 @@ local gmatch = string.gmatch
 local insert = table.insert
 local lower = string.lower
 local sub = string.sub
+local gsub = string.gsub
 
 local FileSystem = require(SLAB_PATH .. ".Internal.Core.FileSystem")
 

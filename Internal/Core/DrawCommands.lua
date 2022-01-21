@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
 
 local insert = table.insert
 local remove = table.remove
@@ -34,6 +35,8 @@ local sin = math.sin
 local cos = math.cos
 local rad = math.rad
 local max = math.max
+local min = math.min
+local lg = love.graphics
 
 local DrawCommands = {
 	layers = {
@@ -47,6 +50,8 @@ local DrawCommands = {
 	}
 }
 
+local active_layer = DrawCommands.layers.normal
+local stats_category = "Slab Draw"
 local active_batch, pending_batches = {}, {}
 local shaders = {}
 
@@ -66,7 +71,7 @@ local types = {
 	image = 13,
 	sub_image = 14,
 	circle = 15,
-	draw_canvas = 16,
+	canvas = 16,
 	mesh = 17,
 	text_object = 18,
 	curve = 19,
@@ -76,8 +81,9 @@ local types = {
 }
 
 local layer_table = {}
-local active_layer = DrawCommands.layers.normal
-local stats_category = "Slab Draw"
+for _ in pairs(DrawCommands.layers) do insert(layer_table, {}) end
+local pool = {}
+for _ in pairs(types) do insert(pool, TablePool()) end
 
 local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
 	local cxx = cx + x
@@ -98,12 +104,10 @@ local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
 end
 
 local function GetLayerDebugInfo(layer)
-	if not layer then return end
 	local res = {}
-	local channels = {}
-
 	res["Channel Count"] = #layer
 
+	local channels = {}
 	for k, channel in pairs(layer) do
 		local collection = {}
 		collection["Batch Count"] = #channel
@@ -111,21 +115,20 @@ local function GetLayerDebugInfo(layer)
 	end
 
 	res["Channels"] = channels
-
 	return res
 end
 
 local function DrawRect(rect)
 	local stat_handle = Stats.Begin("DrawRect", stats_category)
-	local prev_line_w = love.graphics.getLineWidth()
+	local prev_line_w = lg.getLineWidth()
 	local px_offset = Rect.Mode == "line" and 0.5 or 0
 
-	love.graphics.setLineWidth(rect.line_w)
-	love.graphics.setColor(rect.color)
-	love.graphics.rectangle(rect.mode,
+	lg.setLineWidth(rect.line_w)
+	lg.setColor(rect.color)
+	lg.rectangle(rect.mode,
 		rect.x + px_offset, rect.y + px_offset,
 		rect.width, rect.height, rect.radius, rect.radius)
-	love.graphics.setLineWidth(prev_line_w)
+	lg.setLineWidth(prev_line_w)
 	Stats.End(stat_handle)
 end
 
@@ -157,255 +160,218 @@ end
 local function DrawTriangle(triangle)
 	local stat_handle = Stats.Begin("DrawTriangle", stats_category)
 	local vertices = GetTriangleVertices(triangle.x, triangle.y, triangle.radius, triangle.rotation)
-	love.graphics.setColor(triangle.color)
-	love.graphics.polygon(triangle.mode, vertices)
+	lg.setColor(triangle.color)
+	lg.polygon(triangle.mode, vertices)
 	Stats.End(stat_handle)
 end
 
 local function DrawCheck(check)
 	local stat_handle = Stats.Begin("DrawCheck", stats_category)
-	love.graphics.setColor(check.color)
+	lg.setColor(check.color)
 	local vertices = {
 		check.x - check.radius * 0.5, check.y,
 		check.x, check.y + check.radius,
 		check.x + check.radius, check.y - check.radius
 	}
-	love.graphics.line(vertices)
+	lg.line(vertices)
 	Stats.End(stat_handle)
 end
 
 local function DrawText(text)
 	local stat_handle = Stats.Begin("DrawText", stats_category)
-	love.graphics.setFont(text.font)
-	love.graphics.setColor(text.color)
-	love.graphics.print(text.text, text.x, text.y)
+	lg.setFont(text.font)
+	lg.setColor(text.color)
+	lg.print(text.text, text.x, text.y)
 	Stats.End(stat_handle)
 end
+
+local function DrawScissor(v) lg.setScissor(v.x, v.y, v.w, v.h) end
+local function TransformPush() lg.push() end
+local function TransformPop() lg.pop() end
+local function ApplyTransform(v) lg.applyTransform(v.transform) end
 
 local function DrawTextFormatted(text)
 	local stat_handle = Stats.Begin("DrawTextFormatted", stats_category)
-	love.graphics.setFont(text.font)
-	love.graphics.setColor(text.color)
-	love.graphics.printf(text.text, text.x, text.y, text.w, text.align)
+	lg.setFont(text.font)
+	lg.setColor(text.color)
+	lg.printf(text.text, text.x, text.y, text.w, text.align)
 	Stats.End(stat_handle)
 end
 
+local function IntersectScissor(v) lg.intersectScissor(v.x, v.y, v.w, v.h) end
+
 local function DrawTextObject(text)
 	local stat_handle = Stats.Begin("DrawTextObject", stats_category)
-	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.draw(text.text, text.x, text.y)
+	lg.setColor(1, 1, 1, 1)
+	lg.draw(text.text, text.x, text.y)
 	Stats.End(stat_handle)
 end
 
 local function DrawLine(line)
 	local stat_handle = Stats.Begin("DrawLine", stats_category)
-	local prev_line_w = love.graphics.getLineWidth()
-	love.graphics.setColor(line.color)
-	love.graphics.setLineWidth(line.width)
-	love.graphics.line(line.x1, line.y1, line.x2, line.y2)
-	love.graphics.setLineWidth(prev_line_w)
+	local prev_line_w = lg.getLineWidth()
+	lg.setColor(line.color)
+	lg.setLineWidth(line.width)
+	lg.line(line.x1, line.y1, line.x2, line.y2)
+	lg.setLineWidth(prev_line_w)
 	Stats.End(stat_handle)
 end
 
 local function DrawCross(cross)
 	local stat_handle = Stats.Begin("DrawCross", stats_category)
 	local x, y, r = cross.x, cross.y, cross.radius
-	love.graphics.setColor(cross.color)
-	love.graphics.line(x - r, y - r, x + r, y + r)
-	love.graphics.line(x - r, y + r, x + r, y - r)
+	lg.setColor(cross.color)
+	lg.line(x - r, y - r, x + r, y + r)
+	lg.line(x - r, y + r, x + r, y - r)
 	Stats.End(stat_handle)
 end
 
 local function DrawImage(image)
 	local stat_handle = Stats.Begin("DrawImage", stats_category)
-	love.graphics.setColor(image.color)
-	love.graphics.draw(image.image, image.x, image.y, image.rotation, image.sx, image.sy)
+	lg.setColor(image.color)
+	lg.draw(image.image, image.x, image.y, image.rotation, image.sx, image.sy)
 	Stats.End(stat_handle)
 end
 
 local function DrawSubImage(image)
 	local stat_handle = Stats.Begin('DrawSubImage', stats_category)
-	love.graphics.setColor(image.color)
-	love.graphics.draw(image.image, image.quad, image.transform)
+	lg.setColor(image.color)
+	lg.draw(image.image, image.quad, image.transform)
 	Stats.End(stat_handle)
 end
 
 local function DrawCircle(circle)
 	local stat_handle = Stats.Begin('DrawCircle', stats_category)
-	love.graphics.setColor(circle.color)
-	love.graphics.circle(circle.mode, circle.x, circle.y, circle.radius, circle.segments)
+	lg.setColor(circle.color)
+	lg.circle(circle.mode, circle.x, circle.y, circle.radius, circle.segments)
 	Stats.End(stat_handle)
 end
 
 local function DrawCurve(curve)
 	local stat_handle = Stats.Begin("DrawCurve", stats_category)
-	love.graphics.setColor(curve.color)
-	love.graphics.line(curve.points)
+	lg.setColor(curve.color)
+	lg.line(curve.points)
 	Stats.End(stat_handle)
 end
 
 local function DrawPolygon(polygon)
 	local stat_handle = Stats.Begin("DrawPolygon", stats_category)
-	love.graphics.setColor(polygon.color)
-	love.graphics.polygon(polygon.mode, polygon.points)
+	lg.setColor(polygon.color)
+	lg.polygon(polygon.mode, polygon.points)
 	Stats.End(stat_handle)
 end
 
 local function DrawCanvas(canvas)
 	local stat_handle = Stats.Begin("DrawCanvas", stats_category)
-	love.graphics.setBlendMode("alpha", "premultiplied")
-	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.draw(canvas.canvas, canvas.x, canvas.y)
-	love.graphics.setBlendMode("alpha")
+	lg.setBlendMode("alpha", "premultiplied")
+	lg.setColor(1, 1, 1, 1)
+	lg.draw(canvas.canvas, canvas.x, canvas.y)
+	lg.setBlendMode("alpha")
 	Stats.End(stat_handle)
 end
 
 local function DrawMesh(mesh)
 	local stat_handle = Stats.Begin("DrawMesh", stats_category)
-	love.graphics.setColor(1, 1, 1, 1)
-	love.graphics.draw(mesh.mesh, mesh.x, mesh.y)
+	lg.setColor(1, 1, 1, 1)
+	lg.draw(mesh.mesh, mesh.x, mesh.y)
 	Stats.End(stat_handle)
 end
 
-local function DrawElements(elements)
-	local stat_handle = Stats.Begin("Draw Elements", stats_category)
-	for k, v in pairs(elements) do
-		local e_type = v.type
-		if e_type == types.rect then
-			DrawRect(v)
-		elseif e_type == types.triangle then
-			DrawTriangle(v)
-		elseif e_type == types.text then
-			DrawText(v)
-		elseif e_type == types.scissor then
-			love.graphics.setScissor(v.x, v.y, v.w, v.h)
-		elseif e_type == types.transform_push then
-			love.graphics.push()
-		elseif e_type == types.transform_pop then
-			love.graphics.pop()
-		elseif e_type == types.apply_transform then
-			love.graphics.applyTransform(v.transform)
-		elseif e_type == types.check then
-			DrawCheck(v)
-		elseif e_type == types.line then
-			DrawLine(v)
-		elseif e_type == types.text_formatted then
-			DrawTextFormatted(v)
-		elseif e_type == types.intersect_scissor then
-			love.graphics.intersectScissor(v.x, v.y, v.w, v.h)
-		elseif e_type == types.cross then
-			DrawCross(v)
-		elseif e_type == types.image then
-			DrawImage(v)
-		elseif e_type == types.sub_image then
-			DrawSubImage(v)
-		elseif e_type == types.circle then
-			DrawCircle(v)
-		elseif e_type == types.draw_canvas then
-			DrawCanvas(v)
-		elseif e_type == types.mesh then
-			DrawMesh(v)
-		elseif e_type == types.text_object then
-			DrawTextObject(v)
-		elseif e_type == types.curve then
-			DrawCurve(v)
-		elseif e_type == types.polygon then
-			DrawPolygon(v)
-		elseif e_type == types.shader_push then
-			insert(shaders, 1, v.shader)
-			love.graphics.setShader(v.shader)
-		elseif e_type == types.shader_pop then
-			love.graphics.setShader(remove(shaders, 1))
-		end
-	end
-	Stats.End(stat_handle)
+local function ShaderPush(v)
+	insert(shaders, 1, v.shader)
+	lg.setShader(v.shader)
 end
+local function ShaderPop() lg.setShader(remove(shaders, 1)) end
+
+local DrawMethods = {
+	DrawRect, DrawTriangle, DrawText, DrawScissor, TransformPush, TransformPop,
+	ApplyTransform, DrawCheck, DrawLine, DrawTextFormatted, IntersectScissor,
+	DrawCross, DrawImage, DrawSubImage, DrawCircle, DrawCanvas, DrawMesh,
+	DrawTextObject, DrawCurve, DrawPolygon, ShaderPush, ShaderPop,
+}
 
 local function AssertActiveBatch()
 	assert(active_batch ~= nil, "DrawCommands.Begin was not called before commands were issued!")
 end
 
+local function DrawElements(elements)
+	local stat_handle = Stats.Begin("Draw Elements", stats_category)
+	for _, v in ipairs(elements) do
+		local e_type = v.type
+		print(e_type)
+		DrawMethods[e_type](v)
+	end
+	Stats.End(stat_handle)
+end
+
+local function DrawChannel(channel)
+	for _, v in ipairs(channel) do
+		DrawElements(v)
+	end
+end
+
+local function ClearBatch(batch)
+	for i = 1, #batch do
+		pool[batch[i].type]:push(batch[i])
+		batch[i] = nil
+	end
+end
+
 local function DrawLayer(layer, name)
 	if not layer then return end
-	if not layer.channels then return end
 	local stat_handle = Stats.Begin("Draw Layer " .. name, stats_category)
-	local keys = {}
-
-	for k, channel in pairs(layer.channels) do
-		insert(keys, k)
+	local min_channel, max_channel = 1e9, 0
+	for i in pairs(layer) do
+		min_channel = min(min_channel, i)
+		max_channel = max(max_channel, i)
 	end
-	sort(keys)
 
-	for i, c in ipairs(keys) do
-		local channel = layer.channels[c]
-		if channel then
-			for i, v in ipairs(channel) do
-				DrawElements(v.elements)
-			end
+	for i = min_channel, max_channel do
+		if layer[i] then
+			DrawChannel(layer[i])
 		end
 	end
 	Stats.End(stat_handle)
 end
 
 function DrawCommands.Reset()
-	Utility.ClearTable(layer_table)
-	Utility.ClearTable(pending_batches)
-	Utility.ClearTable(shaders)
-	Utility.ClearTable(active_batch)
-	active_layer = DrawCommands.layers.normal
-
-	for _, v in pairs(DrawCommands.layers) do
-		layer_table[v] = {}
+	for i = 1, DrawCommands.layers.mouse do
+		local layer = layer_table[i]
+		for j, channel in pairs(layer) do
+			for i, batch in ipairs(channel) do
+				ClearBatch(batch)
+			end
+			layer[j] = nil
+		end
 	end
+	active_layer = DrawCommands.layers.normal
+	active_batch = nil
+	Utility.ClearTable(shaders, ipairs)
 end
 
-function DrawCommands.Begin(opt)
-	opt = opt and {} or opt
-	opt.channel = opt.channel or 1
-
-	local active = layer_table[active_layer]
-	if not active then
-		layer_table[active_layer] = {}
+function DrawCommands.Begin(channel)
+	local layer = layer_table[active_layer]
+	channel = channel or 1
+	if not layer[channel] then
+		layer[channel] = {}
 	end
-	active = layer_table[active_layer]
-
-	if not active.channels then
-		active.channels = {}
-	end
-
-	local channels = active.channels
-	if not channels[opt.channel] then
-		channels[opt.channel] = {}
-	end
-
-	local c = channels[opt.channel]
-	Utility.ClearTable(active_batch)
-	active_batch.elements = {}
-	insert(channels, active_batch)
-	insert(pending_batches, 1, active_batch)
+	active_batch = {}
+	insert(layer[channel], active_batch)
+	insert(pending_batches, active_batch)
 end
 
 function DrawCommands.End(clear_elements)
 	if not active_batch then return end
 	if clear_elements then
-		Utility.ClearTable(active_batch.elements)
+		ClearBatch(active_batch)
 	end
-	love.graphics.setScissor()
-	remove(pending_batches, 1)
-	Utility.ClearTable(active_batch)
-
-	if #pending_batches > 0 then
-		active_batch = pending_batches[1]
-	end
+	lg.setScissor()
+	remove(pending_batches)
+	active_batch = pending_batches[#pending_batches]
 end
 
 function DrawCommands.SetLayer(layer)
-	for k, v in pairs(DrawCommands.layers) do
-		if layer == v then
-			active_layer = v
-			return
-		end
-	end
+	active_layer = layer
 end
 
 function DrawCommands.Execute()
@@ -417,7 +383,7 @@ function DrawCommands.Execute()
 	DrawLayer(layer_table[DrawCommands.layers.dialog], "dialog")
 	DrawLayer(layer_table[DrawCommands.layers.debug], "debug")
 	DrawLayer(layer_table[DrawCommands.layers.mouse], "mouse")
-	love.graphics.setShader()
+	lg.setShader()
 	Stats.End(stat_handle)
 end
 
@@ -447,237 +413,224 @@ function DrawCommands.Rectangle(mode, x, y, width, height, color, radius, segmen
 		AddArc(verts, bl, height - bl, bl, 270, 360, segments, x, y)
 		DrawCommands.Polygon(mode, verts, color)
 	else
-		local item = {
-			type = types.rect,
-			mode = mode,
-			x = x, y = y,
-			width = width, height = height,
-			color = color or COLOR_BLACK,
-			radius = radius or 0,
-			line_w = line_w or love.graphics.getLineWidth()
-		}
-		insert(active_batch.elements, item)
+		local item = pool[types.rect]:pop()
+		item.type = types.rect
+		item.mode = mode
+		item.x, item.y = x, y
+		item.width, item.height = width, height
+		item.color = color or COLOR_BLACK
+		item.radius = radius or 0
+		item.line_w = line_w or lg.getLineWidth()
+		insert(active_batch, item)
 	end
 end
 
 function DrawCommands.Triangle(mode, x, y, radius, rotation, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.triangle,
-		mode = mode,
-		x = x, y = y,
-		radius = radius,
-		rotation = rotation,
-		color = color or COLOR_BLACK
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.triangle]:pop()
+	item.type = types.triangle
+	item.mode = mode
+	item.x, item.y = x, y
+	item.radius = radius
+	item.rotation = rotation
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Print(text, x, y, color, font)
 	AssertActiveBatch()
-	local item = {
-		type = types.text,
-		text = text,
-		x = x, y = y,
-		color = color or COLOR_BLACK,
-		font = font
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.text]:pop()
+	item.type = types.text
+	item.text = text
+	item.x, item.y = x, y
+	item.color = color or COLOR_WHITE
+	item.font = font
+	insert(active_batch, item)
 end
 
 function DrawCommands.Printf(text, x, y, w, align, color, font)
 	AssertActiveBatch()
-	local item = {
-		type = types.text_formatted,
-		text = text,
-		x = x, y = y, w = w,
-		align = align or "left",
-		color = color or COLOR_BLACK,
-		font = font,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.text_formatted]:pop()
+	item.type = types.text_formatted
+	item.text = text
+	item.x, item.y = x, y
+	item.w = w
+	item.align = align or "left"
+	item.color = color or COLOR_WHITE
+	item.font = font
+	insert(active_batch, item)
 end
 
 function DrawCommands.Scissor(x, y, w, h)
 	AssertActiveBatch()
 	w = w and max(w, 0)
 	h = h and max(h, 0)
-	local item = {
-		type = types.scissor,
-		x = x, y = y,
-		w = w, h = h,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.scissor]:pop()
+	item.type = types.scissor
+	item.x, item.y = x, y
+	item.w, item.h = w, h
+	insert(active_batch, item)
 end
 
 function DrawCommands.IntersectScissor(x, y, w, h)
 	AssertActiveBatch()
 	w = w and max(w, 0) or 0
 	h = h and max(h, 0) or 0
-	local item = {
-		type = types.intersect_scissor,
-		x = x or 0, y = y or 0,
-		w = w, h = h
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.intersect_scissor]:pop()
+	item.type = types.intersect_scissor
+	item.x, item.y = x or 0, y or 0
+	item.w, item.h = w or 0, h or 0
+	insert(active_batch, item)
 end
 
 function DrawCommands.TransformPush()
 	AssertActiveBatch()
-	local item = { type = types.transform_push }
-	insert(active_batch.elements, item)
+	local item = pool[types.transform_push]:pop()
+	item.type = types.transform_push
+	insert(active_batch, item)
 end
 
 function DrawCommands.TransformPop()
 	AssertActiveBatch()
-	local item = { type = types.transform_pop }
-	insert(active_batch.elements, item)
+	local item = pool[types.transform_pop]:pop()
+	item.type = types.transform_pop
+	insert(active_batch, item)
 end
 
 function DrawCommands.ApplyTransform(transform)
 	AssertActiveBatch()
-	local item = {
-		type = types.apply_transform,
-		transform = transform
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.apply_transform]:pop()
+	item.type = types.apply_transformj
+	item.transform = transform
+	insert(active_batch, item)
 end
 
 function DrawCommands.Check(x, y, radius, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.check,
-		x = x, y = y,
-		radius = radius,
-		color = color or COLOR_BLACK
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.check]:pop()
+	item.type = types.check
+	item.x, item.y = x, y
+	item.radius = radius
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Line(x1, y1, x2, y2, width, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.line,
-		x1 = x1, y1 = y1,
-		x2 = x2, y2 = y2,
-		width = width,
-		color = color or COLOR_BLACK
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.line]:pop()
+	item.type = types.line
+	item.x1, item.y1 = x1, y1
+	item.x2, item.y2 = x2, y2
+	item.width = width
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Cross(x, y, radius, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.cross,
-		x = x, y = y,
-		radius = radius,
-		color = color or COLOR_BLACK
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.cross]:pop()
+	item.type = types.cross
+	item.x, item.y = x, y
+	item.radius = radius
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Image(x, y, image, rotation, sx, sy, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.image,
-		x = x, y = y,
-		image = image, rotation = rotation,
-		sx = sx, sy = sy,
-		color = color or COLOR_WHITE
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.image]:pop()
+	item.type = types.image
+	item.x, item.y = x, y
+	item.image = image
+	item.rotation = rotation
+	item.sx, item.sy = sx, sy
+	item.color = color or COLOR_WHITE
+	insert(active_batch, item)
 end
 
 function DrawCommands.SubImage(x, y, image, sub_x, sub_y, sw, sh, rotation, sx, sy, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.sub_image,
-		transform = love.math.newTransform(x, y, rotation, sx, sy),
-		image = image,
-		quad = love.graphics.newQuad(sub_x, sub_y, sw, sh, image:getDimensions()),
-		color = color or COLOR_WHITE,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.sub_image]:pop()
+	item.type = types.sub_image
+	item.transform = love.math.newTransform(x, y, rotation, sx, sy)
+	item.image = image
+	item.quad = lg.newQuad(sub_x, sub_y, sw, sh, image:getDimensions())
+	item.color = color or COLOR_WHITE
+	insert(active_batch, item)
 end
 
 function DrawCommands.Circle(mode, x, y, radius, color, segments)
 	AssertActiveBatch()
-	local item = {
-		type = types.circle,
-		mode = mode,
-		x = x, y = y,
-		radius = radius,
-		color = color or COLOR_BLACK,
-		segments = segments or 24
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.circle]:pop()
+	item.type = types.circle
+	item.mode = mode
+	item.x, item.y = x, y
+	item.radius = radius
+	item.color = color or COLOR_BLACK
+	item.segments = segments or 24
+	insert(active_batch, item)
 end
 
 function DrawCommands.DrawCanvas(canvas, x, y)
 	AssertActiveBatch()
-	local item = {
-		type = types.draw_canvas,
-		canvas = canvas,
-		x = x, y = y,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.canvas]:pop()
+	item.type = types.canvas
+	item.canvas = canvas
+	item.x, item.y = x, y
+	insert(active_batch, item)
 end
 
 function DrawCommands.Mesh(mesh, x, y)
 	AssertActiveBatch()
-	local item = {
-		type = types.mesh,
-		mesh = mesh,
-		x = x, y = y,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.mesh]:pop()
+	item.type = types.mesh
+	item.x, item.y = x, y
+	item.mesh = mesh
+	insert(active_batch, item)
 end
 
 function DrawCommands.Text(text, x, y)
 	AssertActiveBatch()
-	local item = {
-		type = types.text_object,
-		text = text,
-		x = x, y = y,
-		color = COLOR_BLACK,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.text_object]:pop()
+	item.type = types.text_object
+	item.text = text
+	item.x, item.y = x, y
+	item.color = COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Curve(points, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.curve,
-		points = points,
-		color = color or COLOR_BLACK,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.curve]:pop()
+	item.type = types.curve
+	item.points = points
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.Polygon(mode, points, color)
 	AssertActiveBatch()
-	local item = {
-		type = types.polygon,
-		mode = mode, points = points,
-		color = color or COLOR_BLACK,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.polygon]:pop()
+	item.type = types.polygon
+	item.mode = mode
+	item.points = points
+	item.color = color or COLOR_BLACK
+	insert(active_batch, item)
 end
 
 function DrawCommands.PushShader(shader)
 	AssertActiveBatch()
-	local item = {
-		type = types.shader_push,
-		shader = shader,
-	}
-	insert(active_batch.elements, item)
+	local item = pool[types.shader_push]:pop()
+	item.type = types.shader_push
+	item.shader = shader
+	insert(active_batch, item)
 end
 
 function DrawCommands.PopShader()
 	AssertActiveBatch()
-	local item = { type = types.shader_pop }
-	insert(active_batch.elements, item)
+	local item = pool[types.shader_pop]:pop()
+	item.type = types.shader_pop
+	insert(active_batch, item)
 end
 
 return DrawCommands
