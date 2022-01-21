@@ -24,39 +24,33 @@ SOFTWARE.
 
 --]]
 
+local find = string.find
+local sort = table.sort
+local sub = string.sub
+local match = string.match
+local gmatch = string.gmatch
+local gsub = string.gsub
+local insert = table.insert
+local remove = table.remove
+
 local FileSystem = {}
 
 local Syscalls = {}
-local Bit = require('bit')
-local FFI = require('ffi')
+local Bit = require("bit")
+local FFI = require("ffi")
 
-local function ShouldFilter(Name, Filter)
-	Filter = Filter == nil and "*.*" or Filter
+local GetDirectoryItems, Exists, IsDirectory
 
-	local Extension = FileSystem.GetExtension(Name)
-
-	if Filter ~= "*.*" then
-		local FilterExt = FileSystem.GetExtension(Filter)
-
-		if Extension ~= FilterExt then
-			return true
-		end
-	end
-
-	return false
+local function ShouldFilter(name, filter)
+	filter = filter or "*.*"
+	if filter == "*.*" then return false end
+	local ext = FileSystem.GetExtension(name)
+	local filter_ex = FileSystem.GetExtension(filter)
+	return ext ~= filter_ex
 end
 
-local GetDirectoryItems = nil
-local Exists = nil
-local IsDirectory = nil
-
-local function Access(Table, Param)
-	return Table[Param];
-end
-
-local function ErrorAtAccess(Table, Param)
-	return not pcall(Access, Table, Param);
-end
+local function Access(tbl, param) return tbl[param]; end
+local function ErrorAtAccess(tbl, param) return not pcall(Access, tbl, param); end
 
 --[[
 	The following code is based on the following sources:
@@ -104,8 +98,8 @@ if FFI.os == "Windows" then
 			const char* default, int* used);
 	]]
 
-	local WIN32_FIND_DATA = FFI.typeof('struct WIN32_FIND_DATAW')
-	local INVALID_HANDLE = FFI.cast('void*', -1)
+	local WIN32_FIND_DATA = FFI.typeof("struct WIN32_FIND_DATAW")
+	local INVALID_HANDLE = FFI.cast("void*", -1)
 
 	local function u2w(str, code)
 		local size = FFI.C.MultiByteToWideChar(code or 65001, 0, str, #str, nil, 0)
@@ -121,42 +115,37 @@ if FFI.os == "Windows" then
 		return FFI.string(buf)
 	end
 
-	GetDirectoryItems = function(Directory, Options)
-		local Result = {}
+	GetDirectoryItems = function(dir, opt)
+		local find_data = FFI.new(WIN32_FIND_DATA)
+		local handle = FFI.C.FindFirstFileW(u2w(dir .. "\\*"), find_data)
+		FFI.gc(handle, FFI.C.FindClose)
 
-		local FindData = FFI.new(WIN32_FIND_DATA)
-		local Handle = FFI.C.FindFirstFileW(u2w(Directory .. "\\*"), FindData)
-		FFI.gc(Handle, FFI.C.FindClose)
-
-		if Handle ~= nil then
+		local res = {}
+		if handle then
 			repeat
-				local Name = w2u(FindData.cFileName)
+				local name = w2u(find_data.cFileName)
+				if name ~= "." and name ~= ".." then
+					local add_dir = (find_data.dwFileAttributes == 16 or find_data.dwFileAttributes == 17) and opt.dirs
+					local add_file = find_data.dwFileAttributes == 32 and opt.files
 
-				if Name ~= "." and Name ~= ".." then
-					local AddDirectory = (FindData.dwFileAttributes == 16 or FindData.dwFileAttributes == 17) and Options.Directories
-					local AddFile = FindData.dwFileAttributes == 32 and Options.Files
-
-					if (AddDirectory or AddFile) and not ShouldFilter(Name, Options.Filter) then
-						table.insert(Result, Name)
+					if (add_dir or add_file) and not ShouldFilter(name, opt.filter) then
+						table.insert(res, name)
 					end
 				end
-
-			until not FFI.C.FindNextFileW(Handle, FindData)
+			until not FFI.C.FindNextFileW(handle, find_data)
 		end
-
-		FFI.C.FindClose(FFI.gc(Handle, nil))
-
-		return Result
+		FFI.C.FindClose(FFI.gc(handle, nil))
+		return res
 	end
 
-	Exists = function(Path)
-		local Attributes = FFI.C.GetFileAttributesW(u2w(Path))
-		return Attributes ~= FFI.C.INVALID_FILE_ATTRIBUTES
+	Exists = function(path)
+		local attr = FFI.C.GetFileAttributesW(u2w(path))
+		return attr ~= FFI.C.INVALID_FILE_ATTRIBUTES
 	end
 
-	IsDirectory = function(Path)
-		local Attributes = FFI.C.GetFileAttributesW(u2w(Path))
-		return Attributes ~= FFI.C.INVALID_FILE_ATTRIBUTES and Bit.band(Attributes, FFI.C.FILE_ATTRIBUTE_DIRECTORY) ~= 0
+	IsDirectory = function(path)
+		local attr = FFI.C.GetFileAttributesW(u2w(path))
+		return attr ~= FFI.C.INVALID_FILE_ATTRIBUTES and Bit.band(attr, FFI.C.FILE_ATTRIBUTE_DIRECTORY) ~= 0
 	end
 else
 	FFI.cdef[[
@@ -245,7 +234,7 @@ else
 		]]
 	end
 
-	local Stat = FFI.typeof('struct stat');
+	local stat = FFI.typeof("struct stat");
 
 	if FFI.arch == "x86" then
 		Syscalls.SYS_stat = 106
@@ -255,73 +244,59 @@ else
 		Syscalls.SYS_stat = 4
 	end
 
-
-	if(ErrorAtAccess(FFI.C, "stat64")) then
-
-		local function SysStat(Path, Buffer)
-			return FFI.C.syscall(Syscalls.SYS_stat, Path, Buffer)
+	if (ErrorAtAccess(FFI.C, "stat64")) then
+		local function SysStat(path, buffer)
+			return FFI.C.syscall(Syscalls.SYS_stat, path, buffer)
 		end
 
-		Exists = function(Path)
-			local Buffer = Stat()
-			return SysStat(Path, Buffer) == 0
+		Exists = function(path)
+			local buffer = stat()
+			return SysStat(path, buffer) == 0
 		end
 
-		IsDirectory = function(Path)
-			local Buffer = Stat()
-
-			if SysStat(Path, Buffer) == 0 then
-				return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
+		IsDirectory = function(path)
+			local buffer = stat()
+			if SysStat(path, buffer) == 0 then
+				return Bit.band(buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
 			end
 			return false
 		end
 	else
-		Exists = function(Path)
-			local Buffer = Stat()
-			return FFI.C.stat64(Path, Buffer) == 0
+		Exists = function(path)
+			local buffer = stat()
+			return FFI.C.stat64(path, buffer) == 0
 		end
 
-		IsDirectory = function(Path)
-			local Buffer = Stat()
-
-			if FFI.C.stat64(Path, Buffer) == 0 then
-				return Bit.band(Buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
+		IsDirectory = function(path)
+			local buffer = stat()
+			if FFI.C.stat64(path, buffer) == 0 then
+				return Bit.band(buffer.st_mode, 0xf000) == FFI.C.S_IFDIR
 			end
-
 			return false
 		end
 	end
 
+	GetDirectoryItems = function(dir, opt)
+		local DIR = FFI.C.opendir(dir)
+		if DIR then
+			local res = {}
+			local entry = FFI.C.readdir(DIR)
+			while entry ~= nil do
+				local name = FFI.string(entry.d_name)
+				if name ~= "." and name ~= ".." and sub(name, 1, 1) ~= "." then
+					local add_dir = entry.d_type == 4 and opt.dirs
+					local add_file = entry.d_type == 8 and opt.files
 
-	GetDirectoryItems = function(Directory, Options)
-		local Result = {}
-
-		local DIR = FFI.C.opendir(Directory)
-
-		if DIR ~= nil then
-			local Entry = FFI.C.readdir(DIR)
-
-			while Entry ~= nil do
-				local Name = FFI.string(Entry.d_name)
-
-				if Name ~= "." and Name ~= ".." and string.sub(Name, 1, 1) ~= "." then
-					local AddDirectory = Entry.d_type == 4 and Options.Directories
-					local AddFile = Entry.d_type == 8 and Options.Files
-
-					if (AddDirectory or AddFile) and not ShouldFilter(Name, Options.Filter) then
-						table.insert(Result, Name)
+					if (add_dir or add_file) and not ShouldFilter(name, opt.filter) then
+						table.insert(res, name)
 					end
 				end
-
-				Entry = FFI.C.readdir(DIR)
+				entry = FFI.C.readdir(DIR)
 			end
-
 			FFI.C.closedir(DIR)
+			return res
 		end
-
-		return Result
 	end
-
 end
 
 function FileSystem.Separator()
@@ -329,46 +304,43 @@ function FileSystem.Separator()
 	return "/"
 end
 
-function FileSystem.GetDirectoryItems(Directory, Options)
-	Options = Options == nil and {} or Options
-	Options.Files = Options.Files == nil and true or Options.Files
-	Options.Directories = Options.Directories == nil and true or Options.Directories
-	Options.Filter = Options.Filter == nil and "*.*" or Options.Filter
+local DEF_OPT = {
+	files = true,
+	dirs = true,
+	filter = "*.*"
+}
 
-	if string.sub(Directory, #Directory, #Directory) ~= FileSystem.Separator() then
-		Directory = Directory .. FileSystem.Separator()
+function FileSystem.GetDirectoryItems(dir, opt)
+	opt = opt or DEF_OPT
+
+	local len = #dir
+	if sub(dir, len, len) ~= FileSystem.Separator() then
+		dir = dir .. FileSystem.Separator()
 	end
 
-	local Result = GetDirectoryItems(Directory, Options)
-
-	table.sort(Result)
-
-	return Result
+	local res = GetDirectoryItems(dir, opt)
+	sort(res)
+	return res
 end
 
-function FileSystem.Exists(Path)
-	return Exists(Path)
+function FileSystem.Exists(path)
+	return Exists(path)
 end
 
-function FileSystem.IsDirectory(Path)
-	return IsDirectory(Path)
+function FileSystem.IsDirectory(path)
+	return IsDirectory(path)
 end
 
-function FileSystem.Parent(Path)
-	local Result = Path
-
-	local Index = 1
-	local I = Index
+function FileSystem.Parent(path)
+	local index = 1
+	local i = index
 	repeat
-		Index = I
-		I = string.find(Path, FileSystem.Separator(), Index + 1, true)
-	until I == nil
+		index = i
+		i = find(path, FileSystem.Separator(), index + 1, true)
+	until i == nil
 
-	if Index > 1 then
-		Result = string.sub(Path, 1, Index - 1)
-	end
-
-	return Result
+	local res = (index > 1) and sub(path, 1, index - 1) or path
+	return res
 end
 
 --[[
@@ -381,16 +353,12 @@ end
 
 	Return: [Boolean] True if the path is absolute, false if it is relative.
 --]]
-function FileSystem.IsAbsolute(Path)
-	if Path == nil or Path == "" then
-		return false
-	end
-
+function FileSystem.IsAbsolute(path)
+	if (not path) or (path == "") then return false end
 	if FFI.os == "Windows" then
-		return string.match(Path, "(.:-)\\") ~= nil
+		return match(path, "(.:-)\\") ~= nil
 	end
-
-	return string.sub(Path, 1, 1) == FileSystem.Separator()
+	return sub(path, 1, 1) == FileSystem.Separator()
 end
 
 --[[
@@ -404,23 +372,17 @@ end
 	Return: [String] The drive letter, colon, and path separator are returned. On Unix platforms, just the '/'
 		character is returned.
 --]]
-function FileSystem.GetDrive(Path)
-	if not FileSystem.IsAbsolute(Path) then
-		return ""
-	end
-
+function FileSystem.GetDrive(path)
+	if not FileSystem.IsAbsolute(path) then return "" end
 	if FFI.os == "Windows" then
-		local Result = string.match(Path, "(.:-)\\")
-
-		if Result == nil then
-			Result = string.match(Path, "(.:-)" .. FileSystem.Separator())
+		local res = match(path, "(.:-)\\")
+		if not res then
+			res = match(path, "(.:-)" .. FileSystem.Separator())
 		end
-
-		if Result ~= nil then
-			return Result .. FileSystem.Separator()
+		if res then
+			return res .. FileSystem.Separator()
 		end
 	end
-
 	return FileSystem.Separator()
 end
 
@@ -431,12 +393,9 @@ end
 
 	Return: [Boolean] True if the given path is a drive.
 --]]
-function FileSystem.IsDrive(Path)
-	if Path == nil then
-		return false
-	end
-
-	return FileSystem.GetDrive(Path) == Path
+function FileSystem.IsDrive(path)
+	if not path then return false end
+	return FileSystem.GetDrive(path) == path
 end
 
 --[[
@@ -450,152 +409,116 @@ end
 
 	Return: [String] The sanitized path string.
 --]]
-function FileSystem.Sanitize(Path)
-	local Result = ""
+function FileSystem.Sanitize(path)
+	local items = {}
 
-	local Items = {}
-	for Item in string.gmatch(Path, "([^" .. FileSystem.Separator() .. "]+)") do
-		-- Always add the first item. If the given path is relative, then this will help preserve that.
-		if #Items == 0 then
-			table.insert(Items, Item)
+	for item in gmatch(path, "([^" .. FileSystem.Separator() .. "]+)") do
+		if #items == 0 then
+			insert(items, item)
 		else
-			-- If the parent directory item is found, pop the last item off of the stack.
-			if Item == ".." then
-				table.remove(Items, #Items)
-			-- Ignore same directory item and push the item to the stack.
-			elseif Item ~= "." then
-				table.insert(Items, Item)
+			if item == ".." then
+				remove(items, #items)
+			elseif item ~= "." then
+				insert(items, item)
 			end
 		end
 	end
 
-	for I, Item in ipairs(Items) do
-		if Result == "" then
-			if Item == "." or Item == ".." then
-				Result = Item
+	local res = ""
+	for i, item in ipairs(items) do
+		if res == "" then
+			if item == "." or item == ".." then
 			else
-				if FileSystem.IsAbsolute(Path) then
-					Result = FileSystem.GetDrive(Path) .. Item
+				if FileSystem.IsAbsolute(path) then
+					res = FileSystem.GetDrive(path) .. item
 				else
-					Result = Item
+					res = item
 				end
 			end
 		else
-			Result = Result .. FileSystem.Separator() .. Item
+			res = res .. FileSystem.Separator() .. item
 		end
 	end
-
-	return Result
+	return res
 end
 
-function FileSystem.GetBaseName(Path, RemoveExtension)
-	local Result = string.match(Path, "^.+/(.+)$")
-
-	if Result == nil then
-		Result = Path
-	end
-
-	if RemoveExtension then
-		Result = FileSystem.RemoveExtension(Result)
-	end
-
-	return Result
+function FileSystem.GetBaseName(path, remove_ext)
+	local res = match(path, "^.+/(.+)$")
+	res = (not res) and path or res
+	res = remove_ext and FileSystem.RemoveExtension(res) or res
+	return res
 end
 
-function FileSystem.GetDirectory(Path)
-	local Result = string.match(Path, "(.+)/")
-
-	if Result == nil then
-		Result = Path
-	end
-
-	return Result
+function FileSystem.GetDirectory(path)
+	local res = match(path, "(.+)/")
+	res = (not res) and path or res
+	return res
 end
 
-function FileSystem.GetRootDirectory(Path)
-	local Result = Path
-
-	local Index = string.find(Path, FileSystem.Separator(), 1, true)
-
-	if Index ~= nil then
-		Result = string.sub(Path, 1, Index - 1)
-	end
-
-	return Result
+function FileSystem.GetRootDirectory(path)
+	local index = find(path, FileSystem.Separator(), 1, true)
+	local res = index and sub(path, 1, index - 1) or path
+	return res
 end
 
 function FileSystem.GetSlabPath()
-	local Path = love.filesystem.getSource()
-	if not FileSystem.IsDirectory(Path) then
-		Path = love.filesystem.getSourceBaseDirectory()
+	local path = love.filesystem.getSource()
+	if not FileSystem.IsDirectory(path) then
+		path = love.filesystem.getSourceBaseDirectory()
 	end
-	return Path .. "/Slab"
+	return path .. "/Slab"
 end
 
-function FileSystem.GetExtension(Path)
-	local Result = string.match(Path, "[^.]+$")
-
-	if Result == nil then
-		Result = ""
-	end
-
-	return Result
+function FileSystem.GetExtension(path)
+	local res = match(path, "[^.]+$")
+	res = (not res) and "" or res
+	return res
 end
 
-function FileSystem.RemoveExtension(Path)
-	local Result = string.match(Path, "(.+)%.")
-
-	if Result == nil then
-		Result = Path
-	end
-
-	return Result
+function FileSystem.RemoveExtension(path)
+	local res = match(path, "(.+)%.")
+	res = (not res) and path or res
+	return res
 end
 
-function FileSystem.ReadContents(Path, IsBinary, IsDefault)
-	local Result, Error
-
-	if IsDefault then
-		Result, Error = love.filesystem.read(Path)
+function FileSystem.ReadContents(path, is_binary, is_default)
+	local res, err
+	if is_default then
+		res, err = love.filesystem.read(path)
 	else
-		local Handle
-		local Mode = IsBinary and "rb" or "r"
-		Handle, Error = io.open(Path, Mode)
-		if Handle ~= nil then
-			Result = Handle:read("*a")
-			Handle:close()
+		local handle
+		local mode = is_binary and "rb" or "r"
+		handle, error = io.open(path, mode)
+		if handle then
+			res = handle:read("*a")
+			handle:close()
 		end
 	end
-
-	return Result, Error
+	return res, err
 end
 
-function FileSystem.SaveContents(Path, Contents, IsDefault)
-	local Result, Error
-
-	if IsDefault then
-		Result, Error = love.filesystem.write(Path, Contents)
+function FileSystem.SaveContents(path, contents, is_default)
+	local res, err
+	if is_default then
+		res, err = love.filesystem.write(path, contents)
 	else
-		local Handle, Error = io.open(Path, "w")
-		if Handle ~= nil then
-			Handle:write(Contents)
-			Handle:close()
-			Result = true
+		local handle
+		handle, error = io.open(path, "w")
+		if handle then
+			handle:write(contents)
+			handle:close()
+			ers = true
 		end
 	end
-
-	return Result, Error
+	return res, err
 end
 
 function FileSystem.GetClipboard()
-	local Contents = love.system.getClipboardText()
-
-	if Contents ~= nil then
-		-- Remove Windows style newlines.
-		Contents = string.gsub(Contents, "\r\n", "\n")
+	local contents = love.system.getClipboardText()
+	if contents then
+		contents = gsub(contents, "\r\n", "\n")
 	end
-
-	return Contents
+	return contents
 end
 
 return FileSystem
