@@ -27,204 +27,176 @@ SOFTWARE.
 local floor = math.floor
 local insert = table.insert
 local max = math.max
+local sub = string.sub
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(SLAB_PATH .. ".Style")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Text = {}
 
-function Text.Begin(Label, Options)
-	local StatHandle = Stats.Begin('Text', 'Slab')
+local TBL_EMPTY = {}
 
-	Options = Options == nil and {} or Options
-	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
-	Options.Pad = Options.Pad == nil and 0.0 or Options.Pad
-	Options.IsSelectableTextOnly = Options.IsSelectableTextOnly == nil and false or Options.IsSelectableTextOnly
-	Options.IsSelectable = Options.IsSelectable == nil and Options.IsSelectableTextOnly or Options.IsSelectable
-	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
-	Options.AddItem = Options.AddItem == nil and true or Options.AddItem
-	Options.HoverColor = Options.HoverColor == nil and Style.TextHoverBgColor or Options.HoverColor
-	Options.URL = Options.URL == nil and nil or Options.URL
+function Text.Begin(label, opt)
+	local stat_handle = Stats.Begin("Text", "Slab")
 
-	if Options.URL ~= nil then
-		Options.IsSelectableTextOnly = true
-		Options.Color = Style.TextURLColor
+	opt = opt or TBL_EMPTY
+
+	local color = opt.Color or Style.TextColor
+	local pad = opt.Pad or 0
+	local is_selectable_text_only = opt.IsSelectableTextOnly
+	local is_selectable = opt.IsSelectable or opt.IsSelectableTextOnly
+	local is_selected = opt.IsSelected
+	local add_item = opt.AddItem ~= false
+	local hover_color = opt.HoverColor or Style.TextHoverBgColor
+	local url = opt.URL
+
+	if url then
+		is_selectable_text_only = true
+		color = Style.TextURLColor
 	end
 
-	local W = Text.GetWidth(Label)
-	local H = Style.Font:getHeight()
-	local PadX = Options.Pad
+	local w = Text.GetWidth(label)
+	local h = Style.Font:getHeight()
+	LayoutManager.AddControl(w + pad, h , "Text")
+	local res = false
+	local win_id = Window.GetItemId(label)
+	local x, y = Cursor.GetPosition()
+	local mx, my = Window.GetMousePosition()
+	local is_obstructed = Window.IsObstructedAtMouse()
 
-	LayoutManager.AddControl(W + PadX, H, 'Text')
-
-	local Color = Options.Color
-	local Result = false
-	local WinId = Window.GetItemId(Label)
-	local X, Y = Cursor.GetPosition()
-	local MouseX, MouseY = Window.GetMousePosition()
-
-	local IsObstructed = Window.IsObstructedAtMouse()
-
-	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Window.SetHotItem(WinId)
+	if not is_obstructed and x <= mx and mx <= x + w and y <= my and my <= y + h then
+		Window.SetHotItem(win_id)
 	end
 
-	local WinX, WinY, WinW, WinH = Region.GetContentBounds()
-	local CheckX = Options.IsSelectableTextOnly and X or WinX
+	local wx, wy, ww, wh = Region.GetContentBounds()
+	local check_x = is_selectable_text_only and x or wx
 	-- The region's width may have been reset prior to the first control being added. Account for this discrepency.
-	local CheckW = Options.IsSelectableTextOnly and W or max(WinW, W)
-	local Hovered = not IsObstructed and CheckX <= MouseX and MouseX <= CheckX + CheckW + PadX and Y <= MouseY and MouseY <= Y + H
+	local check_w = is_selectable_text_only and w or max(ww, w)
+	local hovered = not is_obstructed and
+		check_x <= mx and mx <= check_x + check_w + pad and
+		y <= my and my <= y + h
 
-	if Options.IsSelectable or Options.IsSelected then
-		if Hovered or Options.IsSelected then
-			DrawCommands.Rectangle('fill', CheckX, Y, CheckW + PadX, H, Options.HoverColor)
+	if is_selectable or is_selected then
+		if hovered or is_selected then
+			DrawCommands.Rectangle("fill", check_x, y, check_w + pad, h, hover_color)
 		end
-
-		if Hovered then
-			if Options.SelectOnHover then
-				Result = true
-			else
-				if Mouse.IsClicked(1) then
-					Result = true
-				end
-			end
-		end
+		res = hovered and (opt.SelectOnHover or Mouse.IsClicked(1))
 	end
 
-	if Hovered and Options.URL ~= nil then
-		Mouse.SetCursor('hand')
-
+	if hovered and url then
+		Mouse.SetCursor("hand")
 		if Mouse.IsClicked(1) then
-			love.system.openURL(Options.URL)
+			love.system.openURL(url)
 		end
 	end
 
-	DrawCommands.Print(Label, floor(X + PadX * 0.5), floor(Y), Color, Style.Font)
+	DrawCommands.Print(label, floor(x + pad * 0.5), floor(y), color, Style.Font)
 
-	if Options.URL ~= nil then
-		DrawCommands.Line(X + PadX, Y + H, X + W, Y + H, 1.0, Color)
+	if url then
+		DrawCommands.Line(x + pad, y + h, x + w, y + h, 1, color)
 	end
 
-	Cursor.SetItemBounds(X, Y, W + PadX, H)
-	Cursor.AdvanceY(H)
-
-	if Options.AddItem then
-		Window.AddItem(X, Y, W + PadX, H, WinId)
+	Cursor.SetItemBounds(x, y, w + pad, h)
+	Cursor.AdvanceY(h)
+	if add_item then
+		Window.AddItem(x, y, w + pad, h, win_id)
 	end
-
-	Stats.End(StatHandle)
-
-	return Result
+	Stats.End(stat_handle)
+	return res
 end
 
-function Text.BeginFormatted(Label, Options)
-	local StatHandle = Stats.Begin('Textf', 'Slab')
-
-	local WinW, WinH = Window.GetBorderlessSize()
-
-	Options = Options == nil and {} or Options
-	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
-	Options.W = Options.W == nil and WinW or Options.W
-	Options.Align = Options.Align == nil and 'left' or Options.Align
-
+function Text.BeginFormatted(label, opt)
+	local stat_handle = Stats.Begin("Textf", "Slab")
+	local ww, wh = Window.GetBorderlessSize()
+	opt = opt or TBL_EMPTY
+	local w = opt.W or ww
 	if Window.IsAutoSize() then
-		Options.W = love.graphics.getWidth()
+		w = love.graphics.getWidth()
 	end
 
-	local Width, Wrapped = Style.Font:getWrap(Label, Options.W)
-	local H = #Wrapped * Style.Font:getHeight()
-
-	LayoutManager.AddControl(Width, H, 'TextFormatted')
-
-	local X, Y = Cursor.GetPosition()
-
-	DrawCommands.Printf(Label, floor(X), floor(Y), Width, Options.Align, Options.Color, Style.Font)
-
-	Cursor.SetItemBounds(floor(X), floor(Y), Width, H)
-	Cursor.AdvanceY(H)
-
+	local width, wrapped = Style.Font:getWrap(label, w)
+	local height = #wrapped * Style.Font:getHeight()
+	LayoutManager.AddControl(width, height, "TextFormatted")
+	local x, y = Cursor.GetPosition()
+	local fx, fy = floor(x), floor(y)
+	DrawCommands.Printf(label, x, y, width, opt.Align or "left",
+		opt.Color or Style.TextColor, Style.Font)
+	Cursor.SetItemBounds(x, y, width, height)
+	Cursor.AdvanceY(height)
 	Window.ResetContentSize()
-	Window.AddItem(floor(X), floor(Y), Width, H)
-
-	Stats.End(StatHandle)
+	Window.AddItem(x, y, width, height)
+	Stats.End(stat_handle)
 end
 
-function Text.BeginObject(Object, Options)
-	local StatHandle = Stats.Begin('TextObject', 'Slab')
-
-	local WinW, WinH = Window.GetBorderlessSize()
-
-	Options = Options == nil and {} or Options
-	Options.Color = Options.Color == nil and Style.TextColor or Options.Color
-
-	local W, H = Object:getDimensions()
-
-	LayoutManager.AddControl(W, H, 'TextObject')
-
-	local X, Y = Cursor.GetPosition()
-
-	DrawCommands.Text(Object, floor(X), floor(Y), Options.Color)
-
-	Cursor.SetItemBounds(floor(X), floor(Y), W, H)
-	Cursor.AdvanceY(Y)
-
+function Text.BeginObject(object, opt)
+	local stat_handle = Stats.Begin("TextObject", "Slab")
+	local ww, wh = Window.GetBorderlessSize()
+	opt = opt or TBL_EMPTY
+	local color = opt.Color or Style.TextColor
+	local w, h = object:getDimensions()
+	LayoutManager.AddControl(w, h, "TextObject")
+	local x, y = Cursor.GetPosition()
+	local fx, fy = floor(x), floor(y)
+	DrawCommands.Text(object, fx, fy, color)
+	Cursor.SetItemBounds(fx, fy, w, h)
+	Cursor.AdvanceY(y)
 	Window.ResetContentSize()
-	Window.AddItem(floor(X), floor(Y), W, H)
-
-	Stats.End(StatHandle)
+	Window.AddItem(fx, fy, w, h)
+	Stats.End(stat_handle)
 end
 
-function Text.GetWidth(Label)
-	return Style.Font:getWidth(Label)
+function Text.GetWidth(label)
+	return Style.Font:getWidth(label)
 end
 
 function Text.GetHeight()
 	return Style.Font:getHeight()
 end
 
-function Text.GetSize(Label)
-	return Style.Font:getWidth(Label), Style.Font:getHeight()
+function Text.GetSize(label)
+	return Style.Font:getWidth(label), Style.Font:getHeight()
 end
 
-function Text.GetSizeWrap(Label, Width)
-	local W, Lines = Style.Font:getWrap(Label, Width)
-	return W, #Lines * Text.GetHeight()
+function Text.GetSizeWrap(label, width)
+	local w, lines = Style.Font:getWrap(label, width)
+	return w, #lines * Text.GetHeight()
 end
 
-function Text.GetLines(Label, Width)
-	local W, Lines = Style.Font:getWrap(Label, Width)
-
-	local Start = 0
-	for I, V in ipairs(Lines) do
-		if #V == 0 then
-			Lines[I] = "\n"
+local STR_NEWLINE = "\n"
+local STR_EMPTY = ""
+function Text.GetLines(label, width)
+	local w, lines = Style.Font:getWrap(label, width)
+	local start = 0
+	for i, v in ipairs(lines) do
+		local len_v = #v
+		if len_v == 0 then
+			lines[i] = "\n"
 		else
-			local Offset = Start + #V + 1
-			local Ch = string.sub(Label, Offset, Offset)
-
-			if Ch == '\n' then
-				Lines[I] = Lines[I] .. "\n"
+			local offset = start + len_v + 1
+			local ch = sub(label, offset, offset)
+			if ch == STR_NEWLINE then
+				lines[i] = lines[i] .. STR_NEWLINE
 			end
 		end
-
-		Start = Start + #Lines[I]
+		start = start + #lines[i]
 	end
 
-	if string.sub(Label, #Label, #Label) == '\n' then
-		insert(Lines, "")
+	local len_label = #label
+	if sub(label, len_label, len_label) == STR_NEWLINE then
+		insert(lines, STR_EMPTY)
 	end
 
-	if #Lines == 0 then
-		insert(Lines, "")
+	if #lines == 0 then
+		insert(lines, STR_EMPTY)
 	end
 
-	return Lines
+	return lines
 end
 
 function Text.CreateObject()
