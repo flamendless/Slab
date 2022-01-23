@@ -24,8 +24,8 @@ SOFTWARE.
 
 --]]
 
-local Slab = require 'Slab'
-local SlabTest = require 'SlabTest'
+local Slab = require "Slab"
+local SlabTest = require "SlabTest"
 
 function love.load(args)
 	love.graphics.setBackgroundColor(0.07, 0.07, 0.07)

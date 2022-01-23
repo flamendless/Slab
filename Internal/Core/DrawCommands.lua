@@ -298,7 +298,6 @@ local function DrawElements(elements)
 	local stat_handle = Stats.Begin("Draw Elements", stats_category)
 	for _, v in ipairs(elements) do
 		local e_type = v.type
-		print(e_type)
 		DrawMethods[e_type](v)
 	end
 	Stats.End(stat_handle)

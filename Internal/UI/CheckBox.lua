@@ -26,81 +26,80 @@ SOFTWARE.
 
 local max = math.max
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(SLAB_PATH .. ".Style")
+local Text = require(SLAB_PATH .. ".Internal.UI.Text")
+local Tooltip = require(SLAB_PATH .. ".Internal.UI.Tooltip")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local CheckBox = {}
 
-function CheckBox.Begin(Enabled, Label, Options)
-	local StatHandle = Stats.Begin('CheckBox', 'Slab')
+local STR_EMPTY = ""
+local TBL_EMPTY = {}
+local TBL_IGNORE = {ignore = true}
+local label_color = {}
 
-	Label = Label == nil and "" or Label
+function CheckBox.Begin(enabled, label, opt)
+	local stat_handle = Stats.Begin("CheckBox", "Slab")
+	label = label or STR_EMPTY
+	opt = opt or TBL_EMPTY
+	local id = opt.Id or label
+	local rounding = opt.Rounding or Style.CheckBoxRounding
+	local size = opt.Size or 16
+	local disabled = opt.Disabled
+	local item_id = Window.GetItemId(id)
+	local bw, bh = size, size
+	local tw, th = Text.GetSize(label)
+	local w = bw + Cursor.PadX() + 2 + tw
+	local h = max(bh, th)
+	local radius = size * 0.5
+	LayoutManager.AddControl(w, h, "CheckBox")
+	local res = false
+	local color = disabled and Style.CheckBoxDisabledColor or Style.ButtonColor
+	local x, y = Cursor.GetPosition()
+	local mx, my = Window.GetMousePosition()
+	local is_obstructed = Window.IsObstructedAtMouse()
 
-	Options = Options == nil and {} or Options
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.Id = Options.Id == nil and Label or Options.Id
-	Options.Rounding = Options.Rounding == nil and Style.CheckBoxRounding or Options.Rounding
-	Options.Size = Options.Size == nil and 16 or Options.Size
-	Options.Disabled = Options.Disabled or false
-
-	local Id = Window.GetItemId(Options.Id and Options.Id or ('_' .. Label .. '_CheckBox'))
-	local BoxW, BoxH = Options.Size, Options.Size
-	local TextW, TextH = Text.GetSize(Label)
-	local W = BoxW + Cursor.PadX() + 2.0 + TextW
-	local H = max(BoxH, TextH)
-	local Radius = Options.Size * 0.5
-
-	LayoutManager.AddControl(W, H, 'CheckBox')
-
-	local Result = false
-	local Color = Options.Disabled and Style.CheckBoxDisabledColor or Style.ButtonColor
-
-	local X, Y = Cursor.GetPosition()
-	local MouseX, MouseY = Window.GetMousePosition()
-	local IsObstructed = Window.IsObstructedAtMouse()
-	if not IsObstructed and not Options.Disabled and X <= MouseX and MouseX <= X + BoxW and Y <= MouseY and MouseY <= Y + BoxH then
-		Color = Style.ButtonHoveredColor
-
+	if not is_obstructed and not disabled and
+		x <= mx and mx <= x + bw and
+		y <= my and my <= y + bh then
+		color = Style.ButtonHoveredColor
 		if Mouse.IsDown(1) then
-			Color = Style.ButtonPressedColor
+			color = Style.ButtonPressedColor
 		elseif Mouse.IsReleased(1) then
-			Result = true
+			res = true
 		end
 	end
 
-	DrawCommands.Rectangle('fill', X, Y, BoxW, BoxH, Color, Options.Rounding)
-	if Enabled then
-		DrawCommands.Cross(X + Radius, Y + Radius, Radius - 1.0, Style.CheckBoxSelectedColor)
+	DrawCommands.Rectangle("fill", x, y, bw, bh, color, rounding)
+	if checked then
+		DrawCommands.Cross(x + radius, y + radius, radius - 1, Style.CheckBoxSelectedColor)
 	end
-	if Label ~= "" then
-		local CursorY = Cursor.GetY()
-		Cursor.AdvanceX(BoxW + 2.0)
-		LayoutManager.Begin('Ignore', {Ignore = true})
-		Text.Begin(Label, {Color = Options.Disabled and Style.TextDisabledColor or nil})
+
+	if label ~= STR_EMPTY then
+		local cy = Cursor.GetY()
+		Cursor.AdvanceX(bw + 2)
+		LayoutManager.Begin("Ignore", TBL_IGNORE)
+		label_color.Color = disabled and Style.TextDisabledColor
+		Text.Begin(label, label_color)
 		LayoutManager.End()
-		Cursor.SetY(CursorY)
+		Cursor.SetY(cy)
 	end
 
-	if not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H then
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(Id)
+	if not is_obstructed and x <= mx and mx <= x + w and y <= my and my <= y + h then
+		Tooltip.Begin(opt.Tooltip or STR_EMPTY)
+		Window.SetHotItem(item_id)
 	end
 
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(H)
-
-	Window.AddItem(X, Y, W, H, Id)
-
-	Stats.End(StatHandle)
-
-	return Result
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.AdvanceY(h)
+	Window.AddItem(x, y, w, h, item_id)
+	Stats.End(stat_handle)
+	return res
 end
 
 return CheckBox
