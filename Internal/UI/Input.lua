@@ -33,297 +33,250 @@ local huge = math.huge
 local gsub = string.gsub
 local sub = string.sub
 local match = string.match
-local len = string.len
 local byte = string.byte
 local find = string.find
+local format = string.format
+local rep = string.rep
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
-local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local UTF8 = require('utf8')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local FileSystem = require(SLAB_PATH .. ".Internal.Core.FileSystem")
+local Keyboard = require(SLAB_PATH .. ".Internal.Input.Keyboard")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(SLAB_PATH .. ".Style")
+local Text = require(SLAB_PATH .. ".Internal.UI.Text")
+local Tooltip = require(SLAB_PATH .. ".Internal.UI.Tooltip")
+local UTF8 = require("utf8")
+local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Input = {}
-local Instances = {}
-local Focused = nil
-local LastFocused = nil
-local TextCursorPos = 0
-local TextCursorPosLine = 0
-local TextCursorPosLineMax = 0
-local TextCursorPosLineNumber = 1
-local TextCursorAnchor = -1
-local TextCursorAlpha = 0.0
-local FadeIn = true
-local DragSelect = false
-local FocusToNext = false
-local LastText = ""
-local Pad = Region.GetScrollPad() + Region.GetScrollBarSize()
-local PendingFocus = nil
-local PendingCursorPos = -1
-local PendingCursorColumn = -1
-local PendingCursorLine = -1
-local IsSliding = false
-local DragDelta = 0
 
-local MIN_WIDTH = 150.0
+local instances = {}
+local focused, last_focused
+local tc_pos, tc_pos_line, tc_pos_line_max = 0, 0, 0
+local tc_pos_line_n = 1
+local tc_anchor, tc_alpha = -1, 0
+local fade_in, drag_select, focus_to_next = true, false, false
+local last_text = ""
+local pad = Region.GetScrollPad() + Region.GetScrollBarSize()
+local pending_focus
+local pc_pos, pc_col, pc_line = -1, -1, -1
+local is_sliding = false
+local drag_dt = 0
+local MIN_WIDTH = 150
 local DEF_PW_CHAR = "*"
 
-local function SanitizeText(Data)
-	local Result = false
-
-	if Data ~= nil then
-		local Count = 0
-		Data, Count = gsub(Data, "\r", "")
-		Result = Count > 0
-	end
-
-	return Data, Result
+local function SanitizeText(data)
+	if not data then return nil, false end
+	local count
+	data, count = gsub(data, "\r", "")
+	return data, count > 0
 end
 
-local function GetDisplayCharacter(Data, Pos)
-	local Result = ''
-
-	if Data ~= nil and Pos > 0 and Pos < len(Data) then
-		local Offset = UTF8.offset(Data, -1, Pos + 1)
-		Result = sub(Data, Offset, Pos)
-
-		if Result == nil then
-			Result = 'nil'
-		end
+local function GetDisplayCharacter(data, pos)
+	local res = ""
+	if data and pos > 0 and pos < #data then
+		local offset = UTF8.offset(data, -1, pos + 1)
+		res = sub(data, offset, pos)
+		res = not res and "nil" or res
 	end
-
-	if Result == '\n' then
-		Result = "\\n"
+	if res == "\n" then
+		res = "\\n"
 	end
-
-	return Result
+	return res
 end
 
-local function GetCharacter(Data, Index, Forward)
-	local Result = ""
-	if Forward then
-		local Sub = sub(Data, Index + 1)
-		Result = match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*")
+local STR_REG = "[%z\1-\127\194-\244%s\n][\128-\191]*"
+
+local function GetCharacter(data, index, forward)
+	local res
+	if forward then
+		local str_sub = sub(data, index + 1)
+		res = match(str_sub, STR_REG)
 	else
-		local Sub = sub(Data, 1, Index)
-		Result = match(Sub, "[%z\1-\127\194-\244%s\n][\128-\191]*$")
+		local str_sub = sub(data, 1, index)
+		res = match(str_sub, STR_REG)
 	end
-	return Result
+	return res
 end
 
-local function UpdateMultiLinePosition(Instance)
-	if Instance ~= nil then
-		if Instance.Lines ~= nil then
-			local Count = 0
-			local Start = 0
-			local Found = false
-			for I, V in ipairs(Instance.Lines) do
-				local Length = len(V)
-				Count = Count + Length
-				if TextCursorPos < Count then
-					TextCursorPosLine = TextCursorPos - Start
-					TextCursorPosLineNumber = I
-					Found = true
-					break
-				end
-				Start = Start + Length
-			end
-
-			if not Found then
-				TextCursorPosLine = len(Instance.Lines[#Instance.Lines])
-				TextCursorPosLineNumber = #Instance.Lines
-			end
-		else
-			TextCursorPosLine = TextCursorPos
-			TextCursorPosLineNumber = 1
-		end
-		TextCursorPosLineMax = TextCursorPosLine
-	end
-end
-
-local function ValidateTextCursorPos(Instance)
-	if Instance ~= nil then
-		local OldPos = TextCursorPos
-		local Byte = byte(sub(Instance.Text, TextCursorPos, TextCursorPos))
-		-- This is a continuation byte. Check next byte to see if it is an ASCII character or
-		-- the beginning of a UTF8 character.
-		if Byte ~= nil and Byte > 127 then
-			local NextByte = byte(sub(Instance.Text, TextCursorPos + 1, TextCursorPos + 1))
-			if NextByte ~= nil and NextByte > 127 and NextByte < 191 then
-				while Byte > 127 and Byte < 191 do
-					TextCursorPos = TextCursorPos - 1
-					Byte = byte(sub(Instance.Text, TextCursorPos, TextCursorPos))
-				end
-
-				if TextCursorPos < OldPos or Byte >= 191 then
-					TextCursorPos = TextCursorPos - 1
-					UpdateMultiLinePosition(Instance)
-				end
-			end
-		end
-	end
-end
-
-local function MoveToHome(Instance)
-	if Instance ~= nil then
-		if Instance.Lines ~= nil and TextCursorPosLineNumber > 1 then
-			TextCursorPosLine = 0
-			local Count = 0
-			local Start = 0
-			for I, V in ipairs(Instance.Lines) do
-				Count = Count + len(V)
-				if I == TextCursorPosLineNumber then
-					TextCursorPos = Start
-					break
-				end
-				Start = Start + len(V)
-			end
-		else
-			TextCursorPos = 0
-		end
-		UpdateMultiLinePosition(Instance)
-	end
-end
-
-local function MoveToEnd(Instance)
-	if Instance ~= nil then
-		if Instance.Lines ~= nil then
-			local Count = 0
-			for I, V in ipairs(Instance.Lines) do
-				Count = Count + len(V)
-				if I == TextCursorPosLineNumber then
-					TextCursorPos = Count - 1
-
-					if I == #Instance.Lines then
-						TextCursorPos = Count
-					end
-					break
-				end
-			end
-		else
-			TextCursorPos = #Instance.Text
-		end
-		UpdateMultiLinePosition(Instance)
-	end
-end
-
-local function ValidateNumber(Instance)
-	local Result = false
-
-	if Instance ~= nil and Instance.NumbersOnly and Instance.Text ~= "" then
-		if sub(Instance.Text, #Instance.Text, #Instance.Text) == "." then
-			return
-		end
-
-		local Value = tonumber(Instance.Text)
-		if Value == nil then
-			Value = 0.0
-		end
-
-		local OldValue = Value
-
-		if Instance.MinNumber ~= nil then
-			Value = max(Value, Instance.MinNumber)
-		end
-		if Instance.MaxNumber ~= nil then
-			Value = min(Value, Instance.MaxNumber)
-		end
-
-		Result = OldValue ~= Value
-
-		Instance.Text = tostring(Value)
-	end
-
-	return Result
-end
-
-local function GetAlignmentOffset(Instance)
-	local Offset = 6.0
-	if Instance ~= nil then
-		if Instance.Align == 'center' then
-			local TextW = Text.GetWidth(Instance.Text)
-			Offset = (Instance.W * 0.5) - (TextW * 0.5)
-		end
-	end
-	return Offset
-end
-
-local function GetSelection(Instance)
-	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
-		local Min = min(TextCursorAnchor, TextCursorPos) + 1
-		local Max = max(TextCursorAnchor, TextCursorPos)
-
-		return sub(Instance.Text, Min, Max)
-	end
-	return ""
-end
-
-local function MoveCursorVertical(Instance, MoveDown)
-	if Instance ~= nil and Instance.Lines ~= nil then
-		local OldLineNumber = TextCursorPosLineNumber
-		if MoveDown then
-			TextCursorPosLineNumber = min(TextCursorPosLineNumber + 1, #Instance.Lines)
-		else
-			TextCursorPosLineNumber = max(1, TextCursorPosLineNumber - 1)
-		end
-		local Line = Instance.Lines[TextCursorPosLineNumber]
-		if OldLineNumber == TextCursorPosLineNumber then
-			TextCursorPosLine = MoveDown and len(Line) or 0
-		else
-			if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= len(Line) then
-				TextCursorPosLine = len(Line)
-			else
-				TextCursorPosLine = min(len(Line), TextCursorPosLineMax + 1)
-				local Ch = GetCharacter(Line, TextCursorPosLine)
-				if Ch ~= nil then
-					TextCursorPosLine = TextCursorPosLine - len(Ch)
-				end
-			end
-		end
-		local Start = 0
-		for I, V in ipairs(Instance.Lines) do
-			if I == TextCursorPosLineNumber then
-				TextCursorPos = Start + TextCursorPosLine
+local function UpdateMultiLinePosition(instance)
+	if not instance then return end
+	if instance.Lines then
+		local count, start, found = 0, 0, false
+		for i, v in ipairs(instance.Lines) do
+			local length = #v
+			count = count + length
+			if tc_pos < count then
+				tc_pos_line = tc_pos - start
+				tc_pos_line = i
+				found = true
 				break
 			end
-			Start = Start + len(V)
+			start = start + length
 		end
+
+		if not found then
+			tc_pos_line = #instance.Lines[#instance.Lines]
+			tc_pos_line_n = #instance.Lines
+		end
+	else
+		tc_pos_line = tc_pos
+		tc_pos_line_n = 1
+	end
+	tc_pos_line_max = tc_pos_line
+end
+
+local MIN_B, MAX_B = 127, 191
+local function ValidateTextCursorPos(instance)
+	if not instance then return end
+	local old = tc_pos
+	local b = byte(sub(instance.Text, tc_pos, tc_pos))
+	-- This is a continuation byte. Check next byte to see if it is an ASCII character or
+	-- the beginning of a UTF8 character.
+	if not (byte and byte > MIN_B) then return end
+	local next_b = byte(sub(instance.Text, tc_pos + 1, tc_pos + 1))
+	if not (next_b and next_b > MIN_B and next_b < MAX_B) then return end
+
+	while byte > MIN_B and byte < MAX_B do
+		tc_pos = tc_pos - 1
+		b = byte(sub(instance.Text, tc_pos, tc_pos))
+	end
+
+	if tc_pos < old or b >= MAX_B then
+		tc_pos = tc_pos - 1
+		UpdateMultiLinePosition(instance)
 	end
 end
 
-local function IsValidDigit(Instance, Ch)
-	if Instance ~= nil then
-		if Instance.NumbersOnly then
-			if match(Ch, "%d") ~= nil then
-				return true
+local function MoveToHome(instance)
+	if not instance then return end
+	if instance.Lines and tc_pos_line_n > 1 then
+		tc_pos_line = 0
+		local count, start = 0, 0
+		for i, v in ipairs(instance.Lines) do
+			local len_v = #v
+			count = count + len_v
+			if i == tc_pos_line_n then
+				tc_pos = start
+				break
 			end
+			start = start + len_v
+		end
+	else
+		tc_pos = 0
+	end
+	UpdateMultiLinePosition(instance)
+end
 
-			if Ch == "-" then
-				if TextCursorAnchor == 0 or TextCursorPos == 0 or #Instance.Text == 0 then
-					return true
+local function MoveToEnd(instance)
+	if not instance then return end
+	if instance.Lines then
+		local count = 0
+		for i, v in ipairs(instance.Lines) do
+			local len_v = #v
+			count = count + len_v
+			if i == tc_pos_line_n then
+				tc_pos = count - 1
+				if i == #instance.Lines then
+					tc_pos = count
 				end
+				break
 			end
+		end
+	else
+		tc_pos = #instance.Text
+	end
+	UpdateMultiLinePosition(instance)
+end
 
-			if Ch == "." then
-				local Selected = GetSelection(Instance)
-				if Selected ~= nil and find(Selected, ".", 1, true) ~= nil then
-					return true
-				end
+local STR_EMPTY = ""
+local function ValidateNumber(instance)
+	if not (instance and instance.NumbersOnly and instance.Text ~= STR_EMPTY) then
+		return false
+	end
+	local len_text = #instance.Text
+	if sub(instance.Text, len_text, len_text) == "." then return end
+	local v = tonumber(instance.Text) or 0
+	local old = v
+	if instance.MinNumber then
+		v = max(v, instance.MinNumber)
+	end
+	if instance.MaxNumber then
+		v = min(v, instance.MaxNumber)
+	end
+	instance.Text = tostring(v)
+	return old ~= v
+end
 
-				if find(Instance.Text, ".", 1, true) == nil then
-					return true
-				end
-			end
+local function GetAlignmentOffset(instance)
+	local offset = 6
+	if not instance then return offset end
+	if instance.Align == "center" then
+		local tw = Text.GetWidth(instance.Text)
+		offset = (instance.W * 0.5) - (tw * 0.5)
+	end
+	return offset
+end
+
+local function GetSelection(instance)
+	if not (instance and tc_anchor >= 0 and tc_anchor ~= tc_pos) then return STR_EMPTY end
+	local v_min = min(tc_anchor, tc_pos) + 1
+	local v_max = max(tc_anchor, tc_pos)
+	return sub(instance.Text, v_min, v_max)
+end
+
+local function MoveCursorVertical(instance, move_down)
+	if not (instance and instance.Lines) then return end
+	local old_ln = tc_pos_line_n
+	if move_down then
+		tc_pos_line_n = min(tc_pos_line_n + 1, #instance.Lines)
+	else
+		tc_pos_line_n = max(1, tc_pos_line_n - 1)
+	end
+	local line = instance.Lines[tc_pos_line_n]
+	if old_ln == tc_pos_line_n then
+		tc_pos_line = move_down and #line or 0
+	else
+		local len_line = #line
+		if tc_pos_line_n == #instance.Lines and tc_pos_line >= len_line then
+			tc_pos_line = len_line
 		else
+			tc_pos_line = min(len_line, tc_pos_line_max + 1)
+			local ch = GetCharacter(line, tc_pos_line)
+			if ch then
+				tc_pos_line = tc_pos_line - #ch
+			end
+		end
+	end
+
+	local start = 0
+	for i, v in ipairs(instance.Lines) do
+		if i == tc_pos_line_n then
+			tc_pos = start + tc_pos_line
+			break
+		end
+		start = start + #v
+	end
+end
+
+local function IsValidDigit(instance, ch)
+	if not instance then return false end
+	if not instance.NumbersOnly then return true end
+	if match(ch, "%d") then return true end
+	if ch == "-" and tc_anchor == 0 or tc_pos == 0 or #instance.Text == 0 then
+		return true
+	end
+	if ch == "." then
+		local selected = GetSelection(instance)
+		if selected and find(selected, ".", 1, true) then
+			return true
+		end
+		if not find(instance.Text, ".", 1, true) then
 			return true
 		end
 	end
@@ -331,921 +284,780 @@ local function IsValidDigit(Instance, Ch)
 end
 
 local function IsCommandKeyDown()
-	local LKey, RKey = 'lctrl', 'rctrl'
+	local lkey, rkey
 	if Utility.IsOSX() then
-		LKey, RKey = 'lgui', 'rgui'
+		lkey, rkey = "lgui", "rgui"
+	else
+		lkey, rkey = "lctrl", "rctrl"
 	end
-	return Keyboard.IsDown(LKey) or Keyboard.IsDown(RKey)
+	return Keyboard.IsDown(lkey) or Keyboard.IsDown(rkey)
 end
 
 local function IsHomePressed()
-	local Result = false
 	if Utility.IsOSX() then
-		Result = IsCommandKeyDown() and Keyboard.IsPressed('left')
+		return IsCommandKeyDown() and Keyboard.IsPressed("left")
 	else
-		Result = Keyboard.IsPressed('home')
+		return Keyboard.IsPressed("home")
 	end
-	return Result
 end
 
 local function IsEndPressed()
-	local Result = false
 	if Utility.IsOSX() then
-		Result = IsCommandKeyDown() and Keyboard.IsPressed('right')
+		return IsCommandKeyDown() and Keyboard.IsPressed("right")
 	else
-		Result = Keyboard.IsPressed('end')
+		return Keyboard.IsPressed("end")
 	end
-	return Result
 end
 
 local function IsNextSpaceDown()
-	local Result = false
 	if Utility.IsOSX() then
-		Result = Keyboard.IsDown('lalt') or Keyboard.IsDown('ralt')
+		return Keyboard.IsDown("lalt") or Keyboard.IsDown("ralt")
 	else
-		Result = Keyboard.IsDown('lctrl') or Keyboard.IsDown('rctrl')
+		return Keyboard.IsDown("lctrl") or Keyboard.IsDown("rctrl")
 	end
-	return Result
 end
 
-local function GetCursorXOffset(Instance)
-	local Result = GetAlignmentOffset(Instance)
-	if Instance ~= nil then
-		if TextCursorPos > 0 then
-			local Sub = sub(Instance.Text, 1, TextCursorPos)
-			Result = Text.GetWidth(Sub) + GetAlignmentOffset(Instance)
-		end
+local function GetCursorPos(instance)
+	local x, y = GetAlignmentOffset(instance), 0
+	if not instance then return x, y end
+	local data = instance.Text
+	if instance.Lines then
+		data = instance.Lines[tc_pos_line_n]
+		y = Text.GetHeight() * (tc_pos_line_n - 1)
 	end
-	return Result
+	local cpos = min(tc_pos_line, #data)
+	if cpos > 0 then
+		local str_sub = sub(data, 0, cpos)
+		x = x + Text.GetWidth(str_sub)
+	end
+	return x, y
 end
 
-local function GetCursorPos(Instance)
-	local X, Y = GetAlignmentOffset(Instance), 0.0
+local STR_FILTER = "%s"
+local STR_SPACE = " "
 
-	if Instance ~= nil then
-		local Data = Instance.Text
-		if Instance.Lines ~= nil then
-			Data = Instance.Lines[TextCursorPosLineNumber]
-			Y = Text.GetHeight() * (TextCursorPosLineNumber - 1)
-		end
-		local CursorPos = min(TextCursorPosLine, len(Data))
-		if CursorPos > 0 then
-			local Sub = sub(Data, 0, CursorPos)
-			X = X + Text.GetWidth(Sub)
+local function SelectWord(instance)
+	if not instance then return end
+	local filter = STR_FILTER
+	if GetCharacter(instance.Text, tc_pos) == STR_SPACE then
+		if GetCharacter(instance.Text, tc_pos + 1) == STR_SPACE then
+			filter = "%S"
+		else
+			tc_pos = tc_pos + 1
 		end
 	end
-
-	return X, Y
+	tc_anchor = 0
+	local i = 0
+	while i and i + 1 < tc_pos do
+		i = find(instance.Text, filter, i + 1)
+		if i and i < tc_pos then
+			tc_anchor = i
+		else
+			break
+		end
+	end
+	i = find(instance.Text, filter, tc_pos + 1)
+	if i then
+		tc_pos = i - 1
+	else
+		tc_pos = #instance.Text
+	end
+	UpdateMultiLinePosition(instance)
 end
 
-local function SelectWord(Instance)
-	if Instance ~= nil then
-		local Filter = "%s"
-		if GetCharacter(Instance.Text, TextCursorPos) == " " then
-			if GetCharacter(Instance.Text, TextCursorPos + 1) == " " then
-				Filter = "%S"
-			else
-				TextCursorPos = TextCursorPos + 1
+local function GetNextCursorPos(instance, left)
+	if not instance then return 0 end
+	local res = 0
+	local next_space = IsNextSpaceDown()
+	if next_space then
+		if left then
+			res = 0
+			local i = 0
+			while i and i + 1 < tc_pos do
+				i = find(instance.Text, STR_FILTER, i + 1)
+				if i and i < tc_anchor then
+					res = i
+				else
+					break
+				end
 			end
+		else
+			local i = find(instance.text, STR_FILTER, tc_pos + 1)
+			res = i or #instance.Text
 		end
-		TextCursorAnchor = 0
-		local I = 0
-		while I ~= nil and I + 1 < TextCursorPos do
-			I = find(Instance.Text, Filter, I + 1)
-			if I ~= nil and I < TextCursorPos then
-				TextCursorAnchor = I
+	else
+		if left then
+			local ch = GetCharacter(instance.text, tc_pos)
+			res = (ch and tc_pos - #ch) or res
+		else
+			local ch = GetCharacter(instance.Text, tc_pos, true)
+			res = (ch and tc_pos + #ch) or tc_pos
+		end
+	end
+	res = max(0, res)
+	res = min(res, #instance.Text)
+	return res
+end
+
+local function GetCursorPosLine(instance, line, x)
+	local res = 0
+	if not (instance and line ~= STR_EMPTY) then return res end
+	if Text.GetWidth(line) < x then
+		res = #line
+		if find(line, "\n") then
+			res = #line + 1
+		end
+	else
+		x = x - GetAlignmentOffset(instance)
+		local index, str_sub = 0, STR_EMPTY
+		while index <= #line do
+			local ch = GetCharacter(line, index, true)
+			if not ch then break end
+			index = index + #ch
+			str_sub = str_sub .. ch
+			local px = Text.GetWidth(str_sub)
+			if px > x then
+				local cx = px - x
+				local cw = Text.GetWidth(ch)
+				if cx < cw * 0.65 then
+					res = res + #ch
+				end
+				break
+			end
+			res = index
+		end
+	end
+	return res
+end
+
+local function GetTextCursorPos(instance, x, y)
+	if not instance then return 0 end
+	local line = instance.Text
+	local start = 0
+	if instance.Lines and #instance.Lines > 0 then
+		local h = Text.GetHeight()
+		local found = false
+		for _, v in ipairs(instance.Lines) do
+			if y <= h then
+				line = v
+				found = true
+				break
+			end
+			h = h + Text.GetHeight()
+			start = start + #v
+		end
+
+		if not found then
+			line = instance.Lines[#instance.Lines]
+		end
+	end
+	return min(start + GetCursorPosLine(instance, line, x), #instance.Text)
+end
+
+local function MoveCursorPage(instance, page_down)
+	if not instance then return end
+	local page_h = instance.H - Text.GetHeight()
+	local page_y = page_down and page_h or 0
+	local _, ty = Region.InverseTransform(instance.Id, 0, page_y)
+	local next_y = page_down and (ty + page_h) or max(ty - page_h, 0)
+	tc_pos = GetTextCursorPos(instance, 0, next_y)
+	UpdateMultiLinePosition(instance)
+end
+
+local function UpdateTransform(instance)
+	if not instance then return end
+	local x, y = GetCursorPos(instance)
+	local tx, ty = Region.InverseTransform(instance.Id, 0, 0)
+	local w = tx + instance.W - Region.GetScrollPad() - Region.GetScrollBarSize()
+	local h = ty + instance.H
+
+	if instance.H > Text.GetHeight() then
+		h = h - Region.GetScrollPad() - Region.GetScrollBarSize()
+	end
+	local new_x = 0
+	if tc_pos_line == 0 then
+		new_x = tx
+	elseif x > w then
+		new_x = -(x - w)
+	elseif x < tx then
+		new_x = tx - x
+	end
+
+	local new_y = 0
+	if tc_pos_line == 1 then
+		new_y = ty
+	elseif y > h then
+		new_y = -(y - h)
+	elseif y < ty then
+		new_y = ty - y
+	end
+	Region.Translate(instance.Id, new_x, new_y)
+end
+
+local function DeleteSelection(instance)
+	if not (instance and instance.Text ~= STR_EMPTY and not instance.ReadOnly) then
+		return
+	end
+	local _, v_min, v_max = 0, 0
+
+	if tc_anchor ~= -1 then
+		v_min = min(tc_anchor, tc_pos)
+		v_max = max(tc_anchor, tc_pos) + 1
+	else
+		if tc_pos == 0 then return false end
+		local new_tc_pos = tc_pos
+		local ch = GetCharacter(instance.Text, tc_pos)
+		if ch then
+			v_min = tc_pos - #ch
+			new_tc_pos = v_min
+		end
+
+		ch = GetCharacter(instance.Text, tc_pos, true)
+		v_max = ch and (tc_pos + 1) or (#instance.Text + 1)
+		tc_pos = new_tc_pos
+	end
+
+	local left = sub(instance.Text, 1, v_min)
+	local right = sub(instance.Text, v_max)
+	instance.Text = left .. right
+	tc_pos = #left
+	tc_pos = tc_anchor ~= -1 and min(tc_anchor, tc_pos) or tc_pos
+	tc_pos = max(0, tc_pos)
+	tc_pos = min(tc_pos, #instance.Text)
+	tc_anchor = -1
+	UpdateMultiLinePosition(instance)
+	return true
+end
+
+local function DrawSelection(instance, x, y, w, _, color)
+	if not (instance and tc_anchor >= 0 and tc_anchor ~= tc_pos) then return end
+	local v_min = min(tc_anchor, tc_pos)
+	local v_max = max(tc_anchor, tc_pos)
+	local h = Text.GetHeight()
+	if instance.Lines then
+		local count, start = 0, 0
+		local offset_min, offset_max
+		local offset_y = 0
+		for _, v in ipairs(instance.Lines) do
+			count = count + #v
+			if v_min < count then
+				offset_min = v_min > start and max(v_min - start, 1) or 0
+				offset_max = v_max < count and max(v_max - start, 1) or #v
+
+				local sub_min = sub(v, 1, offset_min)
+				local sub_max = sub(v, 1, offset_max)
+				local align_offset = GetAlignmentOffset(instance)
+				local min_x = Text.GetWidth(sub_min) - 1 + align_offset
+				local max_x = Text.GetWidth(sub_max) + 1 + align_offset
+				DrawCommands.Rectangle("fill",
+					x + min_x, y + offset_y, max_x - min_x, h, color)
+			end
+
+			if v_max <= count then break end
+			start = start + #v
+			offset_y = offset_y + h
+		end
+	else
+		local sub_min = sub(instance.Text, 1, v_min)
+		local sub_max = sub(instance.Text, 1, v_max)
+		local align_offset = GetAlignmentOffset(instance)
+		local min_x = Text.GetWidth(sub_min) - 1 + align_offset
+		local max_x = Text.GetWidth(sub_max) + 1 + align_offset
+		DrawCommands.Rectangle("fill", x + min_x, y, max_x - min_x, h, color)
+	end
+end
+
+local function DrawCursor(instance, x, y, w, _)
+	if not instance then return end
+	local cx, cy = GetCursorPos(instance)
+	cx = x + cx
+	cy = y + cy
+	local h = Text.GetHeight()
+	DrawCommands.Line(cx, cy, cx, cy + h, 1, {0, 0, 0, tc_alpha})
+end
+
+local function IsHighlightTerminator(ch)
+	if not ch then return true end
+	return match(ch, "%w") == nil
+end
+
+local function UpdateTextObject(instance, w, align, highlight, base_color)
+	if not (instance and instance.TextObject) then return end
+	local colored_text = {}
+	if not highlight then
+		colored_text = {base_color, instance.Text}
+	else
+		local _, ty = Region.InverseTransform(instance.Id, 0, 0)
+		local th = Text.GetHeight()
+		local top = ty - th * 2
+		local bot = ty + instance.H + th * 2
+		local len_lines = #instance.Lines
+		local h = len_lines * th
+		local topline_n = max(floor((top/h) * len_lines), 1)
+		local botline_n = min(floor((bot/h) * len_lines), len_lines)
+		local index, end_index = 1, 1
+		for i = 1, botline_n do
+			local count = #instance.Lines[i]
+			if i < topline_n then
+				index = index + count
+			end
+			end_index = end_index + count
+		end
+
+		if index > 1 then
+			insert(colored_text, base_color)
+			insert(colored_text, sub(instance.Text, 1, index - 1))
+		end
+
+		while index < end_index do
+			local match_index, key
+			for k in pairs(highlight) do
+				local found
+				local anchor = index
+				repeat
+					found = find(instance.Text, k, anchor, true)
+					if found then
+						local found_end = found + #k
+						local str_prev = sub(instance.Text, found - 1, found - 1)
+						local str_next = sub(instance.Text, found_end, found_end)
+						if found == 1 then
+							str_prev = nil
+						end
+						if found_end > #instance.Text then
+							str_next = nil
+						end
+						if not (IsHighlightTerminator(str_prev) and
+								IsHighlightTerminator(str_next)) then
+							anchor = found + 1
+							found = nil
+						end
+					else
+						break
+					end
+				until found
+
+				if found and (not match_index) or
+					(match_index and found < match_index) then
+					match_index = found
+					key = k
+				end
+			end
+
+			if key then
+				insert(colored_text, base_color)
+				insert(colored_text, sub(instance.Text, index, match_index - 1))
+				insert(colored_text, highlight[key])
+				insert(colored_text, key)
+				index = match_index + #key
 			else
+				insert(colored_text, base_color)
+				insert(colored_text, sub(instance.Text, index, end_index))
+				index = end_index
 				break
 			end
 		end
-		I = find(Instance.Text, Filter, TextCursorPos + 1)
-		if I ~= nil then
-			TextCursorPos = I - 1
+
+		if index < #instance.Text then
+			insert(colored_text, base_color)
+			insert(colored_text, sub(instance.Text, index))
+		end
+	end
+
+	instance.TextObject:setf(colored_text, w, align)
+end
+
+local function UpdateSlider(instance, precision)
+	if not instance then return end
+	local flag = true
+	if instance.NeedDrag then
+		local dx = Mouse.GetDelta()
+		flag = dx ~= 0
+	end
+	if flag then
+		local mx = Mouse.GetPosition()
+		local min_x = Cursor.GetPosition()
+		local max_x = min_x + instance.W
+		local ratio = Utility.Clamp((mx - min_x)/(max_x - min_x), 0, 1)
+		local min_v = instance.MinNumber or -huge
+		local max_v = instance.MaxNumber or huge
+		local v = (max_v - min_v) * ratio + min_v
+		if precision > 0 then
+			instance.Text = format("%." .. precision .. "f", v)
 		else
-			TextCursorPos = #Instance.Text
+			instance.Text = format("%d", v)
 		end
-		UpdateMultiLinePosition(Instance)
+		ValidateNumber(instance)
 	end
 end
 
-local function GetNextCursorPos(Instance, Left)
-	local Result = 0
-	if Instance ~= nil then
-		local NextSpace = IsNextSpaceDown()
+local function UpdateDrag(instance, step)
+	if not instance then return end
+	local dx = Mouse.GetDelta()
+	if dx == 0 then return end
+	-- The drag threshold will be calculated dynamically. This is achieved by taking the active monitor
+	-- width and dividing by the allowable range. The DPI scale is taken into account as well. The
+	-- threshold is clamped at 10 to prevent large requirements for drag effect.
+	local dpi = love.window.getDPIScale()
+	local _, _ , flags = love.window.getMode()
+	local dw = love.window.getDesktopDimensions(flags.display)
+	local v_min = instance.MinNumber or -huge
+	local v_max = instance.MaxNumber or huge
+	local diff = (v_max - v_min)/step
+	local drag_threshold = 1
+	if diff > 0 then
+		drag_threshold = Utility.Clamp(floor(dw/diff)/dpi, 1, 10)
+	end
+	drag_dt = drag_dt + dx
+	if abs(drag_dt) > drag_threshold then
+		local v = tonumber(instance.Text)
+		if v then
+			v = v + step * (dx < 0 and -1 or 1)
+			instance.Text = tostring(v)
+			ValidateNumber(instance)
+		end
+	end
+end
 
-		if NextSpace then
-			if Left then
-				Result = 0
-				local I = 0
-				while I ~= nil and I + 1 < TextCursorPos do
-					I = find(Instance.Text, "%s", I + 1)
-					if I ~= nil and I < TextCursorPos then
-						Result = I
-					else
-						break
-					end
-				end
-			else
-				local I = find(Instance.Text, "%s", TextCursorPos + 1)
-				if I ~= nil then
-					Result = I
-				else
-					Result = #Instance.Text
-				end
-			end
+local SLIDER_SIZE = 6
+local PADDING = 2
+local function DrawSlider(instance, draw_slider_as_handle)
+	if not (instance and instance.NumbersOnly) then return end
+	local v = tonumber(instance.Text)
+	if not v then return end
+	local min_v = instance.MinNumber or -huge
+	local max_v = instance.MaxNumber or huge
+	local ratio = (v - min_v)/(max_v - min_v)
+	local min_x, min_y = Cursor.GetPosition()
+	local max_x = min_x + instance.W - SLIDER_SIZE
+	local x = (max_x - min_x) * ratio * min_x
+	if draw_slider_as_handle then
+		DrawCommands.Rectangle("fill",
+			x, min_y + 1, SLIDER_SIZE, instance.H - 2, Style.InputSliderColor)
+	else
+		DrawCommands.Rectangle("fill", min_x + PADDING, min_y + PADDING,
+			PADDING + (instance.W - PADDING * 3) * ratio,
+			instance.H - (PADDING * 2), Style.InputSliderColor)
+	end
+end
+
+local function GetInstance(id)
+	for _, v in ipairs(instances) do
+		if v.Id == id then
+			return v
+		end
+	end
+
+	local instance = {
+		Id = id,
+		Text = STR_EMPTY,
+		TextChanged = false,
+		NumbersOnly = true,
+		ReadOnly = false,
+		Align = "left",
+		ShouldUpdateTextObject = false
+	}
+	insert(instances, instance)
+	return instance
+end
+
+local TBL_EMPTY = {}
+local TBL_IGNORE = {Ignore = true}
+function Input.Begin(id, opt)
+	assert(id, "Please pass a valid id into Slab.Input.")
+	local stat_handle = Stats.Begin("Input", "Slab")
+	opt = opt or TBL_EMPTY
+	local tooltip = opt.Tooltip or STR_EMPTY
+	local return_on_text = opt.ReturnOnText or true
+	local text = opt.Text and tostring(opt.Text) or STR_EMPTY
+	local text_color = opt.TextColor
+	local bg_color = opt.BgColor or Style.InputBgColor
+	local select_color = opt.SelectColor or Style.InputSelectColor
+	local select_on_focus = opt.SelectOnFocus or true
+	local read_only = opt.ReadOnly
+	local align = opt.Align
+	local rounding = opt.Rounding or Style.InputBgRounding
+	local min_n = opt.MinNumber
+	local max_n = opt.MaxNumber
+	local multi = opt.MultiLine
+	local multi_w = opt.MultiLineW or huge
+	local highlight = opt.Highlight
+	local step = opt.Step or 1
+	local no_drag = opt.NoDrag
+	local use_slider = opt.UseSlider
+	local precision = opt.Precision and floor(Utility.Clamp(opt.Precision, 0, 5)) or 3
+	local need_drag = opt.NeedDrag or true
+	local is_pw = not not opt.IsPassword
+	local password_char = opt.IsPassword and opt.PasswordChar or DEF_PW_CHAR
+
+	if is_pw then
+		opt.OrigText = text
+		opt.Text = rep(password_char, #text)
+	end
+
+	if type(min_n) ~= "number" then
+		opt.min_n = nil
+	end
+
+	if type(max_n) ~= "number" then
+		opt.max_n = nil
+	end
+	opt.TextColor = multi and Style.MultilineTextColor or opt.TextColor
+
+	local instance = GetInstance(format("%s.%s", Window.GetId(), id))
+	instance.NumbersOnly = opt.NumbersOnly
+	instance.Read = read_only
+	instance.Align = align
+	instance.MinNumber = min_n
+	instance.MaxNumber = max_n
+	instance.MultiLine = multi
+	instance.NeedDrag = need_drag
+
+	if instance.MultiLineW ~= multi_w then
+		instance.Lines = nil
+	end
+	instance.MultiLineW = multi_w
+	local win_item_id = Window.GetItemId(id)
+
+	if not instance.Align then
+		instance.Align = (instance == focused and not is_sliding) and "left" or "center"
+		instance.Align = instance.ReadOnly and "center" or align
+		instance.Align = multi and "left" or align
+	end
+
+	if focused ~= instance then
+		if opt.MultiLine and #opt.Text ~= #instance.Text then
+			instance.Lines = nil
+		end
+		instance.Text = instance.Text or opt.Text
+	end
+
+	if instance.MinNumber and instance.MaxNumber then
+		assert(instance.MinNumber <= instance.MaxNumber,
+			"Invalid MinNumber and MaxNumber passed to Input control " ..
+			instance.Id .. "" .. "MinNumber: " .. instance.MinNumber ..
+			" MaxNumber: " .. instance.MaxNumber)
+	end
+
+	local w, h = opt.W or MIN_WIDTH, opt.h or Text.GetHeight()
+	local cw, ch = 0, 0
+	local res = false
+	w, h = LayoutManager.ComputeSize(w, h)
+	LayoutManager.AddControl(w, h, "Input")
+	instance.W, instance.H = w, h
+	local x, y = Cursor.GetPosition()
+
+	if multi then
+		select_on_focus = false
+		local was_sanitized
+		text, was_sanitized = SanitizeText(text)
+		if was_sanitized then
+			res = true
+			last_text = opt.Text
+		end
+		cw, ch = Text.GetSizeWrap(text, multi_w)
+	end
+
+	local should_update = instance.ShouldUpdateTextObject
+	instance.ShouldUpdateTextObject = false
+
+	if not instance.Lines and instance.Text ~= STR_EMPTY and multi then
+		if not instance.TextObject then
+			instance.TextObject = love.graphics.newText(Style.Font)
+		end
+		instance.Lines = Text.GetLines(instance.Text, multi_w)
+		ch = #instance.Lines * Text.GetHeight()
+		should_update = true
+	end
+
+	if highlight then
+		if not instance.Highlight or
+			Utility.TableCount(highlight) ~= Utility.TableCount(instance.Highlight) then
+			instance.Highlight = Utility.Copy(highlight)
+			should_update = true
 		else
-			if Left then
-				local Ch = GetCharacter(Instance.Text, TextCursorPos)
-				if Ch ~= nil then
-					Result = TextCursorPos - len(Ch)
-				end
-			else
-				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
-				if Ch ~= nil then
-					Result = TextCursorPos + len(Ch)
-				else
-					Result = TextCursorPos
-				end
-			end
-		end
-		Result = max(0, Result)
-		Result = min(Result, len(Instance.Text))
-	end
-	return Result
-end
-
-local function GetCursorPosLine(Instance, Line, X)
-	local Result = 0
-	if Instance ~= nil and Line ~= "" then
-		if Text.GetWidth(Line) < X then
-			Result = len(Line)
-			if find(Line, "\n") ~= nil then
-				Result = len(Line) - 1
-			end
-		else
-			X = X - GetAlignmentOffset(Instance)
-			local PosX = X
-			local Index = 0
-			local Sub = ""
-			while Index <= len(Line) do
-				local Ch = GetCharacter(Line, Index, true)
-				if Ch == nil then
-					break
-				end
-				Index = Index + len(Ch)
-				Sub = Sub .. Ch
-				local PosX = Text.GetWidth(Sub)
-				if PosX > X then
-					local CharX = PosX - X
-					local CharW = Text.GetWidth(Ch)
-					if CharX < CharW * 0.65 then
-						Result = Result + len(Ch)
-					end
-					break
-				end
-				Result = Index
-			end
-		end
-	end
-	return Result
-end
-
-local function GetTextCursorPos(Instance, X, Y)
-	local Result = 0
-	if Instance ~= nil then
-		local Line = Instance.Text
-		local Start = 0
-
-		if Instance.Lines ~= nil and #Instance.Lines > 0 then
-			local H = Text.GetHeight()
-			local LineNumber = 1
-			local Found = false
-			for I, V in ipairs(Instance.Lines) do
-				if Y <= H then
-					Line = V
-					Found = true
-					break
-				end
-				H = H + Text.GetHeight()
-				Start = Start + #V
-			end
-
-			if not Found then
-				Line = Instance.Lines[#Instance.Lines]
-			end
-		end
-
-		Result = min(Start + GetCursorPosLine(Instance, Line, X), #Instance.Text)
-	end
-	return Result
-end
-
-local function MoveCursorPage(Instance, PageDown)
-	if Instance ~= nil then
-		local PageH = Instance.H - Text.GetHeight()
-		local PageY = PageDown and PageH or 0.0
-		local X, Y = GetCursorPos(Instance)
-		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, PageY)
-		local NextY = 0.0
-		if PageDown then
-			NextY = TY + PageH
-		else
-			NextY = max(TY - PageH, 0.0)
-		end
-
-		TextCursorPos = GetTextCursorPos(Instance, 0.0, NextY)
-		UpdateMultiLinePosition(Instance)
-	end
-end
-
-local function UpdateTransform(Instance)
-	if Instance ~= nil then
-		local X, Y = GetCursorPos(Instance)
-
-		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
-		local W = TX + Instance.W - Region.GetScrollPad() - Region.GetScrollBarSize()
-		local H = TY + Instance.H
-
-		if Instance.H > Text.GetHeight() then
-			H = H - Region.GetScrollPad() - Region.GetScrollBarSize()
-		end
-
-		local NewX = 0.0
-		if TextCursorPosLine == 0 then
-			NewX = TX
-		elseif X > W then
-			NewX = -(X - W)
-		elseif X < TX then
-			NewX = TX - X
-		end
-
-		local NewY = 0.0
-		if TextCursorPosLineNumber == 1 then
-			NewY = TY
-		elseif Y > H then
-			NewY = -(Y - H)
-		elseif Y < TY then
-			NewY = TY - Y
-		end
-
-		Region.Translate(Instance.Id, NewX, NewY)
-	end
-end
-
-local function DeleteSelection(Instance)
-	if Instance ~= nil and Instance.Text ~= "" and not Instance.ReadOnly then
-		local Start = 0
-		local Min = 0
-		local Max = 0
-
-		if TextCursorAnchor ~= -1 then
-			Min = min(TextCursorAnchor, TextCursorPos)
-			Max = max(TextCursorAnchor, TextCursorPos) + 1
-		else
-			if TextCursorPos == 0 then
-				return false
-			end
-
-			local NewTextCursorPos = TextCursorPos
-			local Ch = GetCharacter(Instance.Text, TextCursorPos)
-			if Ch ~= nil then
-				Min = TextCursorPos - len(Ch)
-				NewTextCursorPos = Min
-			end
-
-			Ch = GetCharacter(Instance.Text, TextCursorPos, true)
-			if Ch ~= nil then
-				Max = TextCursorPos + 1
-			else
-				Max = len(Instance.Text) + 1
-			end
-
-			TextCursorPos = NewTextCursorPos
-		end
-
-		local Left = sub(Instance.Text, 1, Min)
-		local Right = sub(Instance.Text, Max)
-		Instance.Text = Left .. Right
-
-		TextCursorPos = len(Left)
-
-		if TextCursorAnchor ~= -1 then
-			TextCursorPos = min(TextCursorAnchor, TextCursorPos)
-		end
-		TextCursorPos = max(0, TextCursorPos)
-		TextCursorPos = min(TextCursorPos, len(Instance.Text))
-
-		TextCursorAnchor = -1
-		UpdateMultiLinePosition(Instance)
-	end
-	return true
-end
-
-local function DrawSelection(Instance, X, Y, W, H, Color)
-	if Instance ~= nil and TextCursorAnchor >= 0 and TextCursorAnchor ~= TextCursorPos then
-		local Min = min(TextCursorAnchor, TextCursorPos)
-		local Max = max(TextCursorAnchor, TextCursorPos)
-		H = Text.GetHeight()
-
-		if Instance.Lines ~= nil then
-			local Count = 0
-			local Start = 0
-			local OffsetMin = 0
-			local OffsetMax = 0
-			local OffsetY = 0
-			for I, V in ipairs(Instance.Lines) do
-				Count = Count + len(V)
-				if Min < Count then
-					if Min > Start then
-						OffsetMin = max(Min - Start, 1)
-					else
-						OffsetMin = 0
-					end
-
-					if Max < Count then
-						OffsetMax = max(Max - Start, 1)
-					else
-						OffsetMax = len(V)
-					end
-
-					local SubMin = sub(V, 1, OffsetMin)
-					local SubMax = sub(V, 1, OffsetMax)
-					local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
-					local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
-
-					DrawCommands.Rectangle('fill', X + MinX, Y + OffsetY, MaxX - MinX, H, Color)
-				end
-
-				if Max <= Count then
-					break
-				end
-				Start = Start + len(V)
-				OffsetY = OffsetY + H
-			end
-		else
-			local SubMin = sub(Instance.Text, 1, Min)
-			local SubMax = sub(Instance.Text, 1, Max)
-			local MinX = Text.GetWidth(SubMin) - 1.0 + GetAlignmentOffset(Instance)
-			local MaxX = Text.GetWidth(SubMax) + 1.0 + GetAlignmentOffset(Instance)
-
-			DrawCommands.Rectangle('fill', X + MinX, Y, MaxX - MinX, H, Color)
-		end
-	end
-end
-
-local function DrawCursor(Instance, X, Y, W, H)
-	if Instance ~= nil then
-		local CX, CY = GetCursorPos(Instance)
-		local CX = X + CX
-		local CY = Y + CY
-		H = Text.GetHeight()
-
-		DrawCommands.Line(CX, CY, CX, CY + H, 1.0, {0.0, 0.0, 0.0, TextCursorAlpha})
-	end
-end
-
-local function IsHighlightTerminator(Ch)
-	if Ch ~= nil then
-		return match(Ch, "%w") == nil
-	end
-
-	return true
-end
-
-local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
-	if Instance ~= nil and Instance.TextObject ~= nil then
-		local ColoredText = {}
-
-		if Highlight == nil then
-			ColoredText = {BaseColor, Instance.Text}
-		else
-			--local StartTime = love.timer.getTime()
-
-			local TX, TY = Region.InverseTransform(Instance.Id, 0, 0)
-			local TextH = Text.GetHeight()
-			local Top = TY - TextH * 2
-			local Bottom = TY + Instance.H + TextH * 2
-			local H = #Instance.Lines * TextH
-			local TopLineNo = max(floor((Top / H) * #Instance.Lines), 1)
-			local BottomLineNo = min(floor((Bottom / H) * #Instance.Lines), #Instance.Lines)
-
-			local Index = 1
-			local EndIndex = 1
-			for I = 1, BottomLineNo, 1 do
-				local Count = len(Instance.Lines[I])
-				if I < TopLineNo then
-					Index = Index + Count
-				end
-
-				EndIndex = EndIndex + Count
-			end
-
-			if Index > 1 then
-				insert(ColoredText, BaseColor)
-				insert(ColoredText, sub(Instance.Text, 1, Index - 1))
-			end
-
-			while Index < EndIndex do
-				local MatchIndex = nil
-				local Key = nil
-				for K, V in pairs(Highlight) do
-					local Found = nil
-					local Anchor = Index
-					repeat
-						Found = find(Instance.Text, K, Anchor, true)
-
-						if Found ~= nil then
-							local FoundEnd = Found + len(K)
-							local Prev = sub(Instance.Text, Found - 1, Found - 1)
-							local Next = sub(Instance.Text, FoundEnd, FoundEnd)
-
-							if Found == 1 then
-								Prev = nil
-							end
-
-							if FoundEnd > len(Instance.Text) then
-								Next = nil
-							end
-
-							if not (IsHighlightTerminator(Prev) and IsHighlightTerminator(Next)) then
-								Anchor = Found + 1
-								Found = nil
-							end
-						else
-							break
-						end
-					until Found ~= nil
-
-					if Found ~= nil then
-						if MatchIndex == nil then
-							MatchIndex = Found
-							Key = K
-						elseif Found < MatchIndex then
-							MatchIndex = Found
-							Key = K
-						end
-					end
-				end
-
-				if Key ~= nil then
-					insert(ColoredText, BaseColor)
-					insert(ColoredText, sub(Instance.Text, Index, MatchIndex - 1))
-
-					insert(ColoredText, Highlight[Key])
-					insert(ColoredText, Key)
-
-					Index = MatchIndex + len(Key)
-				else
-					insert(ColoredText, BaseColor)
-					insert(ColoredText, sub(Instance.Text, Index, EndIndex))
-					Index = EndIndex
-					break
-				end
-			end
-
-			if Index < len(Instance.Text) then
-				insert(ColoredText, BaseColor)
-				insert(ColoredText, sub(Instance.Text, Index))
-			end
-
-			--print(string.format("UpdateTextObject Time: %f", (love.timer.getTime() - StartTime)))
-		end
-
-		if #ColoredText == 0 then
-			ColoredText = {BaseColor, Instance.Text}
-		end
-
-		Instance.TextObject:setf(ColoredText, Width, Align)
-	end
-end
-
-local function UpdateSlider(Instance, Precision)
-	if Instance ~= nil then
-		local Flag = true
-		if Instance.NeedDrag then
-			local DeltaX = Mouse.GetDelta()
-			Flag = DeltaX ~= 0.0
-		end
-		if Flag then
-			local MouseX, MouseY = Mouse.Position()
-			local MinX = Cursor.GetPosition()
-			local MaxX = MinX + Instance.W
-			local Ratio = Utility.Clamp((MouseX - MinX) / (MaxX - MinX), 0.0, 1.0)
-			local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
-			local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
-			local Value = (Max - Min) * Ratio + Min
-			if Precision > 0 then
-				Instance.Text = string.format("%." .. Precision .. "f", Value)
-			else
-				Instance.Text = string.format("%d", Value)
-			end
-			ValidateNumber(Instance);
-		end
-	end
-end
-
-local function UpdateDrag(Instance, Step)
-	if Instance ~= nil then
-		local DeltaX = Mouse.GetDelta()
-		if DeltaX ~= 0.0 then
-			-- The drag threshold will be calculated dynamically. This is achieved by taking the active monitor
-			-- width and dividing by the allowable range. The DPI scale is taken into account as well. The
-			-- threshold is clamped at 10 to prevent large requirements for drag effect.
-			local DPIScale = love.window.getDPIScale()
-			local Width, Height, Flags = love.window.getMode()
-			local DesktopWidth, DesktopHeight = love.window.getDesktopDimensions(Flags.display)
-			local Min = Instance.MinNumber or -huge
-			local Max = Instance.MaxNumber or huge
-			local Diff = (Max - Min) / Step
-			local DragThreshold = 1.0
-
-			if Diff > 0 then
-				DragThreshold = floor(DesktopWidth / Diff) / DPIScale
-				DragThreshold = Utility.Clamp(DragThreshold, 1, 10)
-			end
-
-			DragDelta = DragDelta + DeltaX
-			if abs(DragDelta) > DragThreshold then
-				DragDelta = 0
-				local Value = tonumber(Instance.Text)
-				if Value ~= nil then
-					Value = Value + Step * (DeltaX < 0 and -1 or 1)
-					Instance.Text = tostring(Value)
-					ValidateNumber(Instance)
-				end
-			end
-		end
-	end
-end
-
-local function DrawSlider(Instance, DrawSliderAsHandle)
-	if Instance ~= nil and Instance.NumbersOnly then
-		local Value = tonumber(Instance.Text)
-		if Value ~= nil then
-			local Min = Instance.MinNumber == nil and -huge or Instance.MinNumber
-			local Max = Instance.MaxNumber == nil and huge or Instance.MaxNumber
-			local Ratio = (Value - Min) / (Max - Min)
-			local SliderSize = 6.0
-			local MinX, MinY = Cursor.GetPosition()
-			local MaxX, MaxY = MinX + Instance.W - SliderSize, MinY + Instance.H
-			local X = (MaxX - MinX) * Ratio + MinX
-			if DrawSliderAsHandle then
-				DrawCommands.Rectangle('fill', X, MinY + 1.0, SliderSize, Instance.H - 2.0, Style.InputSliderColor)
-			else
-				local Padding = 2
-				DrawCommands.Rectangle('fill', MinX+Padding, MinY+Padding, Padding + (Instance.W - Padding * 3) * Ratio, Instance.H - (Padding * 2), Style.InputSliderColor)
-			end
-		end
-	end
-end
-
-local function GetInstance(Id)
-	for I, V in ipairs(Instances) do
-		if V.Id == Id then
-			return V
-		end
-	end
-	local Instance = {}
-	Instance.Id = Id
-	Instance.Text = ""
-	Instance.TextChanged = false
-	Instance.NumbersOnly = true
-	Instance.ReadOnly = false
-	Instance.Align = 'left'
-	Instance.MinNumber = nil
-	Instance.MaxNumber = nil
-	Instance.Lines = nil
-	Instance.TextObject = nil
-	Instance.Highlight = nil
-	Instance.ShouldUpdateTextObject = false
-	insert(Instances, Instance)
-	return Instance
-end
-
-function Input.Begin(Id, Options)
-	assert(Id ~= nil, "Please pass a valid Id into Slab.Input.")
-
-	local StatHandle = Stats.Begin('Input', 'Slab')
-
-	Options = Options or {}
-	Options.Tooltip = Options.Tooltip or ""
-	Options.ReturnOnText = Options.ReturnOnText == nil and true or Options.ReturnOnText
-	Options.Text = Options.Text and tostring(Options.Text) or ""
-	Options.TextColor = Options.TextColor
-	Options.BgColor = Options.BgColor or Style.InputBgColor
-	Options.SelectColor = Options.SelectColor or Style.InputSelectColor
-	Options.SelectOnFocus = Options.SelectOnFocus == nil and true or Options.SelectOnFocus
-	Options.W = Options.W
-	Options.H = Options.H
-	Options.ReadOnly = Options.ReadOnly or false
-	Options.Align = Options.Align
-	Options.Rounding = Options.Rounding or Style.InputBgRounding
-	Options.MinNumber = Options.MinNumber
-	Options.MaxNumber = Options.MaxNumber
-	Options.MultiLine = Options.MultiLine or false
-	Options.MultiLineW = Options.MultiLineW or huge
-	Options.Highlight = Options.Highlight
-	Options.Step = Options.Step or 1.0
-	Options.NoDrag = Options.NoDrag or false
-	Options.UseSlider = Options.UseSlider or false
-	Options.Precision = Options.Precision and math.floor(Utility.Clamp(Options.Precision, 0, 5)) or 3
-	Options.NeedDrag = Options.NeedDrag == nil and true or Options.NeedDrag
-	Options.IsPassword = not not Options.IsPassword --default is false
-	Options.PasswordChar = Options.IsPassword and Options.PasswordChar or DEF_PW_CHAR
-
-	if Options.IsPassword then
-		Options.OrigText = Options.Text
-		Options.Text = string.rep(Options.PasswordChar, #Options.Text)
-	end
-
-	if type(Options.MinNumber) ~= "number" then
-		Options.MinNumber = nil
-	end
-
-	if type(Options.MaxNumber) ~= "number" then
-		Options.MaxNumber = nil
-	end
-
-	if Options.MultiLine then
-		Options.TextColor = Style.MultilineTextColor
-	end
-
-	local Instance = GetInstance(Window.GetId() .. "." .. Id)
-	Instance.NumbersOnly = Options.NumbersOnly
-	Instance.ReadOnly = Options.ReadOnly
-	Instance.Align = Options.Align
-	Instance.MinNumber = Options.MinNumber
-	Instance.MaxNumber = Options.MaxNumber
-	Instance.MultiLine = Options.MultiLine
-	Instance.NeedDrag = Options.NeedDrag
-
-	if Instance.MultiLineW ~= Options.MultiLineW then
-		Instance.Lines = nil
-	end
-
-	Instance.MultiLineW = Options.MultiLineW
-	local WinItemId = Window.GetItemId(Id)
-
-	if Instance.Align == nil then
-		Instance.Align = (Instance == Focused and not IsSliding) and 'left' or 'center'
-
-		if Instance.ReadOnly then
-			Instance.Align = 'center'
-		end
-
-		if Options.MultiLine then
-			Instance.Align = 'left'
-		end
-	end
-
-	if Focused ~= Instance then
-		if Options.MultiLine and #Options.Text ~= #Instance.Text then
-			Instance.Lines = nil
-		end
-
-		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
-	end
-
-	if Instance.MinNumber ~= nil and Instance.MaxNumber ~= nil then
-		assert(Instance.MinNumber <= Instance.MaxNumber,
-			"Invalid MinNumber and MaxNumber passed to Input control '" .. Instance.Id .. "'. MinNumber: " .. Instance.MinNumber .. " MaxNumber: " .. Instance.MaxNumber)
-	end
-
-	local H = Options.H == nil and Text.GetHeight() or Options.H
-	local W = Options.W == nil and MIN_WIDTH or Options.W
-	local ContentW, ContentH = 0.0, 0.0
-	local Result = false
-
-	W, H = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H, 'Input')
-
-	Instance.W = W
-	Instance.H = H
-
-	local X, Y = Cursor.GetPosition()
-
-	if Options.MultiLine then
-		Options.SelectOnFocus = false
-		local WasSanitized = false
-		Options.Text, WasSanitized = SanitizeText(Options.Text)
-		if WasSanitized then
-			Result = true
-			LastText = Options.Text
-		end
-
-		ContentW, ContentH = Text.GetSizeWrap(Instance.Text, Options.MultiLineW)
-	end
-
-	local ShouldUpdateTextObject = Instance.ShouldUpdateTextObject
-	Instance.ShouldUpdateTextObject = false
-
-	if Instance.Lines == nil and Instance.Text ~= "" then
-		if Options.MultiLine then
-			if Instance.TextObject == nil then
-				Instance.TextObject = love.graphics.newText(Style.Font)
-			end
-			Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
-			ContentH = #Instance.Lines * Text.GetHeight()
-			ShouldUpdateTextObject = true
-		end
-	end
-
-	if Options.Highlight ~= nil then
-		if Instance.Highlight == nil or Utility.TableCount(Options.Highlight) ~= Utility.TableCount(Instance.Highlight) then
-			Instance.Highlight = Utility.Copy(Options.Highlight)
-			ShouldUpdateTextObject = true
-		else
-			for K, V in pairs(Options.Highlight) do
-				local HighlightColor = Instance.Highlight[K]
-				if HighlightColor ~= nil then
-					if V[1] ~= HighlightColor[1] or V[2] ~= HighlightColor[2] or V[3] ~= HighlightColor[3] or V[4] ~= HighlightColor[4] then
-						ShouldUpdateTextObject = true
+			for k, v in pairs(highlight) do
+				local h_color = instance.Highlight[k]
+				if h_color then
+					if v[1] ~= h_color[1] or v[2] ~= h_color[2] or
+						v[3] ~= h_color[3] or v[4] ~= h_color[4] then
+						should_update = true
 						break
 					end
 				else
-					Instance.Highlight = Utility.Copy(Options.Highlight)
-					ShouldUpdateTextObject = true
+					instance.Highlight = Utility.Copy(highlight)
+					should_update = true
 					break
 				end
 			end
 		end
 	else
-		if Instance.Highlight ~= nil then
-			Instance.Highlight = nil
-			ShouldUpdateTextObject = true
+		if instance.Highlight then
+			instance.Highlight = nil
+			should_update = true
 		end
 	end
 
-	if ShouldUpdateTextObject then
-		UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
+	if should_update then
+		UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
 	end
 
-	local IsObstructed = Window.IsObstructedAtMouse()
-	local MouseX, MouseY = Window.GetMousePosition()
-	local Hovered = not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
-	local HoveredScrollBar = Region.IsHoverScrollBar(Instance.Id) or Region.IsScrolling()
+	local is_obstructed = Window.IsObstructedAtMouse()
+	local mx, my = Window.GetMousePosition()
+	local hovered = not is_obstructed and x <= mx and mx <= x + w and y <= my and my <= y + h
+	local hovered_sb = Region.IsHoverScrollBar(instance.Id) or Region.IsScrolling()
 
-	if Hovered and not HoveredScrollBar then
-		Mouse.SetCursor('ibeam')
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(WinItemId)
+	if hovered and not hovered_sb then
+		Mouse.SetCursor("ibeam")
+		Tooltip.Begin(tooltip)
+		Window.SetHotItem(win_item_id)
 	end
 
-	local CheckFocus = Mouse.IsClicked(1) and not HoveredScrollBar
-	local NumbersOnlyEntry = Mouse.IsDoubleClicked(1) and Instance.NumbersOnly
+	local check_focus = Mouse.IsClicked(1) and not hovered_sb
+	local n_entry = Mouse.IsDoubleClicked(1) and instance.NumbersOnly
+	local focused_frame = false
+	local clear_focus = false
 
-	local FocusedThisFrame = false
-	local ClearFocus = false
-	if CheckFocus then
-		if Hovered then
-			FocusedThisFrame = Focused ~= Instance
-			Focused = Instance
-		elseif Instance == Focused then
-			ClearFocus = true
-			Focused = nil
+	if check_focus then
+		if hovered then
+			focused_frame = focused ~= instance
+			focused = instance
+		elseif instance == focused then
+			clear_focus = true
+			focused = nil
 		end
 	end
 
-	if FocusToNext and LastFocused == nil then
-		FocusedThisFrame = true
-		Focused = Instance
-		CheckFocus = true
-		FocusToNext = false
-		TextCursorAnchor = -1
-		TextCursorPos = 0
-		TextCursorPosLine = 0
-		TextCursorPosLineNumber = 1
+	if focus_to_next and not last_focused then
+		focused_frame = true
+		focused = instance
+		check_focus = true
+		focus_to_next = false
+		tc_anchor = -1
+		tc_pos = 0
+		tc_pos_line = 0
+		tc_pos_line_n = 1
 	end
 
-	if LastFocused == Instance then
-		LastFocused = nil
+	if last_focused == instance then
+		last_focused = nil
 	end
 
-	local IsEditing = Instance == Focused and not IsSliding
-
-	if Instance == Focused then
-		local Back = false
-		local IgnoreBack = false
-		local ShouldDelete = false
-		local ShouldUpdateTransform = false
-		local PreviousTextCursorPos = TextCursorPos
+	local is_editing = instance == focused and not is_sliding
+	if instance == focused then
+		local back, should_delete = false, false
+		local should_update_t = false
 
 		if IsCommandKeyDown() then
-			if Keyboard.IsPressed('x') or Keyboard.IsPressed('c') then
-				local Selected = GetSelection(Instance)
-				if Selected ~= "" then
-					love.system.setClipboardText(Selected)
-					ShouldDelete = Keyboard.IsPressed('x')
+			if Keyboard.IsPressed("x") or Keyboard.IsPressed("c") then
+				local selected = GetSelection(instance)
+				if selected ~= STR_EMPTY then
+					love.system.setClipboardText(selected)
+					should_delete = Keyboard.IsPressed("x")
 				end
-			end
-
-			if Keyboard.IsPressed('v') then
-				local Text = FileSystem.GetClipboard()
-				Input.Text(Text)
-				TextCursorPos = min(TextCursorPos + #Text - 1, #Instance.Text)
+			elseif Keyboard.IsPressed("v") then
+				local text2 = FileSystem.GetClipboard()
+				Input.Text(text2)
+				tc_pos = min(tc_pos + #text2 - 1, #instance.Text)
 			end
 		end
 
-		if Keyboard.IsPressed('tab') then
-			if Options.MultiLine then
-				Input.Text('\t')
+		if Keyboard.IsPressed("tab") then
+			if multi then
+				Input.Text("\t")
 			else
-				LastFocused = Instance
-				FocusToNext = true
+				last_focused = instance
+				focus_to_next = true
 			end
 		end
 
-		if Keyboard.IsPressed('backspace') then
-			ShouldDelete = true
-			IgnoreBack = TextCursorAnchor ~= -1
+		if Keyboard.IsPressed("backspace") then
+			should_delete = true
 		end
 
-		if Keyboard.IsPressed('delete') then
-			if TextCursorAnchor == -1 then
-				local Ch = GetCharacter(Instance.Text, TextCursorPos, true)
-				if Ch ~= nil then
-					TextCursorPos = TextCursorPos + len(Ch)
-					ShouldDelete = true
+		if Keyboard.IsPressed("delete") then
+			if tc_anchor == -1 then
+				local ch2 = GetCharacter(instance.Text, tc_pos, true)
+				if ch2 then
+					tc_pos = tc_pos + #ch2
+					should_delete = true
 				end
 			else
-				IgnoreBack = true
-				ShouldDelete = true
+				should_delete = true
 			end
 		end
 
-		if ShouldDelete then
-			if DeleteSelection(Instance) then
-				Instance.TextChanged = true
+		if should_delete then
+			if DeleteSelection(instance) then
+				instance.TextChanged = true
 			end
 		end
 
-		local ClearAnchor = false
-		local IsShiftDown = Keyboard.IsDown('lshift') or Keyboard.IsDown('rshift')
+		local clear_anchor = false
+		local is_shift = Keyboard.IsDown("lshift") or Keyboard.IsDown("rshift")
 
-		if Keyboard.IsPressed('lshift') or Keyboard.IsPressed('rshift') then
-			if TextCursorAnchor == -1 then
-				TextCursorAnchor = TextCursorPos
-			end
+		if Keyboard.IsPressed("lshift") or
+			Keyboard.IsPressed("rshift") and tc_anchor == -1 then
+			tc_anchor = tc_pos
 		end
 
-		local HomePressed, EndPressed = false, false
+		local home_pressed, end_pressed = false, false
 
 		if IsHomePressed() then
-			MoveToHome(Instance)
-			ShouldUpdateTransform = true
-			HomePressed = true
+			MoveToHome(instance)
+			should_update_t = true
+			home_pressed = true
 		end
 
 		if IsEndPressed() then
-			MoveToEnd(Instance)
-			ShouldUpdateTransform = true
-			EndPressed = true
+			MoveToEnd(instance)
+			should_update_t = true
+			end_pressed = true
 		end
 
-		if not HomePressed and (Keyboard.IsPressed('left') or Back) then
-			TextCursorPos = GetNextCursorPos(Instance, true)
-			ShouldUpdateTransform = true
-			UpdateMultiLinePosition(Instance)
+		if not home_pressed and (Keyboard.IsPressed("left") or back) then
+			tc_pos = GetNextCursorPos(instance, true)
+			should_update_t = true
+			UpdateMultiLinePosition(instance)
 		end
-		if not EndPressed and Keyboard.IsPressed('right') then
-			TextCursorPos = GetNextCursorPos(Instance, false)
-			ShouldUpdateTransform = true
-			UpdateMultiLinePosition(Instance)
-		end
-
-		if Keyboard.IsPressed('up') then
-			MoveCursorVertical(Instance, false)
-			ShouldUpdateTransform = true
-		end
-		if Keyboard.IsPressed('down') then
-			MoveCursorVertical(Instance, true)
-			ShouldUpdateTransform = true
+		if not end_pressed and Keyboard.IsPressed("right") then
+			tc_pos = GetNextCursorPos(instance, false)
+			should_update_t = true
+			UpdateMultiLinePosition(instance)
 		end
 
-		if Keyboard.IsPressed('pageup') then
-			MoveCursorPage(Instance, false)
-			ShouldUpdateTransform = true
+		if Keyboard.IsPressed("up") then
+			MoveCursorVertical(instance, false)
+			should_update_t = true
 		end
-		if Keyboard.IsPressed('pagedown') then
-			MoveCursorPage(Instance, true)
-			ShouldUpdateTransform = true
+		if Keyboard.IsPressed("down") then
+			MoveCursorVertical(instance, true)
+			should_update_t = true
 		end
 
-		if CheckFocus or DragSelect then
-			if FocusedThisFrame then
-				if Options.NumbersOnly and not NumbersOnlyEntry and not Options.NoDrag then
-					IsSliding = true
-					DragDelta = 0
-				elseif Options.SelectOnFocus and Instance.Text ~= "" then
-					TextCursorAnchor = 0
-					TextCursorPos = #Instance.Text
+		if Keyboard.IsPressed("pageup") then
+			MoveCursorPage(instance, false)
+			should_update_t = true
+		end
+		if Keyboard.IsPressed("pagedown") then
+			MoveCursorPage(instance, true)
+			should_update_t = true
+		end
+
+		if check_focus or drag_select then
+			if focused_frame then
+				if opt.NumbersOnly and not n_entry and not no_drag then
+					is_sliding = true
+					drag_dt = 0
+				elseif select_on_focus and instance.Text ~= STR_EMPTY then
+					tc_anchor = 0
+					tc_pos = #instance.Text
 				end
 
 				-- Display the soft keyboard on mobile devices when an input control receives focus.
-				if Utility.IsMobile() and not Options.ReadOnly then
+				if Utility.IsMobile() and not read_only then
 					-- Always display for non numeric controls. If this control is a numeric input, check to make
 					-- sure the user requested to add text for this numeric control.
-					if not Options.NumbersOnly or NumbersOnlyEntry or Options.NoDrag then
+					if not opt.NumbersOnly or n_entry or no_drag then
 						love.keyboard.setTextInput(true)
 					end
 				end
@@ -1253,167 +1065,151 @@ function Input.Begin(Id, Options)
 				-- Enable key repeat when an input control is focused.
 				love.keyboard.setKeyRepeat(true)
 			else
-				local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
-				local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
-				TextCursorPos = GetTextCursorPos(Instance, CX, CY)
+				local mix, miy = mx - x, my - y
+				local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
+				tc_pos = GetTextCursorPos(instance, cx, cy)
 				if Mouse.IsClicked(1) then
-					TextCursorAnchor = TextCursorPos
-					DragSelect = true
+					tc_anchor = tc_pos
+					drag_select = true
 				end
-				ShouldUpdateTransform = true
-				IsShiftDown = true
+				should_update_t = true
+				is_shift = true
 			end
-			UpdateMultiLinePosition(Instance)
+			UpdateMultiLinePosition(instance)
 		end
 
-		if IsSliding then
-			local Current = tonumber(Instance.Text)
-
-			if Options.UseSlider then
-				UpdateSlider(Instance, Options.Precision)
+		if is_sliding then
+			local current = tonumber(instance.Text)
+			if use_slider then
+				UpdateSlider(instance, precision)
 			else
-				UpdateDrag(Instance, Options.Step)
+				UpdateDrag(instance, step)
 			end
-
-			Instance.TextChanged = Current ~= tonumber(Instance.Text)
+			instance.TextChanged = current ~= tonumber(instance.Text)
 		end
 
 		if Mouse.IsReleased(1) then
-			DragSelect = false
-			if TextCursorAnchor == TextCursorPos then
-				TextCursorAnchor = -1
-			end
-
-			if IsSliding then
-				IsSliding = false
-				Focused = nil
-				Result = true
-				LastText = Instance.Text
+			drag_select = false
+			tc_anchor = tc_anchor == tc_pos and -1 or tc_pos
+			if is_sliding then
+				is_sliding = false
+				focused = nil
+				res = true
+				last_text = instance.Text
 			end
 		end
 
 		if Mouse.IsDoubleClicked(1) then
-			local MouseInputX, MouseInputY = MouseX - X, MouseY - Y
-			local CX, CY = Region.InverseTransform(Instance.Id, MouseInputX, MouseInputY)
-			TextCursorPos = GetTextCursorPos(Instance, CX, CY)
-			SelectWord(Instance)
-			DragSelect = false
+			local mix, miy = mx - x, my - y
+			local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
+			tc_pos = GetTextCursorPos(instance, cx, cy)
+			SelectWord(instance)
+			drag_select = false
 		end
 
-		if Keyboard.IsPressed('return') then
-			Result = true
-			if Options.MultiLine then
-				Input.Text('\n')
+		if Keyboard.IsPressed("return") then
+			res = true
+			if multi then
+				Input.Text("\n")
 			else
-				ClearFocus = true
+				clear_focus = true
 			end
 		end
 
-		if Instance.TextChanged or Back then
-			if Options.ReturnOnText then
-				Result = true
+		if instance.TextChanged or back then
+			res = return_on_text or res
+			if multi then
+				instance.Lines = Text.GetLines(instance.Text, multi_w)
+				UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
 			end
 
-			if Options.MultiLine then
-				Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
-				UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
-			end
-
-			UpdateMultiLinePosition(Instance)
-
-			Instance.TextChanged = false
-			PreviousTextCursorPos = -1
+			UpdateMultiLinePosition(instance)
+			instance.TextChanged = false
 		end
 
-		if ShouldUpdateTransform then
-			ClearAnchor = not IsShiftDown
-			UpdateTransform(Instance)
+		if should_update_t then
+			clear_anchor = not is_shift
+			UpdateTransform(instance)
 		end
 
-		if ClearAnchor then
-			TextCursorAnchor = -1
+		if clear_anchor then
+			tc_anchor = -1
 		end
 	else
-		local WasValidated = ValidateNumber(Instance)
-		if WasValidated then
-			Result = true
-			LastText = Instance.Text
+		local was_validated = ValidateNumber(instance)
+		if was_validated then
+			res = true
+			last_text = instance.Text
 		end
 	end
 
-	if Region.IsScrolling(Instance.Id) then
-		local DeltaX, DeltaY = Mouse.GetDelta()
-		local WheelX, WheelY = Region.GetWheelDelta()
+	if Region.IsScrolling(instance.Id) then
+		local _, dy = Mouse.GetDelta()
+		local _, wy = Region.GetWheelDelta()
 
-		if DeltaY ~= 0.0 or WheelY ~= 0.0 then
-			Instance.ShouldUpdateTextObject = true
+		if dy ~= 0 or wy ~= 0 then
+			instance.ShouldUpdateTextObject = true
 		end
 	end
 
-	if (Instance == Focused and not Instance.ReadOnly) or Options.MultiLine then
-		Options.BgColor = Style.InputEditBgColor
+	if (instance == focused and not instance.ReadOnly) or multi then
+		bg_color = Style.InputEditBgColor
 	end
 
-	local TX, TY = Window.TransformPoint(X, Y)
-	Region.Begin(Instance.Id, {
-		X = X,
-		Y = Y,
-		W = W,
-		H = H,
-		ContentW = ContentW + Pad,
-		ContentH = ContentH + Pad,
-		BgColor = Options.BgColor,
-		SX = TX,
-		SY = TY,
-		MouseX = MouseX,
-		MouseY = MouseY,
+	local tx, ty = Window.TransformPoint(x, y)
+	Region.Begin(instance.Id, {
+		X = x,
+		Y = y,
+		W = w,
+		H = h,
+		ContentW = cw + pad,
+		ContentH = ch + pad,
+		BgColor = bg_color,
+		SX = tx,
+		SY = ty,
+		MouseX = mx,
+		MouseY = my,
 		Intersect = true,
-		IgnoreScroll = not Options.MultiLine,
-		Rounding = Options.Rounding,
-		IsObstructed = IsObstructed,
-		AutoSizeContent = false
+		IgnoreScroll = not multi,
+		Rounding = rounding,
+		IsObstructed = is_obstructed,
+		AutoSizeContent = false,
 	})
-	if Instance == Focused then
-		if not IsSliding then
-			DrawSelection(Instance, X, Y, W, H, Options.SelectColor)
-			DrawCursor(Instance, X, Y, W, H)
-		end
+	if instance == focused and not is_sliding then
+		DrawSelection(instance, x, y, w, h, select_color)
+		DrawCursor(instance, x, y, w, h)
 	end
 
-	if Options.UseSlider then
-		if not IsEditing then
-			DrawSlider(Instance, Options.DrawSliderAsHandle)
-		end
+	if use_slider and not is_editing then
+		DrawSlider(instance, opt.DrawSliderAsHandle)
 	end
 
-	if Instance.Text ~= "" then
-		Cursor.SetPosition(X + GetAlignmentOffset(Instance), Y)
-
-		LayoutManager.Begin('Ignore', {Ignore = true})
-		if Instance.TextObject ~= nil then
-			Text.BeginObject(Instance.TextObject)
+	if instance.Text ~= STR_EMPTY then
+		Cursor.SetPosition(x + GetAlignmentOffset(instance), y)
+		LayoutManager.Begin("Ignore", TBL_IGNORE)
+		if instance.TextObject then
+			Text.BeginObject(instance.TextObject)
 		else
-			Text.Begin(Instance.Text, {AddItem = false, Color = Options.TextColor})
+			Text.Begin(instance.Text, {AddItem = false, Color = text_color})
 		end
 		LayoutManager.End()
 	end
 	Region.End()
 	Region.ApplyScissor()
 
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.SetPosition(X, Y)
-	Cursor.AdvanceX(W)
-	Cursor.AdvanceY(H)
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.SetPosition(x, y)
+	Cursor.AdvanceX(w)
+	Cursor.AdvanceY(h)
+	Window.AddItem(x, y, w, h, win_item_id)
 
-	Window.AddItem(X, Y, W, H, WinItemId)
+	if clear_focus then
+		ValidateNumber(instance)
+		last_text = instance.Text
+		focused = nil
 
-	if ClearFocus then
-		ValidateNumber(Instance)
-		LastText = Instance.Text
-		Focused = nil
-
-		if not Options.MultiLine then
-			Region.ResetTransform(Instance.Id)
+		if not multi then
+			Region.ResetTransform(instance.Id)
 		end
 
 		-- Close the soft keyboard on mobile platforms when an input control loses focus.
@@ -1425,109 +1221,100 @@ function Input.Begin(Id, Options)
 		love.keyboard.setKeyRepeat(false)
 	end
 
-	Stats.End(StatHandle)
-
-	return Result
+	Stats.End(stat_handle)
+	return res
 end
 
-function Input.Text(Ch)
-	if Focused ~= nil and not Focused.ReadOnly then
-		if not IsValidDigit(Focused, Ch) then
-			return
-		end
+function Input.Text(ch)
+	if not (focused and not focused.ReadOnly) then return end
+	if not IsValidDigit(focused, ch) then return end
 
-		if TextCursorAnchor ~= -1 then
-			DeleteSelection(Focused)
-		end
-
-		if TextCursorPos == 0 then
-			Focused.Text = Ch .. Focused.Text
-		else
-			local Temp = Focused.Text
-			local Left = sub(Temp, 0, TextCursorPos)
-			local Right = sub(Temp, TextCursorPos + 1)
-			Focused.Text = Left .. Ch .. Right
-		end
-
-		TextCursorPos = min(TextCursorPos + len(Ch), len(Focused.Text))
-		TextCursorAnchor = -1
-		UpdateTransform(Focused)
-		Focused.TextChanged = true
+	if tc_anchor ~= -1 then
+		DeleteSelection(focused)
 	end
+
+	if tc_pos == 0 then
+		focused.Text = ch .. focused.Text
+	else
+		local temp = focused.Text
+		local left = sub(temp, 0, tc_pos)
+		local right = sub(temp, tc_pos + 1)
+		focused.Text = left .. ch .. right
+	end
+
+	tc_pos = min(tc_pos + #ch, #focused.Text)
+	tc_anchor = -1
+	UpdateTransform(focused)
+	focused.TextChanged = true
 end
 
 function Input.Update(dt)
-	local Delta = dt * 2.0
-	if FadeIn then
-		TextCursorAlpha = min(TextCursorAlpha + Delta, 1.0)
-		FadeIn = TextCursorAlpha < 1.0
+	local delta = dt * 2.0
+	if fade_in then
+		tc_alpha = min(tc_alpha + delta, 1.0)
+		fade_in = tc_alpha < 1.0
 	else
-		TextCursorAlpha = max(TextCursorAlpha - Delta, 0.0)
-		FadeIn = TextCursorAlpha == 0.0
+		tc_alpha = max(tc_alpha - delta, 0.0)
+		fade_in = tc_alpha == 0.0
 	end
 
-	if PendingFocus ~= nil then
-		LastFocused = Focused
-		Focused = PendingFocus
-		PendingFocus = nil
+	if pending_focus then
+		last_focused = focused
+		focused = pending_focus
+		pending_focus = nil
 	end
 
-	if Focused ~= nil then
-		if PendingCursorPos >= 0 then
-			TextCursorPos = min(PendingCursorPos, #Focused.Text)
-			ValidateTextCursorPos(Focused)
-			UpdateMultiLinePosition(Focused)
-			PendingCursorPos = -1
+	if focused then
+		if pc_pos >= 0 then
+			tc_pos = min(pc_pos, #focused.Text)
+			ValidateTextCursorPos(focused)
+			UpdateMultiLinePosition(focused)
+			pc_pos = -1
 		end
 
-		local MultiLineChanged = false
-
-		if PendingCursorColumn >= 0 then
-			if Focused.Lines ~= nil then
-				TextCursorPosLine = PendingCursorColumn
-				MultiLineChanged = true
+		local multi_changed = false
+		if pc_col >= 0 then
+			if focused.Lines then
+				tc_pos_line = pc_col
+				multi_changed = true
 			end
-
-			PendingCursorColumn = -1
+			pc_col = -1
 		end
 
-		if PendingCursorLine > 0 then
-			if Focused.Lines ~= nil then
-				TextCursorPosLineNumber = min(PendingCursorLine, #Focused.Lines)
-				MultiLineChanged = true
+		if pc_line > 0 then
+			if focused.Lines then
+				tc_pos_line_n = min(pc_line, #focused.Lines)
+				multi_changed = true
 			end
-
-			PendingCursorLine = 0
+			pc_line = 0
 		end
 
-		if MultiLineChanged then
-			local Line = Focused.Lines[TextCursorPosLineNumber]
-			TextCursorPosLine = min(TextCursorPosLine, len(Line))
-			local Start = 0
-			for I, V in ipairs(Focused.Lines) do
-				if I == TextCursorPosLineNumber then
-					TextCursorPos = Start + TextCursorPosLine
+		if multi_changed then
+			local line = focused.Lines[tc_pos_line_n]
+			tc_pos_line = min(tc_pos_line, #line)
+			local start = 0
+			for i, v in ipairs(focused.Lines) do
+				if i == tc_pos_line_n then
+					tc_pos = start + tc_pos_line
 					break
 				end
-				Start = Start + len(V)
+				start = start + #v
 			end
-			ValidateTextCursorPos(Focused)
+			ValidateTextCursorPos(focused)
 		end
 	else
-		PendingCursorPos = -1
-		PendingCursorColumn = -1
-		PendingCursorLine = 0
+		pc_pos = -1
+		pc_col = -1
+		pc_line = 0
 	end
 end
 
 function Input.GetText()
-	if Focused ~= nil then
-		if Focused.NumbersOnly and (Focused.Text == "" or Focused.Text == ".") then
-			return "0"
-		end
-		return Focused.Text
+	if not focused then return last_text end
+	if focused.NumbersOnly and (focused.Text == STR_EMPTY or focused.Text == ".") then
+		return "0"
 	end
-	return LastText
+	return focused.Text
 end
 
 function Input.GetNumber()
@@ -1539,69 +1326,60 @@ function Input.GetNumber()
 end
 
 function Input.GetCursorPos()
-	if Focused ~= nil then
-		return TextCursorPos, TextCursorPosLine, TextCursorPosLineNumber
-	end
-
-	return 0, 0, 0
+	if not focused then return 0, 0, 0 end
+	return tc_pos, tc_pos_line, tc_pos_line_n
 end
 
 function Input.IsAnyFocused()
-	return Focused ~= nil
+	return focused ~= nil
 end
 
-function Input.IsFocused(Id)
-	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
-	return Instance == Focused
+function Input.IsFocused(id)
+	local instance = GetInstance(Window.GetId() .. "." .. id)
+	return instance == focused
 end
 
-function Input.SetFocused(Id)
-	if Id == nil then
-		Focused = nil
-		PendingFocus = nil
+function Input.SetFocused(id)
+	if not id then
+		focused = nil
+		pending_focus = nil
 		return
 	end
 
-	local Instance = GetInstance(Window.GetId() .. '.' .. Id)
-	PendingFocus = Instance
+	local instance = GetInstance(Window.GetId() .. "." .. id)
+	pending_focus = instance
 end
 
-function Input.SetCursorPos(Pos)
-	PendingCursorPos = max(Pos, 0)
+function Input.SetCursorPos(pos)
+	pc_pos = max(pos, 0)
 end
 
-function Input.SetCursorPosLine(Column, Line)
-	if Column ~= nil then
-		PendingCursorColumn = max(Column, 0)
-	end
-
-	if Line ~= nil then
-		PendingCursorLine = max(Line, 1)
-	end
+function Input.SetCursorPosLine(col, line)
+	pc_col = col and max(col, 0) or pc_col
+	pc_line = line and max(line, 1) or pc_line
 end
 
 function Input.GetDebugInfo()
-	local Info = {}
-	local X, Y = GetCursorPos(Focused)
+	local info = {}
+	local x, y = GetCursorPos(focused)
 
-	if Focused ~= nil then
-		Region.InverseTransform(Focused.Id, X, Y)
+	if focused then
+		Region.InverseTransform(focused.Id, x, y)
 	end
 
-	Info['Focused'] = Focused ~= nil and Focused.Id or 'nil'
-	Info['Width'] = Focused ~= nil and Focused.W or 0
-	Info['Height'] = Focused ~= nil and Focused.H or 0
-	Info['CursorX'] = X
-	Info['CursorY'] = Y
-	Info['CursorPos'] = TextCursorPos
-	Info['Character'] = Focused ~= nil and GetDisplayCharacter(Focused.Text, TextCursorPos) or ''
-	Info['LineCursorPos'] = TextCursorPosLine
-	Info['LineCursorPosMax'] = TextCursorPosLineMax
-	Info['LineNumber'] = TextCursorPosLineNumber
-	Info['LineLength'] = (Focused ~= nil and Focused.Lines ~= nil) and len(Focused.Lines[TextCursorPosLineNumber]) or 0
-	Info['Lines'] = Focused ~= nil and Focused.Lines or nil
-
-	return Info
+	info.Focused = focused and focused.Id or "nil"
+	info.Width = focused and focused.W or 0
+	info.Height = focused and focused.H or 0
+	info.CursorX = x
+	info.CursorY = y
+	info.CursorPos = tc_pos
+	info.Character = focused and GetDisplayCharacter(focused.Text, tc_pos) or STR_EMPTY
+	info.LineCursorPos = tc_pos_line
+	info.LineCursorPosMax = tc_pos_line_max
+	info.LineNumber = tc_pos_line_n
+	info.LineLength = (focused and focused.Lines) and #focused.Lines[tc_pos_line_n] or 0
+	info.Lines = focused and focused.Lines
+	return info
 end
 
 return Input
