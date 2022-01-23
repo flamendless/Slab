@@ -5,33 +5,28 @@ local TablePool = {}
 TablePool.__index = TablePool
 
 function TablePool.new()
-	return setmetatable({}, TablePool)
+	return setmetatable({[0] = 0}, TablePool)
 end
 
 function TablePool:pop()
-	if #self == 0 then
-		return {}, true
-	end
-
-	return remove(self)
+	local n = self[0]
+	if n == 0 then return {}, true end
+	local res = self[n]
+	self[n], self[0] = nil, n - 1
+	return res
 end
 
 function TablePool:pop_clean()
-	local res, is_empty = self:pop()
-
-	if is_empty then
-		return res
-	end
-
+	local res = self:pop()
 	for k in pairs(res) do
 		res[k] = nil
 	end
-
 	return res
 end
 
 function TablePool:push(t)
-	insert(self, t)
+	local n = self[0] + 1
+	self[n], self[0] = t, n
 end
 
 return TablePool.new
