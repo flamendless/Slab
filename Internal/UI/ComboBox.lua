@@ -39,163 +39,157 @@ local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
 
 local ComboBox = {}
-local Instances = {}
-local Active = nil
 
-local MIN_WIDTH = 150.0
-local MIN_HEIGHT = 150.0
+local instances = {}
+local active
+local MIN_WIDTH = 150
+local MIN_HEIGHT = 150
+local STR_EMPTY = ""
+local TBL_EMPTY = {}
+local TBL_IGNORE = {ignore = true}
+local input_rounding = {0, 0, 0, 0}
+local dd_rounding = {0, 0, 0, 0}
 
-local function GetInstance(Id)
-	if Instances[Id] == nil then
-		local Instance = {}
-		Instance.IsOpen = false
-		Instance.WasOpened = false
-		Instance.WinW = 0.0
-		Instance.WinH = 0.0
-		Instance.StatHandle = nil
-		Instances[Id] = Instance
+local function GetInstance(id)
+	if not instances[id] then
+		local instance = {
+			IsOpen = false,
+			WasOpened = false,
+			WinW = 0,
+			WinH = 0,
+			StatHandle = nil,
+			InputId = id .. "_Input",
+			WinId = id .. "_combobox",
+
+			InputOptions = {
+				ReadOnly = true,
+				Align = "left",
+				Rounding = input_rounding,
+			},
+
+			WindowOptions = {
+				AllowResize = false,
+				AutoSizeWindow = false,
+				AllowFocus = false,
+				AutoSizeContent = true,
+				NoSavedSettings = true,
+			}
+		}
+		instances[id] = instance
 	end
-	return Instances[Id]
+	return instances[id]
 end
 
-function ComboBox.Begin(Id, Options)
-	local StatHandle = Stats.Begin('ComboBox', 'Slab')
+function ComboBox.Begin(id, opy)
+	local stat_handle = Stats.Begin("ComboBox", "Slab")
+	opt = opt or TBL_EMPTY
+	local w = opt.W or MIN_WIDTH
+	local wh = opt.WinH or MIN_HEIGHT
+	local selected = opt.Selected or STR_EMPTY
+	local rounding = opt.Rounding or Style.ComboBoxRounding
+	local instance = GetInstance(id)
+	local win_item_id = Window.GetItemId(id)
+	local h = Style.Font:getHeight()
+	w = LayoutManager.ComputeSize(w, h)
+	LayoutManager.AddControl(w, h, "ComboBox")
+	local x, y = Cursor.GetPosition()
+	local radius = h * 0.35
+	local input_bg_color = Style.ComboBoxColor
+	local ddw = radius * 4
+	local ddx = x + w - ddw
+	local dd_color = Style.ComboBoxDropDownColor
+	input_rounding[1], input_rounding[4] = rounding, rounding
+	dd_rounding[1], dd_rounding[4] = rounding, rounding
+	instance.X, instance.Y = x, y
+	instance.W, instance.H = w, h
+	instance.WinH = min(instance.WinH, wh)
+	instance.StatHandle = stat_handle
 
-	Options = Options ~= nil and Options or {}
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.W = Options.W == nil and MIN_WIDTH or Options.W
-	Options.WinH = Options.WinH == nil and MIN_HEIGHT or Options.WinH
-	Options.Selected = Options.Selected == nil and "" or Options.Selected
-	Options.Rounding = Options.Rounding == nil and Style.ComboBoxRounding or Options.Rounding
+	local mx, my = Window.GetMousePosition()
+	instance.WasOpened = instance.IsOpen
+	local hovered = not Window.IsObstructedAtMouse() and
+		x <= mx and mx <= x + w and
+		y <= my and my <= y + h
 
-	local Instance = GetInstance(Id)
-	local WinItemId = Window.GetItemId(Id)
-	local W = Options.W
-	local H = Style.Font:getHeight()
-
-	W = LayoutManager.ComputeSize(W, H)
-	LayoutManager.AddControl(W, H, 'ComboBox')
-
-	local X, Y = Cursor.GetPosition()
-	local Radius = H * 0.35
-	local InputBgColor = Style.ComboBoxColor
-	local DropDownW = Radius * 4.0
-	local DropDownX = X + W - DropDownW
-	local DropDownColor = Style.ComboBoxDropDownColor
-
-	local InputRounding = {Options.Rounding, 0, 0, Options.Rounding}
-	local DropDownRounding = {0, Options.Rounding, Options.Rounding, 0}
-
-	Instance.X = X
-	Instance.Y = Y
-	Instance.W = W
-	Instance.H = H
-	Instance.WinH = min(Instance.WinH, Options.WinH)
-	Instance.StatHandle = StatHandle
-
-	local MouseX, MouseY = Window.GetMousePosition()
-	local MouseClicked = Mouse.IsClicked(1)
-
-	Instance.WasOpened = Instance.IsOpen
-
-	local IsObstructed = Window.IsObstructedAtMouse()
-	local Hovered = not IsObstructed and X <= MouseX and MouseX <= X + W and Y <= MouseY and MouseY <= Y + H
-
-	if Hovered then
-		InputBgColor = Style.ComboBoxHoveredColor
-		DropDownColor = Style.ComboBoxDropDownHoveredColor
-
-		if MouseClicked then
-			Instance.IsOpen = not Instance.IsOpen
-
-			if Instance.IsOpen then
-				Window.SetStackLock(Id .. '_combobox')
+	if hovered then
+		input_bg_color = Style.ComboBoxHoveredColor
+		dd_color = Style.ComboBoxDropDownHoveredColor
+		if Mouse.IsClicked(1) then
+			instance.IsOpen = not instance.IsOpen
+			if instance.IsOpen then
+				Window.SetStackLock(instance.WinId)
 			end
 		end
 	end
 
-	LayoutManager.Begin('Ignore', {Ignore = true})
-	Input.Begin(Id .. '_Input', {
-		ReadOnly = true,
-		Text = Options.Selected,
-		Align = 'left',
-		W = max(W - DropDownW, DropDownW),
-		H = H,
-		BgColor = InputBgColor,
-		Rounding = InputRounding
-	})
+	LayoutManager.Begin("Ignore", TBL_IGNORE)
+	local input_opt = instance.InputOptions
+	input_opt.Text = selected
+	input_opt.W = max(w - ddw, ddw)
+	input_opt.H = h
+	input_opt.BgColor = input_bg_color
+	Input.Begin(instance.InputId, input_opt)
 	LayoutManager.End()
-
 	Cursor.SameLine()
+	DrawCommands.Rectangle("fill", ddx, y, ddw, h, dd_color, dd_rounding)
+	DrawCommands.Triangle("fill", ddx + radius * 2, y + h - radius * 1.35,
+		radius, 180, Style.ComboBoxArrowColor)
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.AdvanceY(h)
 
-	DrawCommands.Rectangle('fill', DropDownX, Y, DropDownW, H, DropDownColor, DropDownRounding)
-	DrawCommands.Triangle('fill', DropDownX + Radius * 2.0, Y + H - Radius * 1.35, Radius, 180, Style.ComboBoxArrowColor)
-
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(H)
-
-	if Hovered then
-		Tooltip.Begin(Options.Tooltip)
-		Window.SetHotItem(WinItemId)
+	if hovered then
+		Tooltip.Begin(opt.Tooltip or STR_EMPTY)
+		Window.SetHotItem(win_item_id)
 	end
 
-	Window.AddItem(X, Y, W, H, WinItemId)
+	Window.AddItem(x, y, w, h, win_item_id)
+	local wx, wy = Window.TransformPoint(x, y)
 
-	local WinX, WinY = Window.TransformPoint(X, Y)
-
-	if Instance.IsOpen then
-		LayoutManager.Begin('ComboBox', {Ignore = true})
-		Window.Begin(Id .. '_combobox',
-		{
-			X = WinX - 1.0,
-			Y = WinY + H,
-			W = max(W, Instance.WinW),
-			H = Instance.WinH,
-			AllowResize = false,
-			AutoSizeWindow = false,
-			AllowFocus = false,
-			Layer = Window.GetLayer(),
-			AutoSizeContent = true,
-			NoSavedSettings = true,
-			ContentW = max(W, Instance.WinW)
-		})
-		Active = Instance
+	if instance.IsOpen then
+		LayoutManager.Begin("ComboBox", TBL_IGNORE)
+		local win_opt = instance.WindowOptions
+		win_opt.X = wx - 1
+		win_opt.Y = wy - h
+		win_opt.W = max(w, instance.WinH)
+		win_opt.H = instance.WinH
+		win_opt.Layer = Window.GetLayer()
+		win_opt.ContentW = max(w, instance.WinW)
+		Window.Begin(instance.WinId, win_opt)
+		active = instance
 	else
-		Stats.End(Instance.StatHandle)
+		Stats.End(instance.StatHandle)
 	end
-
-	return Instance.IsOpen
+	return instance.IsOpen
 end
 
 function ComboBox.End()
-	local Y = 0.0
-	local H = 0.0
-	local StatHandle = nil
+	local y, h = 0, 0
+	local stat_handle = active and active.StatHandle
+	if active then
+		Cursor.SetItemBounds(active.X, active.Y, active.W, active.H)
+		y, h = Active.Y, Active.H
+		local cw, ch = Window.GetContentSize()
+		active.WinW = max(cw, active.W)
+		active.WinH = contentH
 
-	if Active ~= nil then
-		Cursor.SetItemBounds(Active.X, Active.Y, Active.W, Active.H)
-		Y, H = Active.Y, Active.H
-		local ContentW, ContentH = Window.GetContentSize()
-		Active.WinH = ContentH
-		Active.WinW = max(ContentW, Active.W)
-		StatHandle = Active.StatHandle
-		if Mouse.IsClicked(1) and Active.WasOpened and not Region.IsHoverScrollBar(Window.GetId()) then
-			Active.IsOpen = false
-			Active = nil
-			Window.SetStackLock(nil)
+		if Mouse.IsClicked(1) and active.WasOpened and
+			not Region.IsHoverScrollBar(Window.GetId()) then
+			active.IsOpen = false
+			active = nil
+			Window.SetStackLock()
 		end
 	end
 
 	Window.End()
-	DrawCommands.SetLayer('Normal')
+	DrawCommands.SetLayer(DrawCommands.layers.normal)
 	LayoutManager.End()
 
-	if Y ~= 0.0 and H ~= 0.0 then
-		Cursor.SetY(Y)
-		Cursor.AdvanceY(H)
+	if y ~= 0 and h ~= 0 then
+		Cursor.SetY(y)
+		Cursor.AdvanceY(h)
 	end
 
-	Stats.End(StatHandle)
+	Stats.End(stat_handle)
 end
 
 return ComboBox
