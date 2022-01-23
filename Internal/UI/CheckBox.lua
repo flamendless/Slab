@@ -76,7 +76,7 @@ function CheckBox.Begin(enabled, label, opt)
 	end
 
 	DrawCommands.Rectangle("fill", x, y, bw, bh, color, rounding)
-	if checked then
+	if enabled then
 		DrawCommands.Cross(x + radius, y + radius, radius - 1, Style.CheckBoxSelectedColor)
 	end
 

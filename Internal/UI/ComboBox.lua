@@ -80,7 +80,7 @@ local function GetInstance(id)
 	return instances[id]
 end
 
-function ComboBox.Begin(id, opy)
+function ComboBox.Begin(id, opt)
 	local stat_handle = Stats.Begin("ComboBox", "Slab")
 	opt = opt or TBL_EMPTY
 	local w = opt.W or MIN_WIDTH
@@ -167,10 +167,10 @@ function ComboBox.End()
 	local stat_handle = active and active.StatHandle
 	if active then
 		Cursor.SetItemBounds(active.X, active.Y, active.W, active.H)
-		y, h = Active.Y, Active.H
+		y, h = active.Y, active.H
 		local cw, ch = Window.GetContentSize()
 		active.WinW = max(cw, active.W)
-		active.WinH = contentH
+		active.WinH = ch
 
 		if Mouse.IsClicked(1) and active.WasOpened and
 			not Region.IsHoverScrollBar(Window.GetId()) then

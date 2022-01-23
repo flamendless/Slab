@@ -66,7 +66,7 @@ local function ProcessEvents()
 	-- releases from the pressed key. All released events pushed as the same frame as the pressed events will be
 	-- pushed to the events table for the next frame to process.
 	local next_events = {}
-	for i, v in ipairs(events) do
+	for _, v in ipairs(events) do
 		if not keys[v.scancode] then
 			keys[v.scancode] = {}
 		end

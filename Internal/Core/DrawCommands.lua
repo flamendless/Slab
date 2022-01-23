@@ -30,7 +30,6 @@ local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
 
 local insert = table.insert
 local remove = table.remove
-local sort = table.sort
 local sin = math.sin
 local cos = math.cos
 local rad = math.rad
@@ -108,7 +107,7 @@ local function GetLayerDebugInfo(layer)
 	res["Channel Count"] = #layer
 
 	local channels = {}
-	for k, channel in pairs(layer) do
+	for _, channel in pairs(layer) do
 		local collection = {}
 		collection["Batch Count"] = #channel
 		insert(channels, collection)
@@ -121,7 +120,7 @@ end
 local function DrawRect(rect)
 	local stat_handle = Stats.Begin("DrawRect", stats_category)
 	local prev_line_w = lg.getLineWidth()
-	local px_offset = Rect.Mode == "line" and 0.5 or 0
+	local px_offset = rect.Mode == "line" and 0.5 or 0
 
 	lg.setLineWidth(rect.line_w)
 	lg.setColor(rect.color)
@@ -337,7 +336,7 @@ function DrawCommands.Reset()
 	for i = 1, DrawCommands.layers.mouse do
 		local layer = layer_table[i]
 		for j, channel in pairs(layer) do
-			for i, batch in ipairs(channel) do
+			for _, batch in ipairs(channel) do
 				ClearBatch(batch)
 			end
 			layer[j] = nil

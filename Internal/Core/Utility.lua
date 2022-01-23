@@ -65,7 +65,7 @@ function Utility.HSVtoRGB(h, s, v)
 	else
 		r, g, b = v, p, q
 	end
-	return R, G, B
+	return r, g, b
 end
 
 function Utility.RGBtoHSV(r, g, b)
@@ -92,7 +92,7 @@ function Utility.RGBtoHSV(r, g, b)
 end
 
 function Utility.HasValue(tbl, value)
-	for i, v in ipairs(tbl) do
+	for _, v in ipairs(tbl) do
 		if v == value then
 			return true
 		end
@@ -111,7 +111,7 @@ end
 
 function Utility.CopyValues(a, b)
 	if type(a) ~= "table" or type(b) ~= "table" then return end
-	for k, v in pairs(a) do
+	for k in pairs(a) do
 		local other = b[k]
 		if other then
 			a[k] = Utility.Copy(other)
@@ -145,7 +145,7 @@ end
 function Utility.TableCount(tbl)
 	if not table then return 0 end
 	local res = 0
-	for k, v in pairs(tbl) do
+	for _ in pairs(tbl) do
 		res = res + 1
 	end
 	return res

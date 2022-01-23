@@ -62,8 +62,8 @@ function Button.Begin(label, opt)
 	local color = opt.Color or Style.ButtonColor
 	local hover_color = opt.HoverColor or Style.ButtonHoveredColor
 	local press_color = opt.PressColor or Style.ButtonPressedColor
-	local pad_x = opt.PadX or PAD * 2
-	local pad_y = opt.PADY or PAD * 0.5
+	local pad_x = opt.PadX or pad * 2
+	local pad_y = opt.PADY or pad * 0.5
 	local vlines = opt.VLines or 1
 
 	local id = Window.GetItemId(label)
@@ -117,9 +117,9 @@ function Button.Begin(label, opt)
 		end
 	end
 
-	if not opt.invisible then
+	if not opt.Invisible then
 		-- Draw the background.
-		DrawCommands.Rectangle("fill", x, y, w, h, color, opt.Rounding or style.ButtonRounding)
+		DrawCommands.Rectangle("fill", x, y, w, h, color, opt.Rounding or Style.ButtonRounding)
 
 		-- Draw the label or image. The layout of this control was already computed above. Ignore when adding sub-controls
 		-- such as text or an image.
@@ -133,7 +133,7 @@ function Button.Begin(label, opt)
 			local label_x = x + (w * 0.5) - (Style.Font:getWidth(label) * 0.5)
 			local font_h = Style.Font:getHeight() * vlines
 			Cursor.SetX(floor(label_x))
-			Cursor.SetY(floor(label_y + (h * 0.5) - (font_h * 0.5)))
+			Cursor.SetY(floor(y + (h * 0.5) - (font_h * 0.5)))
 			label_color.color = disabled and Style.ButtonDisabledTextColor
 			Text.Begin(label, label_color)
 		end
@@ -187,16 +187,16 @@ function Button.BeginRadio(label, opt)
 	DrawCommands.Circle("fill", cx, cy, radius, color)
 
 	if index > 0 and index == sel_index then
-		Draw.Circle("fill", cx, cy, radius_inner, Style.RadioButtonSelectedColor)
+		DrawCommands.Circle("fill", cx, cy, radius_inner, Style.RadioButtonSelectedColor)
 	end
 
 	if label ~= EMPTY_STR then
-		local cy = Cursor.GetY()
+		local cy2 = Cursor.GetY()
 		Cursor.AdvanceX(radius2)
 		LayoutManager.Begin("Ignore", TBL_IGNORE)
 		Text.Begin(label)
 		LayoutManager.End()
-		Cursor.SetY(cursorY)
+		Cursor.SetY(cy2)
 	end
 
 	if not is_obstructed and x <= mx and mx <= x + w and y <= my and my <= y + h then

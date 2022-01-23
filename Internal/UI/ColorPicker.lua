@@ -28,7 +28,6 @@ local ceil = math.ceil
 local max = math.max
 local min = math.min
 local insert = table.insert
-local unpack = table.unpack
 local format = string.format
 
 local Button = require(SLAB_PATH .. ".Internal.UI.Button")
@@ -51,15 +50,6 @@ local tint_w, tint_h, tint_focused = 30, sat_size, false
 local alpha_w, alpha_h, alpha_focused = tint_w, tint_h, false
 local current_color = {1, 1, 1, 1}
 local color_h = 25
-
-local function IsEqual(a, b)
-	for i, v in ipairs(a) do
-		if v ~= b[i] then
-			return false
-		end
-	end
-	return true
-end
 
 local STR_CP = "ColorPicker_"
 
@@ -94,12 +84,12 @@ local function UpdateSaturationColors()
 	local c01 = {1, 1, 1, 1}
 	local c11 = {1, 1, 1, 1}
 	local step_x, step_y = 0, 0
-	local hue, sat, val = Utility.RGBtoHSV(current_color[1], current_color[2], current_color[3])
+	local hue = Utility.RGBtoHSV(current_color[1], current_color[2], current_color[3])
 
-	for i = 1, step do
-		for j = 1, step do
+	for _ = 1, step do
+		for _ = 1, step do
 			local s0 = step_x/step
-			local S1 = (step_x + 1)/step
+			local s1 = (step_x + 1)/step
 			local v0 = 1 - (step_y/step)
 			local v1 = 1 - ((step_y + 1)/step)
 
@@ -110,10 +100,10 @@ local function UpdateSaturationColors()
 
 			local mesh = sat_meshes[mesh_index]
 			mesh_index = mesh_index + 1
-			Mesh:setVertexAttribute(1, 3, c00[1], c00[2], c00[3], c00[4])
-			Mesh:setVertexAttribute(2, 3, c10[1], c10[2], c10[3], c10[4])
-			Mesh:setVertexAttribute(3, 3, c11[1], c11[2], c11[3], c11[4])
-			Mesh:setVertexAttribute(4, 3, c01[1], c01[2], c01[3], c01[4])
+			mesh:setVertexAttribute(1, 3, c00[1], c00[2], c00[3], c00[4])
+			mesh:setVertexAttribute(2, 3, c10[1], c10[2], c10[3], c10[4])
+			mesh:setVertexAttribute(3, 3, c11[1], c11[2], c11[3], c11[4])
+			mesh:setVertexAttribute(4, 3, c01[1], c01[2], c01[3], c01[4])
 			step_x = step_x + 1
 		end
 		step_x = 0
@@ -123,6 +113,7 @@ end
 
 local function InitializeSaturationMeshes()
 	if not sat_meshes then
+		sat_meshes = {}
 		UpdateSaturationColors()
 		return
 	end
@@ -131,8 +122,8 @@ local function InitializeSaturationMeshes()
 	local step = sat_step
 	local x, y = 0, 0
 	local size = sat_size/step
-	for i = 1, step do
-		for j = 1, step do
+	for _ = 1, step do
+		for _ = 1, step do
 			local verts = {
 				{x, y, 0, 0},
 				{x + size, y, 1, 0},
@@ -154,9 +145,7 @@ local function InitializeTintMeshes()
 	tint_meshes = {}
 	local step = 6
 	local x, y = 0, 0
-	local c0 = {1, 1, 1, 1}
-	local c1 = {1, 1, 1, 1}
-	local i = 0
+	local c0, c1
 	local colors = {
 		{1, 0, 0, 1},
 		{1, 1, 0, 1},
@@ -219,7 +208,7 @@ function ColorPicker.Begin(opt)
 
 	Window.Begin("ColorPicker", {Title = "Color Picker", X = opt.X, Y = opt.Y})
 
-	if Window.IsAppearing() or opt.Refresh then
+	if Window.IsAppearing() or refresh then
 		current_color[1] = color[1] or 0
 		current_color[2] = color[2] or 0
 		current_color[3] = color[3] or 0
@@ -235,8 +224,8 @@ function ColorPicker.Begin(opt)
 	local dragging = Mouse.IsDragging(1)
 
 	if sat_meshes then
-		for i, v in ipairs(sat_meshes) do
-			DrawCommands.Mesh(v, x, y)
+		for _, v2 in ipairs(sat_meshes) do
+			DrawCommands.Mesh(v2, x, y)
 		end
 		Window.AddItem(x, y, sat_size, sat_size)
 
@@ -267,8 +256,8 @@ function ColorPicker.Begin(opt)
 	end
 
 	if tint_meshes then
-		for i, v in ipairs(tint_meshes) do
-			DrawCommands.Mesh(v, x, y)
+		for _, v2 in ipairs(tint_meshes) do
+			DrawCommands.Mesh(v2, x, y)
 		end
 		Window.AddItem(x, y, tint_w, tint_h)
 
@@ -307,8 +296,8 @@ function ColorPicker.Begin(opt)
 		end
 		local a = 1 - current_color[4]
 		local ay = a * alpha_h
-		DrawCommands.Line(x, y + ay, x + alpha_w, y + ay, 2, {A, A, A, 1})
-		y = y + alpha_h + Cursor.PadY()
+		DrawCommands.Line(x, y + ay, x + alpha_w, y + ay, 2, {a, a, a, 1})
+		-- y = y + alpha_h + Cursor.PadY()
 	end
 
 	if update_color then
@@ -318,7 +307,7 @@ function ColorPicker.Begin(opt)
 
 	local ox = Text.GetWidth(STR_HASH2)
 	Cursor.AdvanceY(sat_size)
-	x, y = Cursor.GetPosition()
+	y = Cursor.GetY()
 	local r, g, b, a = unpack(current_color)
 	current_color[1], r = InputColor("R", r, ox)
 	current_color[2], g = InputColor("G", g, ox)
@@ -334,8 +323,8 @@ function ColorPicker.Begin(opt)
 	x = Cursor.GetX()
 	Cursor.SetY(y)
 
-	local wx, wy, ww, wh = Window.GetBounds()
-	ww, wh = Window.GetBorderlessSize()
+	local wx = Window.GetBounds()
+	local ww = Window.GetBorderlessSize()
 	ox = Text.GetWidth(STR_HASH4)
 
 	local color_x = x + ox

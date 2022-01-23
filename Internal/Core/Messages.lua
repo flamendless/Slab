@@ -53,7 +53,7 @@ end
 
 function Messages.Get()
 	local res = {}
-	for k, v in pairs(cache) do
+	for _, v in pairs(cache) do
 		insert(res, v)
 	end
 	return res

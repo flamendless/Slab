@@ -154,8 +154,7 @@ end
 
 local DEF_OPT = {pad = 0}
 function Cursor.SameLine(opt)
-	local opt = opt or DEF_OPT
-
+	opt = opt or DEF_OPT
 	state.line_y = state.prev_line_y
 	state.line_h = state.prev_line_h
 	state.x = state.item_x + state.item_w + state.pad_x + opt.pad

@@ -104,7 +104,7 @@ local function OnMouseReleased(x, y, button, is_touch, presses)
 end
 
 local function ProcessEvents()
-	for k, v in pairs(state.buttons) do
+	for _, v in pairs(state.buttons) do
 		v.type = Common.Event.None
 	end
 

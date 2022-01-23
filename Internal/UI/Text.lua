@@ -74,7 +74,7 @@ function Text.Begin(label, opt)
 		Window.SetHotItem(win_id)
 	end
 
-	local wx, wy, ww, wh = Region.GetContentBounds()
+	local wx, _, ww, _ = Region.GetContentBounds()
 	local check_x = is_selectable_text_only and x or wx
 	-- The region's width may have been reset prior to the first control being added. Account for this discrepency.
 	local check_w = is_selectable_text_only and w or max(ww, w)
@@ -113,7 +113,7 @@ end
 
 function Text.BeginFormatted(label, opt)
 	local stat_handle = Stats.Begin("Textf", "Slab")
-	local ww, wh = Window.GetBorderlessSize()
+	local ww = Window.GetBorderlessSize()
 	opt = opt or TBL_EMPTY
 	local w = opt.W or ww
 	if Window.IsAutoSize() then
@@ -125,18 +125,17 @@ function Text.BeginFormatted(label, opt)
 	LayoutManager.AddControl(width, height, "TextFormatted")
 	local x, y = Cursor.GetPosition()
 	local fx, fy = floor(x), floor(y)
-	DrawCommands.Printf(label, x, y, width, opt.Align or "left",
+	DrawCommands.Printf(label, fx, fy, width, opt.Align or "left",
 		opt.Color or Style.TextColor, Style.Font)
-	Cursor.SetItemBounds(x, y, width, height)
+	Cursor.SetItemBounds(fx, fy, width, height)
 	Cursor.AdvanceY(height)
 	Window.ResetContentSize()
-	Window.AddItem(x, y, width, height)
+	Window.AddItem(fx, fy, width, height)
 	Stats.End(stat_handle)
 end
 
 function Text.BeginObject(object, opt)
 	local stat_handle = Stats.Begin("TextObject", "Slab")
-	local ww, wh = Window.GetBorderlessSize()
 	opt = opt or TBL_EMPTY
 	local color = opt.Color or Style.TextColor
 	local w, h = object:getDimensions()
@@ -171,7 +170,7 @@ end
 local STR_NEWLINE = "\n"
 local STR_EMPTY = ""
 function Text.GetLines(label, width)
-	local w, lines = Style.Font:getWrap(label, width)
+	local _, lines = Style.Font:getWrap(label, width)
 	local start = 0
 	for i, v in ipairs(lines) do
 		local len_v = #v

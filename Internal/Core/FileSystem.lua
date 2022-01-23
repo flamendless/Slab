@@ -99,7 +99,7 @@ if FFI.os == "Windows" then
 	]]
 
 	local WIN32_FIND_DATA = FFI.typeof("struct WIN32_FIND_DATAW")
-	local INVALID_HANDLE = FFI.cast("void*", -1)
+	FFI.cast("void*", -1)
 
 	local function u2w(str, code)
 		local size = FFI.C.MultiByteToWideChar(code or 65001, 0, str, #str, nil, 0)
@@ -111,7 +111,7 @@ if FFI.os == "Windows" then
 	local function w2u(wstr, code)
 		local size = FFI.C.WideCharToMultiByte(code or 65001, 0, wstr, -1, nil, 0, nil, nil)
 		local buf = FFI.new("char[?]", size + 1)
-		size = FFI.C.WideCharToMultiByte(code or 65001, 0, wstr, -1, buf, size, nil, nil)
+		FFI.C.WideCharToMultiByte(code or 65001, 0, wstr, -1, buf, size, nil, nil)
 		return FFI.string(buf)
 	end
 
@@ -425,10 +425,9 @@ function FileSystem.Sanitize(path)
 	end
 
 	local res = ""
-	for i, item in ipairs(items) do
+	for _, item in ipairs(items) do
 		if res == "" then
-			if item == "." or item == ".." then
-			else
+			if not (item == "." or item == "..") then
 				if FileSystem.IsAbsolute(path) then
 					res = FileSystem.GetDrive(path) .. item
 				else
@@ -488,7 +487,7 @@ function FileSystem.ReadContents(path, is_binary, is_default)
 	else
 		local handle
 		local mode = is_binary and "rb" or "r"
-		handle, error = io.open(path, mode)
+		handle, err = io.open(path, mode)
 		if handle then
 			res = handle:read("*a")
 			handle:close()
@@ -503,11 +502,11 @@ function FileSystem.SaveContents(path, contents, is_default)
 		res, err = love.filesystem.write(path, contents)
 	else
 		local handle
-		handle, error = io.open(path, "w")
+		handle, err = io.open(path, "w")
 		if handle then
 			handle:write(contents)
 			handle:close()
-			ers = true
+			err = true
 		end
 	end
 	return res, err

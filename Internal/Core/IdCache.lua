@@ -18,7 +18,7 @@ function IdCache:get(parent_id, id)
 	if p then
 		p[id] = res_id
 	else
-		self.__ids[parent_id] = {[id] = resultId}
+		self.__ids[parent_id] = {[id] = res_id}
 	end
 	return res_id
 end

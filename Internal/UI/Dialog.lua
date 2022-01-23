@@ -103,7 +103,7 @@ end
 local function OpenDirectory(dir)
 	if active_instance and active_instance.Directory then
 		active_instance.Parsed = false
-		local len_dir = #instance.Directories
+		local len_dir = #active_instance.Directories
 		if sub(dir, len_dir, len_dir) == FileSystem.Separator() then
 			dir = sub(dir, 1, len_dir - 1)
 		end
@@ -612,8 +612,8 @@ function Dialog.FileDialog(opt)
 			}) then
 			for i in ipairs(active_instance.Filters) do
 				filter, desc = GetFilter(active_instance, i)
-				local str_sel = format("%s %s", filter, desc)
-				if Text.Begin(str_sel, TBL_IS_SEL) then
+				local str_sel2 = format("%s %s", filter, desc)
+				if Text.Begin(str_sel2, TBL_IS_SEL) then
 					active_instance.SelectedFilter = i
 					active_instance.Parsed = false
 				end

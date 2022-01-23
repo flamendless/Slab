@@ -97,8 +97,8 @@ local function EncodePair(key, value)
 	return res
 end
 
-local function EncodeSection(section, values)
-	local res = "[" .. section .. "]\n"
+local function EncodeSection(sec, values)
+	local res = "[" .. sec .. "]\n"
 	for k, v in pairs(values) do
 		res = res .. EncodePair(k, v)
 	end
@@ -107,7 +107,7 @@ end
 
 local function DecodeBoolean(value)
 	local l_str = lower(value)
-	return l_str == "true" or (str ~= "false" and nil)
+	return l_str == "true" or (l_str ~= "false" and nil)
 end
 
 local function DecodeArray(value)
@@ -142,7 +142,7 @@ local function DecodeTable(value)
 	return res
 end
 
-local function DecodeValue(Value)
+local function DecodeValue(value)
 	if not (value ~= nil and value ~= "") then return end
 	local num = tonumber(value)
 	if num then return num end
@@ -222,7 +222,7 @@ function Config.Decode(stream)
 	local res = {}
 	local start = 1
 	local last = find(stream, "\n", start, true)
-	local line = ""
+	local line
 
 	while last ~= nil do
 		line = sub(stream, start, last - 1)

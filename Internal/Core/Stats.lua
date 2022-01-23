@@ -42,7 +42,7 @@ local frame_n = 0
 local function GetCategory(category)
 	assert(category ~= nil, "Nil category given to Stats system.")
 	assert(category ~= "", "Empty category given to Stats system.")
-	assert(type(category) == "string", "Category given is not of type string. Type given is '" .. type(Category) .. "'.")
+	assert(type(category) == "string", "Category given is not of type string. Type given is '" .. type(category) .. "'.")
 	if not data[category] then
 		data[category] = {}
 	end
@@ -51,7 +51,7 @@ end
 
 local function ResetCategory(instance)
 	if not instance then return end
-	for k, v in pairs(instance) do
+	for _, v in pairs(instance) do
 		v.last_time = v.time
 		v.last_call_count = v.call_count
 		v.max_time = max(v.max_time, v.time)
@@ -141,7 +141,7 @@ function Stats.Reset(strict)
 
 	if strict then
 		local message
-		for k, v in pairs(pending) do
+		for _, v in pairs(pending) do
 			if not message then
 				message = "Stats.End were not called for the given stats: \n"
 			end
@@ -168,7 +168,7 @@ end
 
 function Stats.GetCategories()
 	local res = {}
-	for k, v in pairs(data) do
+	for k in pairs(data) do
 		insert(res, k)
 	end
 	return res
@@ -177,7 +177,7 @@ end
 function Stats.GetItems(category)
 	local res = {}
 	local instance = GetCategory(category)
-	for k, v in pairs(instance) do
+	for k in pairs(instance) do
 		insert(res, k)
 	end
 	return res
