@@ -1430,10 +1430,13 @@ end
 
 	This forces the cursor to advance to the next line based on the height of the current font.
 
+	N: [Number] Number of times to create newline. Default is 1.
+
 	Return: None.
 --]]
-function Slab.NewLine()
-	LayoutManager.NewLine()
+function Slab.NewLine(n)
+	assert(n <= 0, "must be positive")
+	LayoutManager.NewLine(n)
 end
 
 --[[

@@ -174,8 +174,8 @@ function Cursor.GetNewLineSize()
 	return state.newline_size
 end
 
-function Cursor.NewLine()
-	Cursor.AdvanceY(state.newline_size)
+function Cursor.NewLine(n)
+	Cursor.AdvanceY(state.newline_size * (n or 1))
 end
 
 function Cursor.GetLineHeight()
