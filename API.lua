@@ -1201,11 +1201,7 @@ end
 	Return: [Number] Returns the text entered into the focused input box as a number.
 --]]
 function Slab.GetInputNumber()
-	local Result = tonumber(Input.GetText())
-	if Result == nil then
-		Result = 0
-	end
-	return Result
+	return Input.GetNumber()
 end
 
 --[[

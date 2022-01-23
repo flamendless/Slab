@@ -1530,6 +1530,14 @@ function Input.GetText()
 	return LastText
 end
 
+function Input.GetNumber()
+	local res = tonumber(Input.GetText())
+	if res == nil then
+		res = 0
+	end
+	return res
+end
+
 function Input.GetCursorPos()
 	if Focused ~= nil then
 		return TextCursorPos, TextCursorPosLine, TextCursorPosLineNumber
