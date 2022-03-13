@@ -24,4 +24,8 @@ Enums.shape = {
 	polygon = "Polygon",
 }
 
+Enums.widget = {
+	tree = "Tree",
+}
+
 return Enums

@@ -28,265 +28,223 @@ local max = math.max
 local insert = table.insert
 local remove = table.remove
 
-local Button = require(SLAB_PATH .. '.Internal.UI.Button')
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Image = require(SLAB_PATH .. '.Internal.UI.Image')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Messages = require(SLAB_PATH .. '.Internal.Core.Messages')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Button = require(SLAB_PATH .. ".Internal.UI.Button")
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
+local Image = require(SLAB_PATH .. ".Internal.UI.Image")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(SLAB_PATH .. ".Style")
+local Text = require(SLAB_PATH .. ".Internal.UI.Text")
+local Tooltip = require(SLAB_PATH .. ".Internal.UI.Tooltip")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Tree = {}
-local Instances = setmetatable({}, {__mode = "k"})
-local Hierarchy = {}
+local instances = setmetatable({}, {__mode = "k"})
+local hierarchy = {}
+local radius = 4
+local STR_SLAB = "Slab"
+local STR_TABLE = "table"
 
-local Radius = 4.0
-
-local function GetInstance(Id)
-	local IdString = type(Id) == 'table' and tostring(IdString) or Id
-
-	if #Hierarchy > 0 then
-		local Top = Hierarchy[1]
-		IdString = Top.Id .. "." .. IdString
+local function GetInstance(id)
+	local str_id = type(id) == STR_TABLE and tostring(id) or id
+	if #hierarchy > 0 then
+		local top = hierarchy[1]
+		str_id = top.Id .. "." .. str_id
 	end
 
-	if Instances[Id] == nil then
-		local Instance = {}
-		Instance.X = 0.0
-		Instance.Y = 0.0
-		Instance.W = 0.0
-		Instance.H = 0.0
-		Instance.IsOpen = false
-		Instance.WasOpen = false
-		Instance.Id = IdString
-		Instance.StatHandle = nil
-		Instance.TreeR = 0
-		Instance.TreeB = 0
-		Instance.NoSavedSettings = false
-		Instances[Id] = Instance
+	if not instances[id] then
+		instances[id] = {
+			X = 0, Y = 0,
+			W = 0, H = 0,
+			IsOpen = false,
+			WasOpen = false,
+			Id = str_id,
+			TreeR = 0, TreeB = 0,
+			NoSavedSettings = false,
+		}
 	end
-	return Instances[Id]
+	return instances[id]
 end
 
-function Tree.Begin(Id, Options)
-	local StatHandle = Stats.Begin('Tree', 'Slab')
+local IMG_PATH = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png"
+local TBL_NO_COLOR = {0, 0, 0, 0}
+local TBL_IGNORE = {Ignore = true}
+local TBL_CENTER_Y = {CenterY = true}
 
-	local IsTableId = type(Id) == 'table'
-	local IdLabel = IsTableId and tostring(Id) or Id
+function Tree.Begin(id, opt)
+	local stat_handle = Stats.Begin(Enums.widget.tree, STR_SLAB)
+	local is_table_id = type(id) == STR_TABLE
+	local id_label = is_table_id and tostring(id) or id
 
-	Options = Options == nil and {} or Options
-	Options.Label = Options.Label == nil and IdLabel or Options.Label
-	Options.Tooltip = Options.Tooltip == nil and "" or Options.Tooltip
-	Options.OpenWithHighlight = Options.OpenWithHighlight == nil and true or Options.OpenWithHighlight
-	Options.Icon = Options.Icon == nil and nil or Options.Icon
-	Options.IsSelected = Options.IsSelected == nil and false or Options.IsSelected
-	Options.IsOpen = Options.IsOpen == nil and false or Options.IsOpen
-	Options.NoSavedSettings = Options.NoSavedSettings == nil and IsTableId or (Options.NoSavedSettings and not IsTableId)
+	local def_label = opt.Label or id_label
+	local def_tooltip = opt.Tooltip or id_label
+	local def_open_with_h = (not opt.OpenWithHighlight) and true or opt.OpenWithHighlight
+	local def_icon = opt.Icon
+	local def_is_sel = not not opt.IsSelected
+	local def_no_save = (not opt.NoSavedSettings) and is_table_id or
+		(opt.NoSavedSettings and not is_table_id)
+	local def_is_leaf = opt.IsLeaf
+	local instance
+	local win_item_id = Window.GetItemId(id_label)
+	instance = is_table_id and GetInstance(id) or GetInstance(win_item_id)
+	instance.WasOpen = instance.IsOpen
+	instance.StatHandle = stat_handle
+	instance.NoSavedSettings = def_no_save
 
-	if Options.IconPath ~= nil then
-		Messages.Broadcast('Tree.Options.IconPath', "'IconPath' option has been deprecated since v0.8.0. Please use the 'Icon' option.")
-	end
-
-	local Instance = nil
-	local WinItemId = Window.GetItemId(IdLabel)
-
-	if IsTableId then
-		Instance = GetInstance(Id)
-	else
-		Instance = GetInstance(WinItemId)
-	end
-
-	Instance.WasOpen = Instance.IsOpen
-	Instance.StatHandle = StatHandle
-	Instance.NoSavedSettings = Options.NoSavedSettings
-
-	local MouseX, MouseY = Mouse.Position()
-	local TMouseX, TMouseY = Region.InverseTransform(nil, MouseX, MouseY)
-	local WinX, WinY = Window.GetPosition()
-	local WinW, WinH = Window.GetBorderlessSize()
-	local IsObstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
-	local W = Text.GetWidth(Options.Label)
-	local H = max(Style.Font:getHeight(), Instance.H)
-
-	if not Options.IsLeaf then
-		W = W + H + Radius
-	end
+	local mx, my = Mouse.Position()
+	local tmx, tmy = Region.InverseTransform(nil, mx, my)
+	local wx, wy = Window.GetPosition()
+	local ww = Window.GetBorderlessSize()
+	local is_obstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
+	local w = Text.GetWidth(def_label)
+	local h = max(Style.Font:getHeight(), instance.H)
+	w = (not def_is_leaf) and (w + h + radius) or w
 
 	-- Account for icon if one is requested.
-	W = Options.Icon and W + H or W
+	w = def_icon and w + h or w
 
-	WinX = WinX + Window.GetBorder()
-	WinY = WinY + Window.GetBorder()
+	local border = Window.GetBorder()
+	wx, wy = wx + border, wy + border
 
-	if #Hierarchy == 0 then
-		local ControlW, ControlH = W, H
-		if Instance.TreeR > 0 and Instance.TreeB > 0 then
-			ControlW = Instance.TreeR - Instance.X
-			ControlH = Instance.TreeB - Instance.Y
+	if #hierarchy == 0 then
+		local cw, ch = w, h
+		if instance.TreeR > 0 and instance.TreeB > 0 then
+			cw = instance.TreeR - instance.X
+			ch = instance.TreeB - instance.Y
 		end
-
-		LayoutManager.AddControl(ControlW, ControlH, 'Tree')
-
-		Instance.TreeR = 0
-		Instance.TreeB = 0
+		LayoutManager.AddControl(cw, ch, Enums.widget.tree)
+		instance.TreeR, instance.TreeB = 0, 0
 	end
 
-	local Root = Instance
-	if #Hierarchy > 0 then
-		Root = Hierarchy[#Hierarchy]
+	local root = instance
+	if #hierarchy > 0 then
+		root = hierarchy[#hierarchy]
 	end
 
-	local X, Y = Cursor.GetPosition()
-	if Root ~= Instance then
-		X = Root ~= Instance and (Root.X + H * #Hierarchy)
-		Cursor.SetX(X)
+	local x, y = Cursor.GetPosition()
+	if root ~= instance then
+		x = root.X + h * #hierarchy
+		Cursor.SetX(x)
 	end
-	local TriX, TriY = X + Radius, Y + H * 0.5
+	local is_hot = not is_obstructed and wx <= tmx and tmx <= wx + ww and
+		y <= tmy and tmy <= y + h and Region.Contains(mx, my)
 
-	local IsHot = not IsObstructed and WinX <= TMouseX and TMouseX <= WinX + WinW and Y <= TMouseY and TMouseY <= Y + H and Region.Contains(MouseX, MouseY)
-
-	if IsHot or Options.IsSelected then
-		DrawCommands.Rectangle('fill', WinX, Y, WinW, H, Style.TextHoverBgColor)
-	end
-
-	if IsHot then
-		if Mouse.IsClicked(1) and not Options.IsLeaf and Options.OpenWithHighlight then
-			Instance.IsOpen = not Instance.IsOpen
-		end
+	if is_hot or def_is_sel then
+		DrawCommands.Rectangle("fill", wx, y, ww, h, Style.TextHoverBgColor)
 	end
 
-	local IsExpanderClicked = false
-	if not Options.IsLeaf then
+	if is_hot and Mouse.IsClicked(1) and not def_is_leaf and def_open_with_h then
+		instance.IsOpen = not instance.IsOpen
+	end
+
+	local is_exp_clicked = false
+	if not def_is_leaf then
 		-- Render the triangle depending on if the tree item is open/closed.
-		local SubX = Instance.IsOpen and 0.0 or 200.0
-		local SubY = Instance.IsOpen and 100.0 or 50.0
-		local ExpandIconOptions =
-		{
-			Image = {Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubX = SubX, SubY = SubY, SubW = 50.0, SubH = 50.0},
-			W = H,
-			H = H,
-			PadX = 0.0,
-			PadY = 0.0,
-			Color = {0, 0, 0, 0},
-			HoverColor = {0, 0, 0, 0},
-			PressColor = {0, 0, 0, 0}
+		local sx = instance.IsOpen and 0 or 200
+		local sy = instance.IsOpen and 100 or 50
+		local exp_icon_opt = {
+			Image = {Path = IMG_PATH, SubX = sx, SubY = sy, SubW = 50, SubH = 50},
+			W = h, H = h,
+			PadX = 0, PadY = 0,
+			Color = TBL_NO_COLOR,
+			HoverColor = TBL_NO_COLOR,
+			PressColor = TBL_NO_COLOR,
 		}
 
-		if Button.Begin(Instance.Id .. '_Expand', ExpandIconOptions) and not Options.OpenWithHighlight then
-			Instance.IsOpen = not Instance.IsOpen
-			Window.SetHotItem(nil)
-			IsExpanderClicked = true
+		if Button.Begin(instance.Id .. "_Expand", exp_icon_opt) and
+			not def_open_with_h then
+			instance.IsOpen = not instance.IsOpen
+			Window.SetHotItem()
+			is_exp_clicked = true
 		end
-
 		Cursor.SameLine()
 	else
 		-- Advance the cursor for leaf nodes so text aligns with other items that are not leaf nodes.
-		Cursor.AdvanceX(H + Cursor.PadX())
+		Cursor.AdvanceX(h + Cursor.PadX())
 	end
 
-	if not Instance.IsOpen and Instance.WasOpen then
+	if not instance.IsOpen and instance.WasOpen then
 		Window.ResetContentSize()
 		Region.ResetContentSize()
 	end
 
-	Instance.X = X
-	Instance.Y = Y
-	Instance.W = W
-	Instance.H = H
+	instance.X, instance.Y = x, y
+	instance.W, instance.H = w, h
+	LayoutManager.Begin("Ignore", TBL_IGNORE)
+	local ix, _, iw, ih = Cursor.GetItemBounds()
 
-	LayoutManager.Begin('Ignore', {Ignore = true})
-
-	if Options.Icon ~= nil then
+	if def_icon then
 		-- Force the icon to be of the same size as the tree item.
-		Options.Icon.W = H
-		Options.Icon.H = H
-		Image.Begin(Instance.Id .. '_Icon', Options.Icon)
-
-		local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-		Instance.H = max(Instance.H, ItemH)
-		Cursor.SameLine({CenterY = true})
+		def_icon.W, def_icon.H = h, h
+		Image.Begin(instance.Id .. "_Icon", def_icon)
+		instance.H = max(instance.H, ih)
+		Cursor.SameLine(TBL_CENTER_Y)
 	end
 
-	Text.Begin(Options.Label)
-
+	Text.Begin(def_label)
 	LayoutManager.End()
+	root.TreeR = max(root.TreeR, ix + iw)
+	root.TreeB = max(root.TreeB, y + h)
+	Cursor.SetY(instance.Y)
+	Cursor.AdvanceY(h)
 
-	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-	Root.TreeR = max(Root.TreeR, ItemX + ItemW)
-	Root.TreeB = max(Root.TreeB, Y + H)
-
-	Cursor.SetY(Instance.Y)
-	Cursor.AdvanceY(H)
-
-	if Instance.IsOpen then
-		insert(Hierarchy, 1, Instance)
+	if instance.IsOpen then
+		insert(hierarchy, 1, instance)
 	end
 
-	if IsHot then
-		Tooltip.Begin(Options.Tooltip)
-
-		if not IsExpanderClicked then
-			Window.SetHotItem(WinItemId)
+	if is_hot then
+		Tooltip.Begin(def_tooltip)
+		if not is_exp_clicked then
+			Window.SetHotItem(win_item_id)
 		end
 	end
 
-	-- The size of the item has already been determined by Text.Begin. However, this item's ID needs to be
+	-- The size of the item has already been determined by Text.Begin. However, this item"s ID needs to be
 	-- set as the last item for hot item checks. So the item will be added with zero width and height.
-	Window.AddItem(X, Y, 0, 0, WinItemId)
-
-	if not Instance.IsOpen then
-		Stats.End(Instance.StatHandle)
+	Window.AddItem(x, y, 0, 0, win_item_id)
+	if not instance.IsOpen then
+		Stats.End(instance.StatHandle)
 	end
-
-	return Instance.IsOpen
+	return instance.IsOpen
 end
 
 function Tree.End()
-	local StatHandle = Hierarchy[1].StatHandle
-	remove(Hierarchy, 1)
-	Stats.End(StatHandle)
+	local stat_handle = hierarchy[1].StatHandle
+	remove(hierarchy, 1)
+	Stats.End(stat_handle)
 end
 
-function Tree.Save(Table)
-	if Table ~= nil then
-		local Settings = {}
-		for K, V in ipairs(Instances) do
-			if not V.NoSavedSettings then
-				Settings[V.Id] = {
-					IsOpen = V.IsOpen
-				}
-			end
+function Tree.Save(tbl)
+	if not tbl then return end
+	local settings = {}
+	for _, v in ipairs(instances) do
+		if not v.NoSavedSettings then
+			settings[v.Id] = {IsOpen = v.IsOpen}
 		end
-		Table['Tree'] = Settings
 	end
+	tbl[Enums.widget.tree] = settings
 end
 
-function Tree.Load(Table)
-	if Table ~= nil then
-		local Settings = Table['Tree']
-		if Settings ~= nil then
-			for K, V in pairs(Settings) do
-				local Instance = GetInstance(K)
-				Instance.IsOpen = V.IsOpen
-			end
-		end
+function Tree.Load(tbl)
+	if not tbl then return end
+	local settings = tbl[Enums.widget.tree]
+	if not settings then return end
+	for k, v in pairs(settings) do
+		local instance = GetInstance(k)
+		instance.IsOpen = v.IsOpen
 	end
 end
 
 function Tree.GetDebugInfo()
-	local Result = {}
-
-	for K, V in pairs(Instances) do
-		table.insert(Result, tostring(K))
+	local res = {}
+	for k in pairs(instances) do
+		insert(res, tostring(k))
 	end
-
-	return Result
+	return res
 end
 
 return Tree
