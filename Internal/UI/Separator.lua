@@ -35,19 +35,13 @@ local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 local Separator = {}
 local STR_TITLE = "Separator"
 
-local TBL_DEF = {
-	IncludeBorders = false,
-	H = 4,
-	Thickness = 1,
-}
-
 function Separator.Begin(opt)
-	opt = opt or TBL_DEF
-	opt.IncludeBorders = opt.IncludeBorders or TBL_DEF.IncludeBorders
-	opt.H = opt.H or TBL_DEF.H
-	opt.Thickness = opt.Thickness or TBL_DEF.Thickness
+	local def_include = not not opt.IncludeBorders
+	local def_h = opt.H or 4
+	local def_thickness = opt.Thickness or 1
+
 	local w, h = LayoutManager.GetActiveSize()
-	w, h = LayoutManager.ComputeSize(w, max(opt.H, opt.Thickness))
+	w, h = LayoutManager.ComputeSize(w, max(def_h, def_thickness))
 	LayoutManager.AddControl(w, h, STR_TITLE)
 	local x, y = Cursor.GetPosition()
 
@@ -56,7 +50,7 @@ function Separator.Begin(opt)
 		x = x - Window.GetBorder()
 	end
 
-	DrawCommands.Line(x, y + h * 0.5, x + w, y + h * 0.5, opt.Thickness, Style.SeparatorColor)
+	DrawCommands.Line(x, y + h * 0.5, x + w, y + h * 0.5, def_thickness, Style.SeparatorColor)
 	Cursor.SetItemBounds(x, y, w, h)
 	Cursor.AdvanceY(h)
 end
