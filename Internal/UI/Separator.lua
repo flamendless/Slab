@@ -26,34 +26,39 @@ SOFTWARE.
 
 local max = math.max
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Style = require(SLAB_PATH .. '.Style')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Style = require(SLAB_PATH .. ".Style")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Separator = {}
+local STR_TITLE = "Separator"
 
-function Separator.Begin(Options)
-	Options = Options == nil and {} or Options
-	Options.IncludeBorders = Options.IncludeBorders == nil and false or Options.IncludeBorders
-	Options.H = Options.H == nil and 4.0 or Options.H
-	Options.Thickness = Options.Thickness == nil and 1.0 or Options.Thickness
+local TBL_DEF = {
+	IncludeBorders = false,
+	H = 4,
+	Thickness = 1,
+}
 
-	local W, H = LayoutManager.GetActiveSize()
-	W, H = LayoutManager.ComputeSize(W, max(Options.H, Options.Thickness))
-	LayoutManager.AddControl(W, H, 'Separator')
-	local X, Y = Cursor.GetPosition()
+function Separator.Begin(opt)
+	opt = opt or TBL_DEF
+	opt.IncludeBorders = opt.IncludeBorders or TBL_DEF.IncludeBorders
+	opt.H = opt.H or TBL_DEF.H
+	opt.Thickness = opt.Thickness or TBL_DEF.Thickness
+	local w, h = LayoutManager.GetActiveSize()
+	w, h = LayoutManager.ComputeSize(w, max(opt.H, opt.Thickness))
+	LayoutManager.AddControl(w, h, STR_TITLE)
+	local x, y = Cursor.GetPosition()
 
-	if Options.IncludeBorders then
-		W = W + Window.GetBorder() * 2
-		X = X - Window.GetBorder()
+	if opt.IncludeBorders then
+		w = w + Window.GetBorder() * 2
+		x = x - Window.GetBorder()
 	end
 
-	DrawCommands.Line(X, Y + H * 0.5, X + W, Y + H * 0.5, Options.Thickness, Style.SeparatorColor)
-
-	Cursor.SetItemBounds(X, Y, W, H)
-	Cursor.AdvanceY(H)
+	DrawCommands.Line(x, y + h * 0.5, x + w, y + h * 0.5, opt.Thickness, Style.SeparatorColor)
+	Cursor.SetItemBounds(x, y, w, h)
+	Cursor.AdvanceY(h)
 end
 
 return Separator

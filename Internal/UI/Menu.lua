@@ -24,8 +24,6 @@ SOFTWARE.
 
 --]]
 
-local insert = table.insert
-local remove = table.remove
 local max = math.max
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
