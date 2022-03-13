@@ -11,4 +11,8 @@ Enums.align_y = {
 	bottom = "bottom",
 }
 
+Enums.context_type = {
+	menu = "Menu",
+}
+
 return Enums
