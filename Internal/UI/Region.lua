@@ -255,79 +255,62 @@ local function GetInstance(id)
 	return instances[id]
 end
 
-local TBL_DEF = {
-	X = 0, Y = 0,
-	W = 0, H = 0,
-	SX = 0, SY = 0,
-	ContentW = 0, ContentH = 0,
-	AutoSizeContent = false,
-	BgColor = Style.WindowBackgroundColor,
-	NoOutline = false,
-	IsObstructed = false,
-	Intersect = false,
-	IgnoreScroll = false,
-	MouseX = 0, MouseY = 0,
-	ResetContent = false,
-	Rounding = 0,
-}
-
 function Region.Begin(id, opt)
-	opt = opt or TBL_DEF
-	opt.X = opt.X or TBL_DEF.X
-	opt.Y = opt.Y or TBL_DEF.Y
-	opt.W = opt.W or TBL_DEF.W
-	opt.H = opt.H or TBL_DEF.H
-	opt.SX = opt.SX or TBL_DEF.SX
-	opt.SY = opt.SY or TBL_DEF.SY
-	opt.ContentW = opt.ContentW or TBL_DEF.ContentW
-	opt.ContentH = opt.ContentH or TBL_DEF.ContentH
-	opt.AutoSizeContent = opt.AutoSizeContent or TBL_DEF.AutoSizeContent
-	opt.BgColor = opt.BgColor or TBL_DEF.BgColor
-	opt.NoOutline = opt.NoOutline or TBL_DEF.NoOutline
-	opt.NoBackground = opt.NoBackground or TBL_DEF.NoBackground
-	opt.IsObstructed = opt.IsObstructed or TBL_DEF.IsObstructed
-	opt.Intersect = opt.Intersect or TBL_DEF.Intersect
-	opt.IgnoreScroll = opt.IgnoreScroll or TBL_DEF.IgnoreScroll
-	opt.MouseX = opt.MouseX or TBL_DEF.MouseX
-	opt.MouseY = opt.MouseY or TBL_DEF.MouseY
-	opt.ResetContent = opt.ResetContent or TBL_DEF.ResetContent
-	opt.Rounding = opt.Rounding or TBL_DEF.Rounding
+	local def_x = opt.X or 0
+	local def_y = opt.Y or 0
+	local def_w = opt.W or 0
+	local def_h = opt.H or 0
+	local def_sx = opt.SX or 0
+	local def_sy = opt.SY or 0
+	local def_cw = opt.ContentW or 0
+	local def_ch = opt.ContentH or 0
+	local def_auto_size_content = not not opt.AutoSizeContent
+	local def_bg_color = opt.BgColor or Style.WindowBackgroundColor
+	local def_no_outline = not not opt.NoOutline
+	local def_is_obs = not not opt.IsObstructed
+	local def_intersect = not not opt.Intersect
+	local def_ignore_scroll = not not opt.IgnoreScroll
+	local def_mx = opt.MouseX or 0
+	local def_my = opt.MouseY or 0
+	local def_reset_content = not not opt.ResetContent
+	local def_rounding = opt.Rounding or 0
+	local def_no_bg = not not opt.NoBackground
 
 	local instance = GetInstance(id)
-	instance.X = opt.X
-	instance.Y = opt.Y
-	instance.W = opt.W
-	instance.H = opt.H
-	instance.SX = opt.SX
-	instance.SY = opt.SY
-	instance.Intersect = opt.Intersect
-	instance.IgnoreScroll = opt.IgnoreScroll
-	instance.MouseX = opt.MouseX
-	instance.MouseY = opt.MouseY
-	instance.AutoSizeContent = opt.AutoSizeContent
+	instance.X = def_x
+	instance.Y = def_y
+	instance.W = def_w
+	instance.H = def_h
+	instance.SX = def_sx
+	instance.SY = def_sy
+	instance.Intersect = def_intersect
+	instance.IgnoreScroll = def_ignore_scroll
+	instance.MouseX = def_mx
+	instance.MouseY = def_my
+	instance.AutoSizeContent = def_auto_size_content
 
-	if opt.ResetContent then
+	if def_reset_content then
 		instance.ContentW, instance.ContentH = 0, 0
 	end
 
-	if not opt.AutoSizeContent then
-		instance.ContentW, instance.ContentH = opt.ContentW, opt.ContentH
+	if not def_auto_size_content then
+		instance.ContentW, instance.ContentH = def_cw, def_ch
 	end
 
 	active = instance
 	insert(stack, 1, instance)
-	UpdateScrollBars(instance, opt.IsObstructed)
+	UpdateScrollBars(instance, def_is_obs)
 
-	if opt.AutoSizeContent then
+	if def_auto_size_content then
 		instance.ContentW, instance.ContentH = 0, 0
 	end
 
 	if hot_instance == instance and (not Contains(instance, instance.MouseX, instance.MouseY)
-		or opt.IsObstructed) then
+		or def_is_obs) then
 		hot_instance = nil
 	end
 
-	if not opt.IsObstructed and (Contains(instance, instance.MouseX, instance.MouseY) or
+	if not def_is_obs and (Contains(instance, instance.MouseX, instance.MouseY) or
 		(instance.HoverScrollX or instance.HoverScrollY)) then
 		if not scroll_instance then
 			hot_instance = instance
@@ -336,13 +319,13 @@ function Region.Begin(id, opt)
 		end
 	end
 
-	if not opt.NoBackground then
+	if not def_no_bg then
 		DrawCommands.Rectangle("fill",
-			instance.X, instance.Y, instance.W, instance.H, opt.BgColor, opt.Rounding)
+			instance.X, instance.Y, instance.W, instance.H, def_bg_color, def_rounding)
 	end
-	if not opt.NoOutline then
+	if not def_no_outline then
 		DrawCommands.Rectangle("line",
-			instance.X, instance.Y, instance.W, instance.H, nil, opt.Rounding)
+			instance.X, instance.Y, instance.W, instance.H, nil, def_rounding)
 	end
 	DrawCommands.TransformPush()
 	DrawCommands.ApplyTransform(instance.Transform)

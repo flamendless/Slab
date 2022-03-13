@@ -15,4 +15,13 @@ Enums.context_type = {
 	menu = "Menu",
 }
 
+Enums.shape = {
+	rect = "Rectangle",
+	circle = "Circle",
+	triangle = "Triangle",
+	line = "Line",
+	curve = "Curve",
+	polygon = "Polygon",
+}
+
 return Enums
