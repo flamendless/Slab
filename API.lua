@@ -1435,7 +1435,8 @@ end
 	Return: None.
 --]]
 function Slab.NewLine(n)
-	assert(n <= 0, "must be positive")
+	n = n or 1
+	assert(n > 0, "must be positive")
 	LayoutManager.NewLine(n)
 end
 

@@ -53,6 +53,7 @@ end
 local function GetRowSize(instance)
 	if not instance then return 0, 0 end
 	local col = instance.Columns[instance.ColumnNo]
+	if not col then return 0, 0 end
 	if not col.Rows then return 0, 0 end
 	local row = col.Rows[col.RowNo]
 	if not row then return 0, 0 end
@@ -62,6 +63,7 @@ end
 local function GetRowCursorPos(instance)
 	if not instance then return end
 	local col = instance.Columns[instance.ColumnNo]
+	if not col then return end
 	if not col.Rows then return end
 	local row = col.Rows[col.RowNo]
 	if not row then return end
@@ -71,6 +73,7 @@ end
 local function GetLayoutH(instance, include_pad)
 	if not instance then return 0 end
 	local col = instance.Columns[instance.ColumnNo]
+	if not col then return 0 end
 	if not col.Rows then return 0 end
 	include_pad = include_pad == nil and true or include_pad
 	local h = 0
@@ -86,6 +89,7 @@ end
 local function GetPreviousRowBottom(instance)
 	if not instance then return end
 	local col = instance.Columns[instance.ColumnNo]
+	if not col then return end
 	if (not col.Rows) or (col.RowNo <= 1) or (col.RowNo > #col.Rows) then
 		return
 	end
@@ -97,10 +101,8 @@ end
 
 local function GetColumnPosition(instance)
 	if not instance then return 0, 0 end
-	local wx, wy, ww, wh = GetWindowBounds()
+	local wx, wy = GetWindowBounds()
 	local wl, wt = Window.GetPosition()
-	local count = #instance.Columns
-	local col_w = ww/count
 	local total_w = 0
 	local pad_x = Cursor.PadX() * 2
 	for i = 1, instance.ColumnNo - 1, 1 do
@@ -108,7 +110,7 @@ local function GetColumnPosition(instance)
 		total_w = total_w + col.W + pad_x
 	end
 	local border = Window.GetBorder()
-	local ax, ay = instance.x, instance.y
+	local ax, ay = instance.X, instance.Y
 	if not instance.AnchorX then
 		ax = wx - wl - border
 	end
@@ -121,7 +123,8 @@ end
 local function GetColumnSize(instance)
 	if not instance then return 0, 0 end
 	local col = instance.Columns[instance.ColumnNo]
-	local wx, wy, ww, wh = GetWindowBounds()
+	if not col then return 0, 0 end
+	local ww, wh = select(3, GetWindowBounds())
 	local count = #instance.Columns
 	local col_w = ww/count
 	local w, h = col_w, GetLayoutH(instance)
@@ -143,6 +146,7 @@ local function AddControl(instance, w, h, control_type)
 	local ax, ay = GetColumnPosition(instance)
 	ww, wh = GetColumnSize(instance)
 	local col = instance.Columns[instance.ColumnNo]
+	if not col then return end
 	row_w = row_w == 0 and w or row_w
 	row_h = row_h == 0 and h or row_h
 
@@ -251,6 +255,7 @@ function LayoutManager.ComputeSize(w, h)
 	local rw = ww - x
 	local rh = wh - y
 	local col = active.Columns[active.ColumnNo]
+	if not col then return w, h end
 	rw = (not active.AnchorX) and ww or rw
 	rh = (not active.AnchorY) and rh or rh
 	-- Retrieve the calculated row width. This information is stored in the "PendingRows"
@@ -326,7 +331,8 @@ local TBL_DEF = {
 	Ignore = false,
 	ExpandW = false, ExpandH = false,
 	AnchorX = false, AnchorY = true,
-	Columns = 1,
+	Columns = {},
+	ColumnNo = 1,
 }
 local err_begin = "A valid string Id must be given to BeginLayout!"
 local err_end = "LayoutManager.End was called without a call to LayoutManager.Begin!"
@@ -344,7 +350,7 @@ function LayoutManager.Begin(id, opt)
 	opt.AnchorX = opt.AnchorX or TBL_DEF.AnchorX
 	opt.AnchorY = opt.AnchorY or TBL_DEF.AnchorY
 	opt.Columns = opt.Columns or TBL_DEF.Columns
-	opt.Columns = max(opt.Columns, 1)
+	opt.ColumnNo = opt.ColumnNo and max(opt.ColumnNo, 1) or 1
 
 	local instance = GetInstance(id)
 	instance.AlignX = opt.AlignX

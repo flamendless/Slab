@@ -34,8 +34,10 @@ local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Separator = {}
 local STR_TITLE = "Separator"
+local TBL_EMPTY = {}
 
 function Separator.Begin(opt)
+	opt = opt or TBL_EMPTY
 	local def_include = not not opt.IncludeBorders
 	local def_h = opt.H or 4
 	local def_thickness = opt.Thickness or 1
@@ -45,7 +47,7 @@ function Separator.Begin(opt)
 	LayoutManager.AddControl(w, h, STR_TITLE)
 	local x, y = Cursor.GetPosition()
 
-	if opt.IncludeBorders then
+	if def_include then
 		w = w + Window.GetBorder() * 2
 		x = x - Window.GetBorder()
 	end

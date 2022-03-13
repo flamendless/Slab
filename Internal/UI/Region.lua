@@ -181,6 +181,7 @@ local function UpdateScrollBars(instance, is_obstructed)
 end
 
 local function DrawScrollBars(instance)
+	if not instance then return end
 	if not instance.HasScrollX and not instance.HasScrollY then return end
 	if hot_instance ~= instance and scroll_instance ~= instance and
 		not Utility.IsMobile() then
@@ -333,6 +334,7 @@ function Region.Begin(id, opt)
 end
 
 function Region.End()
+	if not active then return end
 	DrawCommands.TransformPop()
 	DrawScrollBars(active)
 

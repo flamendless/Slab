@@ -36,7 +36,7 @@ local instances = {}
 local function GetInstance()
 	local win = Window.Top()
 	if not instances[win] then
-		instances[win] = {Id = win.id .. "_MenuBar"}
+		instances[win] = {Id = win.Id .. "_MenuBar"}
 	end
 	return instances[win]
 end
