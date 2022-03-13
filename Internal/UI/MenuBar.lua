@@ -26,59 +26,46 @@ SOFTWARE.
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
-local Menu = require(SLAB_PATH .. ".Internal.UI.Menu")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Style = require(SLAB_PATH .. ".Style")
 local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local MenuBar = {}
-local Instances = {}
+local instances = {}
 
 local function GetInstance()
-	local Win = Window.Top()
-	if Instances[Win] == nil then
-		local Instance = {}
-		Instance.Selected = nil
-		Instance.Id = Win.Id .. '_MenuBar'
-		Instances[Win] = Instance
+	local win = Window.Top()
+	if not instances[win] then
+		instances[win] = {Id = win.id .. "_MenuBar"}
 	end
-	return Instances[Win]
+	return instances[win]
 end
 
-function MenuBar.Begin(IsMainMenuBar)
-	local X, Y = Cursor.GetPosition()
-	local WinX, WinY, WinW, WinH = Window.GetBounds()
-	local Instance = GetInstance()
-
+function MenuBar.Begin(is_main_menu_bar)
+	local x, y = Cursor.GetPosition()
+	local ww = select(3, Window.GetBounds())
+	local instance = GetInstance()
 	if not MenuState.IsOpened then
-		Instance.Selected = nil
+		instance.Selected = nil
 	end
-
-	if IsMainMenuBar then
-		MenuState.MainMenuBarH = Style.Font:getHeight()
-	end
-
-	Window.Begin(Instance.Id,
-	{
-		X = X,
-		Y = Y,
-		W = WinW,
-		H = Style.Font:getHeight(),
+	local fh = Style.Font:getHeight()
+	MenuState.MainMenuBarH = is_main_menu_bar and fh
+	Window.Begin(instance.Id, {
+		X = x, Y = y,
+		W = ww, H = fh,
 		AllowResize = false,
 		AllowFocus = false,
-		Border = 0.0,
+		Border = 0,
 		BgColor = Style.MenuColor,
 		NoOutline = true,
 		IsMenuBar = true,
 		AutoSizeWindow = false,
 		AutoSizeContent = false,
-		Layer = IsMainMenuBar and 'MainMenuBar' or nil,
-		Rounding = 0.0,
+		Layer = is_main_menu_bar and DrawCommands.layers.main_menu_bar,
+		Rounding = 0,
 		NoSavedSettings = true
 	})
-
-	Cursor.AdvanceX(4.0)
-
+	Cursor.AdvanceX(4)
 	return true
 end
 
@@ -87,8 +74,8 @@ function MenuBar.End()
 end
 
 function MenuBar.Clear()
-	for I, V in ipairs(Instances) do
-		V.Selected = nil
+	for _, v in ipairs(instances) do
+		v.Selected = nil
 	end
 end
 

@@ -24,12 +24,11 @@ SOFTWARE.
 
 --]]
 
-local MenuState =
-{
+local MenuState = {
 	IsOpened = false,
 	WasOpened = false,
 	RequestClose = false,
-	MainMenuBarH = 0
+	MainMenuBarH = 0,
 }
 
 return MenuState
