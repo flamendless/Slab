@@ -31,13 +31,13 @@ local remove = table.remove
 
 local Utility = {}
 
-function Utility.MakeColor(color)
+function Utility.MakeColor(color, alpha)
 	local copy = {0, 0, 0, 1}
 	if color then
 		copy[1] = color[1]
 		copy[2] = color[2]
 		copy[3] = color[3]
-		copy[4] = color[4]
+		copy[4] = alpha or color[4]
 	end
 	return copy
 end

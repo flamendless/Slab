@@ -28,85 +28,74 @@ local insert = table.insert
 local format = string.format
 local min = math.min
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Style = require(SLAB_PATH .. ".Style")
+local Text = require(SLAB_PATH .. ".Internal.UI.Text")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
+local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
 local Tooltip = {}
-local LastDisplayTime = 0.0
-local AccumDisplayTime = 0.0
-local TooltipTime = 0.75
-local TooltipExpireTime = 0.025
-local Alpha = 0.0
-local OffsetY = 0.0
-local ResetSize = false
+local last_dt, accum_dt = 0, 0
+local time = 0.75
+local exp_time = 0.025
+local alpha, oy = 0, 0
+local reset_size = false
 
-function Tooltip.Begin(Tip)
-	if Tip == nil or Tip == "" then
-		return
+local STR_EMPTY = ""
+local TBL_IGNORE = {Ignore = true}
+local tbl_color = {}
+
+function Tooltip.Begin(tip)
+	if not tip or tip == STR_EMPTY then return end
+	local elapsed = love.timer.getTime() - last_dt
+	if elapsed > exp_time then
+		accum_dt = 0
+		alpha = 0
+		reset_size = true
 	end
 
-	local Elapsed = love.timer.getTime() - LastDisplayTime
-	if Elapsed > TooltipExpireTime then
-		AccumDisplayTime = 0.0
-		Alpha = 0.0
-		ResetSize = true
-	end
+	last_dt = love.timer.getDelta()
+	local dt = love.timer.getDelta()
+	accum_dt = accum_dt + dt
+	if accum_dt <= time then return end
 
-	local DeltaTime = love.timer.getDelta()
-	AccumDisplayTime = AccumDisplayTime + DeltaTime
-	LastDisplayTime = love.timer.getTime()
-
-	if AccumDisplayTime > TooltipTime then
-		local X, Y = Mouse.Position()
-		Alpha = min(Alpha + DeltaTime * 4.0, 1.0)
-		local BgColor = Utility.MakeColor(Style.WindowBackgroundColor)
-		local TextColor = Utility.MakeColor(Style.TextColor)
-		BgColor[4] = Alpha
-		TextColor[4] = Alpha
-
-		local CursorX, CursorY = Cursor.GetPosition()
-
-		LayoutManager.Begin('Ignore', {Ignore = true})
-		Window.Begin('tooltip',
-		{
-			X = X,
-			Y = Y - OffsetY,
-			W = 0,
-			H = 0,
-			AutoSizeWindow = true,
-			AutoSizeContent = false,
-			AllowResize = false,
-			AllowFocus = false,
-			Layer = 'ContextMenu',
-			ResetWindowSize = ResetSize,
-			CanObstruct = false,
-			NoSavedSettings = true
-		})
-		Text.BeginFormatted(Tip, {Color = TextColor})
-		OffsetY = Window.GetHeight()
-		Window.End()
-		LayoutManager.End()
-		Cursor.SetPosition(CursorX, CursorY)
-		ResetSize = false
-	end
+	local mx, my = Mouse.Position()
+	alpha = min(alpha + dt * 4, 1)
+	local text_color = Utility.MakeColor(Style.TextColor, alpha)
+	local cx, cy = Cursor.GetPosition()
+	LayoutManager.Begin("Ignore", TBL_IGNORE)
+	Window.Begin("tooltip", {
+		X = mx, Y = my - oy,
+		W = 0, H = 0,
+		AutoSizeWindow = true,
+		AutoSizeContent = false,
+		AllowResize = false,
+		AllowFocus = false,
+		Layer = DrawCommands.layers.context_menu,
+		ResetWindowSize = reset_size,
+		CanObstruct = false,
+		NoSavedSettings = true
+	})
+	tbl_color.Color = text_color
+	Text.BeginFormatted(tip, tbl_color)
+	oy = Window.GetHeight()
+	Window.End()
+	LayoutManager.End()
+	Cursor.SetPosition(cx, cy)
+	reset_size = false
 end
 
 function Tooltip.GetDebugInfo()
-	local Info = {}
-
-	local Elapsed = love.timer.getTime() - LastDisplayTime
-	insert(Info, format("Time: %.2f", AccumDisplayTime))
-	insert(Info, format("Is Visible: %s", tostring(AccumDisplayTime > TooltipTime and Elapsed <= TooltipExpireTime)))
-	insert(Info, format("Time to Display: %.2f", TooltipTime))
-	insert(Info, format("Expire Time: %f", TooltipExpireTime))
-
-	return Info
+	local info = {}
+	local elapsed = love.timer.getTime() - last_dt
+	insert(info, format("Time: %.2f", accum_dt))
+	insert(info, format("Is Visible: %s", tostring(accum_dt > time and elapsed <= exp_time)))
+	insert(info, format("Time to Display: %.2f", time))
+	insert(info, format("Expire Time: %f", exp_time))
+	return info
 end
 
 return Tooltip
