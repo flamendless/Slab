@@ -1415,7 +1415,7 @@ end
 	calls, the user will be able to set up multiple widgets on the same line to control how a window may look.
 
 	Options: [Table] List of options that controls how the cursor should handle the same line.
-		Pad: [Number] Extra padding to apply in the X direction.
+		Indent: [Number] Extra indentation to apply in the X (right) direction.
 		CenterY: [Boolean] Controls whether the cursor should be centered in the Y direction on the line. By default
 			the line will use the NewLineSize, which is the height of the current font to center the cursor.
 

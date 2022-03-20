@@ -643,14 +643,14 @@ local function DrawInput()
 			DrawInput_Highlight_Table[K] = V
 		end
 
-		Slab.SameLine({Pad = 20.0})
+		Slab.SameLine({Indent = 20.0})
 		Slab.Rectangle({W = 50, H = TextH, Color = V})
 
 		if Slab.IsControlClicked() then
 			DrawInput_Highlight_Table_Modify = K
 		end
 
-		Slab.SameLine({Pad = 20.0})
+		Slab.SameLine({Indent = 20.0})
 
 		if Slab.Button("Delete", {H = TextH}) then
 			DrawInput_Highlight_Table[K] = nil
@@ -783,14 +783,14 @@ local function DrawImage()
 		DrawImage_Scale_Y = DrawImage_Scale
 	end
 
-	Slab.SameLine({Pad = 6.0})
+	Slab.SameLine({Indent = 6.0})
 	Slab.Text("Scale X")
 	Slab.SameLine()
 	if Slab.Input('DrawImage_Scale_X', {Text = tostring(DrawImage_Scale_X), NumbersOnly = true, ReturnOnText = false, W = 75}) then
 		DrawImage_Scale_X = Slab.GetInputNumber()
 	end
 
-	Slab.SameLine({Pad = 6.0})
+	Slab.SameLine({Indent = 6.0})
 	Slab.Text("Scale Y")
 	Slab.SameLine()
 	if Slab.Input('DrawImage_Scale_Y', {Text = tostring(DrawImage_Scale_Y), NumbersOnly = true, ReturnOnText = false, W = 75}) then
@@ -809,7 +809,7 @@ local function DrawImage()
 	Slab.Image('DrawImage_Hover', {Path = DrawImage_Path, Color = DrawImage_Power_Hovered and DrawImage_Power_On or DrawImage_Power_Off})
 	DrawImage_Power_Hovered = Slab.IsControlHovered()
 
-	Slab.SameLine({Pad = 12.0})
+	Slab.SameLine({Indent = 12.0})
 	Slab.Image('DrawImage_Click', {Path = DrawImage_Path, Color = DrawImage_Power and DrawImage_Power_On or DrawImage_Power_Off})
 	if Slab.IsControlClicked() then
 		DrawImage_Power = not DrawImage_Power
@@ -895,7 +895,7 @@ local function DrawCursor()
 		"Using the SameLine function, controls can be layed out on a single line with additional padding. Below are two buttons on " ..
 		"the same line with some padding. Use the input field below to modify the padding.")
 	Slab.Button("One")
-	Slab.SameLine({Pad = DrawCursor_SameLinePad})
+	Slab.SameLine({Indent = DrawCursor_SameLinePad})
 	Slab.Button("Two")
 	if Slab.Input('DrawCursor_SameLinePad', {Text = tostring(DrawCursor_SameLinePad), NumbersOnly = true, ReturnOnText = false}) then
 		DrawCursor_SameLinePad = Slab.GetInputNumber()
@@ -1690,7 +1690,7 @@ local function DrawShapes()
 	Slab.Curve(DrawShapes_Curve)
 	X, Y = Slab.GetCursorPos({Absolute = true})
 
-	Slab.SameLine({CenterY = true, Pad = 16})
+	Slab.SameLine({CenterY = true, Indent = 16})
 	local EvalX, EvalY = Slab.EvaluateCurveMouse()
 	Slab.Text(string.format("X: %.2f Y: %.2f", EvalX, EvalY))
 

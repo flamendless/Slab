@@ -152,15 +152,18 @@ function Cursor.IsInItemBounds(x, y)
 		state.item_y <= y and y <= state.item_y + state.item_h
 end
 
-local DEF_OPT = {pad = 0}
+local TBL_EMPTY = {}
 function Cursor.SameLine(opt)
-	opt = opt or DEF_OPT
+	opt = opt or TBL_EMPTY
+	local indent = opt.Indent or 0
+	local center_y = opt.CenterY
+
 	state.line_y = state.prev_line_y
 	state.line_h = state.prev_line_h
-	state.x = state.item_x + state.item_w + state.pad_x + opt.pad
+	state.x = state.item_x + state.item_w + state.pad_x + indent
 	state.y = state.prev_y
 
-	if opt.center_y then
+	if center_y then
 		state.y = state.y + (state.line_h * 0.5) - (state.newline_size * 0.5)
 	end
 end
