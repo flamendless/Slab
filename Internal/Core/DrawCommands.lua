@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")

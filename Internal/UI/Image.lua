@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local IdCache = require(SLAB_PATH .. ".Internal.Core.IdCache")

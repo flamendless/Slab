@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local insert = table.insert
 local max = math.max
 local format = string.format

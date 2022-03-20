@@ -32,6 +32,7 @@ SOFTWARE.
 	be displayed in a control if desired.
 --]]
 
+local love = require("love")
 local insert = table.insert
 
 local Messages = {}

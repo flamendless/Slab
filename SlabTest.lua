@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local Slab = require(SLAB_PATH .. '.Slab')
 local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
 

@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")

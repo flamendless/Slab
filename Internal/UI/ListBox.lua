@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local format = string.format
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")

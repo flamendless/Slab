@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local abs = math.abs
 local floor = math.floor
 local fmod = math.fmod

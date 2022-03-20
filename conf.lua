@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 function love.conf(t)
 	t.window.title = "Slab"
 	t.window.width = 1280

@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local ceil = math.ceil
 local max = math.max
 local min = math.min

@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local insert = table.insert
 local format = string.format
 local min = math.min

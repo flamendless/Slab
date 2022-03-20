@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local max = math.max
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")

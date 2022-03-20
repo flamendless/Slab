@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local concat = table.concat
 local find = string.find
 local gmatch = string.gmatch

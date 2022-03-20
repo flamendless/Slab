@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local find = string.find
 local sort = table.sort
 local sub = string.sub

@@ -24,6 +24,8 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
+
 if SLAB_PATH == nil then
 	SLAB_PATH = (...):match("(.-)[^%.]+$")
 end

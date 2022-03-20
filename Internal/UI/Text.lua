@@ -24,6 +24,7 @@ SOFTWARE.
 
 --]]
 
+local love = require("love")
 local floor = math.floor
 local insert = table.insert
 local max = math.max
