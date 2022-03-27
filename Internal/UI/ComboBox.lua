@@ -81,12 +81,13 @@ local function GetInstance(id)
 	return instances[id]
 end
 
-function ComboBox.Begin(id, opt)
+function ComboBox.Begin(id, selected, opt)
 	local stat_handle = Stats.Begin("ComboBox", "Slab")
 	opt = opt or TBL_EMPTY
+	selected = selected or STR_EMPTY
+	local tooltip = opt.Tooltip or STR_EMPTY
 	local w = opt.W or MIN_WIDTH
 	local wh = opt.WinH or MIN_HEIGHT
-	local selected = opt.Selected or STR_EMPTY
 	local rounding = opt.Rounding or Style.ComboBoxRounding
 	local instance = GetInstance(id)
 	local win_item_id = Window.GetItemId(id)
@@ -139,7 +140,7 @@ function ComboBox.Begin(id, opt)
 	Cursor.AdvanceY(h)
 
 	if hovered then
-		Tooltip.Begin(opt.Tooltip or STR_EMPTY)
+		Tooltip.Begin(tooltip)
 		Window.SetHotItem(win_item_id)
 	end
 
