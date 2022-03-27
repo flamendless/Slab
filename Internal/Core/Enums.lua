@@ -29,6 +29,11 @@ Enums.widget = {
 	window = "Window",
 }
 
+Enums.button = {
+	close = "Close",
+	minimize = "Minimize",
+}
+
 Enums.sizer_type = {
 	None = 0,
 	N = 1,
