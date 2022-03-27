@@ -75,12 +75,13 @@ local IMG_PATH = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png"
 local TBL_NO_COLOR = {0, 0, 0, 0}
 local TBL_IGNORE = {Ignore = true}
 local TBL_CENTER_Y = {CenterY = true}
+local TBL_EMPTY = {}
 
 function Tree.Begin(id, opt)
+	opt = opt or TBL_EMPTY
 	local stat_handle = Stats.Begin(Enums.widget.tree, STR_SLAB)
 	local is_table_id = type(id) == STR_TABLE
 	local id_label = is_table_id and tostring(id) or id
-
 	local def_label = opt.Label or id_label
 	local def_tooltip = opt.Tooltip or id_label
 	local def_open_with_h = (not opt.OpenWithHighlight) and true or opt.OpenWithHighlight

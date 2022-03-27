@@ -425,6 +425,7 @@ function Window.Reset()
 end
 
 function Window.Begin(id, opt)
+	opt = opt or TBL_EMPTY
 	local stat_handle = Stats.Begin(Enums.widget.window, "Slab")
 	local def_x = opt.X or 50
 	local def_y = opt.Y or 50
@@ -723,7 +724,7 @@ function Window.End()
 	Utility.ClearTable(id_stack)
 	Region.End()
 	DrawCommands.End(not active_instance.IsOpen)
-	remove(pending_stack, ipairs)
+	remove(pending_stack, 1)
 	Cursor.SetPosition(active_instance.LastCursorX, active_instance.LastCursorY)
 	active_instance = nil
 	if #pending_stack > 0 then

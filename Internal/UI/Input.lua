@@ -763,6 +763,7 @@ end
 
 local TBL_EMPTY = {}
 local TBL_IGNORE = {Ignore = true}
+
 function Input.Begin(id, opt)
 	assert(id, "Please pass a valid id into Slab.Input.")
 	local stat_handle = Stats.Begin("Input", "Slab")
@@ -943,200 +944,20 @@ function Input.Begin(id, opt)
 		last_focused = nil
 	end
 
-	local is_editing = instance == focused and not is_sliding
-	if instance == focused then
-		local back, should_delete = false, false
-		local should_update_t = false
+	Input.Begin2(instance, multi, check_focus, focused_frame, no_drag, opt,
+		n_entry, select_on_focus, read_only, x, y, mx, my, precision, use_slider, step,
+		return_on_text, multi_w, highlight, text_color)
+	Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_obstructed,
+		select_color, use_slider, opt, text_color, win_item_id)
 
-		if IsCommandKeyDown() then
-			if Keyboard.IsPressed("x") or Keyboard.IsPressed("c") then
-				local selected = GetSelection(instance)
-				if selected ~= STR_EMPTY then
-					love.system.setClipboardText(selected)
-					should_delete = Keyboard.IsPressed("x")
-				end
-			elseif Keyboard.IsPressed("v") then
-				local text2 = FileSystem.GetClipboard()
-				Input.Text(text2)
-				tc_pos = min(tc_pos + #text2 - 1, #instance.Text)
-			end
-		end
+	Stats.End(stat_handle)
+	return res
+end
 
-		if Keyboard.IsPressed("tab") then
-			if multi then
-				Input.Text("\t")
-			else
-				last_focused = instance
-				focus_to_next = true
-			end
-		end
-
-		if Keyboard.IsPressed("backspace") then
-			should_delete = true
-		end
-
-		if Keyboard.IsPressed("delete") then
-			if tc_anchor == -1 then
-				local ch2 = GetCharacter(instance.Text, tc_pos, true)
-				if ch2 then
-					tc_pos = tc_pos + #ch2
-					should_delete = true
-				end
-			else
-				should_delete = true
-			end
-		end
-
-		if should_delete then
-			if DeleteSelection(instance) then
-				instance.TextChanged = true
-			end
-		end
-
-		local clear_anchor = false
-		local is_shift = Keyboard.IsDown("lshift") or Keyboard.IsDown("rshift")
-
-		if Keyboard.IsPressed("lshift") or
-			Keyboard.IsPressed("rshift") and tc_anchor == -1 then
-			tc_anchor = tc_pos
-		end
-
-		local home_pressed, end_pressed = false, false
-
-		if IsHomePressed() then
-			MoveToHome(instance)
-			should_update_t = true
-			home_pressed = true
-		end
-
-		if IsEndPressed() then
-			MoveToEnd(instance)
-			should_update_t = true
-			end_pressed = true
-		end
-
-		if not home_pressed and (Keyboard.IsPressed("left") or back) then
-			tc_pos = GetNextCursorPos(instance, true)
-			should_update_t = true
-			UpdateMultiLinePosition(instance)
-		end
-		if not end_pressed and Keyboard.IsPressed("right") then
-			tc_pos = GetNextCursorPos(instance, false)
-			should_update_t = true
-			UpdateMultiLinePosition(instance)
-		end
-
-		if Keyboard.IsPressed("up") then
-			MoveCursorVertical(instance, false)
-			should_update_t = true
-		end
-		if Keyboard.IsPressed("down") then
-			MoveCursorVertical(instance, true)
-			should_update_t = true
-		end
-
-		if Keyboard.IsPressed("pageup") then
-			MoveCursorPage(instance, false)
-			should_update_t = true
-		end
-		if Keyboard.IsPressed("pagedown") then
-			MoveCursorPage(instance, true)
-			should_update_t = true
-		end
-
-		if check_focus or drag_select then
-			if focused_frame then
-				if opt.NumbersOnly and not n_entry and not no_drag then
-					is_sliding = true
-					drag_dt = 0
-				elseif select_on_focus and instance.Text ~= STR_EMPTY then
-					tc_anchor = 0
-					tc_pos = #instance.Text
-				end
-
-				-- Display the soft keyboard on mobile devices when an input control receives focus.
-				if Utility.IsMobile() and not read_only then
-					-- Always display for non numeric controls. If this control is a numeric input, check to make
-					-- sure the user requested to add text for this numeric control.
-					if not opt.NumbersOnly or n_entry or no_drag then
-						love.keyboard.setTextInput(true)
-					end
-				end
-
-				-- Enable key repeat when an input control is focused.
-				love.keyboard.setKeyRepeat(true)
-			else
-				local mix, miy = mx - x, my - y
-				local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
-				tc_pos = GetTextCursorPos(instance, cx, cy)
-				if Mouse.IsClicked(1) then
-					tc_anchor = tc_pos
-					drag_select = true
-				end
-				should_update_t = true
-				is_shift = true
-			end
-			UpdateMultiLinePosition(instance)
-		end
-
-		if is_sliding then
-			local current = tonumber(instance.Text)
-			if use_slider then
-				UpdateSlider(instance, precision)
-			else
-				UpdateDrag(instance, step)
-			end
-			instance.TextChanged = current ~= tonumber(instance.Text)
-		end
-
-		if Mouse.IsReleased(1) then
-			drag_select = false
-			tc_anchor = tc_anchor == tc_pos and -1 or tc_pos
-			if is_sliding then
-				is_sliding = false
-				focused = nil
-				res = true
-				last_text = instance.Text
-			end
-		end
-
-		if Mouse.IsDoubleClicked(1) then
-			local mix, miy = mx - x, my - y
-			local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
-			tc_pos = GetTextCursorPos(instance, cx, cy)
-			SelectWord(instance)
-			drag_select = false
-		end
-
-		if Keyboard.IsPressed("return") then
-			res = true
-			if multi then
-				Input.Text("\n")
-			else
-				clear_focus = true
-			end
-		end
-
-		if instance.TextChanged or back then
-			res = return_on_text or res
-			if multi then
-				instance.Lines = Text.GetLines(instance.Text, multi_w)
-				UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
-			end
-
-			UpdateMultiLinePosition(instance)
-			instance.TextChanged = false
-		end
-
-		if should_update_t then
-			clear_anchor = not is_shift
-			UpdateTransform(instance)
-		end
-
-		if clear_anchor then
-			tc_anchor = -1
-		end
-	else
+function Input.Begin2(instance, multi, check_focus, focused_frame, no_drag, opt,
+	n_entry, select_on_focus, read_only, x, y, mx, my, precision, use_slider, step,
+	return_on_text, multi_w, highlight, text_color)
+	if instance ~= focused then
 		local was_validated = ValidateNumber(instance)
 		if was_validated then
 			res = true
@@ -1144,6 +965,200 @@ function Input.Begin(id, opt)
 		end
 	end
 
+	local back, should_delete = false, false
+	local should_update_t = false
+	if IsCommandKeyDown() then
+		if Keyboard.IsPressed("x") or Keyboard.IsPressed("c") then
+			local selected = GetSelection(instance)
+			if selected ~= STR_EMPTY then
+				love.system.setClipboardText(selected)
+				should_delete = Keyboard.IsPressed("x")
+			end
+		elseif Keyboard.IsPressed("v") then
+			local text2 = FileSystem.GetClipboard()
+			Input.Text(text2)
+			tc_pos = min(tc_pos + #text2 - 1, #instance.Text)
+		end
+	end
+
+	if Keyboard.IsPressed("tab") then
+		if multi then
+			Input.Text("\t")
+		else
+			last_focused = instance
+			focus_to_next = true
+		end
+	end
+
+	if Keyboard.IsPressed("backspace") then
+		should_delete = true
+	end
+
+	if Keyboard.IsPressed("delete") then
+		if tc_anchor == -1 then
+			local ch2 = GetCharacter(instance.Text, tc_pos, true)
+			if ch2 then
+				tc_pos = tc_pos + #ch2
+				should_delete = true
+			end
+		else
+			should_delete = true
+		end
+	end
+
+	if should_delete then
+		if DeleteSelection(instance) then
+			instance.TextChanged = true
+		end
+	end
+
+	local clear_anchor = false
+	local is_shift = Keyboard.IsDown("lshift") or Keyboard.IsDown("rshift")
+
+	if Keyboard.IsPressed("lshift") or
+		Keyboard.IsPressed("rshift") and tc_anchor == -1 then
+		tc_anchor = tc_pos
+	end
+
+	local home_pressed, end_pressed = false, false
+
+	if IsHomePressed() then
+		MoveToHome(instance)
+		should_update_t = true
+		home_pressed = true
+	end
+
+	if IsEndPressed() then
+		MoveToEnd(instance)
+		should_update_t = true
+		end_pressed = true
+	end
+
+	if not home_pressed and (Keyboard.IsPressed("left") or back) then
+		tc_pos = GetNextCursorPos(instance, true)
+		should_update_t = true
+		UpdateMultiLinePosition(instance)
+	end
+	if not end_pressed and Keyboard.IsPressed("right") then
+		tc_pos = GetNextCursorPos(instance, false)
+		should_update_t = true
+		UpdateMultiLinePosition(instance)
+	end
+
+	if Keyboard.IsPressed("up") then
+		MoveCursorVertical(instance, false)
+		should_update_t = true
+	end
+	if Keyboard.IsPressed("down") then
+		MoveCursorVertical(instance, true)
+		should_update_t = true
+	end
+
+	if Keyboard.IsPressed("pageup") then
+		MoveCursorPage(instance, false)
+		should_update_t = true
+	end
+	if Keyboard.IsPressed("pagedown") then
+		MoveCursorPage(instance, true)
+		should_update_t = true
+	end
+
+	if check_focus or drag_select then
+		if focused_frame then
+			if opt.NumbersOnly and not n_entry and not no_drag then
+				is_sliding = true
+				drag_dt = 0
+			elseif select_on_focus and instance.Text ~= STR_EMPTY then
+				tc_anchor = 0
+				tc_pos = #instance.Text
+			end
+
+			-- Display the soft keyboard on mobile devices when an input control receives focus.
+			if Utility.IsMobile() and not read_only then
+				-- Always display for non numeric controls. If this control is a numeric input, check to make
+				-- sure the user requested to add text for this numeric control.
+				if not opt.NumbersOnly or n_entry or no_drag then
+					love.keyboard.setTextInput(true)
+				end
+			end
+
+			-- Enable key repeat when an input control is focused.
+			love.keyboard.setKeyRepeat(true)
+		else
+			local mix, miy = mx - x, my - y
+			local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
+			tc_pos = GetTextCursorPos(instance, cx, cy)
+			if Mouse.IsClicked(1) then
+				tc_anchor = tc_pos
+				drag_select = true
+			end
+			should_update_t = true
+			is_shift = true
+		end
+		UpdateMultiLinePosition(instance)
+	end
+
+	if is_sliding then
+		local current = tonumber(instance.Text)
+		if use_slider then
+			UpdateSlider(instance, precision)
+		else
+			UpdateDrag(instance, step)
+		end
+		instance.TextChanged = current ~= tonumber(instance.Text)
+	end
+
+	if Mouse.IsReleased(1) then
+		drag_select = false
+		tc_anchor = tc_anchor == tc_pos and -1 or tc_pos
+		if is_sliding then
+			is_sliding = false
+			focused = nil
+			res = true
+			last_text = instance.Text
+		end
+	end
+
+	if Mouse.IsDoubleClicked(1) then
+		local mix, miy = mx - x, my - y
+		local cx, cy = Region.InverseTransform(instance.Id, mix, miy)
+		tc_pos = GetTextCursorPos(instance, cx, cy)
+		SelectWord(instance)
+		drag_select = false
+	end
+
+	if Keyboard.IsPressed("return") then
+		res = true
+		if multi then
+			Input.Text("\n")
+		else
+			clear_focus = true
+		end
+	end
+
+	if instance.TextChanged or back then
+		res = return_on_text or res
+		if multi then
+			instance.Lines = Text.GetLines(instance.Text, multi_w)
+			UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
+		end
+
+		UpdateMultiLinePosition(instance)
+		instance.TextChanged = false
+	end
+
+	if should_update_t then
+		clear_anchor = not is_shift
+		UpdateTransform(instance)
+	end
+
+	if clear_anchor then
+		tc_anchor = -1
+	end
+end
+
+function Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_obstructed,
+	select_color, use_slider, opt, text_color, win_item_id)
 	if Region.IsScrolling(instance.Id) then
 		local _, dy = Mouse.GetDelta()
 		local _, wy = Region.GetWheelDelta()
@@ -1181,6 +1196,7 @@ function Input.Begin(id, opt)
 		DrawCursor(instance, x, y, w, h)
 	end
 
+	local is_editing = instance == focused and not is_sliding
 	if use_slider and not is_editing then
 		DrawSlider(instance, opt.DrawSliderAsHandle)
 	end
@@ -1221,9 +1237,6 @@ function Input.Begin(id, opt)
 		-- Restore the key repeat flag to the state before an input control gained focus.
 		love.keyboard.setKeyRepeat(false)
 	end
-
-	Stats.End(stat_handle)
-	return res
 end
 
 function Input.Text(ch)

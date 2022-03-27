@@ -77,7 +77,7 @@ function Image.Begin(id, opt)
 	local instance = GetInstance(id)
 	local win_item_id = Window.GetItemId(id)
 
-	if not instance.image then
+	if not instance.Image then
 		if not opt.Image then
 			assert(opt.Path ~= nil, "Path to an image is required if no image is set!")
 			instance.Image = GetImage(opt.Path)
@@ -85,11 +85,11 @@ function Image.Begin(id, opt)
 			instance.Image = opt.Image
 		end
 	elseif opt.Image then
-		if instance.image ~= opt.Image then
-			instance.image = opt.Image
+		if instance.Image ~= opt.Image then
+			instance.Image = opt.Image
 		end
 	end
-	instance.image:setWrap(opt.WrapH or "clamp", opt.WrapV or "clamp")
+	instance.Image:setWrap(opt.WrapH or "clamp", opt.WrapV or "clamp")
 
 	local iw, ih = instance.Image:getDimensions()
 	local w = opt.W or iw
@@ -125,11 +125,11 @@ function Image.Begin(id, opt)
 	end
 
 	if use_sub_img then
-		DrawCommands.SubImage(x, y, instance.image,
+		DrawCommands.SubImage(x, y, instance.Image,
 			opt.SubX or 0, opt.SubY or 0,
 			sub_w, sub_h, rotation, sx, sy, color)
 	else
-		DrawCommands.Image(x, y, instance.image, rotation, sx, sy, color)
+		DrawCommands.Image(x, y, instance.Image, rotation, sx, sy, color)
 	end
 
 	if opt.UseOutline then
