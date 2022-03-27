@@ -1,6 +1,3 @@
-local insert = table.insert
-local remove = table.remove
-
 local TablePool = {}
 TablePool.__index = TablePool
 
@@ -10,7 +7,7 @@ end
 
 function TablePool:pop()
 	local n = self[0]
-	if n == 0 then return {}, true end
+	if n == 0 then return {} end
 	local res = self[n]
 	self[n], self[0] = nil, n - 1
 	return res
@@ -29,4 +26,4 @@ function TablePool:push(t)
 	self[n], self[0] = t, n
 end
 
-return TablePool.new
+return TablePool

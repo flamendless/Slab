@@ -54,7 +54,7 @@ local current_cursor = "arrow"
 local pending_cursor = EMPTY_STR
 local fn_mouse_moved, fn_mouse_pressed, fn_mouse_released
 local events = {}
-local pool = TablePool()
+local pool = TablePool.new()
 
 -- Custom cursors allow the developer to override any specific system cursor used. This system will also
 -- allow developers to set an empty image to hide the cursor for specific states, such as mouse resize.

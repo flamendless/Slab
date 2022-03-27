@@ -50,6 +50,10 @@ local DrawCommands = {
 	}
 }
 
+local ordered_layers = {
+	"normal", "dock", "context_menu", "main_menu_bar", "dialog", "debug", "mouse"
+}
+
 local active_layer = DrawCommands.layers.normal
 local stats_category = "Slab Draw"
 local active_batch, pending_batches = {}, {}
@@ -80,15 +84,13 @@ local types = {
 	shader_pop = 22,
 }
 
-local layer_table = {}
+local layer_table, pool = {}, {}
 for _ in pairs(DrawCommands.layers) do insert(layer_table, {}) end
-local pool = {}
-for _ in pairs(types) do insert(pool, TablePool()) end
+for _ in pairs(types) do insert(pool, TablePool.new()) end
 
 local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
 	local cxx = cx + x
 	local cyy = cy + y
-
 	if radius == 0 then
 		insert(verts, cxx)
 		insert(verts, cyy)
@@ -103,26 +105,10 @@ local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
 	end
 end
 
-local function GetLayerDebugInfo(layer)
-	local res = {}
-	res["Channel Count"] = #layer
-
-	local channels = {}
-	for _, channel in pairs(layer) do
-		local collection = {}
-		collection["Batch Count"] = #channel
-		insert(channels, collection)
-	end
-
-	res["Channels"] = channels
-	return res
-end
-
 local function DrawRect(rect)
 	local stat_handle = Stats.Begin("DrawRect", stats_category)
 	local prev_line_w = lg.getLineWidth()
 	local px_offset = rect.Mode == "line" and 0.5 or 0
-
 	lg.setLineWidth(rect.line_w)
 	lg.setColor(rect.color)
 	lg.rectangle(rect.mode,
@@ -137,19 +123,14 @@ local function GetTriangleVertices(x, y, radius, rotation)
 	local x1, y1 = 0, -radius
 	local x2, y2 = -radius, radius
 	local x3, y3 = radius, radius
-
 	local cos_rad = cos(radians)
 	local sin_rad = sin(radians)
-
 	local px1 = x1 * cos_rad - y1 * sin_rad
 	local py1 = y1 * cos_rad + x1 * sin_rad
-
 	local px2 = x2 * cos_rad - y2 * sin_rad
 	local py2 = y2 * cos_rad + x2 * sin_rad
-
 	local px3 = x3 * cos_rad - y3 * sin_rad
 	local py3 = y3 * cos_rad + x3 * sin_rad
-
 	return {
 		x + px1, y + py1,
 		x + px2, y + py2,
@@ -234,14 +215,14 @@ local function DrawImage(image)
 end
 
 local function DrawSubImage(image)
-	local stat_handle = Stats.Begin('DrawSubImage', stats_category)
+	local stat_handle = Stats.Begin("DrawSubImage", stats_category)
 	lg.setColor(image.color)
 	lg.draw(image.image, image.quad, image.transform)
 	Stats.End(stat_handle)
 end
 
 local function DrawCircle(circle)
-	local stat_handle = Stats.Begin('DrawCircle', stats_category)
+	local stat_handle = Stats.Begin("DrawCircle", stats_category)
 	lg.setColor(circle.color)
 	lg.circle(circle.mode, circle.x, circle.y, circle.radius, circle.segments)
 	Stats.End(stat_handle)
@@ -296,16 +277,16 @@ end
 
 local function DrawElements(elements)
 	local stat_handle = Stats.Begin("Draw Elements", stats_category)
-	for _, v in ipairs(elements) do
-		local e_type = v.type
-		DrawMethods[e_type](v)
+	for _, element in ipairs(elements) do
+		local e_type = element.type
+		DrawMethods[e_type](element)
 	end
 	Stats.End(stat_handle)
 end
 
 local function DrawChannel(channel)
-	for _, v in ipairs(channel) do
-		DrawElements(v)
+	for _, elements in ipairs(channel) do
+		DrawElements(elements)
 	end
 end
 
@@ -334,8 +315,7 @@ local function DrawLayer(layer, name)
 end
 
 function DrawCommands.Reset()
-	for i = 1, DrawCommands.layers.mouse do
-		local layer = layer_table[i]
+	for _, layer in ipairs(layer_table) do
 		for j, channel in pairs(layer) do
 			for _, batch in ipairs(channel) do
 				ClearBatch(batch)
@@ -369,21 +349,31 @@ function DrawCommands.End(clear_elements)
 	active_batch = pending_batches[#pending_batches]
 end
 
-function DrawCommands.SetLayer(layer)
-	active_layer = layer
-end
+function DrawCommands.SetLayer(layer) active_layer = layer end
 
 function DrawCommands.Execute()
 	local stat_handle = Stats.Begin("Execute", stats_category)
-	DrawLayer(layer_table[DrawCommands.layers.normal], "normal")
-	DrawLayer(layer_table[DrawCommands.layers.dock], "dock")
-	DrawLayer(layer_table[DrawCommands.layers.context_menu], "context_menu")
-	DrawLayer(layer_table[DrawCommands.layers.main_menu_bar], "main_menu_bar")
-	DrawLayer(layer_table[DrawCommands.layers.dialog], "dialog")
-	DrawLayer(layer_table[DrawCommands.layers.debug], "debug")
-	DrawLayer(layer_table[DrawCommands.layers.mouse], "mouse")
+	local layers = DrawCommands.layers
+	for _, layer in ipairs(ordered_layers) do
+		DrawLayer(layer_table[layers[layer]], layer)
+	end
 	lg.setShader()
 	Stats.End(stat_handle)
+end
+
+local function GetLayerDebugInfo(layer)
+	local res = {}
+	res["Channel Count"] = #layer
+
+	local channels = {}
+	for _, channel in pairs(layer) do
+		local collection = {}
+		collection["Batch Count"] = #channel
+		insert(channels, collection)
+	end
+
+	res["Channels"] = channels
+	return res
 end
 
 function DrawCommands.GetDebugInfo()
@@ -396,6 +386,7 @@ end
 
 local COLOR_BLACK = {0, 0, 0, 1}
 local COLOR_WHITE = {1, 1, 1, 1}
+
 function DrawCommands.Rectangle(mode, x, y, width, height, color, radius, segments, line_w)
 	AssertActiveBatch()
 	if type(radius) == "table" then
