@@ -365,7 +365,7 @@ function LayoutManager.Begin(id, opt)
 	instance.AnchorY = opt.AnchorY
 
 	if opt.Columns ~= #instance.Columns then
-		Utility.ClearTable(instance.Columns, ipairs)
+		Utility.ClearArray(instance.Columns)
 		for col in ipairs(opt.Columns) do
 			local col = {
 				PendingRows = {},
@@ -376,7 +376,7 @@ function LayoutManager.Begin(id, opt)
 	end
 
 	for _, col in ipairs(instance.Columns) do
-		Utility.ClearTable(col.PendingRows, ipairs)
+		Utility.ClearArray(col.PendingRows)
 		col.RowNo = 1
 	end
 	insert(stack, 1, instance)
@@ -388,7 +388,7 @@ function LayoutManager.End()
 	for _, col in ipairs(active.Columns) do
 		local rows = col.Rows
 		col.Rows = col.PendingRows
-		Utility.ClearTable(col.PendingRows, ipairs)
+		Utility.ClearArray(col.PendingRows)
 		if rows and col.Rows and #rows == #col.Rows then
 			for i, v in ipairs(rows) do
 				col.Rows[i].MaxH = rows[i].RequestH

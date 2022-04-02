@@ -30,6 +30,7 @@ local max = math.max
 
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Enums = require(SLAB_PATH .. '.Internal.Core.Enums')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
@@ -183,7 +184,7 @@ function ComboBox.End()
 	end
 
 	Window.End()
-	DrawCommands.SetLayer(DrawCommands.layers.normal)
+	DrawCommands.SetLayer(Enums.layers.normal)
 	LayoutManager.End()
 
 	if y ~= 0 and h ~= 0 then

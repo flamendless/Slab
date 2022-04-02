@@ -27,6 +27,7 @@ SOFTWARE.
 local love = require("love")
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Style = require(SLAB_PATH .. ".Style")
 local Window = require(SLAB_PATH .. ".Internal.UI.Window")
@@ -62,7 +63,7 @@ function MenuBar.Begin(is_main_menu_bar)
 		IsMenuBar = true,
 		AutoSizeWindow = false,
 		AutoSizeContent = false,
-		Layer = is_main_menu_bar and DrawCommands.layers.main_menu_bar,
+		Layer = is_main_menu_bar and Enums.layers.main_menu_bar,
 		Rounding = 0,
 		NoSavedSettings = true
 	})

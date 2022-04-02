@@ -53,4 +53,14 @@ Enums.cursor_size = {
 	NS = "sizens",
 }
 
+Enums.layers = {
+	normal = 1,
+	dock = 2,
+	context_menu = 3,
+	main_menu_bar = 4,
+	dialog = 5,
+	debug = 6,
+	mouse = 7
+}
+
 return Enums

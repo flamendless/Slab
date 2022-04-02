@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 
 local love = require("love")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
@@ -35,26 +36,15 @@ local sin = math.sin
 local cos = math.cos
 local rad = math.rad
 local max = math.max
-local min = math.min
 local lg = love.graphics
 
-local DrawCommands = {
-	layers = {
-		normal = 1,
-		dock = 2,
-		context_menu = 3,
-		main_menu_bar = 4,
-		dialog = 5,
-		debug = 6,
-		mouse = 7
-	}
-}
+local DrawCommands = {}
 
 local ordered_layers = {
 	"normal", "dock", "context_menu", "main_menu_bar", "dialog", "debug", "mouse"
 }
 
-local active_layer = DrawCommands.layers.normal
+local active_layer = Enums.layers.normal
 local stats_category = "Slab Draw"
 local active_batch, pending_batches = {}, {}
 local shaders = {}
@@ -85,7 +75,7 @@ local types = {
 }
 
 local layer_table, pool = {}, {}
-for _ in pairs(DrawCommands.layers) do insert(layer_table, {}) end
+for _ in pairs(Enums.layers) do insert(layer_table, {}) end
 for _ in pairs(types) do insert(pool, TablePool.new()) end
 
 local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
@@ -275,19 +265,30 @@ local function AssertActiveBatch()
 	assert(active_batch ~= nil, "DrawCommands.Begin was not called before commands were issued!")
 end
 
-local function DrawElements(elements)
-	local stat_handle = Stats.Begin("Draw Elements", stats_category)
-	for _, element in ipairs(elements) do
-		local e_type = element.type
-		DrawMethods[e_type](element)
+local function DrawLayer(layer, name)
+	if not layer then return end
+	local stat_handle = Stats.Begin("Draw Layer " .. name, stats_category)
+	for _, channel in ipairs(layer) do
+		for _, elements in ipairs(channel) do
+			local element_stat_handle = Stats.Begin("Draw Elements", stats_category)
+			for _, element in ipairs(elements) do
+				local e_type = element.type
+				DrawMethods[e_type](element)
+			end
+			Stats.End(element_stat_handle)
+		end
 	end
 	Stats.End(stat_handle)
 end
 
-local function DrawChannel(channel)
-	for _, elements in ipairs(channel) do
-		DrawElements(elements)
+function DrawCommands.Execute()
+	local stat_handle = Stats.Begin("Execute", stats_category)
+	for _, str_layer in ipairs(ordered_layers) do
+		local layer = Enums.layers[str_layer]
+		DrawLayer(layer_table[layer], str_layer)
 	end
+	lg.setShader()
+	Stats.End(stat_handle)
 end
 
 local function ClearBatch(batch)
@@ -297,35 +298,18 @@ local function ClearBatch(batch)
 	end
 end
 
-local function DrawLayer(layer, name)
-	if not layer then return end
-	local stat_handle = Stats.Begin("Draw Layer " .. name, stats_category)
-	local min_channel, max_channel = 1e9, 0
-	for i in pairs(layer) do
-		min_channel = min(min_channel, i)
-		max_channel = max(max_channel, i)
-	end
-
-	for i = min_channel, max_channel do
-		if layer[i] then
-			DrawChannel(layer[i])
-		end
-	end
-	Stats.End(stat_handle)
-end
-
 function DrawCommands.Reset()
 	for _, layer in ipairs(layer_table) do
-		for j, channel in pairs(layer) do
+		for j, channel in ipairs(layer) do
 			for _, batch in ipairs(channel) do
 				ClearBatch(batch)
 			end
 			layer[j] = nil
 		end
 	end
-	active_layer = DrawCommands.layers.normal
+	active_layer = Enums.layers.normal
 	active_batch = nil
-	Utility.ClearTable(shaders, ipairs)
+	Utility.ClearArray(shaders)
 end
 
 function DrawCommands.Begin(channel)
@@ -349,16 +333,9 @@ function DrawCommands.End(clear_elements)
 	active_batch = pending_batches[#pending_batches]
 end
 
-function DrawCommands.SetLayer(layer) active_layer = layer end
-
-function DrawCommands.Execute()
-	local stat_handle = Stats.Begin("Execute", stats_category)
-	local layers = DrawCommands.layers
-	for _, layer in ipairs(ordered_layers) do
-		DrawLayer(layer_table[layers[layer]], layer)
-	end
-	lg.setShader()
-	Stats.End(stat_handle)
+function DrawCommands.SetLayer(layer)
+	assert(type(layer) == "number")
+	active_layer = layer
 end
 
 local function GetLayerDebugInfo(layer)
@@ -378,7 +355,7 @@ end
 
 function DrawCommands.GetDebugInfo()
 	local res = {}
-	for k, v in pairs(DrawCommands.layers) do
+	for k, v in pairs(Enums.layers) do
 		res[k] = GetLayerDebugInfo(layer_table[v])
 	end
 	return res
@@ -490,7 +467,7 @@ end
 function DrawCommands.ApplyTransform(transform)
 	AssertActiveBatch()
 	local item = pool[types.apply_transform]:pop()
-	item.type = types.apply_transformj
+	item.type = types.apply_transform
 	item.transform = transform
 	insert(active_batch, item)
 end

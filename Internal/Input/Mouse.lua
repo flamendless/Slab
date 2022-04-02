@@ -29,6 +29,7 @@ local insert = table.insert
 
 local Common = require(SLAB_PATH .. ".Internal.Input.Common")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local TablePool = require(SLAB_PATH .. "Internal.Core.TablePool")
 
 local Mouse = {}
@@ -169,7 +170,7 @@ function Mouse.Draw()
 
 	local custom_cursor = custom_cursors[current_cursor]
 	if custom_cursor then
-		DrawCommands.SetLayer(DrawCommands.layers.mouse)
+		DrawCommands.SetLayer(Enums.layers.mouse)
 		DrawCommands.Begin()
 
 		if custom_cursor.quad then

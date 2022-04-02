@@ -168,10 +168,15 @@ function Utility.Clamp(value, min, max)
 	return value < min and min or (value > max and max or value)
 end
 
-function Utility.ClearTable(t, method)
-	method = method or pairs
-	for i in method(t) do
-		t[i] = nil
+function Utility.ClearTable(tbl)
+	for k in pairs(tbl) do
+		tbl[k] = nil
+	end
+end
+
+function Utility.ClearArray(tbl)
+	for i = #tbl, 1, -1 do
+		tbl[i] = nil
 	end
 end
 

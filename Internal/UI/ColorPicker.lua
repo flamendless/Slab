@@ -119,7 +119,7 @@ local function InitializeSaturationMeshes()
 		return
 	end
 
-	Utility.ClearTable(sat_meshes, ipairs)
+	Utility.ClearArray(sat_meshes)
 	local step = sat_step
 	local x, y = 0, 0
 	local size = sat_size/step

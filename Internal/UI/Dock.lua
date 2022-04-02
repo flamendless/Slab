@@ -26,6 +26,7 @@ SOFTWARE.
 
 local love = require("love")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
 local Style = require(SLAB_PATH .. ".Style")
@@ -108,7 +109,7 @@ end
 
 function Dock.DrawOverlay()
 	pending = nil
-	DrawCommands.SetLayer(DrawCommands.layers.dock)
+	DrawCommands.SetLayer(Enums.layers.dock)
 	DrawCommands.Begin()
 	DrawOverlay(modes.left)
 	DrawOverlay(modes.right)

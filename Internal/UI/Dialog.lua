@@ -38,7 +38,7 @@ local format = string.format
 local Button = require(SLAB_PATH .. ".Internal.UI.Button")
 local ComboBox = require(SLAB_PATH .. ".Internal.UI.ComboBox")
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
-local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local FileSystem = require(SLAB_PATH .. ".Internal.Core.FileSystem")
 local Image = require(SLAB_PATH .. ".Internal.UI.Image")
 local Input = require(SLAB_PATH .. ".Internal.UI.Input")
@@ -301,7 +301,7 @@ function Dialog.Begin(id, opt)
 	opt = opt or TBL_EMPTY
 	opt.x = floor(love.graphics.getWidth() * 0.5 - instance.W * 0.)
 	opt.y = floor(love.graphics.getHeight() * 0.5 - instance.H * 0.)
-	opt.layer = DrawCommands.layers.dialog
+	opt.layer = Enums.layers.dialog
 	opt.allow_focus, opt.allow_move = false, false
 	opt.auto_size_window = opt.AutoSizeWindow ~= false
 	opt.no_saved_settings = true

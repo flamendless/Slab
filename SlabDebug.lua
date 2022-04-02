@@ -25,20 +25,19 @@ SOFTWARE.
 --]]
 
 local love = require("love")
-local Slab = require(SLAB_PATH .. '.Slab')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Input = require(SLAB_PATH .. '.Internal.UI.Input')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Slab = require(SLAB_PATH .. ".Slab")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Input = require(SLAB_PATH .. ".Internal.UI.Input")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Tooltip = require(SLAB_PATH .. ".Internal.UI.Tooltip")
+local Tree = require(SLAB_PATH .. ".Internal.UI.Tree")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local SlabDebug = {}
-local SlabDebug_About = 'SlabDebug_About'
+local SlabDebug_About = "SlabDebug_About"
 local SlabDebug_Mouse = {Title = "Mouse", IsOpen = false}
 local SlabDebug_Windows = {Title = "Windows", IsOpen = false}
 local SlabDebug_Regions = {Title = "Regions", IsOpen = false}
@@ -66,7 +65,7 @@ local Style_FileDialog = nil
 
 local function Window_Inspector()
 	local Ids = Window.GetInstanceIds()
-	if Slab.BeginComboBox('SlabDebug_Windows_Inspector', {Selected = Selected_Window}) then
+	if Slab.BeginComboBox("SlabDebug_Windows_Inspector", {Selected = Selected_Window}) then
 		for I, V in ipairs(Ids) do
 			if Slab.TextSelectable(V) then
 				Selected_Window = V
@@ -121,7 +120,7 @@ local function DrawPerformance()
 	SlabDebug_Performance.Y = DrawPerformance_WinY
 	SlabDebug_Performance.ResetPosition = DrawPerformance_ResetPosition
 
-	Slab.BeginWindow('SlabDebug_Performance', SlabDebug_Performance)
+	Slab.BeginWindow("SlabDebug_Performance", SlabDebug_Performance)
 	DrawPerformance_ResetPosition = false
 
 	local Categories = Stats.GetCategories()
@@ -130,7 +129,7 @@ local function DrawPerformance()
 		DrawPerformance_Category = Categories[1]
 	end
 
-	if Slab.BeginComboBox('DrawPerformance_Categories', {Selected = DrawPerformance_Category, W = DrawPerformance_W}) then
+	if Slab.BeginComboBox("DrawPerformance_Categories", {Selected = DrawPerformance_Category, W = DrawPerformance_W}) then
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V) then
 				DrawPerformance_Category = V
@@ -221,15 +220,15 @@ local function RestoreEditColor()
 end
 
 local function DrawStyleEditor()
-	Slab.BeginWindow('SlabDebug_StyleEditor', SlabDebug_StyleEditor)
+	Slab.BeginWindow("SlabDebug_StyleEditor", SlabDebug_StyleEditor)
 	local X, Y = Slab.GetWindowPosition()
 	local W, H = Slab.GetWindowSize()
 
 	local Style = Slab.GetStyle()
 	local Names = Style.API.GetStyleNames()
 	local CurrentStyle = Style.API.GetCurrentStyleName()
-	Slab.BeginLayout('SlabDebug_StyleEditor_Styles_Layout', {ExpandW = true})
-	if Slab.BeginComboBox('SlabDebug_StyleEditor_Styles', {Selected = CurrentStyle}) then
+	Slab.BeginLayout("SlabDebug_StyleEditor_Styles_Layout", {ExpandW = true})
+	if Slab.BeginComboBox("SlabDebug_StyleEditor_Styles", {Selected = CurrentStyle}) then
 		for I, V in ipairs(Names) do
 			if Slab.TextSelectable(V) then
 				Style.API.SetStyle(V)
@@ -240,13 +239,13 @@ local function DrawStyleEditor()
 	end
 
 	if Slab.Button("New") then
-		Style_FileDialog = 'new'
+		Style_FileDialog = "new"
 	end
 
 	Slab.SameLine()
 
 	if Slab.Button("Load") then
-		Style_FileDialog = 'load'
+		Style_FileDialog = "load"
 	end
 
 	Slab.SameLine()
@@ -260,7 +259,7 @@ local function DrawStyleEditor()
 	Slab.Separator()
 
 	local Refresh = false
-	Slab.BeginLayout('SlabDebug_StyleEditor_Content_Layout', {Columns = 2, ExpandW = true})
+	Slab.BeginLayout("SlabDebug_StyleEditor_Content_Layout", {Columns = 2, ExpandW = true})
 	for K, V in pairs(Style) do
 		if type(V) == "table" and K ~= "Font" and K ~= "API" then
 			Slab.SetLayoutColumn(1)
@@ -285,7 +284,7 @@ local function DrawStyleEditor()
 			Slab.SetLayoutColumn(1)
 			Slab.Text(K)
 			Slab.SetLayoutColumn(2)
-			if Slab.Input('SlabDebug_Style_' .. K, {Text = tostring(V), ReturnOnText = false, NumbersOnly = true}) then
+			if Slab.Input("SlabDebug_Style_" .. K, {Text = tostring(V), ReturnOnText = false, NumbersOnly = true}) then
 				Style[K] = Slab.GetInputNumber()
 			end
 		end
@@ -314,7 +313,7 @@ local function DrawStyleEditor()
 	end
 
 	if Style_FileDialog ~= nil then
-		local Type = Style_FileDialog == 'new' and 'savefile' or Style_FileDialog == 'load' and 'openfile' or nil
+		local Type = Style_FileDialog == "new" and "savefile" or Style_FileDialog == "load" and "openfile" or nil
 
 		if Type ~= nil then
 			local Path = love.filesystem.getRealDirectory(SLAB_FILE_PATH) .. "/" .. SLAB_FILE_PATH .. "Internal/Resources/Styles"
@@ -322,7 +321,7 @@ local function DrawStyleEditor()
 
 			if Result.Button ~= "" then
 				if Result.Button == "OK" then
-					if Style_FileDialog == 'new' then
+					if Style_FileDialog == "new" then
 						Style.API.CopyCurrentStyle(Result.Files[1])
 					else
 						Style.API.LoadStyle(Result.Files[1], true)
@@ -342,7 +341,7 @@ function SlabDebug.About()
 		Slab.Text("Slab Version: " .. Slab.GetVersion())
 		Slab.Text("Love Version: " .. Slab.GetLoveVersion())
 		Slab.NewLine()
-		Slab.BeginLayout(SlabDebug_About .. '.Buttons_Layout', {AlignX = 'center'})
+		Slab.BeginLayout(SlabDebug_About .. ".Buttons_Layout", {AlignX = "center"})
 		if Slab.Button("OK") then
 			Slab.CloseDialog()
 		end
@@ -356,7 +355,7 @@ function SlabDebug.OpenAbout()
 end
 
 function SlabDebug.Mouse()
-	Slab.BeginWindow('SlabDebug_Mouse', SlabDebug_Mouse)
+	Slab.BeginWindow("SlabDebug_Mouse", SlabDebug_Mouse)
 	local X, Y = Mouse.Position()
 	Slab.Text("X: " .. X)
 	Slab.Text("Y: " .. Y)
@@ -374,9 +373,9 @@ function SlabDebug.Mouse()
 end
 
 function SlabDebug.Windows()
-	Slab.BeginWindow('SlabDebug_Windows', SlabDebug_Windows)
+	Slab.BeginWindow("SlabDebug_Windows", SlabDebug_Windows)
 
-	if Slab.BeginComboBox('SlabDebug_Windows_Categories', {Selected = SlabDebug_Windows_Category}) then
+	if Slab.BeginComboBox("SlabDebug_Windows_Categories", {Selected = SlabDebug_Windows_Category}) then
 		for I, V in ipairs(SlabDebug_Windows_Categories) do
 			if Slab.TextSelectable(V) then
 				SlabDebug_Windows_Category = V
@@ -396,10 +395,10 @@ function SlabDebug.Windows()
 end
 
 function SlabDebug.Regions()
-	Slab.BeginWindow('SlabDebug_Regions', SlabDebug_Regions)
+	Slab.BeginWindow("SlabDebug_Regions", SlabDebug_Regions)
 
 	local Ids = Region.GetInstanceIds()
-	if Slab.BeginComboBox('SlabDebug_Regions_Ids', {Selected = SlabDebug_Regions_Selected}) then
+	if Slab.BeginComboBox("SlabDebug_Regions_Ids", {Selected = SlabDebug_Regions_Selected}) then
 		for I, V in ipairs(Ids) do
 			if Slab.TextSelectable(V) then
 				SlabDebug_Regions_Selected = V
@@ -417,7 +416,7 @@ function SlabDebug.Regions()
 end
 
 function SlabDebug.Tooltip()
-	Slab.BeginWindow('SlabDebug_Tooltip', SlabDebug_Tooltip)
+	Slab.BeginWindow("SlabDebug_Tooltip", SlabDebug_Tooltip)
 
 	local Info = Tooltip.GetDebugInfo()
 	for I, V in ipairs(Info) do
@@ -428,7 +427,7 @@ function SlabDebug.Tooltip()
 end
 
 function SlabDebug.DrawCommands()
-	Slab.BeginWindow('SlabDebug_DrawCommands', SlabDebug_DrawCommands)
+	Slab.BeginWindow("SlabDebug_DrawCommands", SlabDebug_DrawCommands)
 
 	local Info = DrawCommands.GetDebugInfo()
 	for K, V in pairs(Info) do
@@ -453,22 +452,22 @@ function SlabDebug.StyleEditor()
 end
 
 function SlabDebug.Input()
-	Slab.BeginWindow('SlabDebug_Input', SlabDebug_Input)
+	Slab.BeginWindow("SlabDebug_Input", SlabDebug_Input)
 
 	local Info = Input.GetDebugInfo()
-	Slab.Text("Focused: " .. Info['Focused'])
-	Slab.Text("Width: " .. Info['Width'])
-	Slab.Text("Height: " .. Info['Height'])
-	Slab.Text("Cursor X: " .. Info['CursorX'])
-	Slab.Text("Cursor Y: " .. Info['CursorY'])
-	Slab.Text("Cursor Position: " .. Info['CursorPos'])
-	Slab.Text("Character: " .. Info['Character'])
-	Slab.Text("Line Position: " .. Info['LineCursorPos'])
-	Slab.Text("Line Position Max: " .. Info['LineCursorPosMax'])
-	Slab.Text("Line Number: " .. Info['LineNumber'])
-	Slab.Text("Line Length: " .. Info['LineLength'])
+	Slab.Text("Focused: " .. Info["Focused"])
+	Slab.Text("Width: " .. Info["Width"])
+	Slab.Text("Height: " .. Info["Height"])
+	Slab.Text("Cursor X: " .. Info["CursorX"])
+	Slab.Text("Cursor Y: " .. Info["CursorY"])
+	Slab.Text("Cursor Position: " .. Info["CursorPos"])
+	Slab.Text("Character: " .. Info["Character"])
+	Slab.Text("Line Position: " .. Info["LineCursorPos"])
+	Slab.Text("Line Position Max: " .. Info["LineCursorPosMax"])
+	Slab.Text("Line Number: " .. Info["LineNumber"])
+	Slab.Text("Line Length: " .. Info["LineLength"])
 
-	local Lines = Info['Lines']
+	local Lines = Info["Lines"]
 	if Lines ~= nil then
 		Slab.Text("Lines: " .. #Lines)
 	end
@@ -477,33 +476,33 @@ function SlabDebug.Input()
 end
 
 local SlabDebug_MultiLine_Highlight = {
-	['function'] = {1, 0, 0, 1},
-	['end'] = {1, 0, 0, 1},
-	['if'] = {1, 0, 0, 1},
-	['then'] = {1, 0, 0, 1},
-	['local'] = {1, 0, 0, 1},
-	['for'] = {1, 0, 0, 1},
-	['do'] = {1, 0, 0, 1},
-	['not'] = {1, 0, 0, 1},
-	['while'] = {1, 0, 0, 1},
-	['repeat'] = {1, 0, 0, 1},
-	['until'] = {1, 0, 0, 1},
-	['break'] = {1, 0, 0, 1},
-	['else'] = {1, 0, 0, 1},
-	['elseif'] = {1, 0, 0, 1},
-	['in'] = {1, 0, 0, 1},
-	['and'] = {1, 0, 0, 1},
-	['or'] = {1, 0, 0, 1},
-	['true'] = {1, 0, 0, 1},
-	['false'] = {1, 0, 0, 1},
-	['nil'] = {1, 0, 0, 1},
-	['return'] = {1, 0, 0, 1}
+	["function"] = {1, 0, 0, 1},
+	["end"] = {1, 0, 0, 1},
+	["if"] = {1, 0, 0, 1},
+	["then"] = {1, 0, 0, 1},
+	["local"] = {1, 0, 0, 1},
+	["for"] = {1, 0, 0, 1},
+	["do"] = {1, 0, 0, 1},
+	["not"] = {1, 0, 0, 1},
+	["while"] = {1, 0, 0, 1},
+	["repeat"] = {1, 0, 0, 1},
+	["until"] = {1, 0, 0, 1},
+	["break"] = {1, 0, 0, 1},
+	["else"] = {1, 0, 0, 1},
+	["elseif"] = {1, 0, 0, 1},
+	["in"] = {1, 0, 0, 1},
+	["and"] = {1, 0, 0, 1},
+	["or"] = {1, 0, 0, 1},
+	["true"] = {1, 0, 0, 1},
+	["false"] = {1, 0, 0, 1},
+	["nil"] = {1, 0, 0, 1},
+	["return"] = {1, 0, 0, 1}
 }
 
 local SlabDebug_MultiLine_ShouldHighlight = true
 
 function SlabDebug.MultiLine()
-	Slab.BeginWindow('SlabDebug_MultiLine', SlabDebug_MultiLine)
+	Slab.BeginWindow("SlabDebug_MultiLine", SlabDebug_MultiLine)
 
 	if Slab.Button("Load") then
 		SlabDebug_MultiLine_FileDialog = true
@@ -531,7 +530,7 @@ function SlabDebug.MultiLine()
 
 	Slab.Text("File: " .. SlabDebug_MultiLine_FileName)
 
-	if Slab.Input('SlabDebug_MultiLine', {
+	if Slab.Input("SlabDebug_MultiLine", {
 		MultiLine = true,
 		Text = SlabDebug_MultiLine_Contents,
 		W = 500.0,
@@ -544,7 +543,7 @@ function SlabDebug.MultiLine()
 	Slab.EndWindow()
 
 	if SlabDebug_MultiLine_FileDialog then
-		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = 'openfile'})
+		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = "openfile"})
 
 		if Result.Button ~= "" then
 			SlabDebug_MultiLine_FileDialog = false
@@ -569,13 +568,13 @@ function SlabDebug.Tree()
 
 	local Info = Tree.GetDebugInfo()
 
-	Slab.BeginWindow('Tree', SlabDebug_Tree)
+	Slab.BeginWindow("Tree", SlabDebug_Tree)
 	Slab.Text("Instances: " .. #Info)
 
-	Slab.BeginLayout('Tree_List_Layout', {ExpandW = true, ExpandH = true})
-	Slab.BeginListBox('Tree_List')
+	Slab.BeginLayout("Tree_List_Layout", {ExpandW = true, ExpandH = true})
+	Slab.BeginListBox("Tree_List")
 	for I, V in ipairs(Info) do
-		Slab.BeginListBoxItem('Item_' .. I)
+		Slab.BeginListBoxItem("Item_" .. I)
 		Slab.Text(V)
 		Slab.EndListBoxItem()
 	end
@@ -590,10 +589,10 @@ local SlabDebug_LayoutManager_Selected = nil
 function SlabDebug.LayoutManager()
 	local Info = LayoutManager.GetDebugInfo()
 
-	Slab.BeginWindow('LayoutManager', SlabDebug_LayoutManager)
+	Slab.BeginWindow("LayoutManager", SlabDebug_LayoutManager)
 
-	Slab.BeginLayout('LayoutManager_Layout', {ExpandW = true})
-	if Slab.BeginComboBox('LayoutManager_ID', {Selected = SlabDebug_LayoutManager_Selected}) then
+	Slab.BeginLayout("LayoutManager_Layout", {ExpandW = true})
+	if Slab.BeginComboBox("LayoutManager_ID", {Selected = SlabDebug_LayoutManager_Selected}) then
 		for K, V in pairs(Info) do
 			if SlabDebug_LayoutManager_Selected == nil then
 				SlabDebug_LayoutManager_Selected = K

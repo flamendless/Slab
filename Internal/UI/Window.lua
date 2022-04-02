@@ -92,7 +92,7 @@ local function NewInstance(id)
 		HotItem = nil,
 		ContextHotItem = nil,
 		Items = {},
-		Layer = DrawCommands.layers.normal,
+		Layer = Enums.layers.normal,
 		StackIndex = 0,
 		CanObstruct = true,
 		FrameNumber = 0,
@@ -392,7 +392,7 @@ function Window.IsObstructed(x, y, skip)
 	-- Certain layers are rendered on top of "Normal" windows. Consider these windows first.
 	local top
 	for _, v in ipairs(list) do
-		if v.Layer == DrawCommands.layers.normal then
+		if v.Layer == Enums.layers.normal then
 			top = v
 			break
 		end
@@ -447,7 +447,7 @@ function Window.Begin(id, opt)
 	local def_auto_size_win_w = opt.AutoSizeWindowW or true
 	local def_auto_size_win_h = opt.AutoSizeWindowH or true
 	local def_auto_size_content = opt.AutoSizeContent or true
-	local def_layer = opt.Layer or DrawCommands.layers.normal
+	local def_layer = opt.Layer or Enums.layers.normal
 	local def_reset_pos = not not opt.ResetPosition
 	local def_reset_size = opt.ResetSize or opt.AutoSizeWindow
 	local def_reset_content = opt.ResetContent or opt.AutoSizeContent
@@ -579,98 +579,7 @@ function Window.Begin(id, opt)
 	DrawCommands.Begin(active_instance.StackIndex)
 
 	if active_instance.Title ~= STR_EMPTY then
-		local close_bg_rad = oy * 0.4
-		local min_bg_rad = oy * 04
-		local tx = floor(active_instance.X +
-			(active_instance.W * 0.5) - (Style.Font:getWidth(active_instance.Title) * 0.5))
-		local ty = floor(active_instance.Y - oy * 0.5 - Style.Font:getHeight() * 0.5)
-
-		-- Check for horizontal alignment.
-		if def_t_ax == Enums.align_x.left then
-			tx = floor(active_instance.X + active_instance.Border)
-		elseif def_t_ax == Enums.align_x.right then
-			tx = floor(active_instance.X + active_instance.W -
-				Style.Font:getWidth(active_instance.Title) - active_instance.Border)
-			if show_close then
-				tx = floor(tx - close_bg_rad * 2)
-			end
-			if show_minimize then
-				tx = floor(tx - min_bg_rad * 2)
-			end
-		end
-
-		-- Check for vertical alignment.
-		if def_t_ax == Enums.align_y.top then
-			ty = floor(active_instance.Y - oy)
-		elseif def_t_ax == Enums.align_y.bottom then
-			ty = floor(active_instance.Y - Style.Font:getHeight())
-		end
-
-		local title_color = active_instance.BackgroundColor
-		if active_instance == stack[1] then
-			title_color = Style.WindowTitleFocusedColor
-		end
-
-		DrawCommands.Rectangle("fill",
-			active_instance.X, active_instance.Y - oy,
-			active_instance.W, oy, title_color, title_rounding)
-		DrawCommands.Rectangle("line",
-			active_instance.X, active_instance.Y - oy,
-			active_instance.W, oy, nil, title_rounding)
-		DrawCommands.Line(
-			active_instance.X, active_instance.Y,
-			active_instance.X + active_instance.W, active_instance.Y, 1)
-
-		Region.Begin(active_instance.Id .. "_Title", {
-			X = active_instance.X,
-			Y = active_instance.Y - oy,
-			W = active_instance.W,
-			H = oy,
-			NoBackground = true,
-			NoOutline = true,
-			IgnoreScroll = true,
-			MouseX = true,
-			MouseY = true,
-			IsObstructed = true,
-		})
-		DrawCommands.Print(active_instance.Title, tx, ty, Style.TextColor, Style.Font)
-		local ox = 1
-		if show_minimize then
-			ox = show_close and 4 or 1
-			local is_clicked = DrawButton(
-				"Minimize",
-				active_instance,
-				opt,
-				min_bg_rad,
-				ox, oy,
-				Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
-				Style.WindowMinimizeColor or Style.WindowCloseColor
-			)
-			if is_clicked then
-				active_instance.IsContentOpen = not active_instance.IsContentOpen
-				active_instance.IsMoving = false
-				active_instance.IsMinimized = not active_instance.IsMinimized
-			end
-		end
-
-		if show_close then
-			ox = 1
-			local is_clicked = DrawButton(
-				"Close",
-				active_instance,
-				opt,
-				close_bg_rad,
-				ox, oy,
-				Style.WindowCloseBgColor,
-				Style.WindowCloseColor
-			)
-			if is_clicked then
-				active_instance.IsOpen = false
-				active_instance.IsMoving = false
-				def_is_open = false
-			end
-		end
-		Region.End()
+		Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_rounding, opt)
 	end
 
 	local region_w = active_instance.W
@@ -736,6 +645,101 @@ function Window.End()
 		Region.ApplyScissor()
 	end
 	Stats.End(handle)
+end
+
+function Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_rounding, opt)
+	local close_bg_rad = oy * 0.4
+	local min_bg_rad = oy * 04
+	local tx = floor(active_instance.X +
+		(active_instance.W * 0.5) - (Style.Font:getWidth(active_instance.Title) * 0.5))
+	local ty = floor(active_instance.Y - oy * 0.5 - Style.Font:getHeight() * 0.5)
+
+	-- Check for horizontal alignment.
+	if def_t_ax == Enums.align_x.left then
+		tx = floor(active_instance.X + active_instance.Border)
+	elseif def_t_ax == Enums.align_x.right then
+		tx = floor(active_instance.X + active_instance.W -
+			Style.Font:getWidth(active_instance.Title) - active_instance.Border)
+		if show_close then
+			tx = floor(tx - close_bg_rad * 2)
+		end
+		if show_minimize then
+			tx = floor(tx - min_bg_rad * 2)
+		end
+	end
+
+	-- Check for vertical alignment.
+	if def_t_ax == Enums.align_y.top then
+		ty = floor(active_instance.Y - oy)
+	elseif def_t_ax == Enums.align_y.bottom then
+		ty = floor(active_instance.Y - Style.Font:getHeight())
+	end
+
+	local title_color = active_instance.BackgroundColor
+	if active_instance == stack[1] then
+		title_color = Style.WindowTitleFocusedColor
+	end
+
+	DrawCommands.Rectangle("fill",
+		active_instance.X, active_instance.Y - oy,
+		active_instance.W, oy, title_color, title_rounding)
+	DrawCommands.Rectangle("line",
+		active_instance.X, active_instance.Y - oy,
+		active_instance.W, oy, nil, title_rounding)
+	DrawCommands.Line(
+		active_instance.X, active_instance.Y,
+		active_instance.X + active_instance.W, active_instance.Y, 1)
+
+	Region.Begin(active_instance.Id .. "_Title", {
+		X = active_instance.X,
+		Y = active_instance.Y - oy,
+		W = active_instance.W,
+		H = oy,
+		NoBackground = true,
+		NoOutline = true,
+		IgnoreScroll = true,
+		MouseX = true,
+		MouseY = true,
+		IsObstructed = true,
+	})
+	DrawCommands.Print(active_instance.Title, tx, ty, Style.TextColor, Style.Font)
+	local ox = 1
+	if show_minimize then
+		ox = show_close and 4 or 1
+		local is_clicked = DrawButton(
+			"Minimize",
+			active_instance,
+			opt,
+			min_bg_rad,
+			ox, oy,
+			Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
+			Style.WindowMinimizeColor or Style.WindowCloseColor
+		)
+		if is_clicked then
+			active_instance.IsContentOpen = not active_instance.IsContentOpen
+			active_instance.IsMoving = false
+			active_instance.IsMinimized = not active_instance.IsMinimized
+		end
+	end
+
+	if show_close then
+		ox = 1
+		local is_clicked = DrawButton(
+			"Close",
+			active_instance,
+			opt,
+			close_bg_rad,
+			ox, oy,
+			Style.WindowCloseBgColor,
+			Style.WindowCloseColor
+		)
+		if is_clicked then
+			active_instance.IsOpen = false
+			active_instance.IsMoving = false
+			def_is_open = false
+		end
+	end
+	Region.End()
 end
 
 function Window.GetMousePosition()
@@ -946,7 +950,7 @@ function Window.IsAppearing()
 end
 
 function Window.GetLayer()
-	if not active_instance then return DrawCommands.layers.normal end
+	if not active_instance then return Enums.layers.normal end
 	return active_instance.Layer
 end
 
