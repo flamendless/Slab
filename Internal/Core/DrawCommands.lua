@@ -87,7 +87,7 @@ local function AddArc(verts, cx, cy, radius, angle1, angle2, segments, x, y)
 		return
 	end
 
-	local step = (angle1 - angle2)/segments
+	local step = (angle2 - angle1)/segments
 	for theta = angle1, angle2, step do
 		local radians = rad(theta)
 		insert(verts, sin(radians) * radius + cxx)
@@ -367,12 +367,12 @@ local COLOR_WHITE = {1, 1, 1, 1}
 function DrawCommands.Rectangle(mode, x, y, width, height, color, radius, segments, line_w)
 	AssertActiveBatch()
 	if type(radius) == "table" then
+		segments = segments or 10
 		local tl = radius[1] or 0
 		local tr = radius[2] or 0
 		local br = radius[3] or 0
 		local bl = radius[4] or 0
 		local verts = {}
-		segments = segments or 10
 		AddArc(verts, width - br, height - br, br, 0, 90, segments, x, y)
 		AddArc(verts, width - tr, tr, tr, 90, 180, segments, x, y)
 		AddArc(verts, tl, tl, tl, 180, 270, segments, x, y)

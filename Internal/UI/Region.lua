@@ -267,16 +267,12 @@ function Region.Begin(id, opt)
 	local def_cw = opt.ContentW or 0
 	local def_ch = opt.ContentH or 0
 	local def_auto_size_content = not not opt.AutoSizeContent
-	local def_bg_color = opt.BgColor or Style.WindowBackgroundColor
-	local def_no_outline = not not opt.NoOutline
 	local def_is_obs = not not opt.IsObstructed
 	local def_intersect = not not opt.Intersect
 	local def_ignore_scroll = not not opt.IgnoreScroll
 	local def_mx = opt.MouseX or 0
 	local def_my = opt.MouseY or 0
 	local def_reset_content = not not opt.ResetContent
-	local def_rounding = opt.Rounding or 0
-	local def_no_bg = not not opt.NoBackground
 
 	local instance = GetInstance(id)
 	instance.X = def_x
@@ -321,10 +317,15 @@ function Region.Begin(id, opt)
 		end
 	end
 
+	local def_rounding = opt.Rounding or 0
+	local def_no_bg = not not opt.NoBackground
 	if not def_no_bg then
+		local def_bg_color = opt.BgColor or Style.WindowBackgroundColor
 		DrawCommands.Rectangle("fill",
 			instance.X, instance.Y, instance.W, instance.H, def_bg_color, def_rounding)
 	end
+
+	local def_no_outline = not not opt.NoOutline
 	if not def_no_outline then
 		DrawCommands.Rectangle("line",
 			instance.X, instance.Y, instance.W, instance.H, nil, def_rounding)

@@ -587,83 +587,84 @@ local function UpdateTextObject(instance, w, align, highlight, base_color)
 	local colored_text = {}
 	if not highlight then
 		colored_text = {base_color, instance.Text}
-	else
-		local _, ty = Region.InverseTransform(instance.Id, 0, 0)
-		local th = Text.GetHeight()
-		local top = ty - th * 2
-		local bot = ty + instance.H + th * 2
-		local len_lines = #instance.Lines
-		local h = len_lines * th
-		local topline_n = max(floor((top/h) * len_lines), 1)
-		local botline_n = min(floor((bot/h) * len_lines), len_lines)
-		local index, end_index = 1, 1
-		for i = 1, botline_n do
-			local count = #instance.Lines[i]
-			if i < topline_n then
-				index = index + count
-			end
-			end_index = end_index + count
-		end
+		instance.TextObject:setf(colored_text, w, align)
+		return
+	end
 
-		if index > 1 then
-			insert(colored_text, base_color)
-			insert(colored_text, sub(instance.Text, 1, index - 1))
+	local _, ty = Region.InverseTransform(instance.Id, 0, 0)
+	local th = Text.GetHeight()
+	local top = ty - th * 2
+	local bot = ty + instance.H + th * 2
+	local len_lines = #instance.Lines
+	local h = len_lines * th
+	local topline_n = max(floor((top/h) * len_lines), 1)
+	local botline_n = min(floor((bot/h) * len_lines), len_lines)
+	local index, end_index = 1, 1
+	for i = 1, botline_n do
+		local count = #instance.Lines[i]
+		if i < topline_n then
+			index = index + count
 		end
+		end_index = end_index + count
+	end
 
-		while index < end_index do
-			local match_index, key
-			for k in pairs(highlight) do
-				local found
-				local anchor = index
-				repeat
-					found = find(instance.Text, k, anchor, true)
-					if found then
-						local found_end = found + #k
-						local str_prev = sub(instance.Text, found - 1, found - 1)
-						local str_next = sub(instance.Text, found_end, found_end)
-						if found == 1 then
-							str_prev = nil
-						end
-						if found_end > #instance.Text then
-							str_next = nil
-						end
-						if not (IsHighlightTerminator(str_prev) and
-								IsHighlightTerminator(str_next)) then
-							anchor = found + 1
-							found = nil
-						end
-					else
-						break
+	if index > 1 then
+		insert(colored_text, base_color)
+		insert(colored_text, sub(instance.Text, 1, index - 1))
+	end
+
+	while index < end_index do
+		local match_index, key
+		for k in pairs(highlight) do
+			local found
+			local anchor = index
+			repeat
+				found = find(instance.Text, k, anchor, true)
+				if found then
+					local found_end = found + #k
+					local str_prev = sub(instance.Text, found - 1, found - 1)
+					local str_next = sub(instance.Text, found_end, found_end)
+					if found == 1 then
+						str_prev = nil
 					end
-				until found
-
-				if found and (not match_index) or
-					(match_index and found < match_index) then
-					match_index = found
-					key = k
+					if found_end > #instance.Text then
+						str_next = nil
+					end
+					if not (IsHighlightTerminator(str_prev) and
+							IsHighlightTerminator(str_next)) then
+						anchor = found + 1
+						found = nil
+					end
+				else
+					break
 				end
-			end
+			until found
 
-			if key then
-				insert(colored_text, base_color)
-				insert(colored_text, sub(instance.Text, index, match_index - 1))
-				insert(colored_text, highlight[key])
-				insert(colored_text, key)
-				index = match_index + #key
-			else
-				insert(colored_text, base_color)
-				insert(colored_text, sub(instance.Text, index, end_index))
-				index = end_index
-				break
+			if found and (not match_index) or
+				(match_index and found < match_index) then
+				match_index = found
+				key = k
 			end
 		end
 
-		if index < #instance.Text then
+		if key then
 			insert(colored_text, base_color)
-			insert(colored_text, sub(instance.Text, index))
+			insert(colored_text, sub(instance.Text, index, match_index - 1))
+			insert(colored_text, highlight[key])
+			insert(colored_text, key)
+			index = match_index + #key
+		else
+			insert(colored_text, base_color)
+			insert(colored_text, sub(instance.Text, index, end_index))
+			index = end_index
+			break
 		end
 	end
 
+	if index < #instance.Text then
+		insert(colored_text, base_color)
+		insert(colored_text, sub(instance.Text, index))
+	end
 	instance.TextObject:setf(colored_text, w, align)
 end
 
@@ -767,6 +768,7 @@ local TBL_IGNORE = {Ignore = true}
 function Input.Begin(id, opt)
 	assert(id, "Please pass a valid id into Slab.Input.")
 	local stat_handle = Stats.Begin("Input", "Slab")
+
 	opt = opt or TBL_EMPTY
 	local tooltip = opt.Tooltip or STR_EMPTY
 	local return_on_text = opt.ReturnOnText or true
@@ -861,44 +863,7 @@ function Input.Begin(id, opt)
 
 	local should_update = instance.ShouldUpdateTextObject
 	instance.ShouldUpdateTextObject = false
-
-	if not instance.Lines and instance.Text ~= STR_EMPTY and multi then
-		if not instance.TextObject then
-			instance.TextObject = love.graphics.newText(Style.Font)
-		end
-		instance.Lines = Text.GetLines(instance.Text, multi_w)
-		ch = #instance.Lines * Text.GetHeight()
-		should_update = true
-	end
-
-	if highlight then
-		if not instance.Highlight or
-			Utility.TableCount(highlight) ~= Utility.TableCount(instance.Highlight) then
-			instance.Highlight = Utility.Copy(highlight)
-			should_update = true
-		else
-			for k, v in pairs(highlight) do
-				local h_color = instance.Highlight[k]
-				if h_color then
-					if v[1] ~= h_color[1] or v[2] ~= h_color[2] or
-						v[3] ~= h_color[3] or v[4] ~= h_color[4] then
-						should_update = true
-						break
-					end
-				else
-					instance.Highlight = Utility.Copy(highlight)
-					should_update = true
-					break
-				end
-			end
-		end
-	else
-		if instance.Highlight then
-			instance.Highlight = nil
-			should_update = true
-		end
-	end
-
+	should_update = Input.HandleHighlight(instance, highlight, multi, multi_w)
 	if should_update then
 		UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
 	end
@@ -916,152 +881,10 @@ function Input.Begin(id, opt)
 
 	local check_focus = Mouse.IsClicked(1) and not hovered_sb
 	local n_entry = Mouse.IsDoubleClicked(1) and instance.NumbersOnly
-	local focused_frame = false
-	local clear_focus = false
-
-	if check_focus then
-		if hovered then
-			focused_frame = focused ~= instance
-			focused = instance
-		elseif instance == focused then
-			clear_focus = true
-			focused = nil
-		end
-	end
-
-	if focus_to_next and not last_focused then
-		focused_frame = true
-		focused = instance
-		check_focus = true
-		focus_to_next = false
-		tc_anchor = -1
-		tc_pos = 0
-		tc_pos_line = 0
-		tc_pos_line_n = 1
-	end
-
-	if last_focused == instance then
-		last_focused = nil
-	end
-
-	Input.Begin2(instance, multi, check_focus, focused_frame, no_drag, opt,
-		n_entry, select_on_focus, read_only, x, y, mx, my, precision, use_slider, step,
-		return_on_text, multi_w, highlight, text_color)
-	Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_obstructed,
-		select_color, use_slider, opt, text_color, win_item_id)
-
-	Stats.End(stat_handle)
-	return res
-end
-
-function Input.Begin2(instance, multi, check_focus, focused_frame, no_drag, opt,
-	n_entry, select_on_focus, read_only, x, y, mx, my, precision, use_slider, step,
-	return_on_text, multi_w, highlight, text_color)
-	if instance ~= focused then
-		local was_validated = ValidateNumber(instance)
-		if was_validated then
-			res = true
-			last_text = instance.Text
-		end
-	end
-
-	local back, should_delete = false, false
-	local should_update_t = false
-	if IsCommandKeyDown() then
-		if Keyboard.IsPressed("x") or Keyboard.IsPressed("c") then
-			local selected = GetSelection(instance)
-			if selected ~= STR_EMPTY then
-				love.system.setClipboardText(selected)
-				should_delete = Keyboard.IsPressed("x")
-			end
-		elseif Keyboard.IsPressed("v") then
-			local text2 = FileSystem.GetClipboard()
-			Input.Text(text2)
-			tc_pos = min(tc_pos + #text2 - 1, #instance.Text)
-		end
-	end
-
-	if Keyboard.IsPressed("tab") then
-		if multi then
-			Input.Text("\t")
-		else
-			last_focused = instance
-			focus_to_next = true
-		end
-	end
-
-	if Keyboard.IsPressed("backspace") then
-		should_delete = true
-	end
-
-	if Keyboard.IsPressed("delete") then
-		if tc_anchor == -1 then
-			local ch2 = GetCharacter(instance.Text, tc_pos, true)
-			if ch2 then
-				tc_pos = tc_pos + #ch2
-				should_delete = true
-			end
-		else
-			should_delete = true
-		end
-	end
-
-	if should_delete then
-		if DeleteSelection(instance) then
-			instance.TextChanged = true
-		end
-	end
-
+	local focused_frame, clear_focus = false, false
 	local clear_anchor = false
 	local is_shift = Keyboard.IsDown("lshift") or Keyboard.IsDown("rshift")
-
-	if Keyboard.IsPressed("lshift") or
-		Keyboard.IsPressed("rshift") and tc_anchor == -1 then
-		tc_anchor = tc_pos
-	end
-
-	local home_pressed, end_pressed = false, false
-
-	if IsHomePressed() then
-		MoveToHome(instance)
-		should_update_t = true
-		home_pressed = true
-	end
-
-	if IsEndPressed() then
-		MoveToEnd(instance)
-		should_update_t = true
-		end_pressed = true
-	end
-
-	if not home_pressed and (Keyboard.IsPressed("left") or back) then
-		tc_pos = GetNextCursorPos(instance, true)
-		should_update_t = true
-		UpdateMultiLinePosition(instance)
-	end
-	if not end_pressed and Keyboard.IsPressed("right") then
-		tc_pos = GetNextCursorPos(instance, false)
-		should_update_t = true
-		UpdateMultiLinePosition(instance)
-	end
-
-	if Keyboard.IsPressed("up") then
-		MoveCursorVertical(instance, false)
-		should_update_t = true
-	end
-	if Keyboard.IsPressed("down") then
-		MoveCursorVertical(instance, true)
-		should_update_t = true
-	end
-
-	if Keyboard.IsPressed("pageup") then
-		MoveCursorPage(instance, false)
-		should_update_t = true
-	end
-	if Keyboard.IsPressed("pagedown") then
-		MoveCursorPage(instance, true)
-		should_update_t = true
-	end
+	local should_update_t, back = Input.HandleInputs(instance, hovered, multi)
 
 	if check_focus or drag_select then
 		if focused_frame then
@@ -1155,10 +978,7 @@ function Input.Begin2(instance, multi, check_focus, focused_frame, no_drag, opt,
 	if clear_anchor then
 		tc_anchor = -1
 	end
-end
 
-function Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_obstructed,
-	select_color, use_slider, opt, text_color, win_item_id)
 	if Region.IsScrolling(instance.Id) then
 		local _, dy = Mouse.GetDelta()
 		local _, wy = Region.GetWheelDelta()
@@ -1174,23 +994,20 @@ function Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_
 
 	local tx, ty = Window.TransformPoint(x, y)
 	Region.Begin(instance.Id, {
-		X = x,
-		Y = y,
-		W = w,
-		H = h,
+		X = x, Y = y,
+		W = w, H = h,
 		ContentW = cw + pad,
 		ContentH = ch + pad,
 		BgColor = bg_color,
-		SX = tx,
-		SY = ty,
-		MouseX = mx,
-		MouseY = my,
+		SX = tx, SY = ty,
+		MouseX = mx, MouseY = my,
 		Intersect = true,
 		IgnoreScroll = not multi,
 		Rounding = rounding,
 		IsObstructed = is_obstructed,
 		AutoSizeContent = false,
 	})
+
 	if instance == focused and not is_sliding then
 		DrawSelection(instance, x, y, w, h, select_color)
 		DrawCursor(instance, x, y, w, h)
@@ -1224,7 +1041,6 @@ function Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_
 		ValidateNumber(instance)
 		last_text = instance.Text
 		focused = nil
-
 		if not multi then
 			Region.ResetTransform(instance.Id)
 		end
@@ -1237,6 +1053,180 @@ function Input.Begin3(instance, multi, x, y, w, h, cw, ch, mx, my, rounding, is_
 		-- Restore the key repeat flag to the state before an input control gained focus.
 		love.keyboard.setKeyRepeat(false)
 	end
+
+	Stats.End(stat_handle)
+	return res
+end
+
+function Input.HandleHighlight(instance, highlight, multi, multi_w)
+	local should_update
+	if not instance.Lines and instance.Text ~= STR_EMPTY and multi then
+		if not instance.TextObject then
+			instance.TextObject = love.graphics.newText(Style.Font)
+		end
+		instance.Lines = Text.GetLines(instance.Text, multi_w)
+		ch = #instance.Lines * Text.GetHeight()
+		should_update = true
+	end
+
+	if highlight then
+		if not instance.Highlight or
+			Utility.TableCount(highlight) ~= Utility.TableCount(instance.Highlight) then
+			instance.Highlight = Utility.Copy(highlight)
+			should_update = true
+		else
+			for k, v in pairs(highlight) do
+				local h_color = instance.Highlight[k]
+				if h_color then
+					if v[1] ~= h_color[1] or v[2] ~= h_color[2] or
+						v[3] ~= h_color[3] or v[4] ~= h_color[4] then
+						should_update = true
+						break
+					end
+				else
+					instance.Highlight = Utility.Copy(highlight)
+					should_update = true
+					break
+				end
+			end
+		end
+	else
+		if instance.Highlight then
+			instance.Highlight = nil
+			should_update = true
+		end
+	end
+	return should_update
+end
+
+function Input.HandleInputs(instance, hovered, multi)
+	if check_focus then
+		if hovered then
+			focused_frame = focused ~= instance
+			focused = instance
+		elseif instance == focused then
+			clear_focus = true
+			focused = nil
+		end
+	end
+
+	if focus_to_next and not last_focused then
+		focused_frame = true
+		focused = instance
+		check_focus = true
+		focus_to_next = false
+		tc_anchor = -1
+		tc_pos = 0
+		tc_pos_line = 0
+		tc_pos_line_n = 1
+	end
+
+	if last_focused == instance then
+		last_focused = nil
+	end
+
+	if instance ~= focused then
+		local was_validated = ValidateNumber(instance)
+		if was_validated then
+			res = true
+			last_text = instance.Text
+		end
+	end
+
+	local back, should_delete = false, false
+	local should_update_t = false
+	if IsCommandKeyDown() then
+		if Keyboard.IsPressed("x") or Keyboard.IsPressed("c") then
+			local selected = GetSelection(instance)
+			if selected ~= STR_EMPTY then
+				love.system.setClipboardText(selected)
+				should_delete = Keyboard.IsPressed("x")
+			end
+		elseif Keyboard.IsPressed("v") then
+			local text2 = FileSystem.GetClipboard()
+			Input.Text(text2)
+			tc_pos = min(tc_pos + #text2 - 1, #instance.Text)
+		end
+	end
+
+	if Keyboard.IsPressed("tab") then
+		if multi then
+			Input.Text("\t")
+		else
+			last_focused = instance
+			focus_to_next = true
+		end
+	end
+
+	if Keyboard.IsPressed("backspace") then
+		should_delete = true
+	end
+
+	if Keyboard.IsPressed("delete") then
+		if tc_anchor == -1 then
+			local ch2 = GetCharacter(instance.Text, tc_pos, true)
+			if ch2 then
+				tc_pos = tc_pos + #ch2
+				should_delete = true
+			end
+		else
+			should_delete = true
+		end
+	end
+
+	if should_delete then
+		if DeleteSelection(instance) then
+			instance.TextChanged = true
+		end
+	end
+
+	if Keyboard.IsPressed("lshift") or
+		Keyboard.IsPressed("rshift") and tc_anchor == -1 then
+		tc_anchor = tc_pos
+	end
+
+	local home_pressed, end_pressed = false, false
+	if IsHomePressed() then
+		MoveToHome(instance)
+		should_update_t = true
+		home_pressed = true
+	end
+
+	if IsEndPressed() then
+		MoveToEnd(instance)
+		should_update_t = true
+		end_pressed = true
+	end
+
+	if not home_pressed and (Keyboard.IsPressed("left") or back) then
+		tc_pos = GetNextCursorPos(instance, true)
+		should_update_t = true
+		UpdateMultiLinePosition(instance)
+	end
+	if not end_pressed and Keyboard.IsPressed("right") then
+		tc_pos = GetNextCursorPos(instance, false)
+		should_update_t = true
+		UpdateMultiLinePosition(instance)
+	end
+
+	if Keyboard.IsPressed("up") then
+		MoveCursorVertical(instance, false)
+		should_update_t = true
+	end
+	if Keyboard.IsPressed("down") then
+		MoveCursorVertical(instance, true)
+		should_update_t = true
+	end
+
+	if Keyboard.IsPressed("pageup") then
+		MoveCursorPage(instance, false)
+		should_update_t = true
+	end
+	if Keyboard.IsPressed("pagedown") then
+		MoveCursorPage(instance, true)
+		should_update_t = true
+	end
+	return should_update_t, back
 end
 
 function Input.Text(ch)
