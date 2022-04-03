@@ -371,7 +371,6 @@ function DrawCommands.Rectangle(mode, x, y, width, height, color, radius, segmen
 		local tr = radius[2] or 0
 		local br = radius[3] or 0
 		local bl = radius[4] or 0
-
 		local verts = {}
 		segments = segments or 10
 		AddArc(verts, width - br, height - br, br, 0, 90, segments, x, y)

@@ -24,7 +24,6 @@ SOFTWARE.
 
 --]]
 
-local love = require("love")
 local insert = table.insert
 local remove = table.remove
 local max = math.max
@@ -33,13 +32,21 @@ local format = string.format
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
-local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local LayoutManager = {}
 
 local instances, stack = {}, {}
 local active
+
+local function GetColumn(instance)
+	local col = instance.Columns[instance.ColumnNo]
+	local row
+	if col and col.Rows then
+		row = col.Rows[col.RowNo]
+	end
+	return col, row
+end
 
 local function GetWindowBounds()
 	local wx, wy, ww, wh = Window.GetBounds(true)
@@ -53,30 +60,24 @@ end
 
 local function GetRowSize(instance)
 	if not instance then return 0, 0 end
-	local col = instance.Columns[instance.ColumnNo]
-	if not col then return 0, 0 end
-	if not col.Rows then return 0, 0 end
-	local row = col.Rows[col.RowNo]
-	if not row then return 0, 0 end
+	local col, row = GetColumn(instance)
+	if (not col) or (not row) then return 0, 0 end
 	return row.W, row.H
 end
 
 local function GetRowCursorPos(instance)
 	if not instance then return end
-	local col = instance.Columns[instance.ColumnNo]
-	if not col then return end
-	if not col.Rows then return end
-	local row = col.Rows[col.RowNo]
-	if not row then return end
+	local col, row = GetColumn(instance)
+	if (not col) or (not row) then return 0, 0 end
 	return row.CursorX, row.CursorY
 end
 
 local function GetLayoutH(instance, include_pad)
 	if not instance then return 0 end
-	local col = instance.Columns[instance.ColumnNo]
+	local col = GetColumn(instance)
 	if not col then return 0 end
 	if not col.Rows then return 0 end
-	include_pad = include_pad == nil and true or include_pad
+	include_pad = include_pad or true
 	local h = 0
 	for _, v in ipairs(col.Rows) do
 		h = h + v.H
@@ -89,7 +90,7 @@ end
 
 local function GetPreviousRowBottom(instance)
 	if not instance then return end
-	local col = instance.Columns[instance.ColumnNo]
+	local col, row = GetColumn(instance)
 	if not col then return end
 	if (not col.Rows) or (col.RowNo <= 1) or (col.RowNo > #col.Rows) then
 		return
@@ -123,12 +124,11 @@ end
 
 local function GetColumnSize(instance)
 	if not instance then return 0, 0 end
-	local col = instance.Columns[instance.ColumnNo]
+	local col = GetColumn(instance)
 	if not col then return 0, 0 end
 	local ww, wh = select(3, GetWindowBounds())
 	local count = #instance.Columns
-	local col_w = ww/count
-	local w, h = col_w, GetLayoutH(instance)
+	local w, h = ww/count, GetLayoutH(instance)
 	if not Window.IsAutoSize() then
 		h = wh
 		col.W = w
@@ -138,19 +138,16 @@ end
 
 local function AddControl(instance, w, h, control_type)
 	if not instance then return end
-	local row_w, row_h = GetRowSize(instance)
-	local wx, wy = GetWindowBounds()
-	local _, cy = Cursor.GetPosition()
-	local x, y = GetRowCursorPos(instance)
-	local layout_h = GetLayoutH(instance)
-	local prev_row_btn = GetPreviousRowBottom(instance)
-	local ax, ay = GetColumnPosition(instance)
-	ww, wh = GetColumnSize(instance)
-	local col = instance.Columns[instance.ColumnNo]
+	local col, row = GetColumn(instance)
 	if not col then return end
+
+	local row_w, row_h = GetRowSize(instance)
 	row_w = row_w == 0 and w or row_w
 	row_h = row_h == 0 and h or row_h
 
+	local ax, ay = GetColumnPosition(instance)
+	local x, y = GetRowCursorPos(instance)
+	ww, wh = GetColumnSize(instance)
 	if not x then
 		if instance.AlignX == Enums.align_x.center then
 			x = max(ww * 0.5 - row_w * 0.5 + ax, ax)
@@ -165,10 +162,12 @@ local function AddControl(instance, w, h, control_type)
 		end
 	end
 
+	local wx, wy = GetWindowBounds()
+	local _, cy = Cursor.GetPosition()
+	local layout_h = GetLayoutH(instance)
+	local prev_row_btn = GetPreviousRowBottom(instance)
 	if not y then
-		if prev_row_btn then
-			y = prev_row_btn + Cursor.PadY()
-		else
+		if not prev_row_btn then
 			local region_h = wy + wh - cy
 			if instance.AlignY == Enums.align_y.center then
 				y = max(region_h * 0.5 - layout_h * 0.5 + ay, ay)
@@ -177,6 +176,8 @@ local function AddControl(instance, w, h, control_type)
 			else
 				y = ay
 			end
+		else
+			y = prev_row_btn + Cursor.PadY()
 		end
 	end
 
@@ -191,38 +192,33 @@ local function AddControl(instance, w, h, control_type)
 		end
 	end
 	local row_num = col.RowNo
-	if col.Rows then
-		local row = col.Rows[row_num]
-		if row then
-			row.CursorX = x + w + Cursor.PadX()
-			row.CursorY = y
-		end
+	if row then
+		row.CursorX = x + w + Cursor.PadX()
+		row.CursorY = y
 	end
 
 	if not col.PendingRows[row_num] then
-		local row = {
-			CursorX = nil,
-			CursorY = nil,
+		local new_row = {
 			W = 0, H = 0,
 			RequestH = 0, MaxH = 0,
 			Controls = {}
 		}
-		insert(col.PendingRows, row)
+		insert(col.PendingRows, new_row)
 	end
 
-	local row = col.PendingRows[row_num]
-	insert(row.Controls, {
+	local pending_row = col.PendingRows[row_num]
+	insert(pending_row.Controls, {
 			X = Cursor.GetX(),
 			Y = Cursor.GetY(),
 			W = w, H = h,
 			AlteredSize = col.AlteredSize,
 			Type = control_type
 	})
-	row.W = row.W + w
-	row.H = max(row.H, h)
+	pending_row.W = pending_row.W + w
+	pending_row.H = max(pending_row.H, h)
 	col.RowNo = row_num + 1
 	col.AlteredSize = false
-	col.W = max(row.W, col.W)
+	col.W = max(pending_row.W, pending_row.W)
 end
 
 local function GetInstance(id)
@@ -253,20 +249,19 @@ function LayoutManager.ComputeSize(w, h)
 	if not active then return w, h end
 	local x, y = GetColumnPosition(active)
 	local ww, wh = GetColumnSize(active)
-	local rw = ww - x
-	local rh = wh - y
-	local col = active.Columns[active.ColumnNo]
+	local rw, rh = ww - x, wh - y
+	local col, row = GetColumn(active)
 	if not col then return w, h end
 	rw = (not active.AnchorX) and ww or rw
 	rh = (not active.AnchorY) and rh or rh
 	-- Retrieve the calculated row width. This information is stored in the "PendingRows"
 	-- field of the active column. This information is updated in the "AddControl" function.
-	local row
+	local row2
 	local rem_w = ww
 	if col.PendingRows then
-		row = col.PendingRows[col.RowNo]
-		if row then
-			rem_w = ww - row.W
+		row2 = col.PendingRows[col.RowNo]
+		if row2 then
+			rem_w = ww - row2.W
 		end
 	end
 	w = min(w, rem_w)
@@ -277,7 +272,6 @@ function LayoutManager.ComputeSize(w, h)
 
 	if active.ExpandW and col.Rows then
 		local count, reduce_w, pad = 0, 0, 0
-		local row = col.Rows[col.RowNo]
 		if row then
 			for _, v in ipairs(row.Controls) do
 				if v.AlteredSize then
@@ -296,7 +290,7 @@ function LayoutManager.ComputeSize(w, h)
 
 	if active.ExpandH and col.Rows then
 		local count, reduce_h, pad, max_row_h = 0, 0, 0, 0
-		for i, subrow in ipairs(row.Rows) do
+		for i, subrow in ipairs(col.Rows) do
 			local is_size_alt = false
 			if i == col.RowNo then
 				max_row_h = subrow.MaxH
@@ -325,48 +319,36 @@ function LayoutManager.ComputeSize(w, h)
 	return w, h
 end
 
-local TBL_DEF = {
-	AlignX = Enums.align_x.left,
-	AlignY = Enums.align_y.top,
-	AlignRowY = Enums.align_y.top,
-	Ignore = false,
-	ExpandW = false, ExpandH = false,
-	AnchorX = false, AnchorY = true,
-	Columns = {},
-	ColumnNo = 1,
-}
-local err_begin = "A valid string Id must be given to BeginLayout!"
-local err_end = "LayoutManager.End was called without a call to LayoutManager.Begin!"
+local TBL_EMPTY = {}
 
 function LayoutManager.Begin(id, opt)
-	assert(id or type(id) == "string", err_begin)
-
-	opt = opt or TBL_DEF
-	opt.AlignX = opt.AlignX or TBL_DEF.AlignX
-	opt.AlignY = opt.AlignY or TBL_DEF.AlignY
-	opt.AlignRowY = opt.AlignRowY or TBL_DEF.AlignRowY
-	opt.Ignore = opt.Ignore or TBL_DEF.Ignore
-	opt.ExpandW = opt.ExpandW or TBL_DEF.ExpandW
-	opt.ExpandH = opt.ExpandH or TBL_DEF.ExpandH
-	opt.AnchorX = opt.AnchorX or TBL_DEF.AnchorX
-	opt.AnchorY = opt.AnchorY or TBL_DEF.AnchorY
-	opt.Columns = opt.Columns or TBL_DEF.Columns
-	opt.ColumnNo = opt.ColumnNo and max(opt.ColumnNo, 1) or 1
+	assert(id or type(id) == "string", "A valid string Id must be given to BeginLayout!")
+	opt = opt or TBL_EMPTY
+	local def_align_x = opt.AlignX or Enums.align_x.left
+	local def_align_y = opt.AlignY or Enums.align_y.top
+	local def_align_row_y = opt.AlignRowY or Enums.align_y.top
+	local def_ignore = not not opt.Ignore --default is false
+	local def_expand_w = not not opt.ExpandW
+	local def_expand_h = not not opt.ExpandH
+	local def_ax = not not opt.AnchorX
+	local def_ay = opt.AnchorY or true
+	local def_columns = opt.Columns or 1
+	def_columns = max(def_columns, 1)
 
 	local instance = GetInstance(id)
-	instance.AlignX = opt.AlignX
-	instance.AlignY = opt.AlignY
-	instance.AlignRowY = opt.AlignRowY
-	instance.Ignore = opt.Ignore
-	instance.ExpandW = opt.ExpandW
-	instance.ExpandH = opt.ExpandH
+	instance.AlignX = def_align_x
+	instance.AlignY = def_align_y
+	instance.AlignRowY = def_align_row_y
+	instance.Ignore = def_ignore
+	instance.ExpandW = def_expand_w
+	instance.ExpandH = def_expand_h
 	instance.X, instance.Y = Cursor.GetRelativePosition()
-	instance.AnchorX = opt.AnchorX
-	instance.AnchorY = opt.AnchorY
+	instance.AnchorX = def_ax
+	instance.AnchorY = def_ay
 
-	if opt.Columns ~= #instance.Columns then
-		Utility.ClearArray(instance.Columns)
-		for col in ipairs(opt.Columns) do
+	if def_columns ~= #instance.Columns then
+		instance.Columns = {}
+		for _ = 1, def_columns do
 			local col = {
 				PendingRows = {},
 				RowNo = 1, W = 0
@@ -376,7 +358,7 @@ function LayoutManager.Begin(id, opt)
 	end
 
 	for _, col in ipairs(instance.Columns) do
-		Utility.ClearArray(col.PendingRows)
+		col.PendingRows = {}
 		col.RowNo = 1
 	end
 	insert(stack, 1, instance)
@@ -384,25 +366,25 @@ function LayoutManager.Begin(id, opt)
 end
 
 function LayoutManager.End()
-	assert(active, err_end)
+	assert(active, "LayoutManager.End was called without a call to LayoutManager.Begin!")
 	for _, col in ipairs(active.Columns) do
 		local rows = col.Rows
 		col.Rows = col.PendingRows
-		Utility.ClearArray(col.PendingRows)
+		col.PendingRows = nil
 		if rows and col.Rows and #rows == #col.Rows then
-			for i, v in ipairs(rows) do
+			for i in ipairs(rows) do
 				col.Rows[i].MaxH = rows[i].RequestH
 			end
 		end
 	end
 	remove(stack, 1)
-	active = stack[1]
+	active = #stack > 1 and stack[1]
 end
 
 function LayoutManager.SameLine(opt)
 	Cursor.SameLine(opt)
 	if not active then return end
-	local col = active.Columns[active.ColumnNo]
+	local col = GetColumn(active)
 	col.RowNo = max(col.RowNo - 1, 1)
 end
 

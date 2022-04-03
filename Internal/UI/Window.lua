@@ -130,7 +130,7 @@ local STR_EMPTY = ""
 local TBL_EMPTY = {}
 
 local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
-	if (instance.IsContentOpen == nil or instance.IsContentOpen) and is_obstructed then
+	if is_obstructed and (instance.IsContentOpen == nil or instance.IsContentOpen) then
 		return
 	end
 
@@ -424,6 +424,9 @@ function Window.Reset()
 	insert(pending_stack, 1, active_instance)
 end
 
+local TITLE_ROUNDING = {0, 0, 0, 0}
+local BODY_ROUNDING = {0, 0, 0, 0}
+
 function Window.Begin(id, opt)
 	opt = opt or TBL_EMPTY
 	local stat_handle = Stats.Begin(Enums.widget.window, "Slab")
@@ -436,6 +439,7 @@ function Window.Begin(id, opt)
 	local def_bg_color = opt.BgColor or Style.WindowBackgroundColor
 	local def_title = opt.Title or STR_EMPTY
 	local def_t_ax = opt.TitleAlignX or Enums.align_x.center
+	local def_t_ay = opt.TitleAlignY or Enums.align_y.center
 	local def_t_h = opt.TitleH or Style.Font:getHeight()
 	local def_allow_move = opt.AllowMove or true
 	local def_allow_resize = opt.AllowResize or true
@@ -443,16 +447,16 @@ function Window.Begin(id, opt)
 	local def_border = opt.Border or 4
 	local def_no_outline = not not opt.NoOutline
 	local def_is_mb = not not opt.IsMenuBar
-	local def_auto_size_win = opt.AutoSizeWindow or true
-	local def_auto_size_win_w = opt.AutoSizeWindowW or true
-	local def_auto_size_win_h = opt.AutoSizeWindowH or true
+	local def_auto_size_win = opt.AutoSizeWindow
+	local def_auto_size_win_w = opt.AutoSizeWindowW or def_auto_size_win
+	local def_auto_size_win_h = opt.AutoSizeWindowH or def_auto_size_win
 	local def_auto_size_content = opt.AutoSizeContent or true
 	local def_layer = opt.Layer or Enums.layers.normal
 	local def_reset_pos = not not opt.ResetPosition
 	local def_reset_size = opt.ResetSize or opt.AutoSizeWindow
 	local def_reset_content = opt.ResetContent or opt.AutoSizeContent
 	local def_reset_layout = not not opt.ResetLayout
-	local def_sizer = opt.SizerFilter or TBL_EMPTY
+	local def_sizer = opt.SizerFilter or {}
 	local def_can_obs = opt.CanObstruct or true
 	local def_rounding = opt.Rounding or Style.WindowRounding
 	local def_no_save = not not opt.NoSavedSettings
@@ -465,8 +469,9 @@ function Window.Begin(id, opt)
 		Dock.AlterOptions(id, opt)
 	end
 
-	local title_rounding, body_rounding
-
+	TITLE_ROUNDING[1], TITLE_ROUNDING[2] = def_rounding, def_rounding
+	BODY_ROUNDING[3], BODY_ROUNDING[4] = def_rounding, def_rounding
+	local title_rounding, body_rounding = TITLE_ROUNDING, BODY_ROUNDING
 	if type(def_rounding) == "table" then
 		title_rounding = def_rounding
 		body_rounding = def_rounding
@@ -474,14 +479,13 @@ function Window.Begin(id, opt)
 		body_rounding = def_rounding
 	end
 
-	title_rounding = title_rounding or {def_rounding, def_rounding, 0, 0}
-	body_rounding = body_rounding or {0, 0, def_rounding, def_rounding}
-
 	local instance = GetInstance(id)
 	insert(pending_stack, 1, instance)
+
 	if active_instance then
 		active_instance.Children[id] = instance
 	end
+
 	active_instance = instance
 	def_w = def_auto_size_win_w and 0 or def_w
 	def_h = def_auto_size_win_h and 0 or def_h
@@ -538,7 +542,7 @@ function Window.Begin(id, opt)
 
 	if active_instance.IsOpen then
 		local cur_frame = Stats.GetFrameNumber()
-		active_instance.IsContentOpen = cur_frame - active_instance.FrameNumber > 1
+		active_instance.IsAppearing = cur_frame - active_instance.FrameNumber > 1
 		active_instance.FrameNumber = cur_frame
 		if active_instance.StackIndex == 0 then
 			insert(stack, 1, active_instance)
@@ -579,7 +583,7 @@ function Window.Begin(id, opt)
 	DrawCommands.Begin(active_instance.StackIndex)
 
 	if active_instance.Title ~= STR_EMPTY then
-		Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_rounding, opt)
+		Window.Begin2(oy, def_t_ax, def_t_ay, show_close, show_minimize, title_rounding, opt)
 	end
 
 	local region_w = active_instance.W
@@ -647,17 +651,17 @@ function Window.End()
 	Stats.End(handle)
 end
 
-function Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_rounding, opt)
+function Window.Begin2(oy, t_ax, t_ay, show_close, show_minimize, title_rounding, opt)
 	local close_bg_rad = oy * 0.4
-	local min_bg_rad = oy * 04
+	local min_bg_rad = close_bg_rad
 	local tx = floor(active_instance.X +
 		(active_instance.W * 0.5) - (Style.Font:getWidth(active_instance.Title) * 0.5))
 	local ty = floor(active_instance.Y - oy * 0.5 - Style.Font:getHeight() * 0.5)
 
 	-- Check for horizontal alignment.
-	if def_t_ax == Enums.align_x.left then
+	if t_ax == Enums.align_x.left then
 		tx = floor(active_instance.X + active_instance.Border)
-	elseif def_t_ax == Enums.align_x.right then
+	elseif t_ax == Enums.align_x.right then
 		tx = floor(active_instance.X + active_instance.W -
 			Style.Font:getWidth(active_instance.Title) - active_instance.Border)
 		if show_close then
@@ -669,9 +673,9 @@ function Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_roundin
 	end
 
 	-- Check for vertical alignment.
-	if def_t_ax == Enums.align_y.top then
+	if t_ay == Enums.align_y.top then
 		ty = floor(active_instance.Y - oy)
-	elseif def_t_ax == Enums.align_y.bottom then
+	elseif t_ay == Enums.align_y.bottom then
 		ty = floor(active_instance.Y - Style.Font:getHeight())
 	end
 
@@ -715,6 +719,7 @@ function Window.DrawTitle(oy, def_t_ax, show_close, show_minimize, title_roundin
 			Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
 			Style.WindowMinimizeColor or Style.WindowCloseColor
 		)
+
 		if is_clicked then
 			active_instance.IsContentOpen = not active_instance.IsContentOpen
 			active_instance.IsMoving = false

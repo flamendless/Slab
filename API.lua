@@ -26,43 +26,43 @@ SOFTWARE.
 
 local love = require("love")
 
-if SLAB_PATH == nil then
+if not SLAB_PATH then
 	SLAB_PATH = (...):match("(.-)[^%.]+$")
 end
 
-SLAB_FILE_PATH = debug.getinfo(1, 'S').source:match("^@(.+)/")
-SLAB_FILE_PATH = SLAB_FILE_PATH == nil and "" or SLAB_FILE_PATH
+SLAB_FILE_PATH = debug.getinfo(1, "S").source:match("^@(.+)/")
+SLAB_FILE_PATH = SLAB_FILE_PATH or ""
 local StatsData = {}
 local PrevStatsData = {}
 
-local Button = require(SLAB_PATH .. '.Internal.UI.Button')
-local CheckBox = require(SLAB_PATH .. '.Internal.UI.CheckBox')
-local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')
-local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
-local Config = require(SLAB_PATH .. '.Internal.Core.Config')
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
-local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Image = require(SLAB_PATH .. '.Internal.UI.Image')
-local Input = require(SLAB_PATH .. '.Internal.UI.Input')
-local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local ListBox = require(SLAB_PATH .. '.Internal.UI.ListBox')
-local Messages = require(SLAB_PATH .. '.Internal.Core.Messages')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Menu = require(SLAB_PATH .. '.Internal.UI.Menu')
-local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
-local MenuBar = require(SLAB_PATH .. '.Internal.UI.MenuBar')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Separator = require(SLAB_PATH .. '.Internal.UI.Separator')
-local Shape = require(SLAB_PATH .. '.Internal.UI.Shape')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Button = require(SLAB_PATH .. ".Internal.UI.Button")
+local CheckBox = require(SLAB_PATH .. ".Internal.UI.CheckBox")
+local ColorPicker = require(SLAB_PATH .. ".Internal.UI.ColorPicker")
+local ComboBox = require(SLAB_PATH .. ".Internal.UI.ComboBox")
+local Config = require(SLAB_PATH .. ".Internal.Core.Config")
+local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
+local Dialog = require(SLAB_PATH .. ".Internal.UI.Dialog")
+local Dock = require(SLAB_PATH .. ".Internal.UI.Dock")
+local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Image = require(SLAB_PATH .. ".Internal.UI.Image")
+local Input = require(SLAB_PATH .. ".Internal.UI.Input")
+local Keyboard = require(SLAB_PATH .. ".Internal.Input.Keyboard")
+local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
+local ListBox = require(SLAB_PATH .. ".Internal.UI.ListBox")
+local Messages = require(SLAB_PATH .. ".Internal.Core.Messages")
+local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
+local Menu = require(SLAB_PATH .. ".Internal.UI.Menu")
+local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
+local MenuBar = require(SLAB_PATH .. ".Internal.UI.MenuBar")
+local Region = require(SLAB_PATH .. ".Internal.UI.Region")
+local Separator = require(SLAB_PATH .. ".Internal.UI.Separator")
+local Shape = require(SLAB_PATH .. ".Internal.UI.Shape")
+local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(SLAB_PATH .. ".Style")
+local Text = require(SLAB_PATH .. ".Internal.UI.Text")
+local Tree = require(SLAB_PATH .. ".Internal.UI.Tree")
+local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 --[[
 	Slab
@@ -319,22 +319,22 @@ function Slab.Initialize(args)
 	end
 
 	Style.API.Initialize()
-	love.handlers['textinput'] = TextInput
-	love.handlers['wheelmoved'] = WheelMoved
+	love.handlers["textinput"] = TextInput
+	love.handlers["wheelmoved"] = WheelMoved
 
-	-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
-	-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
+	-- In Love 11.3, overriding love.handlers["quit"] doesn"t seem to affect the callback during shutdown.
+	-- Storing and overriding love.quit manually will properly call Slab"s callback. This function will call
 	-- the stored function once Slab is finished with its process.
 	QuitFn = love.quit
 	love.quit = OnQuit
 
 	args = args or {}
-	if type(args) == 'table' then
+	if type(args) == "table" then
 		for I, V in ipairs(args) do
-			if string.lower(V) == 'nomessages' then
+			if string.lower(V) == "nomessages" then
 				Messages.SetEnabled(false)
-			elseif string.lower(V) == 'nodocks' then
-				Slab.DisableDocks({'Left', 'Right', 'Bottom'})
+			elseif string.lower(V) == "nodocks" then
+				Slab.DisableDocks({"Left", "Right", "Bottom"})
 			end
 		end
 	end
@@ -382,8 +382,8 @@ end
 --]]
 function Slab.Update(dt)
 	Stats.Reset(false)
-	FrameStatHandle = Stats.Begin('Frame', 'Slab')
-	local StatHandle = Stats.Begin('Update', 'Slab')
+	FrameStatHandle = Stats.Begin("Frame", "Slab")
+	local StatHandle = Stats.Begin("Update", "Slab")
 
 	Mouse.Update()
 	Keyboard.Update()
@@ -407,7 +407,7 @@ end
 
 	This function will execute all buffered draw calls from the various Slab calls made prior. This
 	function should be called from love.draw and should be called at the very to ensure Slab is rendered
-	above the user's workspace.
+	above the user"s workspace.
 
 	Return: None.
 --]]
@@ -416,7 +416,7 @@ function Slab.Draw()
 		PrevStatsData = love.graphics.getStats(PrevStatsData)
 	end
 
-	local StatHandle = Stats.Begin('Draw', 'Slab')
+	local StatHandle = Stats.Begin("Draw", "Slab")
 
 	Window.Validate()
 
@@ -446,7 +446,7 @@ function Slab.Draw()
 
 	Stats.End(StatHandle)
 
-	-- Only call end if 'Update' was called and a valid handle was retrieved. This can happen for developers using a custom
+	-- Only call end if "Update" was called and a valid handle was retrieved. This can happen for developers using a custom
 	-- run function with a fixed update.
 	if FrameStatHandle ~= nil then
 		Stats.End(FrameStatHandle)
@@ -494,7 +494,7 @@ end
 	Return: None.
 --]]
 function Slab.SetVerbose(IsVerbose)
-	Verbose = (IsVerbose == nil or type(IsVerbose) ~= 'boolean') and false or IsVerbose
+	Verbose = (IsVerbose == nil or type(IsVerbose) ~= "boolean") and false or IsVerbose
 end
 
 --[[
@@ -562,8 +562,8 @@ end
 		Title: [String] The title to display for this window. If emtpy, no title bar will be rendered and the window will not be movable.
 		TitleH: [Number] The height of the title bar. By default, this will be the height of the current font set in the style. If no title is
 			set, this is ignored.
-		TitleAlignX: [String] Horizontal alignment of the title. The available options are 'left', 'center', and 'right'. The default is 'center'.
-		TitleAlignY: [String] Vertical alignment of the title. The available options are 'top', 'center', and 'bottom'. The default is 'center'.
+		TitleAlignX: [String] Horizontal alignment of the title. The available options are "left", "center", and "right". The default is "center".
+		TitleAlignY: [String] Vertical alignment of the title. The available options are "top", "center", and "bottom". The default is "center".
 		AllowMove: [Boolean] Controls whether the window is movable within the title bar area. The default value is true.
 		AllowResize: [Boolean] Controls whether the window is resizable. The default value is true. AutoSizeWindow must be false for this to work.
 		AllowFocus: [Boolean] Controls whether the window can be focused. The default value is true.
@@ -587,7 +587,7 @@ end
 		Rounding: [Number] Amount of rounding to apply to the corners of the window.
 		IsOpen: [Boolean] Determines if the window is open. If this value exists within the options, a close button will appear in
 			the corner of the window and is updated when this button is pressed to reflect the new open state of this window.
-		NoSavedSettings: [Boolean] Flag to disable saving this window's settings to the state INI file.
+		NoSavedSettings: [Boolean] Flag to disable saving this window"s settings to the state INI file.
 		ConstrainPosition: [Boolean] Flag to constrain the position of the window to the bounds of the viewport.
 		ShowMinimize: [Boolean] Flag to show a minimize button in the title bar of the window. Default is `true`.
 
@@ -613,7 +613,7 @@ end
 --[[
 	GetWindowPosition
 
-	Retrieves the active window's position.
+	Retrieves the active window"s position.
 
 	Return: [Number], [Number] The X and Y position of the active window.
 --]]
@@ -624,7 +624,7 @@ end
 --[[
 	GetWindowSize
 
-	Retrieves the active window's size.
+	Retrieves the active window"s size.
 
 	Return: [Number], [Number] The width and height of the active window.
 --]]
@@ -635,7 +635,7 @@ end
 --[[
 	GetWindowContentSize
 
-	Retrieves the active window's content size.
+	Retrieves the active window"s content size.
 
 	Return: [Number], [Number] The width and height of the active window content.
 --]]
@@ -646,9 +646,9 @@ end
 --[[
 	GetWindowActiveSize
 
-	Retrieves the active window's active size minus the borders.
+	Retrieves the active window"s active size minus the borders.
 
-	Return: [Number], [Number] The width and height of the window's active bounds.
+	Return: [Number], [Number] The width and height of the window"s active bounds.
 --]]
 function Slab.GetWindowActiveSize()
 	return Window.GetBorderlessSize()
@@ -677,8 +677,7 @@ end
 	Return: None.
 --]]
 function Slab.PushID(ID)
-	assert(type(ID) == 'string', "'ID' parameter must be a string value.")
-
+	assert(type(ID) == "string", "ID parameter must be a string value.")
 	Window.PushID(ID)
 end
 
@@ -815,7 +814,7 @@ end
 	BeginContextMenuWindow
 
 	Opens up a context menu based on if the user right clicks anywhere within the window. It is recommended to place this function at the end
-	of a window's widget calls so that Slab can catch any BeginContextMenuItem calls before this call. If this function returns true,
+	of a window"s widget calls so that Slab can catch any BeginContextMenuItem calls before this call. If this function returns true,
 	EndContextMenu must be called.
 
 	Button: [Number] The mouse button to use for opening up this context menu.
@@ -885,7 +884,7 @@ end
 
 	Option: [Table] List of options for how this separator will be drawn.
 		IncludeBorders: [Boolean] Whether to extend the separator to include the window borders. This is false by default.
-		H: [Number] The height of the separator. This doesn't change the line thickness, rather, specifies the cursor advancement
+		H: [Number] The height of the separator. This doesn"t change the line thickness, rather, specifies the cursor advancement
 			in the Y direction.
 		Thickness: [Number] The thickness of the line rendered. The default value is 1.0.
 
@@ -904,17 +903,17 @@ end
 	Options: [Table] List of options for how this button will behave.
 		Tooltip: [String] The tooltip to display when the user hovers over this button.
 		Rounding: [Number] Amount of rounding to apply to the corners of the button.
-		Invisible: [Boolean] Don't render the button, but keep the behavior.
+		Invisible: [Boolean] Don"t render the button, but keep the behavior.
 		W: [Number] Override the width of the button.
 		H: [Number] Override the height of the button.
 		Disabled: [Boolean] If true, the button is not interactable by the user.
-		Image: [Table] A table of options used to draw an image instead of a text label. Refer to the 'Image' documentation for a list
+		Image: [Table] A table of options used to draw an image instead of a text label. Refer to the "Image" documentation for a list
 			of available options.
-		Color: [Table]: The background color of the button when idle. The default value is the ButtonColor property in the Style's table.
+		Color: [Table]: The background color of the button when idle. The default value is the ButtonColor property in the Style"s table.
 		HoverColor: [Table]: The background color of the button when a mouse is hovering the control. The default value is the ButtonHoveredColor property
-			in the Style's table.
+			in the Style"s table.
 		PressColor: [Table]: The background color of the button when the button is pressed but not released. The default value is the ButtonPressedColor
-			property in the Style's table.
+			property in the Style"s table.
 		PadX: [Number] Amount of additional horizontal space the background will expand to from the center. The default value is 20.
 		PadY: [Number] Amount of additional vertical space the background will expand to from the center. The default value is 5.
 		VLines: [Number] Number of lines in a multiline button text. The default value is 1.
@@ -954,7 +953,7 @@ end
 	Options: [Table] List of options for how this text is displayed.
 		Color: [Table] The color to render the text.
 		Pad: [Number] How far to pad the text from the left side of the current cursor position.
-		IsSelectable: [Boolean] Whether this text is selectable using the text's Y position and the window X and width as the
+		IsSelectable: [Boolean] Whether this text is selectable using the text"s Y position and the window X and width as the
 			hot zone.
 		IsSelectableTextOnly: [Boolean] Will use the text width instead of the window width to determine the hot zone. Will set IsSelectable
 			to true if that option is missing.
@@ -1051,9 +1050,9 @@ end
 --[[
 	CheckBox
 
-	Renders a check box with a label. The check box when enabled will render an 'X'.
+	Renders a check box with a label. The check box when enabled will render an "X".
 
-	Enabled: [Boolean] Will render an 'X' within the box if true. Will be an empty box otherwise.
+	Enabled: [Boolean] Will render an "X" within the box if true. Will be an empty box otherwise.
 	Label: [String] The label to display after the check box.
 	Options: [Table] List of options for how this check box will behave.
 		Tooltip: [String] Text to be displayed if the user hovers over the check box.
@@ -1077,7 +1076,7 @@ end
 
 	Example:
 		local Text = "Hello World"
-		if Slab.Input('Example', {Text = Text}) then
+		if Slab.Input("Example", {Text = Text}) then
 			Text = Slab.GetInputText()
 		end
 
@@ -1094,8 +1093,8 @@ end
 		SelectColor: [Table] The color used when the user is selecting text within the input box.
 		SelectOnFocus: [Boolean] When this input box is focused by the user, the text contents within the input
 			will be selected. This is true by default.
-		NumbersOnly: [Boolean] When true, only numeric characters and the '.' character are allowed to be input into
-			the input box. If no text is input, the input box will display '0'.
+		NumbersOnly: [Boolean] When true, only numeric characters and the "." character are allowed to be input into
+			the input box. If no text is input, the input box will display "0".
 		W: [Number] The width of the input box. By default, will be 150.0
 		H: [Number] The height of the input box. By default, will be the height of the current font.
 		ReadOnly: [Boolean] Whether this input field can be editable or not.
@@ -1107,7 +1106,7 @@ end
 		MaxNumber: [Number] The maximum value that can be entered into this input box. Only valid when NumbersOnly is true.
 		MultiLine: [Boolean] Determines whether this input control should support multiple lines. If this is true, then the
 			SelectOnFocus flag will be false. The given text will also be sanitized to remove controls characters such as
-			'\r'. Also, the text will be left aligned.
+			"\r". Also, the text will be left aligned.
 		MultiLineW: [Number] The width for which the lines of text should be wrapped at.
 		Highlight: [Table] A list of key-values that define what words to highlight what color. Strings should be used for
 			the word to highlight and the value should be a table defining the color.
@@ -1302,10 +1301,10 @@ end
 		OpenWithHighlight: [Boolean] If this is true, the tree will be expanded/collapsed when the user hovers over the hot
 			zone of this tree item. If this is false, the user must click the expand/collapse icon to interact with this tree
 			item.
-		Icon: [Table] List of options to use for drawing the icon. Refer to the 'Image' documentation for more information.
+		Icon: [Table] List of options to use for drawing the icon. Refer to the "Image" documentation for more information.
 		IsSelected: [Boolean] If true, will render a highlight rectangle around the tree item.
 		IsOpen: [Boolean] Will force the tree item to be expanded.
-		NoSavedSettings: [Boolean] Flag to disable saving this tree's settings to the state INI file.
+		NoSavedSettings: [Boolean] Flag to disable saving this tree"s settings to the state INI file.
 
 	Return: [Boolean] Returns true if this tree item is expanded. Slab.EndTree must be called if this returns true.
 --]]
@@ -1334,7 +1333,7 @@ end
 	Example:
 		local Options = {"Apple", "Banana", "Orange", "Pear", "Lemon"}
 		local Options_Selected = ""
-		if Slab.BeginComboBox('Fruits', {Selected = Options_Selected}) then
+		if Slab.BeginComboBox("Fruits", {Selected = Options_Selected}) then
 			for K, V in pairs(Options) do
 				if Slab.TextSelectable(V) then
 					Options_Selected = V
@@ -1390,14 +1389,14 @@ end
 		SubY: [Number] The Y-coordinate used inside the given image.
 		SubW: [Number] The width used inside the given image.
 		SubH: [Number] The height used insided the given image.
-		WrapX: [String] The horizontal wrapping mode for this image. The available options are 'clamp', 'repeat',
-			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
+		WrapX: [String] The horizontal wrapping mode for this image. The available options are "clamp", "repeat",
+			"mirroredrepeat", and "clampzero". For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
-		WrapY: [String] The vertical wrapping mode for this image. The available options are 'clamp', 'repeat',
-			'mirroredrepeat', and 'clampzero'. For more information refer to the Love2D documentation on wrap modes at
+		WrapY: [String] The vertical wrapping mode for this image. The available options are "clamp", "repeat",
+			"mirroredrepeat", and "clampzero". For more information refer to the Love2D documentation on wrap modes at
 			https://love2d.org/wiki/WrapMode.
-		UseOutline: [Boolean] If set to true, a rectangle will be drawn around the given image. If 'SubW' or 'SubH' are specified, these
-			values will be used instead of the image's dimensions.
+		UseOutline: [Boolean] If set to true, a rectangle will be drawn around the given image. If "SubW" or "SubH" are specified, these
+			values will be used instead of the image"s dimensions.
 		OutlineColor: [Table] The color used to draw the outline. Default color is black.
 		OutlineW: [Number] The width used for the outline. Default value is 1.
 		W: [Number] The width the image should be resized to.
@@ -1446,7 +1445,7 @@ end
 	SetCursorPos
 
 	Sets the cursor position. The default behavior is to set the cursor position relative to
-	the current window. The absolute position can be set if the 'Absolute' option is set.
+	the current window. The absolute position can be set if the "Absolute" option is set.
 
 	Controls will only be drawn within a window. If the cursor is set outside of the current
 	window context, the control will not be displayed.
@@ -1477,7 +1476,7 @@ end
 	GetCursorPos
 
 	Gets the cursor position. The default behavior is to get the cursor position relative to
-	the current window. The absolute position can be retrieved if the 'Absolute' option is set.
+	the current window. The absolute position can be retrieved if the "Absolute" option is set.
 
 	Options: [Table] List of options that control how the cursor position should be retrieved.
 		Absolute: [Boolean] If true, will return the cursor position in absolute coordinates.
@@ -1504,7 +1503,7 @@ end
 	Advances the anchored X position of the cursor. All subsequent lines will begin at the new cursor position. This function
 	has no effect when columns are present.
 
-	Width: [Number] How far in pixels to advance the cursor. If nil, then the default value identified by the 'Indent'
+	Width: [Number] How far in pixels to advance the cursor. If nil, then the default value identified by the "Indent"
 		property in the current style is used.
 
 	Return: None.
@@ -1520,7 +1519,7 @@ end
 	Retreats the anchored X position of the cursor. All subsequent lines will begin at the new cursor position. This function
 	has no effect when columns are present.
 
-	Width: [Number] How far in pixels to retreat the cursor. If nil, then the default value identified by the 'Indent'
+	Width: [Number] How far in pixels to retreat the cursor. If nil, then the default value identified by the "Indent"
 		property in the current style is used.
 
 	Return: None.
@@ -1533,15 +1532,15 @@ end
 --[[
 	Properties
 
-	Iterates through the table's key-value pairs and adds them to the active window. This currently only does
+	Iterates through the table"s key-value pairs and adds them to the active window. This currently only does
 	a shallow loop and will not iterate through nested tables.
 
 	TODO: Iterate through nested tables.
 
 	Table: [Table] The list of properties to build widgets for.
 	Options: [Table] List of options that can applied to a specific property. The key should match an entry in the
-		'Table' argument and will apply any additional options to the property control.
-	Fallback: [Table] List of options that can be applied to any property if an entry was not found in the 'Options'
+		"Table" argument and will apply any additional options to the property control.
+	Fallback: [Table] List of options that can be applied to any property if an entry was not found in the "Options"
 		argument.
 
 	Return: None.
@@ -1755,7 +1754,7 @@ end
 				element is the description of the filter e.g. {"*.lua", "Lua Files"}
 			String: If a raw string is used, then it should just be the filter. It is recommended to use the table option since a
 				description can be given for each filter.
-		IncludeParent: [Boolean] This option will include the parent '..' directory item in the file/dialog list. This option is
+		IncludeParent: [Boolean] This option will include the parent ".." directory item in the file/dialog list. This option is
 			true by default.
 
 	Return: [Table] Returns items for how the user interacted with this file dialog.
@@ -1887,9 +1886,9 @@ end
 
 	Overrides a system mouse cursor of the given type to render a custom image instead.
 
-	Type: [String] The system cursor type to replace. This can be one of the following values: 'arrow', 'sizewe', 'sizens', 'sizenesw', 'sizenwse', 'ibeam', 'hand'.
-	Image: [Table] An 'Image' object created from love.graphics.newImage. If this is nil, then an empty image is created and is drawn when the system cursor is activated.
-	Quad: [Table] A 'Quad' object created from love.graphics.newQuad. This allows support for setting UVs of an image to render.
+	Type: [String] The system cursor type to replace. This can be one of the following values: "arrow", "sizewe", "sizens", "sizenesw", "sizenwse", "ibeam", "hand".
+	Image: [Table] An "Image" object created from love.graphics.newImage. If this is nil, then an empty image is created and is drawn when the system cursor is activated.
+	Quad: [Table] A "Quad" object created from love.graphics.newQuad. This allows support for setting UVs of an image to render.
 --]]
 function Slab.SetCustomMouseCursor(Type, Image, Quad)
 	Mouse.SetCustomCursor(Type, Image, Quad)
@@ -1900,7 +1899,7 @@ end
 
 	Removes any override of a system mouse cursor with the given type and defaults to the OS specific mouse cursor.
 
-	Type: [String] The system cursor type to remove. This can be one of the following values: 'arrow', 'sizewe', 'sizens', 'sizenesw', 'sizenwse', 'ibeam', 'hand'.
+	Type: [String] The system cursor type to remove. This can be one of the following values: "arrow", "sizewe", "sizens", "sizenesw", "sizenwse", "ibeam", "hand".
 --]]
 function Slab.ClearCustomMouseCursor(Type)
 	Mouse.ClearCustomCursor(Type)
@@ -1945,7 +1944,7 @@ end
 --[[
 	GetControlSize
 
-	Retrieves the last declared control's size.
+	Retrieves the last declared control"s size.
 
 	Return: [Number], [Number] The width and height of the last control declared.
 --]]
@@ -1967,7 +1966,7 @@ function Slab.IsVoidHovered()
 		return false
 	end
 
-	return Region.GetHotInstanceId() == '' and not Region.IsScrolling()
+	return Region.GetHotInstanceId() == "" and not Region.IsScrolling()
 end
 
 --[[
@@ -2031,14 +2030,14 @@ end
 	Draws a rectangle at the current cursor position for the active window.
 
 	Options: [Table] List of options that control how this rectangle is displayed.
-		Mode: [String] Whether this rectangle should be filled or outlined. The default value is 'fill'.
+		Mode: [String] Whether this rectangle should be filled or outlined. The default value is "fill".
 		W: [Number] The width of the rectangle.
 		H: [Number] The height of the rectangle.
 		Color: [Table] The color to use for this rectangle.
 		Rounding: [Number] or [Table]
 			[Number] Amount of rounding to apply to all corners.
 			[Table] Define the rounding for each corner. The order goes top left, top right, bottom right, and bottom left.
-		Outline: [Boolean] If the Mode option is 'fill', this option will allow an outline to be drawn.
+		Outline: [Boolean] If the Mode option is "fill", this option will allow an outline to be drawn.
 		OutlineColor: [Table] The color to use for the outline if requested.
 		Segments: [Number] Number of points to add for each corner if rounding is requested.
 
@@ -2054,7 +2053,7 @@ end
 	Draws a circle at the current cursor position plus the radius for the active window.
 
 	Options: [Table] List of options that control how this circle is displayed.
-		Mode: [String] Whether this circle should be filled or outlined. The default value is 'fill'.
+		Mode: [String] Whether this circle should be filled or outlined. The default value is "fill".
 		Radius: [Number] The size of the circle.
 		Color: [Table] The color to use for the circle.
 		Segments: [Number] The number of segments used for drawing the circle.
@@ -2071,7 +2070,7 @@ end
 	Draws a triangle at the current cursor position plus the radius for the active window.
 
 	Option: [Table] List of options that control how this triangle is displayed.
-		Mode: [String] Whether this triangle should be filled or outlined. The default value is 'fill'.
+		Mode: [String] Whether this triangle should be filled or outlined. The default value is "fill".
 		Radius: [Number] The distance from the center of the triangle.
 		Rotation: [Number] The rotation of the triangle in degrees.
 		Color: [Table] The color to use for the triangle.
@@ -2189,7 +2188,7 @@ end
 	Points: [Table] List of points that define this polygon.
 	Options: [Table] List of options that control how this polygon is drawn.
 		Color: [Table] The color to render this polygon.
-		Mode: [String] Whether to use 'fill' or 'line' to draw this polygon. The default is 'fill'.
+		Mode: [String] Whether to use "fill" or "line" to draw this polygon. The default is "fill".
 
 	Return: None.
 --]]
@@ -2301,15 +2300,15 @@ end
 	Id: [String] The Id of this layout.
 	Options: [Table] List of options that control how this layout behaves.
 		AlignX: [String] Defines how the controls should be positioned horizontally in the window. The available options are
-			'left', 'center', or 'right'. The default option is 'left'.
+			"left", "center", or "right". The default option is "left".
 		AlignY: [String] Defines how the controls should be positioned vertically in the window. The available options are
-			'top', 'center', or 'bottom'. The default option is 'top'. The top is determined by the current cursor position.
+			"top", "center", or "bottom". The default option is "top". The top is determined by the current cursor position.
 		AlignRowY: [String] Defines how the controls should be positioned vertically within a row. The available options are
-			'top', 'center', or 'bottom'. The default option is 'top'.
+			"top", "center", or "bottom". The default option is "top".
 		Ignore: [Boolean] Should this layout ignore positioning of controls. This is useful if certain controls need custom
 			positioning within a layout.
-		ExpandW: [Boolean] If true, will expand all controls' width within the row to the size of the window.
-		ExpandH: [Boolean] If true, will expand all controls' height within the row and the size of the window.
+		ExpandW: [Boolean] If true, will expand all controls" width within the row to the size of the window.
+		ExpandH: [Boolean] If true, will expand all controls" height within the row and the size of the window.
 		AnchorX: [Boolean] Anchors the layout management at the current X cursor position. The size is calculated using this position.
 			The default value for this is false.
 		AnchorY: [Boolean] Anchors the layout management at the current Y cursor position. The size is calculated using this position.
@@ -2395,7 +2394,7 @@ end
 	PushShader
 
 	Pushes a shader effect to be applied to any following controls before a call to PopShader. Any shader effect that is still active
-	will be cleared at the end of Slab's draw call.
+	will be cleared at the end of Slab"s draw call.
 
 	Shader: [Object] The shader object created with the love.graphics.newShader function. This object should be managed by the caller.
 
@@ -2421,7 +2420,7 @@ end
 
 	Enables the docking functionality for a particular side of the viewport.
 
-	List: [String/Table] A single item or list of items to enable for docking. The valid options are 'Left', 'Right', or 'Bottom'.
+	List: [String/Table] A single item or list of items to enable for docking. The valid options are "Left", "Right", or "Bottom".
 
 	Return: None.
 --]]
@@ -2434,7 +2433,7 @@ end
 
 	Disables the docking functionality for a particular side of the viewport.
 
-	List: [String/Table] A single item or list of items to disable for docking. The valid options are 'Left', 'Right', or 'Bottom'.
+	List: [String/Table] A single item or list of items to disable for docking. The valid options are "Left", "Right", or "Bottom".
 
 	Return: None.
 --]]
@@ -2447,9 +2446,9 @@ end
 
 	Set options for a dock type.
 
-	Type: [String] The type of dock to set options for. This can be 'Left', 'Right', or 'Bottom'.
+	Type: [String] The type of dock to set options for. This can be "Left", "Right", or "Bottom".
 	Options: [Table] List of options that control how a dock behaves.
-		NoSavedSettings: [Boolean] Flag to disable saving a dock's settings to the state INI file.
+		NoSavedSettings: [Boolean] Flag to disable saving a dock"s settings to the state INI file.
 --]]
 function Slab.SetDockOptions(Type, Options)
 	Dock.SetOptions(Type, Options)
@@ -2460,7 +2459,7 @@ end
 
 	Programatically set a window to dock.
 
-	Type: [String] The type of dock to set options for. This can be 'Left', 'Right', or 'Bottom'.
+	Type: [String] The type of dock to set options for. This can be "Left", "Right", or "Bottom".
 --]]
 function Slab.WindowToDock(Type)
 	Window.ToDock(Type)
