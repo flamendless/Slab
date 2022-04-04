@@ -39,7 +39,7 @@ local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
 local Region = {}
 local instances, stack = {}, {}
-local active
+local active_instance
 local scroll_pad = 3
 local scrollbar_size = 10
 local wheel_x, wheel_y = 0, 0
@@ -227,89 +227,72 @@ local function DrawScrollBars(instance)
 end
 
 local function GetInstance(id)
-	if not id then return active end
+	if not id then return active_instance end
 	if not instances[id] then
 		instances[id] = {
 			Id = id,
-			X = 0,
-			Y = 0,
-			W = 0,
-			H = 0,
-			SX = 0,
-			SY = 0,
-			ContentW = 0,
-			ContentH = 0,
+			X = 0, Y = 0,
+			W = 0, H = 0,
+			SX = 0, SY = 0,
+			ContentW = 0, ContentH = 0,
 			HasScrollX = false,
 			HasScrollY = false,
 			HoverScrollX = false,
 			HoverScrollY = false,
 			IsScrollingX = false,
 			IsScrollingY = false,
-			ScrollPosX = 0,
-			ScrollPosY = 0,
-			ScrollAlphaX = 0,
-			ScrollAlphaY = 0,
+			ScrollPosX = 0, ScrollPosY = 0,
+			ScrollAlphaX = 0, ScrollAlphaY = 0,
 			Intersect = false,
 			AutoSizeContent = false,
-			Transform = love.math.newTransform():reset(),
+			Transform = love.math.newTransform(),
 		}
 	end
 	return instances[id]
 end
 
+local TBL_EMPTY = {}
+
 function Region.Begin(id, opt)
-	local def_x = opt.X or 0
-	local def_y = opt.Y or 0
-	local def_w = opt.W or 0
-	local def_h = opt.H or 0
-	local def_sx = opt.SX or 0
-	local def_sy = opt.SY or 0
-	local def_cw = opt.ContentW or 0
-	local def_ch = opt.ContentH or 0
-	local def_auto_size_content = not not opt.AutoSizeContent
-	local def_is_obs = not not opt.IsObstructed
-	local def_intersect = not not opt.Intersect
-	local def_ignore_scroll = not not opt.IgnoreScroll
-	local def_mx = opt.MouseX or 0
-	local def_my = opt.MouseY or 0
-	local def_reset_content = not not opt.ResetContent
-
+	opt = opt or TBL_EMPTY
 	local instance = GetInstance(id)
-	instance.X = def_x
-	instance.Y = def_y
-	instance.W = def_w
-	instance.H = def_h
-	instance.SX = def_sx
-	instance.SY = def_sy
-	instance.Intersect = def_intersect
-	instance.IgnoreScroll = def_ignore_scroll
-	instance.MouseX = def_mx
-	instance.MouseY = def_my
-	instance.AutoSizeContent = def_auto_size_content
+	instance.X = opt.X or 0
+	instance.Y = opt.Y or 0
+	instance.W = opt.W or 0
+	instance.H = opt.H or 0
+	instance.SX = opt.SX or instance.X
+	instance.SY = opt.SY or instance.Y
+	instance.Intersect = opt.Intersect
+	instance.IgnoreScroll = opt.IgnoreScroll
+	instance.MouseX = opt.MouseX or 0
+	instance.MouseY = opt.MouseY or 0
+	instance.AutoSizeContent = opt.AutoSizeContent
 
-	if def_reset_content then
-		instance.ContentW, instance.ContentH = 0, 0
+	if opt.ResetContent then
+		instance.ContentW = 0
+		instance.ContentH = 0
 	end
 
-	if not def_auto_size_content then
-		instance.ContentW, instance.ContentH = def_cw, def_ch
+	if not opt.AutoSizeContent then
+		instance.ContentW = opt.ContentW or 0
+		instance.ContentH = opt.ContentH or 0
 	end
 
-	active = instance
+	active_instance = instance
 	insert(stack, 1, instance)
-	UpdateScrollBars(instance, def_is_obs)
+	UpdateScrollBars(instance, opt.IsObstructed)
 
-	if def_auto_size_content then
+	if opt.AutoSizeContent then
 		instance.ContentW, instance.ContentH = 0, 0
 	end
 
-	if hot_instance == instance and (not Contains(instance, instance.MouseX, instance.MouseY)
-		or def_is_obs) then
+	local is_contained = Contains(instance, instance.MouseX, instance.MouseY)
+	if hot_instance == instance and (not is_contained or opt.IsObstructed) then
 		hot_instance = nil
 	end
 
-	if not def_is_obs and (Contains(instance, instance.MouseX, instance.MouseY) or
-		(instance.HoverScrollX or instance.HoverScrollY)) then
+	local has_hover = instance.HoverScrollX or instance.HoverScrollY
+	if not opt.IsObstructed and (is_contained or has_hover) then
 		if not scroll_instance then
 			hot_instance = instance
 		else
@@ -318,8 +301,7 @@ function Region.Begin(id, opt)
 	end
 
 	local def_rounding = opt.Rounding or 0
-	local def_no_bg = not not opt.NoBackground
-	if not def_no_bg then
+	if not opt.NoBackground then
 		local def_bg_color = opt.BgColor or Style.WindowBackgroundColor
 		DrawCommands.Rectangle("fill",
 			instance.X, instance.Y, instance.W, instance.H, def_bg_color, def_rounding)
@@ -336,28 +318,27 @@ function Region.Begin(id, opt)
 end
 
 function Region.End()
-	if not active then return end
 	DrawCommands.TransformPop()
-	DrawScrollBars(active)
+	DrawScrollBars(active_instance)
 
-	if hot_instance == active
-		and not wheel_instance
+	if hot_instance == active_instance
+		and (not wheel_instance)
 		and (wheel_x ~= 0 or wheel_y ~= 0)
-		and not active.IgnoreScroll then
-		wheel_instance = instance
+		and not active_instance.IgnoreScroll then
+		wheel_instance = active_instance
 	end
 
-	if active.Intersect then
+	if active_instance.Intersect then
 		DrawCommands.IntersectScissor()
 	else
 		DrawCommands.Scissor()
 	end
 
-	active = nil
+	active_instance = nil
 	remove(stack, 1)
 
 	if #stack > 0 then
-		instance = stack[1]
+		active_instance = stack[1]
 	end
 end
 
@@ -419,46 +400,51 @@ function Region.ResetTransform(id)
 end
 
 function Region.IsActive(id)
-	if not active then return false end
-	return active.id == id
+	if not active_instance then return false end
+	return active_instance.Id == id
 end
 
 function Region.AddItem(x, y, w, h)
-	if not active or not active.AutoSizeContent then return end
-	local nw = x + w - active.X
-	local nh = y + h - active.Y
-	active.ContentW = max(active.ContentW, nw)
-	active.ContentH = max(active.ContentH, nh)
+	if not active_instance or not active_instance.AutoSizeContent then return end
+	local nw = x + w - active_instance.X
+	local nh = y + h - active_instance.Y
+	active_instance.ContentW = max(active_instance.ContentW, nw)
+	active_instance.ContentH = max(active_instance.ContentH, nh)
 end
 
 function Region.ApplyScissor()
-	if not active then return end
-	if active.Intersect then
-		DrawCommands.IntersectScissor(active.SX, active.SY, active.W, active.H)
+	if not active_instance then return end
+	if active_instance.Intersect then
+		DrawCommands.IntersectScissor(
+			active_instance.SX, active_instance.SY,
+			active_instance.W, active_instance.H)
 	else
-		DrawCommands.Scissor(active.SX, active.SY, active.W, active.H)
+		DrawCommands.Scissor(
+			active_instance.SX, active_instance.SY,
+			active_instance.W, active_instance.H)
 	end
 end
 
 function Region.GetBounds()
-	if not active then return 0, 0, 0, 0 end
-	return active.X, active.Y, active.W, active.H
+	if not active_instance then return 0, 0, 0, 0 end
+	return active_instance.X, active_instance.Y, active_instance.W, active_instance.H
 end
 
 function Region.GetContentSize()
-	if not active then return 0, 0 end
-	return active.ContentW, active.ContentH
+	if not active_instance then return 0, 0 end
+	return active_instance.ContentW, active_instance.ContentH
 end
 
 function Region.GetContentBounds()
-	if not active then return 0, 0, 0, 0 end
-	return active.X, active.Y, active.ContentW, active.ContentH
+	if not active_instance then return 0, 0, 0, 0 end
+	return active_instance.X, active_instance.Y,
+		active_instance.ContentW, active_instance.ContentH
 end
 
 function Region.Contains(x, y)
-	if not active then return false end
-	return active.X <= x and x <= active.X + active.W and
-		active.Y <= y and y <= active.Y + active.H
+	if not active_instance then return false end
+	return active_instance.X <= x and x <= active_instance.X + active_instance.W and
+		active_instance.Y <= y and y <= active_instance.Y + active_instance.H
 end
 
 function Region.ResetContentSize(id)
@@ -482,13 +468,13 @@ end
 local STR_EMPTY = ""
 function Region.GetHotInstanceId()
 	if not hot_instance then return STR_EMPTY end
-	return hot_instance.id
+	return hot_instance.Id
 end
 
 function Region.ClearHotInstance(id)
 	if not hot_instance then return end
 	if not id then hot_instance = nil end
-	if id and (hot_instance.id == id) then
+	if id and (hot_instance.Id == id) then
 		hot_instance = nil
 	end
 end

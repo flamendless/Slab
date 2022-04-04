@@ -333,18 +333,18 @@ local function UpdateSize(instance, is_obstructed)
 	end
 end
 
-local function DrawButton(btn_type, act_instance, _, radius, ox, oy, hover_color, color)
+local function DrawButton(btn_type, instance, radius, ox, oy, hover_color, color)
 	local is_clicked = false
-	local mx, my = Mouse.Position()
 	local is_obstructed
-	if btn_type == "Close" then
+	local mx, my = Mouse.Position()
+	if btn_type == Enums.button.close then
 		is_obstructed = Window.IsObstructed(mx, my, true)
-	elseif btn_type == "Minimize" then
+	elseif btn_type == Enums.button.minimize then
 		is_obstructed = false
 	end
 	local size = radius * 0.5
-	local x = act_instance.X + act_instance.W - act_instance.Border - radius * (ox)
-	local y = act_instance.Y - oy * 0.5
+	local x = instance.X + instance.W - instance.Border - radius * ox
+	local y = instance.Y - oy * 0.5
 	local is_hovered = not is_obstructed and x - radius <= mx and mx <= x + radius and
 		y - oy * 0.5 <= my and my <= y + radius
 
@@ -637,6 +637,7 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 	local close_bg_rad = oy * 0.4
 	local min_bg_rad = close_bg_rad
 	local fw2 = font:getWidth(active_instance.Title) * 0.5
+
 	-- Check for horizontal alignment.
 	local t_ax = opt.TitleAlignX or Enums.align_x.center
 	local tx = floor(active_instance.X + (active_instance.W * 0.5) - fw2)
@@ -677,24 +678,24 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 		active_instance.X, active_instance.Y,
 		active_instance.X + active_instance.W, active_instance.Y, 1)
 
+	local mx, my = Mouse.Position()
 	local title_region = active_instance.TitleRegion
 	title_region.X = active_instance.X
 	title_region.Y = active_instance.Y + oy
-	title_region.MouseX = active_instance.MouseX
-	title_region.MouseY = active_instance.MouseY
+	title_region.MouseX = mx
+	title_region.MouseY = my
 	title_region.IsObstructed = is_obs
 	title_region.W = active_instance.W
 	title_region.H = oy
 	Region.Begin(active_instance.TitleId, title_region)
-
 	DrawCommands.Print(active_instance.Title, tx, ty, Style.TextColor, font)
+
 	local ox = 1
 	if show_minimize then
 		ox = show_close and 4 or 1
 		local is_clicked = DrawButton(
-			"Minimize",
+			Enums.button.minimize,
 			active_instance,
-			opt,
 			min_bg_rad,
 			ox, oy,
 			Style.WindowMinimizeColorBgColor or Style.WindowCloseBgColor,
@@ -710,9 +711,8 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 	if show_close then
 		ox = 1
 		local is_clicked = DrawButton(
-			"Close",
+			Enums.button.close,
 			active_instance,
-			opt,
 			close_bg_rad,
 			ox, oy,
 			Style.WindowCloseBgColor,
