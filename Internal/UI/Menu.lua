@@ -44,6 +44,8 @@ local rpad = 70
 local check_size = 5
 local opened = {good = false}
 
+local TBL_DEF = {Enabled = true}
+
 local function IsItemHovered()
 	local x, y, _, h = Cursor.GetItemBounds()
 	local mx, my = Window.GetMousePosition()
@@ -51,10 +53,6 @@ local function IsItemHovered()
 		x < mx and mx < x + Window.GetWidth() and
 		y < my and my < y + h
 end
-
-local TBL_DEF = {
-	Enabled = true,
-}
 
 local function AlterOptions(opt)
 	opt = opt or TBL_DEF
@@ -142,7 +140,9 @@ function Menu.BeginMenu(label, opt)
 			end
 		end
 
-		win.Selected = (MenuState.IsOpened and not opened.good and res) and id
+		if Menu.IsOpened and (not opened.good) then
+			win.Selected = res and id
+		end
 		menu_x = x
 		menu_y = y + Window.GetHeight()
 	else

@@ -24,9 +24,7 @@ SOFTWARE.
 
 --]]
 
-local love = require("love")
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
-local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
 local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
 local Style = require(SLAB_PATH .. ".Style")
@@ -51,7 +49,7 @@ function MenuBar.Begin(is_main_menu_bar)
 		instance.Selected = nil
 	end
 	local fh = Style.Font:getHeight()
-	MenuState.MainMenuBarH = is_main_menu_bar and fh
+	MenuState.MainMenuBarH = is_main_menu_bar and fh or MenuState.MainMenuBarH
 	Window.Begin(instance.Id, {
 		X = x, Y = y,
 		W = ww, H = fh,

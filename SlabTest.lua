@@ -25,8 +25,8 @@ SOFTWARE.
 --]]
 
 local love = require("love")
-local Slab = require(SLAB_PATH .. '.Slab')
-local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
+local Slab = require(SLAB_PATH .. ".Slab")
+local SlabDebug = require(SLAB_PATH .. ".SlabDebug")
 
 local SlabTest = {}
 
@@ -94,7 +94,7 @@ local function DrawButtons()
 		"Buttons can also be invisible so that the designer can implement a custom button but still rely on the " ..
 		"button behavior. Below is a an invisible button and a custom rectangle drawn at the same location.")
 	local X, Y = Slab.GetCursorPos()
-	Slab.Rectangle({Mode = 'line', W = 50.0, H = 50.0, Color = {1, 1, 1, 1}})
+	Slab.Rectangle({Mode = "line", W = 50.0, H = 50.0, Color = {1, 1, 1, 1}})
 	Slab.SetCursorPos(X, Y)
 
 	if Slab.Button("", {Invisible = true, W = 50.0, H = 50.0}) then
@@ -126,8 +126,8 @@ local function DrawButtons()
 end
 
 local DrawText_Width = 450.0
-local DrawText_Alignment = {'left', 'center', 'right', 'justify'}
-local DrawText_Alignment_Selected = 'left'
+local DrawText_Alignment = {"left", "center", "right", "justify"}
+local DrawText_Alignment_Selected = "left"
 local DrawText_NumClicked = 0
 local DrawText_NumClicked_TextOnly = 0
 
@@ -151,14 +151,14 @@ local function DrawText()
 	Slab.NewLine()
 	Slab.Text("Width")
 	Slab.SameLine()
-	if Slab.Input('DrawText_Width', {Text = tostring(DrawText_Width), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawText_Width", {Text = tostring(DrawText_Width), NumbersOnly = true, ReturnOnText = false}) then
 		DrawText_Width = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Alignment")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawText_Alignment', {Selected = DrawText_Alignment_Selected}) then
+	if Slab.BeginComboBox("DrawText_Alignment", {Selected = DrawText_Alignment_Selected}) then
 		for I, V in ipairs(DrawText_Alignment) do
 			if Slab.TextSelectable(V) then
 				DrawText_Alignment_Selected = V
@@ -306,10 +306,10 @@ local function DrawMenus()
 	end
 	DrawContextMenuItem("Check Box")
 
-	Slab.Input('DrawMenus_Input')
+	Slab.Input("DrawMenus_Input")
 	DrawContextMenuItem("Input")
 
-	if Slab.BeginComboBox('DrawMenus_ComboBox', {Selected = DrawMenus_ComboBox_Selected}) then
+	if Slab.BeginComboBox("DrawMenus_ComboBox", {Selected = DrawMenus_ComboBox_Selected}) then
 		for I, V in ipairs(DrawMenus_ComboBox) do
 			if Slab.TextSelectable(V) then
 				DrawMenus_Window_Selected = V
@@ -373,7 +373,7 @@ local function DrawComboBox()
 
 	Slab.NewLine()
 
-	if Slab.BeginComboBox('DrawComboBox_One', {Selected = DrawComboBox_Selected}) then
+	if Slab.BeginComboBox("DrawComboBox_One", {Selected = DrawComboBox_Selected}) then
 		for I, V in ipairs(DrawComboBox_Options) do
 			if Slab.TextSelectable(V) then
 				DrawComboBox_Selected = V
@@ -391,7 +391,7 @@ local function DrawComboBox()
 	Slab.NewLine()
 
 	local W, H = Slab.GetWindowActiveSize()
-	if Slab.BeginComboBox('DrawComboBox_Two', {Selected = DrawComboBox_Selected_Width, W = W}) then
+	if Slab.BeginComboBox("DrawComboBox_Two", {Selected = DrawComboBox_Selected_Width, W = W}) then
 		for I, V in ipairs(DrawComboBox_Options) do
 			if Slab.TextSelectable(V) then
 				DrawComboBox_Selected_Width = V
@@ -431,8 +431,8 @@ function Hello()
 	print("World")
 end]]
 local DrawInput_Highlight_Table = {
-	['function'] = {1, 0, 0, 1},
-	['end'] = {0, 0, 1, 1}
+	["function"] = {1, 0, 0, 1},
+	["end"] = {0, 0, 1, 1}
 }
 local DrawInput_Highlight_Table_Modify = nil
 
@@ -447,7 +447,7 @@ local function DrawInput()
 		"The first example is very simple. An Input control is declared and the resulting text is captured if " ..
 		"the function returns true. By default, the function will return true on any text that is entered.")
 
-	if Slab.Input('DrawInput_Basic', {Text = DrawInput_Basic}) then
+	if Slab.Input("DrawInput_Basic", {Text = DrawInput_Basic}) then
 		DrawInput_Basic = Slab.GetInputText()
 	end
 
@@ -458,7 +458,7 @@ local function DrawInput()
 		"key is pressed. If the control loses focus without the Enter/Return key pressed, then the text will " ..
 		"revert back to what it was before.")
 
-	if Slab.Input('DrawInput_Basic_Return', {Text = DrawInput_Basic_Return, ReturnOnText = false}) then
+	if Slab.Input("DrawInput_Basic_Return", {Text = DrawInput_Basic_Return, ReturnOnText = false}) then
 		DrawInput_Basic_Return = Slab.GetInputText()
 	end
 
@@ -470,7 +470,7 @@ local function DrawInput()
 		"will allow the user to click and drag the control to alter the value by default. The user must double-click the "..
 		"control to manually enter a valid number.")
 
-	if Slab.Input('DrawInput_Basic_Numbers', {Text = tostring(DrawInput_Basic_Numbers), NumbersOnly = true}) then
+	if Slab.Input("DrawInput_Basic_Numbers", {Text = tostring(DrawInput_Basic_Numbers), NumbersOnly = true}) then
 		DrawInput_Basic_Numbers = Slab.GetInputNumber()
 	end
 
@@ -490,7 +490,7 @@ local function DrawInput()
 		NumbersOnly = true,
 		W = 50
 	}
-	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Min', DrawInput_Basic_Numbers_Clamped_Min_Options) then
+	if Slab.Input("DrawInput_Basic_Numbers_Clamped_Min", DrawInput_Basic_Numbers_Clamped_Min_Options) then
 		DrawInput_Basic_Numbers_Clamped_Min = Slab.GetInputNumber()
 	end
 
@@ -505,7 +505,7 @@ local function DrawInput()
 		NumbersOnly = true,
 		W = 50
 	}
-	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Max', DrawInput_Basic_Numbers_Clamped_Max_Options) then
+	if Slab.Input("DrawInput_Basic_Numbers_Clamped_Max", DrawInput_Basic_Numbers_Clamped_Max_Options) then
 		DrawInput_Basic_Numbers_Clamped_Max = Slab.GetInputNumber()
 	end
 
@@ -520,7 +520,7 @@ local function DrawInput()
 		NumbersOnly = true,
 		W = 50
 	}
-	if Slab.Input('DrawInput_Basic_Numbers_Clamped_Step', DrawInput_Basic_Numbers_Clamped_Step_Options) then
+	if Slab.Input("DrawInput_Basic_Numbers_Clamped_Step", DrawInput_Basic_Numbers_Clamped_Step_Options) then
 		DrawInput_Basic_Numbers_Clamped_Step = Slab.GetInputNumber()
 	end
 
@@ -532,7 +532,7 @@ local function DrawInput()
 		MaxNumber = DrawInput_Basic_Numbers_Clamped_Max,
 		Step = DrawInput_Basic_Numbers_Clamped_Step
 	}
-	if Slab.Input('DrawInput_Basic_Numbers_Clamped', DrawInput_Basic_Numbers_Clamped_Options) then
+	if Slab.Input("DrawInput_Basic_Numbers_Clamped", DrawInput_Basic_Numbers_Clamped_Options) then
 		DrawInput_Basic_Numbers_Clamped = Slab.GetInputNumber()
 	end
 
@@ -542,7 +542,7 @@ local function DrawInput()
 		"The click and drag functionality of numeric controls can also be disabled. This will make the input control behave like a " ..
 		"standard text input control.")
 
-	if Slab.Input('DrawInput_Basic_Numbers_NoDrag', {Text = tostring(DrawInput_Basic_Numbers_NoDrag), NumbersOnly = true, NoDrag = true}) then
+	if Slab.Input("DrawInput_Basic_Numbers_NoDrag", {Text = tostring(DrawInput_Basic_Numbers_NoDrag), NumbersOnly = true, NoDrag = true}) then
 		DrawInput_Basic_Numbers_NoDrag = Slab.GetInputNumber()
 	end
 
@@ -554,24 +554,24 @@ local function DrawInput()
 
 	Slab.Text("Min")
 	Slab.SameLine()
-	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Min', DrawInput_Basic_Numbers_Slider_Min, nil, DrawInput_Basic_Numbers_Slider_Max, nil, {W = 50}) then
+	if Slab.InputNumberDrag("DrawInput_Basic_Numbers_Slider_Min", DrawInput_Basic_Numbers_Slider_Min, nil, DrawInput_Basic_Numbers_Slider_Max, nil, {W = 50}) then
 		DrawInput_Basic_Numbers_Slider_Min = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Max")
 	Slab.SameLine()
-	if Slab.InputNumberDrag('DrawInput_Basic_Numbers_Slider_Max', DrawInput_Basic_Numbers_Slider_Max, DrawInput_Basic_Numbers_Slider_Min, nil, nil, {W = 50}) then
+	if Slab.InputNumberDrag("DrawInput_Basic_Numbers_Slider_Max", DrawInput_Basic_Numbers_Slider_Max, DrawInput_Basic_Numbers_Slider_Min, nil, nil, {W = 50}) then
 		DrawInput_Basic_Numbers_Slider_Max = Slab.GetInputNumber()
 	end
 
-	if Slab.InputNumberSlider('DrawInput_Basic_Numbers_Slider', DrawInput_Basic_Numbers_Slider, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max) then
+	if Slab.InputNumberSlider("DrawInput_Basic_Numbers_Slider", DrawInput_Basic_Numbers_Slider, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max) then
 		DrawInput_Basic_Numbers_Slider = Slab.GetInputNumber()
 	end
 
 	Slab.NewLine()
 	Slab.Text("Sliders can also be drawn with a handle")
-	if Slab.InputNumberSlider('DrawInput_Basic_Numbers_Slider_Handle', DrawInput_Basic_Numbers_Slider_Handle, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max, {DrawSliderAsHandle = true}) then
+	if Slab.InputNumberSlider("DrawInput_Basic_Numbers_Slider_Handle", DrawInput_Basic_Numbers_Slider_Handle, DrawInput_Basic_Numbers_Slider_Min, DrawInput_Basic_Numbers_Slider_Max, {DrawSliderAsHandle = true}) then
 		DrawInput_Basic_Numbers_Slider_Handle = Slab.GetInputNumber()
 	end
 
@@ -586,44 +586,44 @@ local function DrawInput()
 	Slab.NewLine()
 	Slab.Text("MultiLineW")
 	Slab.SameLine()
-	if Slab.Input('DrawInput_MultiLine_Width', {Text = tostring(DrawInput_MultiLine_Width), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawInput_MultiLine_Width", {Text = tostring(DrawInput_MultiLine_Width), NumbersOnly = true, ReturnOnText = false}) then
 		DrawInput_MultiLine_Width = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Cursor Pos")
 	Slab.SameLine()
-	if Slab.Input('DrawInput_CursorPos', {Text = tostring(DrawInput_CursorPos), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+	if Slab.Input("DrawInput_CursorPos", {Text = tostring(DrawInput_CursorPos), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
 		DrawInput_CursorPos = Slab.GetInputNumber()
-		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputFocus("DrawInput_MultiLine")
 		Slab.SetInputCursorPos(DrawInput_CursorPos)
 	end
 
 	Slab.SameLine()
 	Slab.Text("Column")
 	Slab.SameLine()
-	if Slab.Input('DrawInput_CursorColumn', {Text = tostring(DrawInput_CursorColumn), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+	if Slab.Input("DrawInput_CursorColumn", {Text = tostring(DrawInput_CursorColumn), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
 		DrawInput_CursorColumn = Slab.GetInputNumber()
-		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputFocus("DrawInput_MultiLine")
 		Slab.SetInputCursorPosLine(DrawInput_CursorColumn, DrawInput_CursorLine)
 	end
 
 	Slab.SameLine()
 	Slab.Text("Line")
 	Slab.SameLine()
-	if Slab.Input('DrawInput_CursorLine', {Text = tostring(DrawInput_CursorLine), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
+	if Slab.Input("DrawInput_CursorLine", {Text = tostring(DrawInput_CursorLine), NumbersOnly = true, ReturnOnText = false, MinNumber = 0, W = 75}) then
 		DrawInput_CursorLine = Slab.GetInputNumber()
-		Slab.SetInputFocus('DrawInput_MultiLine')
+		Slab.SetInputFocus("DrawInput_MultiLine")
 		Slab.SetInputCursorPosLine(DrawInput_CursorColumn, DrawInput_CursorLine)
 	end
 
 	local W, H = Slab.GetWindowActiveSize()
 
-	if Slab.Input('DrawInput_MultiLine', {Text = DrawInput_MultiLine, MultiLine = true, MultiLineW = DrawInput_MultiLine_Width, W = W, H = 150.0}) then
+	if Slab.Input("DrawInput_MultiLine", {Text = DrawInput_MultiLine, MultiLine = true, MultiLineW = DrawInput_MultiLine_Width, W = W, H = 150.0}) then
 		DrawInput_MultiLine = Slab.GetInputText()
 	end
 
-	if Slab.IsInputFocused('DrawInput_MultiLine') then
+	if Slab.IsInputFocused("DrawInput_MultiLine") then
 		DrawInput_CursorPos, DrawInput_CursorColumn, DrawInput_CursorLine = Slab.GetInputCursorPos()
 	end
 
@@ -638,7 +638,7 @@ local function DrawInput()
 	local TextW, TextH = Slab.GetTextSize("")
 
 	for K, V in pairs(DrawInput_Highlight_Table) do
-		if Slab.Input('DrawInput_Highlight_Table_' .. K, {Text = K, ReturnOnText = false}) then
+		if Slab.Input("DrawInput_Highlight_Table_" .. K, {Text = K, ReturnOnText = false}) then
 			DrawInput_Highlight_Table[K] = nil
 			K = Slab.GetInputText()
 			DrawInput_Highlight_Table[K] = V
@@ -659,7 +659,7 @@ local function DrawInput()
 	end
 
 	if Slab.Button("Add") then
-		DrawInput_Highlight_Table['new'] = {1, 0, 0, 1}
+		DrawInput_Highlight_Table["new"] = {1, 0, 0, 1}
 	end
 
 	if DrawInput_Highlight_Table_Modify ~= nil then
@@ -676,7 +676,7 @@ local function DrawInput()
 
 	Slab.NewLine()
 
-	if Slab.Input('DrawInput_Highlight', {Text = DrawInput_Highlight_Text, MultiLine = true, Highlight = DrawInput_Highlight_Table, W = W, H = 150.0}) then
+	if Slab.Input("DrawInput_Highlight", {Text = DrawInput_Highlight_Text, MultiLine = true, Highlight = DrawInput_Highlight_Table, W = W, H = 150.0}) then
 		DrawInput_Highlight_Text = Slab.GetInputText()
 	end
 end
@@ -705,7 +705,7 @@ local function DrawImage()
 		"Images can be drawn within windows and react to user interaction. A path to an image can be specified through the options of " ..
 		"the Image function. If this is done, Slab will manage the image resource and will use the path as a key to the resource.")
 
-	Slab.Image('DrawImage_Basic', {Path = DrawImage_Path})
+	Slab.Image("DrawImage_Basic", {Path = DrawImage_Path})
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -729,7 +729,7 @@ local function DrawImage()
 		end
 	end
 
-	Slab.Image('DrawImage_Color', {Path = DrawImage_Path, Color = DrawImage_Color})
+	Slab.Image("DrawImage_Color", {Path = DrawImage_Path, Color = DrawImage_Color})
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -746,7 +746,7 @@ local function DrawImage()
 	Slab.SameLine()
 	Slab.Text("Width")
 	Slab.SameLine()
-	if Slab.Input('DrawImage_OutlineWidth', {Text = DrawImage_OutlineWidth, NumbersOnly = true, ReturnOnText = false, MinNumber = 1}) then
+	if Slab.Input("DrawImage_OutlineWidth", {Text = DrawImage_OutlineWidth, NumbersOnly = true, ReturnOnText = false, MinNumber = 1}) then
 		DrawImage_OutlineWidth = Slab.GetInputNumber()
 	end
 
@@ -767,7 +767,7 @@ local function DrawImage()
 		end
 	end
 
-	Slab.Image('DrawImage_Outline', {Path = DrawImage_Path, UseOutline = DrawImage_UseOutline, OutlineW = DrawImage_OutlineWidth, OutlineColor = DrawImage_OutlineColor})
+	Slab.Image("DrawImage_Outline", {Path = DrawImage_Path, UseOutline = DrawImage_UseOutline, OutlineW = DrawImage_OutlineWidth, OutlineColor = DrawImage_OutlineColor})
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -778,7 +778,7 @@ local function DrawImage()
 
 	Slab.Text("Scale")
 	Slab.SameLine()
-	if Slab.Input('DrawImage_Scale', {Text = tostring(DrawImage_Scale), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+	if Slab.Input("DrawImage_Scale", {Text = tostring(DrawImage_Scale), NumbersOnly = true, ReturnOnText = false, W = 75}) then
 		DrawImage_Scale = Slab.GetInputNumber()
 		DrawImage_Scale_X = DrawImage_Scale
 		DrawImage_Scale_Y = DrawImage_Scale
@@ -787,18 +787,18 @@ local function DrawImage()
 	Slab.SameLine({Indent = 6.0})
 	Slab.Text("Scale X")
 	Slab.SameLine()
-	if Slab.Input('DrawImage_Scale_X', {Text = tostring(DrawImage_Scale_X), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+	if Slab.Input("DrawImage_Scale_X", {Text = tostring(DrawImage_Scale_X), NumbersOnly = true, ReturnOnText = false, W = 75}) then
 		DrawImage_Scale_X = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine({Indent = 6.0})
 	Slab.Text("Scale Y")
 	Slab.SameLine()
-	if Slab.Input('DrawImage_Scale_Y', {Text = tostring(DrawImage_Scale_Y), NumbersOnly = true, ReturnOnText = false, W = 75}) then
+	if Slab.Input("DrawImage_Scale_Y", {Text = tostring(DrawImage_Scale_Y), NumbersOnly = true, ReturnOnText = false, W = 75}) then
 		DrawImage_Scale_Y = Slab.GetInputNumber()
 	end
 
-	Slab.Image('DrawImage_Scale', {Path = DrawImage_Path, ScaleX = DrawImage_Scale_X, ScaleY = DrawImage_Scale_Y})
+	Slab.Image("DrawImage_Scale", {Path = DrawImage_Path, ScaleX = DrawImage_Scale_X, ScaleY = DrawImage_Scale_Y})
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -807,11 +807,11 @@ local function DrawImage()
 		"Images can also have interactions through the control API. The left image will change when the mouse is hovered " ..
 		"while the right image will change on click.")
 
-	Slab.Image('DrawImage_Hover', {Path = DrawImage_Path, Color = DrawImage_Power_Hovered and DrawImage_Power_On or DrawImage_Power_Off})
+	Slab.Image("DrawImage_Hover", {Path = DrawImage_Path, Color = DrawImage_Power_Hovered and DrawImage_Power_On or DrawImage_Power_Off})
 	DrawImage_Power_Hovered = Slab.IsControlHovered()
 
 	Slab.SameLine({Indent = 12.0})
-	Slab.Image('DrawImage_Click', {Path = DrawImage_Path, Color = DrawImage_Power and DrawImage_Power_On or DrawImage_Power_Off})
+	Slab.Image("DrawImage_Click", {Path = DrawImage_Path, Color = DrawImage_Power and DrawImage_Power_On or DrawImage_Power_Off})
 	if Slab.IsControlClicked() then
 		DrawImage_Power = not DrawImage_Power
 	end
@@ -824,7 +824,7 @@ local function DrawImage()
 
 	local X, Y = Slab.GetCursorPos()
 	local AbsX, AbsY = Slab.GetCursorPos({Absolute = true})
-	Slab.Image('DrawImage_Icons', {Path = DrawImage_Path_Icons})
+	Slab.Image("DrawImage_Icons", {Path = DrawImage_Path_Icons})
 	if Slab.IsControlClicked() then
 		local MouseX, MouseY = Slab.GetMousePositionWindow()
 		local Left = AbsX + DrawImage_Icon_X
@@ -853,10 +853,10 @@ local function DrawImage()
 	end
 
 	Slab.SetCursorPos(X + DrawImage_Icon_X, Y + DrawImage_Icon_Y)
-	Slab.Rectangle({Mode = 'line', Color = {0, 0, 0, 1}, W = 50.0, H = 50.0})
+	Slab.Rectangle({Mode = "line", Color = {0, 0, 0, 1}, W = 50.0, H = 50.0})
 
 	Slab.SetCursorPos(X + W + 12.0, Y)
-	Slab.Image('DrawImage_Icons_Region', {
+	Slab.Image("DrawImage_Icons_Region", {
 		Path = DrawImage_Path_Icons,
 		SubX = DrawImage_Icon_X,
 		SubY = DrawImage_Icon_Y,
@@ -885,7 +885,7 @@ local function DrawCursor()
 	Slab.Textf(
 		"There is a new line between this text and the above description. Modify the number of new lines using the " ..
 		"input box below.")
-	if Slab.Input('DrawCursor_NewLines', {Text = tostring(DrawCursor_NewLines), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+	if Slab.Input("DrawCursor_NewLines", {Text = tostring(DrawCursor_NewLines), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
 		DrawCursor_NewLines = Slab.GetInputNumber()
 	end
 
@@ -898,7 +898,7 @@ local function DrawCursor()
 	Slab.Button("One")
 	Slab.SameLine({Indent = DrawCursor_SameLinePad})
 	Slab.Button("Two")
-	if Slab.Input('DrawCursor_SameLinePad', {Text = tostring(DrawCursor_SameLinePad), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawCursor_SameLinePad", {Text = tostring(DrawCursor_SameLinePad), NumbersOnly = true, ReturnOnText = false}) then
 		DrawCursor_SameLinePad = Slab.GetInputNumber()
 	end
 
@@ -907,7 +907,7 @@ local function DrawCursor()
 	Slab.Textf(
 		"The SameLine function can also vertically center the next item based on the previous control. This is useful for labeling " ..
 		"items that are much bigger than the text such as images.")
-	Slab.Image('DrawCursor_Image', {Path = DrawImage_Path})
+	Slab.Image("DrawCursor_Image", {Path = DrawImage_Path})
 	Slab.SameLine({CenterY = true})
 	Slab.Text("This text is centered with respect to the previous image.")
 
@@ -933,13 +933,13 @@ local function DrawCursor()
 		DrawCursor_X, DrawCursor_Y = Slab.GetCursorPos()
 	end
 
-	if Slab.Input('DrawCursor_X', {Text = tostring(DrawCursor_X), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawCursor_X", {Text = tostring(DrawCursor_X), NumbersOnly = true, ReturnOnText = false}) then
 		DrawCursor_X = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 
-	if Slab.Input('DrawCursor_Y', {Text = tostring(DrawCursor_Y), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawCursor_Y", {Text = tostring(DrawCursor_Y), NumbersOnly = true, ReturnOnText = false}) then
 		DrawCursor_Y = Slab.GetInputNumber()
 	end
 
@@ -975,7 +975,7 @@ local function DrawCursor()
 	Slab.Indent(DrawCursor_Indent)
 	Slab.Text("Indent:")
 	Slab.SameLine()
-	if Slab.Input('DrawCursor_Indent', {Text = tostring(DrawCursor_Indent), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawCursor_Indent", {Text = tostring(DrawCursor_Indent), NumbersOnly = true, ReturnOnText = false}) then
 		DrawCursor_Indent = Slab.GetInputNumber()
 	end
 end
@@ -996,16 +996,16 @@ local function DrawListBox()
 
 	Slab.Text("Count")
 	Slab.SameLine()
-	if Slab.Input('DrawListBox_Basic_Count', {Text = tostring(DrawListBox_Basic_Count), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawListBox_Basic_Count", {Text = tostring(DrawListBox_Basic_Count), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawListBox_Basic_Count = Slab.GetInputNumber()
 		Clear = true
 	end
 
 	Slab.NewLine()
 
-	Slab.BeginListBox('DrawListBox_Basic', {Clear = Clear})
+	Slab.BeginListBox("DrawListBox_Basic", {Clear = Clear})
 	for I = 1, DrawListBox_Basic_Count, 1 do
-		Slab.BeginListBoxItem('DrawListBox_Basic_Item_' .. I, {Selected = I == DrawListBox_Basic_Selected})
+		Slab.BeginListBoxItem("DrawListBox_Basic_Item_" .. I, {Selected = I == DrawListBox_Basic_Selected})
 		Slab.Text("List Box Item " .. I)
 		if Slab.IsListBoxItemClicked() then
 			DrawListBox_Basic_Selected = I
@@ -1022,10 +1022,10 @@ local function DrawListBox()
 
 	Slab.NewLine()
 
-	Slab.BeginListBox('DrawListBox_Advanced')
+	Slab.BeginListBox("DrawListBox_Advanced")
 	local Rotation = 0
 	for I = 1, 4, 1 do
-		Slab.BeginListBoxItem('DrawListBox_Advanced_Item_' .. I, {Selected = I == DrawListBox_Advanced_Selected})
+		Slab.BeginListBoxItem("DrawListBox_Advanced_Item_" .. I, {Selected = I == DrawListBox_Advanced_Selected})
 		Slab.Triangle({Radius = 24.0, Rotation = Rotation})
 		Slab.SameLine({CenterY = true})
 		Slab.Text("Triangle " .. I)
@@ -1048,16 +1048,16 @@ local function DrawTree()
 
 	Slab.NewLine()
 
-	if Slab.BeginTree('DrawTree_Root', {Label = "Root"}) then
-		if Slab.BeginTree('DrawTree_Child_1', {Label = "Child 1"}) then
-			Slab.BeginTree('DrawTree_Child_1_Leaf_1', {Label = "Leaf 1", IsLeaf = true})
+	if Slab.BeginTree("DrawTree_Root", {Label = "Root"}) then
+		if Slab.BeginTree("DrawTree_Child_1", {Label = "Child 1"}) then
+			Slab.BeginTree("DrawTree_Child_1_Leaf_1", {Label = "Leaf 1", IsLeaf = true})
 			Slab.EndTree()
 		end
 
-		Slab.BeginTree('DrawTree_Leaf_1', {Label = "Leaf 2", IsLeaf = true})
+		Slab.BeginTree("DrawTree_Leaf_1", {Label = "Leaf 2", IsLeaf = true})
 
-		if Slab.BeginTree('DrawTree_Child_2', {Label = "Child 2"}) then
-			Slab.BeginTree('DrawTree_Child_2_Leaf_3', {Label = "Leaf 3", IsLeaf = true})
+		if Slab.BeginTree("DrawTree_Child_2", {Label = "Child 2"}) then
+			Slab.BeginTree("DrawTree_Child_2_Leaf_3", {Label = "Leaf 3", IsLeaf = true})
 			Slab.EndTree()
 		end
 
@@ -1073,8 +1073,8 @@ local function DrawTree()
 
 	Slab.NewLine()
 
-	if Slab.BeginTree('DrawTree_Root_NoHighlight', {Label = "Root", OpenWithHighlight = false}) then
-		Slab.BeginTree('DrawTree_Leaf', {Label = "Leaf", IsLeaf = true})
+	if Slab.BeginTree("DrawTree_Root_NoHighlight", {Label = "Root", OpenWithHighlight = false}) then
+		Slab.BeginTree("DrawTree_Leaf", {Label = "Leaf", IsLeaf = true})
 
 		if Slab.BeginContextMenuItem() then
 			Slab.MenuItem("Leaf Option 1")
@@ -1096,13 +1096,13 @@ local function DrawTree()
 	Slab.NewLine()
 
 	local Icon = {Path = DrawImage_Path_Icons, SubX = 0.0, SubY = 0.0, SubW = 50.0, SubH = 50.0}
-	if Slab.BeginTree('DrawTree_Root_Icon', {Label = "Folder", Icon = Icon}) then
-		Slab.BeginTree('DrawTree_Item_1', {Label = "Item 1", IsLeaf = true})
-		Slab.BeginTree('DrawTree_Item_2', {Label = "Item 2", IsLeaf = true})
+	if Slab.BeginTree("DrawTree_Root_Icon", {Label = "Folder", Icon = Icon}) then
+		Slab.BeginTree("DrawTree_Item_1", {Label = "Item 1", IsLeaf = true})
+		Slab.BeginTree("DrawTree_Item_2", {Label = "Item 2", IsLeaf = true})
 
-		if Slab.BeginTree('DrawTree_Child_1', {Label = "Folder", Icon = Icon}) then
-			Slab.BeginTree('DrawTree_Item_3', {Label = "Item 3", IsLeaf = true})
-			Slab.BeginTree('DrawTree_Item_4', {Label = "Item 4", IsLeaf = true})
+		if Slab.BeginTree("DrawTree_Child_1", {Label = "Folder", Icon = Icon}) then
+			Slab.BeginTree("DrawTree_Item_3", {Label = "Item 3", IsLeaf = true})
+			Slab.BeginTree("DrawTree_Item_4", {Label = "Item 4", IsLeaf = true})
 
 			Slab.EndTree()
 		end
@@ -1119,9 +1119,9 @@ local function DrawTree()
 
 	Slab.NewLine()
 
-	if Slab.BeginTree('DrawTree_Root_Opened', {Label = "Root", IsOpen = true}) then
+	if Slab.BeginTree("DrawTree_Root_Opened", {Label = "Root", IsOpen = true}) then
 		for I = 1, 5, 1 do
-			Slab.BeginTree('DrawTree_Item_' .. I, {Label = "Item " .. I, IsLeaf = true, IsSelected = I == DrawTree_Opened_Selected})
+			Slab.BeginTree("DrawTree_Item_" .. I, {Label = "Item " .. I, IsLeaf = true, IsSelected = I == DrawTree_Opened_Selected})
 
 			if Slab.IsControlClicked() then
 				DrawTree_Opened_Selected = I
@@ -1159,7 +1159,7 @@ local function DrawTree()
 	end
 
 	local RemoveIndex = -1
-	if Slab.BeginTree('Root', {IsOpen = true}) then
+	if Slab.BeginTree("Root", {IsOpen = true}) then
 		if Slab.BeginContextMenuItem() then
 			if Slab.MenuItem("Add") then
 				table.insert(DrawTree_Tables, {})
@@ -1191,7 +1191,7 @@ end
 local DrawDialog_MessageBox = false
 local DrawDialog_MessageBox_Title = "Message Box"
 local DrawDialog_MessageBox_Message = "This is a message."
-local DrawDialog_FileDialog = ''
+local DrawDialog_FileDialog = ""
 local DrawDialog_FileDialog_Result = ""
 
 local function DrawDialog()
@@ -1205,10 +1205,10 @@ local function DrawDialog()
 	Slab.Textf(
 		"By clicking the button below, an example of a simple dialog box will be rendered.")
 	if Slab.Button("Open Basic Dialog") then
-		Slab.OpenDialog('DrawDialog_Basic')
+		Slab.OpenDialog("DrawDialog_Basic")
 	end
 
-	if Slab.BeginDialog('DrawDialog_Basic', {Title = "Basic Dialog"}) then
+	if Slab.BeginDialog("DrawDialog_Basic", {Title = "Basic Dialog"}) then
 		Slab.Text("This is a basic dialog box.")
 
 		if Slab.Button("Close") then
@@ -1230,14 +1230,14 @@ local function DrawDialog()
 
 	Slab.Text("Title")
 	Slab.SameLine()
-	if Slab.Input('DrawDialog_MessageBox_Title', {Text = DrawDialog_MessageBox_Title}) then
+	if Slab.Input("DrawDialog_MessageBox_Title", {Text = DrawDialog_MessageBox_Title}) then
 		DrawDialog_MessageBox_Title = Slab.GetInputText()
 	end
 
 	Slab.NewLine()
 
 	Slab.Text("Message")
-	if Slab.Input('DrawDialog_MessageBox_Message', {Text = DrawDialog_MessageBox_Message, MultiLine = true, H = 75}) then
+	if Slab.Input("DrawDialog_MessageBox_Message", {Text = DrawDialog_MessageBox_Message, MultiLine = true, H = 75}) then
 		DrawDialog_MessageBox_Message = Slab.GetInputText()
 	end
 
@@ -1267,26 +1267,26 @@ local function DrawDialog()
 	Slab.NewLine()
 
 	if Slab.Button("Open File") then
-		DrawDialog_FileDialog = 'openfile'
+		DrawDialog_FileDialog = "openfile"
 	end
 
 	Slab.SameLine()
 
 	if Slab.Button("Open Directory") then
-		DrawDialog_FileDialog = 'opendirectory'
+		DrawDialog_FileDialog = "opendirectory"
 	end
 
 	Slab.SameLine()
 
 	if Slab.Button("Save File") then
-		DrawDialog_FileDialog = 'savefile'
+		DrawDialog_FileDialog = "savefile"
 	end
 
-	if DrawDialog_FileDialog ~= '' then
+	if DrawDialog_FileDialog ~= "" then
 		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = DrawDialog_FileDialog})
 
 		if Result.Button ~= "" then
-			DrawDialog_FileDialog = ''
+			DrawDialog_FileDialog = ""
 
 			if Result.Button == "OK" then
 				DrawDialog_FileDialog_Result = Result.Files[1]
@@ -1443,13 +1443,13 @@ local function DrawInteraction()
 		local Hand = love.graphics.newQuad(0, 50, 50, 50, Image:getWidth(), Image:getHeight())
 		local IBeam = love.graphics.newQuad(150, 50, 50, 50, Image:getWidth(), Image:getHeight())
 
-		DrawInteraction_MouseCustomCursors['arrow'] = {Image = Image, Quad = Cursor}
-		DrawInteraction_MouseCustomCursors['sizewe'] = {Image = Image, Quad = WestEast}
-		DrawInteraction_MouseCustomCursors['sizens'] = {Image = Image, Quad = NorthSouth}
-		DrawInteraction_MouseCustomCursors['sizenesw'] = {Image = Image, Quad = Corner}
-		DrawInteraction_MouseCustomCursors['sizenwse'] = {Image = Image, Quad = Corner}
-		DrawInteraction_MouseCustomCursors['ibeam'] = {Image = Image, Quad = IBeam}
-		DrawInteraction_MouseCustomCursors['hand'] = {Image = Image, Quad = Hand}
+		DrawInteraction_MouseCustomCursors["arrow"] = {Image = Image, Quad = Cursor}
+		DrawInteraction_MouseCustomCursors["sizewe"] = {Image = Image, Quad = WestEast}
+		DrawInteraction_MouseCustomCursors["sizens"] = {Image = Image, Quad = NorthSouth}
+		DrawInteraction_MouseCustomCursors["sizenesw"] = {Image = Image, Quad = Corner}
+		DrawInteraction_MouseCustomCursors["sizenwse"] = {Image = Image, Quad = Corner}
+		DrawInteraction_MouseCustomCursors["ibeam"] = {Image = Image, Quad = IBeam}
+		DrawInteraction_MouseCustomCursors["hand"] = {Image = Image, Quad = Hand}
 	end
 
 	Slab.NewLine()
@@ -1475,20 +1475,20 @@ local function DrawInteraction()
 
 	Slab.NewLine()
 
-	local IsDown_A = Slab.IsKeyDown('a')
-	local IsDown_S = Slab.IsKeyDown('s')
-	local IsDown_D = Slab.IsKeyDown('d')
-	local IsDown_F = Slab.IsKeyDown('f')
+	local IsDown_A = Slab.IsKeyDown("a")
+	local IsDown_S = Slab.IsKeyDown("s")
+	local IsDown_D = Slab.IsKeyDown("d")
+	local IsDown_F = Slab.IsKeyDown("f")
 
-	if Slab.IsKeyPressed('a') then DrawInteraction_KeyPressed_A = DrawInteraction_KeyPressed_A + 1 end
-	if Slab.IsKeyPressed('s') then DrawInteraction_KeyPressed_S = DrawInteraction_KeyPressed_S + 1 end
-	if Slab.IsKeyPressed('d') then DrawInteraction_KeyPressed_D = DrawInteraction_KeyPressed_D + 1 end
-	if Slab.IsKeyPressed('f') then DrawInteraction_KeyPressed_F = DrawInteraction_KeyPressed_F + 1 end
+	if Slab.IsKeyPressed("a") then DrawInteraction_KeyPressed_A = DrawInteraction_KeyPressed_A + 1 end
+	if Slab.IsKeyPressed("s") then DrawInteraction_KeyPressed_S = DrawInteraction_KeyPressed_S + 1 end
+	if Slab.IsKeyPressed("d") then DrawInteraction_KeyPressed_D = DrawInteraction_KeyPressed_D + 1 end
+	if Slab.IsKeyPressed("f") then DrawInteraction_KeyPressed_F = DrawInteraction_KeyPressed_F + 1 end
 
-	if Slab.IsKeyReleased('a') then DrawInteraction_KeyReleased_A = DrawInteraction_KeyReleased_A + 1 end
-	if Slab.IsKeyReleased('s') then DrawInteraction_KeyReleased_S = DrawInteraction_KeyReleased_S + 1 end
-	if Slab.IsKeyReleased('d') then DrawInteraction_KeyReleased_D = DrawInteraction_KeyReleased_D + 1 end
-	if Slab.IsKeyReleased('f') then DrawInteraction_KeyReleased_F = DrawInteraction_KeyReleased_F + 1 end
+	if Slab.IsKeyReleased("a") then DrawInteraction_KeyReleased_A = DrawInteraction_KeyReleased_A + 1 end
+	if Slab.IsKeyReleased("s") then DrawInteraction_KeyReleased_S = DrawInteraction_KeyReleased_S + 1 end
+	if Slab.IsKeyReleased("d") then DrawInteraction_KeyReleased_D = DrawInteraction_KeyReleased_D + 1 end
+	if Slab.IsKeyReleased("f") then DrawInteraction_KeyReleased_F = DrawInteraction_KeyReleased_F + 1 end
 
 	Slab.Text("A Down: " .. tostring(IsDown_A))
 	Slab.Text("S Down: " .. tostring(IsDown_S))
@@ -1515,22 +1515,22 @@ local DrawShapes_Rectangle_ChangeColor = false
 local DrawShapes_Rectangle_Rounding = {0, 0, 2.0, 2.0}
 local DrawShapes_Circle_Radius = 32.0
 local DrawShapes_Circle_Segments = 24
-local DrawShapes_Circle_Mode = 'fill'
+local DrawShapes_Circle_Mode = "fill"
 local DrawShapes_Triangle_Radius = 32.0
 local DrawShapes_Triangle_Rotation = 0
-local DrawShapes_Triangle_Mode = 'fill'
-local DrawShapes_Modes = {'fill', 'line'}
+local DrawShapes_Triangle_Mode = "fill"
+local DrawShapes_Modes = {"fill", "line"}
 local DrawShapes_Line_Width = 1.0
 local DrawShapes_Curve = {0, 0, 150, 150, 300, 0}
 local DrawShapes_ControlPoint_Size = 7.5
 local DrawShapes_ControlPoint_Index = 0
 local DrawShapes_Polygon = {10, 10, 150, 25, 175, 75, 50, 125}
-local DrawShapes_Polygon_Mode = 'fill'
+local DrawShapes_Polygon_Mode = "fill"
 
 local function DrawShapes_Rectangle_Rounding_Input(Corner, Index)
 	Slab.Text(Corner)
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Rectangle_Rounding_' .. Corner, {Text = tostring(DrawShapes_Rectangle_Rounding[Index]), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawShapes_Rectangle_Rounding_" .. Corner, {Text = tostring(DrawShapes_Rectangle_Rounding[Index]), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawShapes_Rectangle_Rounding[Index] = Slab.GetInputNumber()
 	end
 end
@@ -1571,13 +1571,13 @@ local function DrawShapes()
 
 	Slab.NewLine()
 
-	DrawShapes_Rectangle_Rounding_Input('TL', 1)
+	DrawShapes_Rectangle_Rounding_Input("TL", 1)
 	Slab.SameLine()
-	DrawShapes_Rectangle_Rounding_Input('TR', 2)
+	DrawShapes_Rectangle_Rounding_Input("TR", 2)
 	Slab.SameLine()
-	DrawShapes_Rectangle_Rounding_Input('BR', 3)
+	DrawShapes_Rectangle_Rounding_Input("BR", 3)
 	Slab.SameLine()
-	DrawShapes_Rectangle_Rounding_Input('BL', 4)
+	DrawShapes_Rectangle_Rounding_Input("BL", 4)
 
 	Slab.NewLine()
 
@@ -1593,21 +1593,21 @@ local function DrawShapes()
 
 	Slab.Text("Radius")
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Circle_Radius', {Text = tostring(DrawShapes_Circle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawShapes_Circle_Radius", {Text = tostring(DrawShapes_Circle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawShapes_Circle_Radius = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Segments")
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Circle_Segments', {Text = tostring(DrawShapes_Circle_Segments), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawShapes_Circle_Segments", {Text = tostring(DrawShapes_Circle_Segments), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawShapes_Circle_Segments = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawShapes_Circle_Mode', {Selected = DrawShapes_Circle_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Circle_Mode", {Selected = DrawShapes_Circle_Mode}) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Circle_Mode = V
@@ -1630,21 +1630,21 @@ local function DrawShapes()
 
 	Slab.Text("Radius")
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Triangle_Radius', {Text = tostring(DrawShapes_Triangle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawShapes_Triangle_Radius", {Text = tostring(DrawShapes_Triangle_Radius), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawShapes_Triangle_Radius = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Rotation")
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Triangle_Rotation', {Text = tostring(DrawShapes_Triangle_Rotation), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
+	if Slab.Input("DrawShapes_Triangle_Rotation", {Text = tostring(DrawShapes_Triangle_Rotation), NumbersOnly = true, MinNumber = 0, ReturnOnText = false}) then
 		DrawShapes_Triangle_Rotation = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawShapes_Triangle_Mode', {Selected = DrawShapes_Triangle_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Triangle_Mode", {Selected = DrawShapes_Triangle_Mode}) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Triangle_Mode = V
@@ -1667,7 +1667,7 @@ local function DrawShapes()
 
 	Slab.Text("Width")
 	Slab.SameLine()
-	if Slab.Input('DrawShapes_Line_Width', {Text = tostring(DrawShapes_Line_Width), NumbersOnly = true, ReturnOnText = false, MinNumber = 1.0}) then
+	if Slab.Input("DrawShapes_Line_Width", {Text = tostring(DrawShapes_Line_Width), NumbersOnly = true, ReturnOnText = false, MinNumber = 1.0}) then
 		DrawShapes_Line_Width = Slab.GetInputNumber()
 	end
 
@@ -1737,7 +1737,7 @@ local function DrawShapes()
 
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawShapes_Polygon_Mode', {Selected = DrawShapes_Polygon_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Polygon_Mode", {Selected = DrawShapes_Polygon_Mode}) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Polygon_Mode = V
@@ -1756,10 +1756,10 @@ local DrawWindow_W = 200
 local DrawWindow_H = 200
 local DrawWindow_Title = "A"
 local DrawWindow_TitleH = nil
-local DrawWindow_TitleAlignmentX = 'center'
-local DrawWindow_TitleAlignmentY = 'center'
-local DrawWindow_TitleAlignmentX_Options = {'left', 'center', 'right'}
-local DrawWindow_TitleAlignmentY_Options = {'top', 'center', 'bottom'}
+local DrawWindow_TitleAlignmentX = "center"
+local DrawWindow_TitleAlignmentY = "center"
+local DrawWindow_TitleAlignmentX_Options = {"left", "center", "right"}
+local DrawWindow_TitleAlignmentY_Options = {"top", "center", "bottom"}
 local DrawWindow_ResetLayout = false
 local DrawWindow_ResetSize = false
 local DrawWindow_AutoSizeWindow = true
@@ -1810,7 +1810,7 @@ local function DrawWindow()
 
 	Slab.Text("Title")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_Title', {Text = DrawWindow_Title, ReturnOnText = false}) then
+	if Slab.Input("DrawWindow_Title", {Text = DrawWindow_Title, ReturnOnText = false}) then
 		DrawWindow_Title = Slab.GetInputText()
 	end
 
@@ -1824,7 +1824,7 @@ local function DrawWindow()
 
 	Slab.Text("Height")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_TitleHeight', {Text = DrawWindow_TitleH, ReturnOnText = false}) then
+	if Slab.Input("DrawWindow_TitleHeight", {Text = DrawWindow_TitleH, ReturnOnText = false}) then
 		DrawWindow_TitleH = Slab.GetInputNumber()
 	end
 
@@ -1833,7 +1833,7 @@ local function DrawWindow()
 	Slab.Textf("The text alignment of the title can also be changed.")
 	Slab.Text("Horizontal")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawWindow_TitleAlignmentX', {Selected = DrawWindow_TitleAlignmentX}) then
+	if Slab.BeginComboBox("DrawWindow_TitleAlignmentX", {Selected = DrawWindow_TitleAlignmentX}) then
 		for I, V in ipairs(DrawWindow_TitleAlignmentX_Options) do
 			if Slab.TextSelectable(V) then
 				DrawWindow_TitleAlignmentX = V
@@ -1846,7 +1846,7 @@ local function DrawWindow()
 	Slab.SameLine()
 	Slab.Text("Vertical")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawWindow_TitleAlignmentY', {Selected = DrawWindow_TitleAlignmentY}) then
+	if Slab.BeginComboBox("DrawWindow_TitleAlignmentY", {Selected = DrawWindow_TitleAlignmentY}) then
 		for I, V in ipairs(DrawWindow_TitleAlignmentY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawWindow_TitleAlignmentY = V
@@ -1867,7 +1867,7 @@ local function DrawWindow()
 
 	Slab.Text("X")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_X', {Text = tostring(DrawWindow_X), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawWindow_X", {Text = tostring(DrawWindow_X), NumbersOnly = true, ReturnOnText = false}) then
 		DrawWindow_X = Slab.GetInputNumber()
 		DrawWindow_ResetLayout = true
 	end
@@ -1875,7 +1875,7 @@ local function DrawWindow()
 	Slab.SameLine()
 	Slab.Text("Y")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_Y', {Text = tostring(DrawWindow_Y), NumbersOnly = true, ReturnOnText = false}) then
+	if Slab.Input("DrawWindow_Y", {Text = tostring(DrawWindow_Y), NumbersOnly = true, ReturnOnText = false}) then
 		DrawWindow_Y = Slab.GetInputNumber()
 		DrawWindow_ResetLayout = true
 	end
@@ -1893,7 +1893,7 @@ local function DrawWindow()
 
 	Slab.Text("W")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_W', {Text = tostring(DrawWindow_W), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+	if Slab.Input("DrawWindow_W", {Text = tostring(DrawWindow_W), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
 		DrawWindow_W = Slab.GetInputNumber()
 		DrawWindow_ResetSize = true
 	end
@@ -1901,7 +1901,7 @@ local function DrawWindow()
 	Slab.SameLine()
 	Slab.Text("H")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_H', {Text = tostring(DrawWindow_H), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+	if Slab.Input("DrawWindow_H", {Text = tostring(DrawWindow_H), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
 		DrawWindow_H = Slab.GetInputNumber()
 		DrawWindow_ResetSize = true
 	end
@@ -1924,14 +1924,14 @@ local function DrawWindow()
 		DrawWindow_AllowResize = not DrawWindow_AllowResize
 	end
 
-	DrawWindow_SizerCheckBox('N')
-	DrawWindow_SizerCheckBox('S')
-	DrawWindow_SizerCheckBox('E')
-	DrawWindow_SizerCheckBox('W')
-	DrawWindow_SizerCheckBox('NW')
-	DrawWindow_SizerCheckBox('NE')
-	DrawWindow_SizerCheckBox('SW')
-	DrawWindow_SizerCheckBox('SE')
+	DrawWindow_SizerCheckBox("N")
+	DrawWindow_SizerCheckBox("S")
+	DrawWindow_SizerCheckBox("E")
+	DrawWindow_SizerCheckBox("W")
+	DrawWindow_SizerCheckBox("NW")
+	DrawWindow_SizerCheckBox("NE")
+	DrawWindow_SizerCheckBox("SW")
+	DrawWindow_SizerCheckBox("SE")
 
 	local FalseCount = 0
 	DrawWindow_SizerFilter = {}
@@ -1970,7 +1970,7 @@ local function DrawWindow()
 
 	Slab.Text("Border")
 	Slab.SameLine()
-	if Slab.Input('DrawWindow_Border', {Text = tostring(DrawWindow_Border), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
+	if Slab.Input("DrawWindow_Border", {Text = tostring(DrawWindow_Border), NumbersOnly = true, ReturnOnText = false, MinNumber = 0}) then
 		DrawWindow_Border = Slab.GetInputNumber()
 	end
 
@@ -2024,7 +2024,7 @@ local function DrawWindow()
 		end
 	end
 
-	Slab.BeginWindow('DrawWindow_Example', {
+	Slab.BeginWindow("DrawWindow_Example", {
 		Title = DrawWindow_Title,
 		TitleH = DrawWindow_TitleH,
 		TitleAlignX = DrawWindow_TitleAlignmentX,
@@ -2083,7 +2083,7 @@ local function DrawTooltip()
 
 	Slab.NewLine()
 
-	if Slab.BeginComboBox('DrawTooltip_ComboBox', {Selected = DrawTooltip_ComboBox_Selected, Tooltip = "This is a combo box."}) then
+	if Slab.BeginComboBox("DrawTooltip_ComboBox", {Selected = DrawTooltip_ComboBox_Selected, Tooltip = "This is a combo box."}) then
 		for I, V in ipairs(DrawTooltip_ComboBox_Items) do
 			if Slab.TextSelectable(V) then
 				DrawTooltip_ComboBox_Selected = V
@@ -2095,18 +2095,18 @@ local function DrawTooltip()
 
 	Slab.NewLine()
 
-	Slab.Image('DrawTooltip_Image', {Path = DrawImage_Path, Tooltip = "This is an image."})
+	Slab.Image("DrawTooltip_Image", {Path = DrawImage_Path, Tooltip = "This is an image."})
 
 	Slab.NewLine()
 
-	if Slab.Input('DrawTooltip_Input', {Text = DrawTooltip_Input, Tooltip = DrawTooltip_Input}) then
+	if Slab.Input("DrawTooltip_Input", {Text = DrawTooltip_Input, Tooltip = DrawTooltip_Input}) then
 		DrawTooltip_Input = Slab.GetInputText()
 	end
 
 	Slab.NewLine()
 
-	if Slab.BeginTree('DrawTooltip_Tree_Root', {Label = "Root", Tooltip = "This is the root tree item."}) then
-		Slab.BeginTree('DrawTooltip_Tree_Child', {Label = "Child", Tooltip = "This is the child tree item.", IsLeaf = true})
+	if Slab.BeginTree("DrawTooltip_Tree_Root", {Label = "Root", Tooltip = "This is the root tree item."}) then
+		Slab.BeginTree("DrawTooltip_Tree_Child", {Label = "Child", Tooltip = "This is the child tree item.", IsLeaf = true})
 		Slab.EndTree()
 	end
 
@@ -2141,28 +2141,28 @@ local function DrawStats()
 
 	Slab.Text("Iterations")
 	Slab.SameLine()
-	if Slab.Input('DrawStats_EncodeIterations', {Text = tostring(DrawStats_EncodeIterations), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
+	if Slab.Input("DrawStats_EncodeIterations", {Text = tostring(DrawStats_EncodeIterations), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
 		DrawStats_EncodeIterations = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
 	Slab.Text("Length")
 	Slab.SameLine()
-	if Slab.Input('DrawStats_EncodeLength', {Text = tostring(DrawStats_EncodeLength), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
+	if Slab.Input("DrawStats_EncodeLength", {Text = tostring(DrawStats_EncodeLength), ReturnOnText = false, NumbersOnly = true, MinNumber = 0}) then
 		DrawStats_EncodeLength = Slab.GetInputNumber()
 	end
 
-	local StatHandle = Slab.BeginStat('Encode', 'Slab Test')
+	local StatHandle = Slab.BeginStat("Encode", "Slab Test")
 
 	for I = 1, DrawStats_EncodeIterations, 1 do
-		local LengthStatHandle = Slab.BeginStat('Encode Length', 'Slab Test')
+		local LengthStatHandle = Slab.BeginStat("Encode Length", "Slab Test")
 
 		local Data = ""
 		for J = 1, DrawStats_EncodeLength, 1 do
 			local Byte = love.math.random(255)
 			Data = Data .. string.char(Byte)
 		end
-		love.data.encode('string', 'hex', Data)
+		love.data.encode("string", "hex", Data)
 
 		Slab.EndStat(LengthStatHandle)
 	end
@@ -2172,11 +2172,11 @@ local function DrawStats()
 	SlabDebug.Performance()
 end
 
-local DrawLayout_AlignX = 'left'
-local DrawLayout_AlignY = 'top'
-local DrawLayout_AlignRowY = 'top'
-local DrawLayout_AlignX_Options = {'left', 'center', 'right'}
-local DrawLayout_AlignY_Options = {'top', 'center', 'bottom'}
+local DrawLayout_AlignX = "left"
+local DrawLayout_AlignY = "top"
+local DrawLayout_AlignRowY = "top"
+local DrawLayout_AlignX_Options = {"left", "center", "right"}
+local DrawLayout_AlignY_Options = {"top", "center", "bottom"}
 local DrawLayout_Radio = 1
 local DrawLayout_Input = "Input Control"
 local DrawLayout_ListBox_Selected = 1
@@ -2198,11 +2198,11 @@ local function DrawLayout()
 		"set of controls are aligned.")
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_Options', {AlignX = 'center'})
+	Slab.BeginLayout("DrawLayout_Options", {AlignX = "center"})
 
 	Slab.Text("AlignX")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawLayout_AlignX', {Selected = DrawLayout_AlignX}) then
+	if Slab.BeginComboBox("DrawLayout_AlignX", {Selected = DrawLayout_AlignX}) then
 		for I, V in ipairs(DrawLayout_AlignX_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignX = V
@@ -2215,7 +2215,7 @@ local function DrawLayout()
 	Slab.SameLine()
 	Slab.Text("AlignY")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawLayout_AlignY', {Selected = DrawLayout_AlignY}) then
+	if Slab.BeginComboBox("DrawLayout_AlignY", {Selected = DrawLayout_AlignY}) then
 		for I, V in ipairs(DrawLayout_AlignY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignY = V
@@ -2228,7 +2228,7 @@ local function DrawLayout()
 	Slab.SameLine()
 	Slab.Text("AlignRowY")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawLayout_AlignRowY', {Selected = DrawLayout_AlignRowY}) then
+	if Slab.BeginComboBox("DrawLayout_AlignRowY", {Selected = DrawLayout_AlignRowY}) then
 		for I, V in ipairs(DrawLayout_AlignY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignRowY = V
@@ -2242,7 +2242,7 @@ local function DrawLayout()
 
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_General', {AlignX = DrawLayout_AlignX, AlignY = DrawLayout_AlignY, AlignRowY = DrawLayout_AlignRowY})
+	Slab.BeginLayout("DrawLayout_General", {AlignX = DrawLayout_AlignX, AlignY = DrawLayout_AlignY, AlignRowY = DrawLayout_AlignRowY})
 
 	Slab.Button("Button 1")
 	Slab.SameLine()
@@ -2270,18 +2270,18 @@ local function DrawLayout()
 		"of the controls will be adjusted accordingly.")
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_Expand', {ExpandW = true, ExpandH = true})
+	Slab.BeginLayout("DrawLayout_Expand", {ExpandW = true, ExpandH = true})
 	Slab.Button("OK")
 	Slab.SameLine()
 	Slab.Text("Hello")
 	Slab.SameLine()
-	Slab.Input('DrawLayout_ExpandInput')
+	Slab.Input("DrawLayout_ExpandInput")
 	Slab.SameLine()
-	if Slab.BeginComboBox('DrawLayout_ExpandComboBox') then
+	if Slab.BeginComboBox("DrawLayout_ExpandComboBox") then
 		Slab.EndComboBox()
 	end
 	Slab.SameLine()
-	Slab.BeginListBox('DrawLayout_ExpandListBox', {H = 0})
+	Slab.BeginListBox("DrawLayout_ExpandListBox", {H = 0})
 	Slab.EndListBox()
 
 	Slab.Button("Cancel")
@@ -2297,17 +2297,17 @@ local function DrawLayout()
 
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_Columns_Options', {AlignX = 'center'})
+	Slab.BeginLayout("DrawLayout_Columns_Options", {AlignX = "center"})
 	Slab.Text("Columns")
 	Slab.SameLine()
-	if Slab.Input('DrawLayout_Columns_Input', {Text = tostring(DrawLayout_Columns), ReturnOnText = false, MinNumber = 1, NumbersOnly = true}) then
+	if Slab.Input("DrawLayout_Columns_Input", {Text = tostring(DrawLayout_Columns), ReturnOnText = false, MinNumber = 1, NumbersOnly = true}) then
 		DrawLayout_Columns = Slab.GetInputNumber()
 	end
 	Slab.EndLayout()
 
 	Slab.NewLine()
 
-	Slab.BeginLayout('DrawLayout_Columns', {Columns = DrawLayout_Columns, AlignX = 'center'})
+	Slab.BeginLayout("DrawLayout_Columns", {Columns = DrawLayout_Columns, AlignX = "center"})
 	for I = 1, DrawLayout_Columns, 1 do
 		Slab.SetLayoutColumn(I)
 		Slab.Text("Column " .. I)
@@ -2349,13 +2349,13 @@ local function DrawScroll()
 
 	Slab.Text("Speed")
 	Slab.SameLine()
-	if Slab.Input('DrawScroll_Speed', {Text = tostring(Slab.GetScrollSpeed()), ReturnOnText = false, NumbersOnly = true}) then
+	if Slab.Input("DrawScroll_Speed", {Text = tostring(Slab.GetScrollSpeed()), ReturnOnText = false, NumbersOnly = true}) then
 		Slab.SetScrollSpeed(Slab.GetInputNumber())
 	end
 
 	Slab.NewLine()
 
-	Slab.BeginListBox('DrawScroll_List')
+	Slab.BeginListBox("DrawScroll_List")
 
 	for I = 1, 25, 1 do
 		Slab.Text("Item " .. I)
@@ -2375,10 +2375,10 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords)
 }]]
 local DrawShader_Highlight =
 {
-	['vec2'] = {0, 0, 1, 1},
-	['vec3'] = {0, 0, 1, 1},
-	['vec4'] = {0, 0, 1, 1},
-	['mat4'] = {0, 0, 1, 1}
+	["vec2"] = {0, 0, 1, 1},
+	["vec3"] = {0, 0, 1, 1},
+	["vec4"] = {0, 0, 1, 1},
+	["mat4"] = {0, 0, 1, 1}
 }
 
 local function DrawShader()
@@ -2410,8 +2410,8 @@ local function DrawShader()
 		H = 150,
 		Highlight = DrawShader_Highlight
 	}
-	Slab.Input('DrawShader_Source', Options)
-	if Slab.Button('Compile') then
+	Slab.Input("DrawShader_Source", Options)
+	if Slab.Button("Compile") then
 		DrawShader_Source = Slab.GetInputText();
 
 		if DrawShader_Object ~= nil then
@@ -2424,7 +2424,7 @@ local function DrawShader()
 	Slab.NewLine()
 
 	Slab.PushShader(DrawShader_Object)
-	Slab.Image('DrawShader_Image', {Path = DrawImage_Path})
+	Slab.Image("DrawShader_Image", {Path = DrawImage_Path})
 	Slab.Text("Text")
 	Slab.Button("Button")
 	Slab.PopShader()
@@ -2441,11 +2441,11 @@ local function DrawMessages()
 	Slab.NewLine()
 
 	local Messages = Slab.GetMessages()
-	Slab.BeginLayout('DrawMessages_ListBox_Layout', {ExpandW = true, ExpandH = true})
-	Slab.BeginListBox('DrawMessages_ListBox')
+	Slab.BeginLayout("DrawMessages_ListBox_Layout", {ExpandW = true, ExpandH = true})
+	Slab.BeginListBox("DrawMessages_ListBox")
 
 	for I, V in ipairs(Messages) do
-		Slab.BeginListBoxItem('DrawMessages_Item_' .. I)
+		Slab.BeginListBoxItem("DrawMessages_Item_" .. I)
 		Slab.Text(V)
 		Slab.EndListBoxItem()
 	end
@@ -2505,7 +2505,7 @@ local Categories = {
 local Selected = nil
 
 function SlabTest.Begin()
-	local StatHandle = Slab.BeginStat('Slab Test', 'Slab Test')
+	local StatHandle = Slab.BeginStat("Slab Test", "Slab Test")
 
 	SlabTest.MainMenuBar()
 
@@ -2513,11 +2513,11 @@ function SlabTest.Begin()
 		Selected = Categories[1]
 	end
 
-	Slab.BeginWindow('SlabTest', SlabTest_Options)
+	Slab.BeginWindow("SlabTest", SlabTest_Options)
 
 	local W, H = Slab.GetWindowActiveSize()
 
-	if Slab.BeginComboBox('Categories', {Selected = Selected[1], W = W}) then
+	if Slab.BeginComboBox("Categories", {Selected = Selected[1], W = W}) then
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V[1]) then
 				Selected = Categories[I]
