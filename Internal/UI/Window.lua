@@ -372,8 +372,8 @@ function Window.IsObstructed(x, y, skip)
 	-- If there are no windows, then nothing can obstruct.
 	if #stack == 0 then return false end
 	if not active_instance then return false end
-	if not active_instance.IsOpen or not active_instance.IsContentOpen or
-		active_instance.IsAppearing then
+	if (not active_instance.IsOpen) or (not active_instance.IsContentOpen) or
+		(active_instance.IsAppearing) then
 		return true
 	end
 	if active_instance.IsMoving then return false end
@@ -681,7 +681,7 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 	local mx, my = Mouse.Position()
 	local title_region = active_instance.TitleRegion
 	title_region.X = active_instance.X
-	title_region.Y = active_instance.Y + oy
+	title_region.Y = active_instance.Y - oy
 	title_region.MouseX = mx
 	title_region.MouseY = my
 	title_region.IsObstructed = is_obs
@@ -721,6 +721,7 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 		if is_clicked then
 			active_instance.IsOpen = false
 			active_instance.IsMoving = false
+			opt.IsOpen = false
 		end
 	end
 	Region.End()

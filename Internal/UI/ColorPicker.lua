@@ -113,12 +113,12 @@ local function UpdateSaturationColors()
 end
 
 local function InitializeSaturationMeshes()
-	if not sat_meshes then
-		sat_meshes = {}
+	if sat_meshes then
 		UpdateSaturationColors()
 		return
 	end
 
+	sat_meshes = {}
 	Utility.ClearArray(sat_meshes)
 	local step = sat_step
 	local x, y = 0, 0

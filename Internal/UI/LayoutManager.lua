@@ -224,7 +224,7 @@ end
 local function GetInstance(id)
 	local win_id = Window.GetId()
 	local key = win_id .. "." .. id
-	if  instances[key] then return instances[key] end
+	if instances[key] then return instances[key] end
 	local instance = {
 		Id = id,
 		WindowId = win_id,
@@ -241,7 +241,7 @@ local function GetInstance(id)
 end
 
 function LayoutManager.AddControl(w, h, control_type)
-	if not active or active.Ignore then return end
+	if (not active) or active.Ignore then return end
 	AddControl(active, w, h, control_type)
 end
 
@@ -378,7 +378,10 @@ function LayoutManager.End()
 		end
 	end
 	remove(stack, 1)
-	active = #stack > 1 and stack[1]
+	active = nil
+	if #stack > 0 then
+		active = stack[1]
+	end
 end
 
 function LayoutManager.SameLine(opt)
