@@ -148,7 +148,7 @@ local err_nil_active = "Trying to call BeginListBoxItem outside of BeginListBox.
 local err_nil_active_item = "Begin was called for item '%s' without a call to EndListBoxItem"
 function ListBox.BeginItem(id, opt)
 	assert(active, err_nil_active)
-	if not active.ActiveItem then error(format(err_nil_active_item, active.ActiveItem or "nil")) end
+	if active.ActiveItem then error(format(err_nil_active_item, active.ActiveItem or "nil")) end
 	local item = GetItemInstance(active, id)
 	item.X = active.X
 	item.Y = Cursor.GetY()
