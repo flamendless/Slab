@@ -48,7 +48,7 @@ local MIN_WIDTH = 150
 local MIN_HEIGHT = 150
 local STR_EMPTY = ""
 local TBL_EMPTY = {}
-local TBL_IGNORE = {ignore = true}
+local TBL_IGNORE = {Ignore = true}
 local input_rounding = {0, 0, 0, 0}
 local dd_rounding = {0, 0, 0, 0}
 

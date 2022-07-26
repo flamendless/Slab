@@ -41,13 +41,15 @@ local CheckBox = {}
 
 local STR_EMPTY = ""
 local TBL_EMPTY = {}
-local TBL_IGNORE = {ignore = true}
+local TBL_IGNORE = {Ignore = true}
 local label_color = {}
 
 function CheckBox.Begin(enabled, label, opt)
 	local stat_handle = Stats.Begin("CheckBox", "Slab")
+
 	label = label or STR_EMPTY
 	opt = opt or TBL_EMPTY
+
 	local id = opt.Id or label
 	local rounding = opt.Rounding or Style.CheckBoxRounding
 	local size = opt.Size or 16
@@ -85,7 +87,7 @@ function CheckBox.Begin(enabled, label, opt)
 		local cy = Cursor.GetY()
 		Cursor.AdvanceX(bw + 2)
 		LayoutManager.Begin("Ignore", TBL_IGNORE)
-		label_color.Color = disabled and Style.TextDisabledColor
+		label_color.Color = disabled and Style.TextDisabledColor or nil
 		Text.Begin(label, label_color)
 		LayoutManager.End()
 		Cursor.SetY(cy)
