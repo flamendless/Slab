@@ -901,6 +901,7 @@ end
 
 	Label: [String] The label to display on the button.
 	Options: [Table] List of options for how this button will behave.
+		Label: [String] The label to display instead of the ID
 		Tooltip: [String] The tooltip to display when the user hovers over this button.
 		Rounding: [Number] Amount of rounding to apply to the corners of the button.
 		Invisible: [Boolean] Don"t render the button, but keep the behavior.

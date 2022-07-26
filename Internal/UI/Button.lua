@@ -67,6 +67,8 @@ function Button.Begin(label, opt)
 	local pad_y = opt.PADY or pad * 0.5
 	local vlines = opt.VLines or 1
 
+	label = opt.Label or label
+
 	local id = Window.GetItemId(label)
 	local w, h = Button.GetSize(label)
 	h = h * vlines
