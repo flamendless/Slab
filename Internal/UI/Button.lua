@@ -42,15 +42,15 @@ local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Button = {}
 
-local pad, radius = 10, 8
-local radius2 = radius * 2
-local radius_inner = radius * 0.7
-local diameter = radius * radius
-local min_width = 75
+local PAD, RAD = 10, 8
+local RAD2 = RAD * 2
+local RAD_INNER = RAD * 0.7
+local DIAMETER = RAD * RAD
+local MIN_WIDTH = 75
 local clicked_id
 local label_color = {}
 local TBL_EMPTY = {}
-local TBL_IGNORE = {ignore = true}
+local TBL_IGNORE = {Ignore = true}
 local EMPTY_STR = ""
 
 function Button.Begin(label, opt)
@@ -63,8 +63,8 @@ function Button.Begin(label, opt)
 	local color = opt.Color or Style.ButtonColor
 	local hover_color = opt.HoverColor or Style.ButtonHoveredColor
 	local press_color = opt.PressColor or Style.ButtonPressedColor
-	local pad_x = opt.PadX or pad * 2
-	local pad_y = opt.PADY or pad * 0.5
+	local pad_x = opt.PadX or PAD * 2
+	local pad_y = opt.PadY or PAD * 0.5
 	local vlines = opt.VLines or 1
 
 	label = opt.Label or label
@@ -94,28 +94,26 @@ function Button.Begin(label, opt)
 	local x, y = Cursor.GetPosition()
 	local res = false
 
-	do
-		local mx, my = Window.GetMousePosition()
-		if not Window.IsObstructedAtMouse() and
-			x <= mx and mx <= x + w and
-			y <= my and my <= y + h then
-			Tooltip.Begin(opt.Tooltip or EMPTY_STR)
-			Window.SetHotItem(id)
+	local mx, my = Window.GetMousePosition()
+	if not Window.IsObstructedAtMouse() and
+		x <= mx and mx <= x + w and
+		y <= my and my <= y + h then
+		Tooltip.Begin(opt.Tooltip or EMPTY_STR)
+		Window.SetHotItem(id)
 
-			if not disabled then
-				if not Utility.IsMobile() then
-					color = hover_color
-				end
-				if clicked_id == id then
-					color = press_color
-				end
-				if Mouse.IsClicked(1) then
-					clicked_id = id
-				end
-				if Mouse.IsReleased(1) and clicked_id == id then
-					res = true
-					clicked_id = nil
-				end
+		if not disabled then
+			if not Utility.IsMobile() then
+				color = hover_color
+			end
+			if clicked_id == id then
+				color = press_color
+			end
+			if Mouse.IsClicked(1) then
+				clicked_id = id
+			end
+			if Mouse.IsReleased(1) and clicked_id == id then
+				res = true
+				clicked_id = nil
 			end
 		end
 	end
@@ -129,14 +127,15 @@ function Button.Begin(label, opt)
 		local cx, cy = Cursor.GetPosition()
 		LayoutManager.Begin("Ignore", TBL_IGNORE)
 		if image then
-			Cursor.SetX(x + w * 0.5 - image_w * 0.5)
-			Cursor.SetY(y + h * 0.5 - image_h * 0.5)
+			local new_cx = x + w * 0.5 - image_w * 0.5
+			local new_cy = y + h * 0.5 - image_h * 0.5
+			Cursor.SetPosition(new_cx, new_cy)
 			Image.Begin(id .. "_Image", image)
 		else
-			local label_x = x + (w * 0.5) - (Style.Font:getWidth(label) * 0.5)
+			local label_x = floor(x + (w * 0.5) - (Style.Font:getWidth(label) * 0.5))
 			local font_h = Style.Font:getHeight() * vlines
-			Cursor.SetX(floor(label_x))
-			Cursor.SetY(floor(y + (h * 0.5) - (font_h * 0.5)))
+			local new_cy = floor(y + (h * 0.5) - (font_h * 0.5))
+			Cursor.SetPosition(label_x, new_cy)
 			label_color.color = disabled and Style.ButtonDisabledTextColor
 			Text.Begin(label, label_color)
 		end
@@ -146,7 +145,7 @@ function Button.Begin(label, opt)
 
 	Cursor.SetItemBounds(x, y, w, h)
 	Cursor.AdvanceY(h)
-	Window.AddItem(x, y, w, h)
+	Window.AddItem(x, y, w, h, id)
 	Stats.End(stat_handle)
 	return res
 end
@@ -159,7 +158,7 @@ function Button.BeginRadio(label, opt)
 	local sel_index = opt.SelectedIndex or 0
 	local res = false
 	local id = Window.GetItemId(label)
-	local w, h = radius2, radius2
+	local w, h = RAD2, RAD2
 	local is_obstructed = Window.IsObstructedAtMouse()
 	local color = Style.ButtonColor
 	local mx, my = Window.GetMousePosition()
@@ -172,9 +171,9 @@ function Button.BeginRadio(label, opt)
 	LayoutManager.AddControl(w, h, "Radio")
 
 	local x, y = Cursor.GetPosition()
-	local cx, cy = x + radius, y + radius
+	local cx, cy = x + RAD, y + RAD
 	local dx, dy = mx - cx, my - cy
-	if not is_obstructed and (dx * dx) + (dy * dy) <= diameter then
+	if not is_obstructed and (dx * dx) + (dy * dy) <= DIAMETER then
 		color = Style.ButtonHoveredColor
 		if clicked_id == id then
 			color = Style.ButtonPressedColor
@@ -187,15 +186,15 @@ function Button.BeginRadio(label, opt)
 			clicked_id = nil
 		end
 	end
-	DrawCommands.Circle("fill", cx, cy, radius, color)
+	DrawCommands.Circle("fill", cx, cy, RAD, color)
 
 	if index > 0 and index == sel_index then
-		DrawCommands.Circle("fill", cx, cy, radius_inner, Style.RadioButtonSelectedColor)
+		DrawCommands.Circle("fill", cx, cy, RAD_INNER, Style.RadioButtonSelectedColor)
 	end
 
 	if label ~= EMPTY_STR then
 		local cy2 = Cursor.GetY()
-		Cursor.AdvanceX(radius2)
+		Cursor.AdvanceX(RAD2)
 		LayoutManager.Begin("Ignore", TBL_IGNORE)
 		Text.Begin(label)
 		LayoutManager.End()
@@ -217,7 +216,7 @@ end
 function Button.GetSize(label)
 	local w = Style.Font:getWidth(label)
 	local h = Style.Font:getHeight()
-	return max(w, min_width) + pad * 2, h + pad * 0.5
+	return max(w, MIN_WIDTH) + PAD * 2, h + PAD * 0.5
 end
 
 function Button.ClearClicked()
