@@ -196,7 +196,7 @@ end
 
 local function IsSizerEnabled(instance, sizer)
 	if not instance then return false end
-	if #instance.SizerFilter <= 0 then return true end
+	if #instance.SizerFilter == 0 then return true end
 	for _, v in ipairs(instance.SizerFilter) do
 		if v == sizer then
 			return true
@@ -209,9 +209,7 @@ local function UpdateSize(instance, is_obstructed)
 	if not instance or not instance.AllowResize then return end
 	if moving_instance then return end
 	if Region.IsHoverScrollBar(instance.Id) then return end
-	if instance.SizerType == Enums.sizer_type.None and is_obstructed then
-		return
-	end
+	if instance.SizerType == Enums.sizer_type.None and is_obstructed then return end
 	local x, y = instance.X, instance.Y
 	local w, h = instance.W, instance.H
 	if instance.Title ~= STR_EMPTY then

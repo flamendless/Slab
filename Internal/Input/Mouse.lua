@@ -234,26 +234,22 @@ function Mouse.IsDragging(button)
 	return Mouse.IsDown(button) and Mouse.HasDelta()
 end
 
-function Mouse.SetCursor(type)
-	if not cursors then
-		return
-	end
-
-	pending_cursor = type
+function Mouse.SetCursor(new_cursor)
+	if not cursors then return end
+	pending_cursor = new_cursor
 end
 
 function Mouse.UpdateCursor()
-	if (pending_cursor ~= EMPTY_STR) and (pending_cursor ~= custom_cursor) then
-		custom_cursor = pending_cursor
-		pending_cursor = EMPTY_STR
+	if pending_cursor == EMPTY_STR or pending_cursor == current_cursor then return end
 
-		if custom_cursors[custom_cursor] then
-			love.mouse.setVisible(false)
-		else
-			love.mouse.setVisible(true)
-			local current = current_cursor
-			love.mouse.setCursor(cursors[current])
-		end
+	current_cursor = pending_cursor
+	pending_cursor = EMPTY_STR
+
+	if custom_cursors[current_cursor] then
+		love.mouse.setVisible(false)
+	else
+		love.mouse.setVisible(true)
+		love.mouse.setCursor(cursors[current_cursor])
 	end
 end
 
