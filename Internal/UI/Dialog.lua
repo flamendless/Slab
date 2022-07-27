@@ -59,10 +59,6 @@ local active_instance
 local fd_ask_overwrite = false
 local filter_w = 0
 local instances, stack, instance_stack = {}, {}, {}
-local modes = {
-	opendirectory = "opendirectory",
-	savefile = "savefile",
-}
 
 local function ValidateSaveFile(files, ext)
 	if not ext or ext == "" then return end
@@ -196,7 +192,9 @@ local function AddDirectoryItem(path)
 	return item
 end
 
-local TBL_FILES = {Files = false}
+local TBL_DIRS = {Files = false}
+local TBL_FILES = {Directories = false, Filter = nil}
+
 local function FileDialogExplorer(instance, root)
 	if not instance or not root then return end
 	local should_open = Window.IsAppearing() and
@@ -216,7 +214,7 @@ local function FileDialogExplorer(instance, root)
 	if root.Children then
 		Utility.ClearTable(root.Children)
 		local sep = FileSystem.Separator()
-		local dirs = FileSystem.GetDirectoryItems(root.Path .. sep, TBL_FILES)
+		local dirs = FileSystem.GetDirectoryItems(root.Path .. sep, TBL_DIRS)
 		for _, v in ipairs(dirs) do
 			local path = root.Path
 			if sub(path, #path) ~= sep and path ~= sep then
@@ -393,23 +391,28 @@ local COLOR_BLACK = {0, 0, 0, 0}
 local TBL_TOKEN = {IsSelectableTextOnly = true}
 local TBL_IS_SEL = {IsSelectable = true}
 local TBL_FD_LB = {AnchorX = true, ExpandW = true}
+local TBL_BUTTON = {Image = nil, Color = COLOR_BLACK, PadX = 2, PadY = 2, W = nil, h = nil}
 local TBL_BUTTONS = {Buttons = {"Cancel", "No", "Yes"}}
+local TBL_BC = {Path = TBL_UP.Path, SubX = 100, SubY = 0, SubW = 50, SubH = 50, W = nil, H = nil}
 local STR_ASK = "Are you sure you would like to overwrite file "
+local STR_FD = "FileDialog"
+
+local TBL_REGION = {AutoSizeContent = true, NoBackground = true, Intersect = true, Rounding = Style.WindowRounding}
 
 function Dialog.FileDialog(opt)
 	opt = opt or TBL_EMPTY
-	local allow_multi_select = opt.All or true
+	local allow_multi_select = opt.AllowMultiSelect == nil and true or opt.AllowMultiSelect
 	local dir = opt.Directory
-	local fdt = opt.Type or "openfile"
+	local fdt = opt.Type or Enums.file_type.openfile
 	local title = opt.Title
 	local filters = opt.Filters or TBL_FILTERS
-	local include_p = opt.IncludeParent or true
+	local include_p = opt.IncludeParent == nil and true or opt.IncludeParent
 
-	if not fdt then
-		if fdt == modes.savefile then
+	if not title then
+		if fdt == Enums.file_type.savefile then
 			allow_multi_select = false
 			title = "Save File"
-		elseif fdt == modes.opendirectory then
+		elseif fdt == Enums.file_type.opendirectory then
 			title = "Open Directory"
 		else
 			title = "Open File"
@@ -417,8 +420,8 @@ function Dialog.FileDialog(opt)
 	end
 
 	local res = TBL_RES
-	local was_open = IsInstanceOpen("FileDialog")
-	Dialog.Open("FileDialog")
+	local was_open = IsInstanceOpen(STR_FD)
+	Dialog.Open(STR_FD)
 	local w = love.graphics.getWidth() * 0.65
 	local h = love.graphics.getHeight() * 0.65
 
@@ -445,9 +448,9 @@ function Dialog.FileDialog(opt)
 			active_instance.Root = AddDirectoryItem(FileSystem.GetRootDirectory(active_instance.Directory))
 			active_instance.Selected = {}
 			local a_dir = active_instance.Directory .. "/"
-			active_instance.Directories = FileSystem.GetDirectoryItems(a_dir, TBL_FILES)
-			active_instance.Files = FileSystem.GetDirectoryItems(a_dir,
-				{Directories = false, Filter = filter})
+			TBL_FILES.Filter = filter
+			active_instance.Directories = FileSystem.GetDirectoryItems(a_dir, TBL_DIRS)
+			active_instance.Files = FileSystem.GetDirectoryItems(a_dir, TBL_FILES)
 			active_instance.Return = {a_dir}
 			active_instance.Text = STR_EMPTY
 			active_instance.Parsed = true
@@ -470,13 +473,14 @@ function Dialog.FileDialog(opt)
 
 		-- Parent directory button for quick access
 		local fh = Style.Font:getHeight()
+		local sep = FileSystem.Separator()
 
-		if Button.Begin(STR_EMPTY, {
-			Image = TBL_UP,
-			Color = COLOR_BLACK,
-			PadX = 2, PadY = 2, W = fh, H = fh
-		}) then
-			local str_dest = format("%s%s..", active_instance.Directory, FileSystem.Separator())
+		TBL_BUTTON.Image = TBL_UP
+		TBL_BUTTON.W = fh
+		TBL_BUTTON.H = fh
+
+		if Button.Begin(STR_EMPTY, TBL_BUTTON) then
+			local str_dest = format("%s%s..", active_instance.Directory, sep)
 			local dest = FileSystem.Sanitize(str_dest)
 
 			-- Only attempt to move to parent directory if not the root drive.
@@ -487,7 +491,7 @@ function Dialog.FileDialog(opt)
 
 		Cursor.SameLine()
 		local cx, cy = Cursor.GetPosition()
-		local rw = Window.GetRemainingSize()
+		local rw, _ = Window.GetRemainingSize()
 		local mx, my = Window.GetMousePosition()
 		Region.Begin("FileDialog_BreadCrumbs", {
 			X = cx,
@@ -508,7 +512,6 @@ function Dialog.FileDialog(opt)
 		Cursor.AdvanceX(0)
 
 		-- Gather each directory name and render as bread crumbs on top of each view.
-		local sep = FileSystem.Separator()
 		local tokens = {}
 		local str = format("([^%s]+)", sep)
 		for token in gmatch(active_instance.Directory, str) do
@@ -521,12 +524,9 @@ function Dialog.FileDialog(opt)
 			local clicked = Text.Begin(token, TBL_TOKEN)
 			if i < #tokens then
 				Cursor.SameLine()
-				Image.Begin(id, {
-					Path = TBL_UP.Path,
-					SubX = 100, SubY = 0,
-					SubW = 50, SubH = 50,
-					W = fh, H = fh
-				})
+				TBL_BC.W = fh
+				TBL_BC.H = fh
+				Image.Begin(id, TBL_BC)
 				Cursor.SameLine()
 			end
 
@@ -543,20 +543,23 @@ function Dialog.FileDialog(opt)
 		end
 
 		-- Move the region"s scrollable area to always have the current directory in view.
-		local content_w = Region.GetContentSize()
+		local content_w, _ = Region.GetContentSize()
 		Region.ResetTransform()
 		Region.Translate(nil, min(rw - content_w - 4, 0), 0)
 		Region.End()
 		Region.ApplyScissor()
 		cx, cy = Cursor.GetPosition()
 		mx, my = Window.GetMousePosition()
-		Region.Begin("FileDialog_DirectoryExplorer", {
-			X = cx, Y = cy, W = explorer_w, H = list_h,
-			AutoSizeContent = true, NoBackground = true,
-			Intersect = true, MouseX = mx, MouseY = my,
-			IsObstructed = Window.IsObstructedAtMouse(),
-			Rounding = Style.WindowRounding
-		})
+
+		TBL_REGION.X = cx
+		TBL_REGION.Y = cy
+		TBL_REGION.W = explorer_w
+		TBL_REGION.H = list_h
+		TBL_REGION.MouseX = mx
+		TBL_REGION.MouseY = my
+		TBL_REGION.IsObstructed = Window.IsObstructedAtMouse()
+
+		Region.Begin("FileDialog_DirectoryExplorer", TBL_REGION)
 		Cursor.AdvanceX(0)
 		Cursor.SetAnchorX(Cursor.GetX())
 		FileDialogExplorer(active_instance, active_instance.Root)
@@ -570,7 +573,9 @@ function Dialog.FileDialog(opt)
 
 		local index, item_selected = 1, false
 		if include_p then
-			item_selected = FileDialogItem("Item_Parent", "..", true, index) or item_selected
+			if FileDialogItem("Item_Parent", "..", true, index) then
+				item_selected = true
+			end
 			index = index + 1
 		end
 
@@ -579,7 +584,7 @@ function Dialog.FileDialog(opt)
 			index = index + 1
 		end
 
-		if fdt ~= modes.opendirectory then
+		if fdt ~= Enums.file_type.opendirectory then
 			for _, v in ipairs(active_instance.Files) do
 				if FileDialogItem("Item_" .. index, v, false, index) then
 					item_selected = true
@@ -595,7 +600,7 @@ function Dialog.FileDialog(opt)
 		Cursor.SetAnchorX(prev_ax)
 		Cursor.SetX(prev_ax)
 
-		local read_only = fdt ~= modes.savefile
+		local read_only = fdt ~= Enums.file_type.savefile
 		if Input.Begin("FileDialog_Input", {
 				W = iw, ReadOnly = read_only,
 				Text = active_instance.Text,
@@ -608,9 +613,7 @@ function Dialog.FileDialog(opt)
 
 		local filter, desc = GetFilter(active_instance)
 		local str_sel = format("%s %s", filter, desc)
-		if ComboBox.Begin("FileDialog_Filter", {
-				Selected = str_sel
-			}) then
+		if ComboBox.Begin("FileDialog_Filter", {Selected = str_sel}) then
 			for i in ipairs(active_instance.Filters) do
 				filter, desc = GetFilter(active_instance, i)
 				local str_sel2 = format("%s %s", filter, desc)
@@ -629,12 +632,12 @@ function Dialog.FileDialog(opt)
 		if Button.Begin(STR_OK) or item_selected then
 			local opening_dir = false
 
-			if #active_instance.Return == 1 and fdt ~= modes.opendirectory then
+			if #active_instance.Return == 1 and fdt ~= Enums.file_type.opendirectory then
 				local path = active_instance.Return[1]
 				if FileSystem.IsDirectory(path) then
 					opening_dir = true
 					OpenDirectory(path)
-				elseif fdt == modes.savefile then
+				elseif fdt == Enums.file_type.savefile then
 					if FileSystem.Exists(path) then
 						fd_ask_overwrite = true
 						opening_dir = true
@@ -644,8 +647,8 @@ function Dialog.FileDialog(opt)
 
 			if not opening_dir then
 				res.Button = STR_OK
-				res.Files = PruneResults(active_instance.Return, fdt == modes.opendirectory)
-				if fdt == modes.savefile then
+				res.Files = PruneResults(active_instance.Return, fdt == Enums.file_type.opendirectory)
+				if fdt == Enums.file_type.savefile then
 					ValidateSaveFile(res.Files, GetExtension(active_instance))
 				end
 			end
@@ -667,9 +670,10 @@ function Dialog.FileDialog(opt)
 				if ask_overwrite == "No" then
 					res.Button = STR_CANCEL
 					Utility.ClearTable(res.Files)
+					res.Files = {}
 				elseif ask_overwrite == "Yes" then
 					res.Button = STR_OK
-					res.Files = PruneResults(active_instance.Return, fdt == modes.opendirectory)
+					res.Files = PruneResults(active_instance.Return, fdt == Enums.file_type.opendirectory)
 				end
 				fd_ask_overwrite = false
 			end

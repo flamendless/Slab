@@ -63,4 +63,10 @@ Enums.layers = {
 	mouse = 7
 }
 
+Enums.file_type = {
+	openfile = "openfile",
+	savefile = "savefile",
+	opendirectory = "opendirectory",
+}
+
 return Enums

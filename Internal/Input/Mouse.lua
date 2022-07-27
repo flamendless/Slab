@@ -42,13 +42,13 @@ local state = {
 
 local EMPTY_STR = ""
 local system_cursors = {
-	arrow = "arrow",
-	sizewe = "sizewe",
-	sizens = "sizens",
-	sizenesw = "sizenesw",
-	sizenwse = "sizenwse",
-	ibeam = "ibeam",
-	hand = "hand",
+	"arrow",
+	"sizewe",
+	"sizens",
+	"sizenesw",
+	"sizenwse",
+	"ibeam",
+	"hand",
 }
 local cursors
 local current_cursor = "arrow"
@@ -157,8 +157,8 @@ function Mouse.Update()
 
 	if not cursors then
 		cursors = {}
-		for k in pairs(system_cursors) do
-			cursors[k] = love.mouse.getSystemCursor(k)
+		for _, str in ipairs(system_cursors) do
+			cursors[str] = love.mouse.getSystemCursor(str)
 		end
 	end
 

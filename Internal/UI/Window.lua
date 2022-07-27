@@ -54,7 +54,6 @@ local function UpdateStackIndex()
 end
 
 local function PushToTop(instance)
-	if not instance then return end
 	for i, v in ipairs(stack) do
 		if instance == v then
 			remove(stack, i)
@@ -381,7 +380,7 @@ function Window.IsObstructed(x, y, skip)
 	local list = {}
 	for _, v in ipairs(stack) do
 		-- Stack locks prevents other windows to be considered.
-		if v.id == stack_lock_id then
+		if v.Id == stack_lock_id then
 			insert(list, v)
 			break
 		end
@@ -393,7 +392,7 @@ function Window.IsObstructed(x, y, skip)
 	-- Certain layers are rendered on top of "Normal" windows. Consider these windows first.
 	local top
 	for _, v in ipairs(list) do
-		if v.Layer == Enums.layers.normal then
+		if v.Layer ~= Enums.layers.normal then
 			top = v
 			break
 		end
@@ -585,8 +584,8 @@ function Window.Begin(id, opt)
 	DrawCommands.Begin(active_instance.StackIndex)
 	Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, title_rounding)
 
-	local region_w = active_instance.W
 	local ww, wh = love.graphics.getDimensions()
+	local region_w = active_instance.W
 	if active_instance.X + active_instance.W > ww then
 		region_w = ww - active_instance.X
 	end
@@ -740,7 +739,8 @@ function Window.End()
 		active_instance = pending_stack[1]
 		Cursor.SetAnchor(
 			active_instance.X + active_instance.Border,
-			active_instance.Y + active_instance.Border)
+			active_instance.Y + active_instance.Border
+		)
 		DrawCommands.SetLayer(active_instance.Layer)
 		Region.ApplyScissor()
 	end
