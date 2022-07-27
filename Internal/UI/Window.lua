@@ -135,7 +135,7 @@ local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
 	end
 
 	if not instance or instance.Title == STR_EMPTY or
-		instance.SizerType == Enums.sizer_type.None then
+		instance.SizerType ~= Enums.sizer_type.None then
 		return
 	end
 
