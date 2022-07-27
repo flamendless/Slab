@@ -460,9 +460,11 @@ function Region.WheelMoved(x, y)
 end
 
 function Region.IsScrolling(id)
-	if id then return scroll_instance ~= nil or wheel_instance ~= nil end
-	local instance = GetInstance(id)
-	return scroll_instance == instance or wheel_instance == instance
+	if id then
+		local instance = GetInstance(id)
+		return scroll_instance == instance or wheel_instance == instance
+	end
+	return scroll_instance ~= nil or wheel_instance ~= nil
 end
 
 local STR_EMPTY = ""
