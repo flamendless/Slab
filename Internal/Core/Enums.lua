@@ -53,6 +53,16 @@ Enums.cursor_size = {
 	NS = "sizens",
 }
 
+Enums.cursor_type = {
+	arrow = "arrow",
+	sizewe = "sizewe",
+	sizens ="sizens",
+	sizenesw ="sizenesw",
+	sizenwse = "sizenwse",
+	ibeam = "ibeam",
+	hand = "hand",
+}
+
 Enums.layers = {
 	normal = 1,
 	dock = 2,

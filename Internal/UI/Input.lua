@@ -25,6 +25,8 @@ SOFTWARE.
 --]]
 
 local love = require("love")
+local UTF8 = require("utf8")
+
 local abs = math.abs
 local insert = table.insert
 local min = math.min
@@ -41,6 +43,7 @@ local rep = string.rep
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
 local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
+local Enums = require(SLAB_PATH .. ".Internal.Core.Enums")
 local FileSystem = require(SLAB_PATH .. ".Internal.Core.FileSystem")
 local Keyboard = require(SLAB_PATH .. ".Internal.Input.Keyboard")
 local LayoutManager = require(SLAB_PATH .. ".Internal.UI.LayoutManager")
@@ -50,7 +53,6 @@ local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Style = require(SLAB_PATH .. ".Style")
 local Text = require(SLAB_PATH .. ".Internal.UI.Text")
 local Tooltip = require(SLAB_PATH .. ".Internal.UI.Tooltip")
-local UTF8 = require("utf8")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
@@ -70,6 +72,8 @@ local is_sliding = false
 local drag_dt = 0
 local MIN_WIDTH = 150
 local DEF_PW_CHAR = "*"
+local STR_0, STR_DOT = "0", "."
+local TBL_TEXT = {AddItem = false, Color = nil}
 
 local function SanitizeText(data)
 	if not data then return nil, false end
@@ -499,13 +503,14 @@ local function DeleteSelection(instance)
 	if not (instance and instance.Text ~= STR_EMPTY and not instance.ReadOnly) then
 		return
 	end
-	local _, v_min, v_max = 0, 0
+	local v_min, v_max = 0, 0
 
-	if tc_anchor ~= -1 then
+	if tc_pos == 0 then
+		return false
+	elseif tc_anchor ~= -1 then
 		v_min = min(tc_anchor, tc_pos)
 		v_max = max(tc_anchor, tc_pos) + 1
 	else
-		if tc_pos == 0 then return false end
 		local new_tc_pos = tc_pos
 		local ch = GetCharacter(instance.Text, tc_pos)
 		if ch then
@@ -791,21 +796,11 @@ function Input.Begin(id, opt)
 	local precision = opt.Precision and floor(Utility.Clamp(opt.Precision, 0, 5)) or 3
 	local need_drag = opt.NeedDrag or true
 	local is_pw = not not opt.IsPassword
-	local password_char = opt.IsPassword and opt.PasswordChar or DEF_PW_CHAR
+	local pw_char = is_pw and opt.PasswordChar or DEF_PW_CHAR
 
-	if is_pw then
-		opt.OrigText = text
-		opt.Text = rep(password_char, #text)
-	end
-
-	if type(min_n) ~= "number" then
-		opt.min_n = nil
-	end
-
-	if type(max_n) ~= "number" then
-		opt.max_n = nil
-	end
-	opt.TextColor = multi and Style.MultilineTextColor or opt.TextColor
+	if type(min_n) ~= "number" then min_n = nil end
+	if type(max_n) ~= "number" then max_n = nil end
+	if multi then opt.TextColor = Style.MultilineTextColor end
 
 	local instance = GetInstance(format("%s.%s", Window.GetId(), id))
 	instance.NumbersOnly = opt.NumbersOnly
@@ -815,6 +810,8 @@ function Input.Begin(id, opt)
 	instance.MaxNumber = max_n
 	instance.MultiLine = multi
 	instance.NeedDrag = need_drag
+	instance.IsPassword = is_pw
+	instance.PasswordChar = pw_char
 
 	if instance.MultiLineW ~= multi_w then
 		instance.Lines = nil
@@ -823,21 +820,26 @@ function Input.Begin(id, opt)
 	local win_item_id = Window.GetItemId(id)
 
 	if not instance.Align then
-		instance.Align = (instance == focused and not is_sliding) and "left" or "center"
-		instance.Align = instance.ReadOnly and "center" or align
-		instance.Align = multi and "left" or align
+		instance.Align = (instance == focused and not is_sliding) and
+			Enums.align_x.left or Enums.align_x.center
+		if instance.ReadOnly then
+			instance.Align = Enums.align_x.center
+		end
+		if multi then
+			instance.Align = Enums.align_x.left
+		end
 	end
 
 	if focused ~= instance then
-		if opt.MultiLine and #opt.Text ~= #instance.Text then
+		if multi and #text ~= #instance.Text then
 			instance.Lines = nil
 		end
-		instance.Text = instance.Text or opt.Text
+		instance.Text = text or instance.Text
 	end
 
-	if instance.MinNumber and instance.MaxNumber then
-		assert(instance.MinNumber <= instance.MaxNumber,
-			"Invalid MinNumber and MaxNumber passed to Input control " ..
+	if instance.MinNumber and instance.MaxNumber and
+		instance.MinNumber <= instance.MaxNumber then
+			error("Invalid MinNumber and MaxNumber passed to Input control " ..
 			instance.Id .. "" .. "MinNumber: " .. instance.MinNumber ..
 			" MaxNumber: " .. instance.MaxNumber)
 	end
@@ -851,19 +853,20 @@ function Input.Begin(id, opt)
 	local x, y = Cursor.GetPosition()
 
 	if multi then
-		select_on_focus = false
 		local was_sanitized
+		select_on_focus = false
 		text, was_sanitized = SanitizeText(text)
 		if was_sanitized then
 			res = true
-			last_text = opt.Text
+			last_text = text
 		end
 		cw, ch = Text.GetSizeWrap(text, multi_w)
 	end
 
-	local should_update = instance.ShouldUpdateTextObject
+	local should_update, new_ch = instance.ShouldUpdateTextObject, nil
 	instance.ShouldUpdateTextObject = false
-	should_update = Input.HandleHighlight(instance, highlight, multi, multi_w)
+	should_update, new_ch = Input.HandleHighlight(instance, highlight, multi, multi_w)
+	ch = new_ch or ch
 	if should_update then
 		UpdateTextObject(instance, multi_w, instance.Align, highlight, text_color)
 	end
@@ -874,17 +877,20 @@ function Input.Begin(id, opt)
 	local hovered_sb = Region.IsHoverScrollBar(instance.Id) or Region.IsScrolling()
 
 	if hovered and not hovered_sb then
-		Mouse.SetCursor("ibeam")
+		Mouse.SetCursor(Enums.cursor_type.ibeam)
 		Tooltip.Begin(tooltip)
 		Window.SetHotItem(win_item_id)
 	end
 
 	local check_focus = Mouse.IsClicked(1) and not hovered_sb
 	local n_entry = Mouse.IsDoubleClicked(1) and instance.NumbersOnly
-	local focused_frame, clear_focus = false, false
-	local clear_anchor = false
+	local focused_frame, clear_focus, clear_anchor = false, false, false
 	local is_shift = Keyboard.IsDown("lshift") or Keyboard.IsDown("rshift")
-	local should_update_t, back = Input.HandleInputs(instance, hovered, multi)
+	local should_update_t, back
+
+	should_update_t, back, res, check_focus, focused_frame, clear_focus = Input.HandleInputs(
+		instance, hovered, multi, res, check_focus, focused_frame, clear_focus
+	)
 
 	if check_focus or drag_select then
 		if focused_frame then
@@ -1024,7 +1030,12 @@ function Input.Begin(id, opt)
 		if instance.TextObject then
 			Text.BeginObject(instance.TextObject)
 		else
-			Text.Begin(instance.Text, {AddItem = false, Color = text_color})
+			TBL_TEXT.Color = text_color
+			text = instance.Text
+			if is_pw then
+				text = rep(pw_char, #text)
+			end
+			Text.Begin(text, TBL_TEXT)
 		end
 		LayoutManager.End()
 	end
@@ -1059,7 +1070,7 @@ function Input.Begin(id, opt)
 end
 
 function Input.HandleHighlight(instance, highlight, multi, multi_w)
-	local should_update
+	local should_update, ch
 	if not instance.Lines and instance.Text ~= STR_EMPTY and multi then
 		if not instance.TextObject then
 			instance.TextObject = love.graphics.newText(Style.Font)
@@ -1090,16 +1101,15 @@ function Input.HandleHighlight(instance, highlight, multi, multi_w)
 				end
 			end
 		end
-	else
-		if instance.Highlight then
-			instance.Highlight = nil
-			should_update = true
-		end
+	elseif instance.Highlight then
+		instance.Highlight = nil
+		should_update = true
 	end
-	return should_update
+
+	return should_update, ch
 end
 
-function Input.HandleInputs(instance, hovered, multi)
+function Input.HandleInputs(instance, hovered, multi, res, check_focus, focused_frame, clear_focus)
 	if check_focus then
 		if hovered then
 			focused_frame = focused ~= instance
@@ -1226,7 +1236,7 @@ function Input.HandleInputs(instance, hovered, multi)
 		MoveCursorPage(instance, true)
 		should_update_t = true
 	end
-	return should_update_t, back
+	return should_update_t, back, res, check_focus, focused_frame, clear_focus
 end
 
 function Input.Text(ch)
@@ -1237,14 +1247,10 @@ function Input.Text(ch)
 		DeleteSelection(focused)
 	end
 
-	if tc_pos == 0 then
-		focused.Text = ch .. focused.Text
-	else
-		local temp = focused.Text
-		local left = sub(temp, 0, tc_pos)
-		local right = sub(temp, tc_pos + 1)
-		focused.Text = left .. ch .. right
-	end
+	local temp = focused.Text
+	local left = sub(temp, 0, tc_pos)
+	local right = sub(temp, tc_pos + 1)
+	focused.Text = left .. ch .. right
 
 	tc_pos = min(tc_pos + #ch, #focused.Text)
 	tc_anchor = -1
@@ -1315,8 +1321,8 @@ end
 
 function Input.GetText()
 	if not focused then return last_text end
-	if focused.NumbersOnly and (focused.Text == STR_EMPTY or focused.Text == ".") then
-		return "0"
+	if focused.NumbersOnly and (focused.Text == STR_EMPTY or focused.Text == STR_DOT) then
+		return STR_0
 	end
 	return focused.Text
 end

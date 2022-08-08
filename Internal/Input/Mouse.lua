@@ -42,13 +42,13 @@ local state = {
 
 local EMPTY_STR = ""
 local system_cursors = {
-	"arrow",
-	"sizewe",
-	"sizens",
-	"sizenesw",
-	"sizenwse",
-	"ibeam",
-	"hand",
+	Enums.cursor_type.arrow,
+	Enums.cursor_type.sizewe,
+	Enums.cursor_type.sizens,
+	Enums.cursor_type.sizenesw,
+	Enums.cursor_type.sizenwse,
+	Enums.cursor_type.ibeam,
+	Enums.cursor_type.hand,
 }
 local cursors
 local current_cursor = "arrow"
