@@ -168,8 +168,10 @@ local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
 		instance.TitleDeltaX = instance.TitleDeltaX + dx
 		instance.TitleDeltaY = instance.TitleDeltaY + dy
 		if constrain then
-			-- Constrain the position of the window to the viewport. The position at this point in the code has the delta already applied. This delta will need to be
-			-- removed to retrieve the original position, and clamp the delta based off of that posiiton.
+			-- Constrain the position of the window to the viewport.
+			-- The position at this point in the code has the delta already applied.
+			-- This delta will need to be removed to retrieve the original position,
+			-- and clamp the delta based off of that posiiton.
 			local ox = instance.X - tdx
 			local oy = instance.Y - tdy
 			instance.TitleDeltaX = Utility.Clamp(
@@ -687,9 +689,8 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 	Region.Begin(active_instance.TitleId, title_region)
 	DrawCommands.Print(active_instance.Title, tx, ty, Style.TextColor, font)
 
-	local ox = 1
 	if show_minimize then
-		ox = show_close and 4 or 1
+		local ox = show_close and 4 or 1
 		local is_clicked = DrawButton(
 			Enums.button.minimize,
 			active_instance,
@@ -706,7 +707,7 @@ function Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, round
 	end
 
 	if show_close then
-		ox = 1
+		local ox = 1
 		local is_clicked = DrawButton(
 			Enums.button.close,
 			active_instance,
@@ -1047,7 +1048,8 @@ function Window.GetMovingInstance()
 end
 
 --[[
-	Allow developers to push/pop a custom ID to the stack. This can help with differentiating between controls with identical IDs i.e. text fields.
+	Allow developers to push/pop a custom ID to the stack.
+	This can help with differentiating between controls with identical IDs i.e. text fields.
 --]]
 function Window.PushID(id)
 	if not active_instance then return end

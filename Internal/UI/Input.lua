@@ -863,7 +863,8 @@ function Input.Begin(id, opt)
 		cw, ch = Text.GetSizeWrap(text, multi_w)
 	end
 
-	local should_update, new_ch = instance.ShouldUpdateTextObject, nil
+	local new_ch
+	local should_update = instance.ShouldUpdateTextObject
 	instance.ShouldUpdateTextObject = false
 	should_update, new_ch = Input.HandleHighlight(instance, highlight, multi, multi_w)
 	ch = new_ch or ch

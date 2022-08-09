@@ -99,7 +99,7 @@ function Tree.Begin(id, opt)
 
 	local mx, my = Mouse.Position()
 	local tmx, tmy = Region.InverseTransform(nil, mx, my)
-	local wx, wy = Window.GetPosition()
+	local wx, _ = Window.GetPosition()
 	local ww = Window.GetBorderlessSize()
 	local is_obstructed = Window.IsObstructedAtMouse() or Region.IsHoverScrollBar()
 	local w = Text.GetWidth(def_label)
@@ -110,7 +110,7 @@ function Tree.Begin(id, opt)
 	w = def_icon and w + h or w
 
 	local border = Window.GetBorder()
-	wx, wy = wx + border, wy + border
+	wx = wx + border
 
 	if #hierarchy == 0 then
 		local cw, ch = w, h
