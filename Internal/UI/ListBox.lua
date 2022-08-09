@@ -41,6 +41,10 @@ local ListBox = {}
 local instances = {}
 local active
 
+local ERR_NIL_ACTIVE = "Trying to call BeginListBoxItem outside of BeginListBox."
+local ERR_NIL_ACTIVE_ITEM = "Begin was called for item '%s' without a call to EndListBoxItem"
+local ERR_SELECTED = "selected must be of type boolean"
+
 local function GetItemInstance(instance, id)
 	if not instance then return end
 	if not instance.Items[id] then
@@ -144,18 +148,17 @@ function ListBox.Begin(id, opt)
 	LayoutManager.Begin("Ignore", TBL_IGNORE)
 end
 
-local err_nil_active = "Trying to call BeginListBoxItem outside of BeginListBox."
-local err_nil_active_item = "Begin was called for item '%s' without a call to EndListBoxItem"
-function ListBox.BeginItem(id, opt)
-	assert(active, err_nil_active)
-	if active.ActiveItem then error(format(err_nil_active_item, active.ActiveItem or "nil")) end
+function ListBox.BeginItem(id, selected, opt)
+	assert(active, ERR_NIL_ACTIVE)
+	assert(type(selected) == "boolean", ERR_SELECTED)
+	if active.ActiveItem then error(format(ERR_NIL_ACTIVE_ITEM, active.ActiveItem or "nil")) end
 	local item = GetItemInstance(active, id)
 	item.X = active.X
 	item.Y = Cursor.GetY()
 	Cursor.SetX(item.X)
 	Cursor.AdvanceX(0.0)
 	active.ActiveItem = item
-	active.ActiveItem.Selected = not not (opt and opt.Selected) --defaulf is false
+	active.ActiveItem.Selected = not not (opt and selected) --defaulf is false
 end
 
 local err_item_clicked = "Trying to call IsItemClicked outside of BeginListBox."

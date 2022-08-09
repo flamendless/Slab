@@ -53,14 +53,11 @@ function MenuBar.Begin(is_main_menu_bar)
 	Window.Begin(instance.Id, {
 		X = x, Y = y,
 		W = ww, H = fh,
-		AllowResize = false,
-		AllowFocus = false,
+		AllowResize = false, AllowFocus = false,
 		Border = 0,
 		BgColor = Style.MenuColor,
-		NoOutline = true,
-		IsMenuBar = true,
-		AutoSizeWindow = false,
-		AutoSizeContent = false,
+		NoOutline = true, IsMenuBar = true,
+		AutoSizeWindow = false, AutoSizeContent = false,
 		Layer = is_main_menu_bar and Enums.layers.main_menu_bar,
 		Rounding = 0,
 		NoSavedSettings = true

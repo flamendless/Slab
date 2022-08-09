@@ -1334,7 +1334,7 @@ end
 	Example:
 		local Options = {"Apple", "Banana", "Orange", "Pear", "Lemon"}
 		local Options_Selected = ""
-		if Slab.BeginComboBox("Fruits", {Selected = Options_Selected}) then
+		if Slab.BeginComboBox("Fruits", Options_Selected, {}) then
 			for K, V in pairs(Options) do
 				if Slab.TextSelectable(V) then
 					Options_Selected = V
@@ -1345,16 +1345,16 @@ end
 		end
 
 	Id: [String] A string that uniquely identifies this combo box within the context of the active window.
+	Selected: [String] Text that is displayed in the non-editable input box for this combo box.
 	Options: [Table] List of options that control how this combo box behaves.
 		Tooltip: [String] Text that is rendered when the user hovers over this combo box.
-		Selected: [String] Text that is displayed in the non-editable input box for this combo box.
 		W: [Number] The width of the combo box. The default value is 150.0.
 		Rounding: [Number] Amount of rounding to apply to the corners of the combo box.
 
 	Return: [Boolean] This function will return true if the combo box is open.
 --]]
-function Slab.BeginComboBox(Id, Options)
-	return ComboBox.Begin(Id, Options)
+function Slab.BeginComboBox(Id, selected, Options)
+	return ComboBox.Begin(Id, selected, Options)
 end
 
 --[[
@@ -1625,13 +1625,13 @@ end
 	a text to represent the item. If this is called, EndListBoxItem must be called to complete the item.
 
 	Id: [String] A string uniquely identifying this item within the context of the current list box.
+	Selected: [Boolean] If true, will draw the item with a selection background.
 	Options: [Table] List of options that control the behavior of the active list item.
-		Selected: [Boolean] If true, will draw the item with a selection background.
 
 	Return: None.
 --]]
-function Slab.BeginListBoxItem(Id, Options)
-	ListBox.BeginItem(Id, Options)
+function Slab.BeginListBoxItem(Id, selected, Options)
+	ListBox.BeginItem(Id, selected, Options)
 end
 
 --[[

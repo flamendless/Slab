@@ -25,6 +25,7 @@ SOFTWARE.
 --]]
 
 local love = require("love")
+local format = string.format
 local max = math.max
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
@@ -37,6 +38,7 @@ local Text = require(SLAB_PATH .. ".Internal.UI.Text")
 local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 
 local Menu = {}
+
 local instances = {}
 local pad = 8
 local lpad = 25
@@ -45,6 +47,14 @@ local check_size = 5
 local opened = {good = false}
 
 local TBL_DEF = {Enabled = true}
+local TBL_ROUNDING_ON = {2, 2, 2, 2}
+local TBL_ROUNDING_OFF = {0, 0, 2, 2}
+local TBL_DEF_CM = {
+	IsItem = false,
+	IsWindow = false,
+	Button = 2,
+}
+local STR_CM = ".ContextMenu"
 
 local function IsItemHovered()
 	local x, y, _, h = Cursor.GetItemBounds()
@@ -55,7 +65,7 @@ local function IsItemHovered()
 end
 
 local function AlterOptions(opt)
-	opt = opt or TBL_DEF
+	opt = opt or {}
 	opt.Enabled = opt.Enabled or TBL_DEF.Enabled
 	opt.IsSelectable = opt.Enabled
 	opt.SelectOnHover = opt.Enabled
@@ -71,16 +81,14 @@ local function ConstrainPosition(x, y, w, h)
 	local ox = r >= ww
 	local oy = b >= wh
 	local wx = Window.GetBounds()
-	res_x = ox and x - (r - ww)
-	res_y = oy and y - h
-	res_x = ox and wx - w
+	res_x = ox and x - (r - ww) or res_x
+	res_y = oy and y - h or res_y
+	res_x = ox and wx - w or res_x
 	res_x = max(res_x, 0)
 	res_y = max(res_y, 0)
 	return res_x, res_y
 end
 
-local TBL_ROUNDING_ON = {2, 2, 2, 2}
-local TBL_ROUNDING_OFF = {0, 0, 2, 2}
 local function BeginWindow(id, x, y, round_all_corners)
 	local instance = instances[id]
 	if instance then
@@ -88,15 +96,12 @@ local function BeginWindow(id, x, y, round_all_corners)
 	end
 	Cursor.PushContext()
 	Window.Begin(id, {
-		X = x,
-		Y = y,
-		W = 0,
-		H = 0,
-		AllowResize = false,
-		AllowFocus = false,
+		X = x, Y = y,
+		W = 0, H = 0,
+		AllowResize = false, AllowFocus = false,
 		Border = 0,
 		AutoSizeWindow = true,
-		Layer = "ContextMenu",
+		Layer = Enums.layers.context_menu,
 		BgColor = Style.MenuColor,
 		Rounding = round_all_corners and TBL_ROUNDING_ON or TBL_ROUNDING_OFF,
 		NoSavedSettings = true
@@ -107,7 +112,7 @@ function Menu.BeginMenu(label, opt)
 	local res = false
 	local x, y = Cursor.GetPosition()
 	local is_menu_bar = Window.IsMenuBar()
-	local id = Window.GetId() .. "." .. label
+	local id = format("%s.%s", Window.GetId(), label)
 	local win = Window.Top()
 	opt = AlterOptions(opt)
 	opt.IsSelected = opt.Enabled and win.Selected == id
@@ -140,13 +145,15 @@ function Menu.BeginMenu(label, opt)
 			end
 		end
 
-		if Menu.IsOpened and (not opened.good) then
-			win.Selected = res and id
+		if Menu.IsOpened and (not opened.good) and res then
+			win.Selected = id
+		else
+			win.Selected = nil
 		end
 		menu_x = x
 		menu_y = y + Window.GetHeight()
 	else
-		local wx, _, ww = Window.GetBounds()
+		local wx, _, ww, _ = Window.GetBounds()
 		local h = Style.Font:getHeight()
 		local tx = wx + ww - h * 0.75
 		local ty = y + h * 0.5
@@ -154,7 +161,7 @@ function Menu.BeginMenu(label, opt)
 		DrawCommands.Triangle("fill", tx, ty, radius, 90, Style.TextColor)
 		menu_x = x + ww
 		menu_y = y
-		win.Selected = res and id
+		win.Selected = res and id or win.Selected
 		Window.AddItem(ix, iy, iw + rpad, ih)
 		-- Prevent closing the menu window if this item is clicked.
 		if IsItemHovered() and Mouse.IsClicked(1) then
@@ -180,7 +187,9 @@ function Menu.MenuItem(label, opt)
 		local win = Window.Top()
 		win.Selected = nil
 		res = Mouse.IsClicked(1)
-		MenuState.RequestClose = (res and MenuState.WasOpened) or MenuState.RequestClose
+		if res and MenuState.WasOpened then
+			MenuState.RequestClose = true
+		end
 	elseif IsItemHovered() and Mouse.IsClicked(1) then
 		MenuState.RequestClose = false
 	end
@@ -221,30 +230,21 @@ end
 
 function Menu.Pad() return pad end
 
-local TBL_DEF_CM = {
-	IsItem = false,
-	IsWindow = false,
-	Button = 2,
-}
-local str_cm = ".ContextMenu"
-
 function Menu.BeginContextMenu(opt)
 	opt = opt or TBL_DEF_CM
 	opt.IsItem = opt.IsItem or TBL_DEF_CM.IsItem
 	opt.IsWindow = opt.IsWindow or TBL_DEF_CM.IsWindow
 	opt.Button = opt.Button or TBL_DEF_CM.Button
+
 	local base_id, id
 	if opt.IsWindow then
 		base_id = Window.GetId()
 	elseif opt.IsItem then
-		base_id = Window.GetContextHotItem()
-		if not base_id then
-			base_id = Window.GetHotItem()
-		end
+		base_id = Window.GetContextHotItem() or Window.GetHotItem()
 	end
 
 	if opt.IsItem and Window.GetLastItem() ~= base_id then return false end
-	if base_id then id = base_id .. str_cm end
+	if base_id then id = base_id .. STR_CM end
 	if not id then return false end
 
 	if MenuState.IsOpened and opened.good then
@@ -274,7 +274,7 @@ function Menu.BeginContextMenu(opt)
 		opened.Id = id
 		opened.X = mx
 		opened.Y = my
-		opened.Win = Window.Top
+		opened.Win = Window.Top()
 		opened.good = true
 		Window.SetContextHotItem(opt.IsItem and base_id)
 	end
