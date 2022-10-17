@@ -1637,6 +1637,12 @@ end
 	Return: None.
 --]]
 function Slab.BeginListBoxItem(Id, selected, Options)
+	if selected then
+		assert(
+			type(selected) == "boolean",
+			"selected must be of type boolean. Got " .. type(selected)
+		)
+	end
 	ListBox.BeginItem(Id, selected, Options)
 end
 
@@ -1651,8 +1657,8 @@ end
 
 	Return: [Boolean] Returns true if the active item is hovered with mouse and the requested mouse button is clicked.
 --]]
-function Slab.IsListBoxItemClicked(Button, IsDoubleClick)
-	return ListBox.IsItemClicked(Button, IsDoubleClick)
+function Slab.IsListBoxItemClicked(btn, IsDoubleClick)
+	return ListBox.IsItemClicked(btn, IsDoubleClick)
 end
 
 --[[
