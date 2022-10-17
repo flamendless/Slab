@@ -1354,6 +1354,12 @@ end
 	Return: [Boolean] This function will return true if the combo box is open.
 --]]
 function Slab.BeginComboBox(Id, selected, Options)
+	if selected then
+		assert(
+			type(selected) == "string",
+			"selected must be of type string. Got " .. type(selected)
+		)
+	end
 	return ComboBox.Begin(Id, selected, Options)
 end
 

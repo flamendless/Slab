@@ -82,7 +82,6 @@ local function GetInstance(id)
 end
 
 function ComboBox.Begin(id, selected, opt)
-	assert(type(selected) == "string", "selected must be of type string")
 	local stat_handle = Stats.Begin("ComboBox", "Slab")
 	opt = opt or TBL_EMPTY
 	selected = selected or STR_EMPTY

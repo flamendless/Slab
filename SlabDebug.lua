@@ -65,7 +65,7 @@ local Style_FileDialog = nil
 
 local function Window_Inspector()
 	local Ids = Window.GetInstanceIds()
-	if Slab.BeginComboBox("SlabDebug_Windows_Inspector", {Selected = Selected_Window}) then
+	if Slab.BeginComboBox("SlabDebug_Windows_Inspector", Selected_Window) then
 		for I, V in ipairs(Ids) do
 			if Slab.TextSelectable(V) then
 				Selected_Window = V
@@ -129,7 +129,7 @@ local function DrawPerformance()
 		DrawPerformance_Category = Categories[1]
 	end
 
-	if Slab.BeginComboBox("DrawPerformance_Categories", {Selected = DrawPerformance_Category, W = DrawPerformance_W}) then
+	if Slab.BeginComboBox("DrawPerformance_Categories", DrawPerformance_Category, {W = DrawPerformance_W}) then
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V) then
 				DrawPerformance_Category = V
@@ -228,7 +228,7 @@ local function DrawStyleEditor()
 	local Names = Style.API.GetStyleNames()
 	local CurrentStyle = Style.API.GetCurrentStyleName()
 	Slab.BeginLayout("SlabDebug_StyleEditor_Styles_Layout", {ExpandW = true})
-	if Slab.BeginComboBox("SlabDebug_StyleEditor_Styles", {Selected = CurrentStyle}) then
+	if Slab.BeginComboBox("SlabDebug_StyleEditor_Styles", CurrentStyle) then
 		for I, V in ipairs(Names) do
 			if Slab.TextSelectable(V) then
 				Style.API.SetStyle(V)
@@ -375,7 +375,7 @@ end
 function SlabDebug.Windows()
 	Slab.BeginWindow("SlabDebug_Windows", SlabDebug_Windows)
 
-	if Slab.BeginComboBox("SlabDebug_Windows_Categories", {Selected = SlabDebug_Windows_Category}) then
+	if Slab.BeginComboBox("SlabDebug_Windows_Categories", SlabDebug_Windows_Category) then
 		for I, V in ipairs(SlabDebug_Windows_Categories) do
 			if Slab.TextSelectable(V) then
 				SlabDebug_Windows_Category = V
@@ -398,7 +398,7 @@ function SlabDebug.Regions()
 	Slab.BeginWindow("SlabDebug_Regions", SlabDebug_Regions)
 
 	local Ids = Region.GetInstanceIds()
-	if Slab.BeginComboBox("SlabDebug_Regions_Ids", {Selected = SlabDebug_Regions_Selected}) then
+	if Slab.BeginComboBox("SlabDebug_Regions_Ids", SlabDebug_Regions_Selected) then
 		for I, V in ipairs(Ids) do
 			if Slab.TextSelectable(V) then
 				SlabDebug_Regions_Selected = V
@@ -592,7 +592,7 @@ function SlabDebug.LayoutManager()
 	Slab.BeginWindow("LayoutManager", SlabDebug_LayoutManager)
 
 	Slab.BeginLayout("LayoutManager_Layout", {ExpandW = true})
-	if Slab.BeginComboBox("LayoutManager_ID", {Selected = SlabDebug_LayoutManager_Selected}) then
+	if Slab.BeginComboBox("LayoutManager_ID", SlabDebug_LayoutManager_Selected) then
 		for K, V in pairs(Info) do
 			if SlabDebug_LayoutManager_Selected == nil then
 				SlabDebug_LayoutManager_Selected = K

@@ -158,7 +158,7 @@ local function DrawText()
 	Slab.SameLine()
 	Slab.Text("Alignment")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawText_Alignment", {Selected = DrawText_Alignment_Selected}) then
+	if Slab.BeginComboBox("DrawText_Alignment", DrawText_Alignment_Selected) then
 		for I, V in ipairs(DrawText_Alignment) do
 			if Slab.TextSelectable(V) then
 				DrawText_Alignment_Selected = V
@@ -309,7 +309,7 @@ local function DrawMenus()
 	Slab.Input("DrawMenus_Input")
 	DrawContextMenuItem("Input")
 
-	if Slab.BeginComboBox("DrawMenus_ComboBox", {Selected = DrawMenus_ComboBox_Selected}) then
+	if Slab.BeginComboBox("DrawMenus_ComboBox", DrawMenus_ComboBox_Selected) then
 		for I, V in ipairs(DrawMenus_ComboBox) do
 			if Slab.TextSelectable(V) then
 				DrawMenus_Window_Selected = V
@@ -373,7 +373,7 @@ local function DrawComboBox()
 
 	Slab.NewLine()
 
-	if Slab.BeginComboBox("DrawComboBox_One", {Selected = DrawComboBox_Selected}) then
+	if Slab.BeginComboBox("DrawComboBox_One", DrawComboBox_Selected) then
 		for I, V in ipairs(DrawComboBox_Options) do
 			if Slab.TextSelectable(V) then
 				DrawComboBox_Selected = V
@@ -391,7 +391,7 @@ local function DrawComboBox()
 	Slab.NewLine()
 
 	local W, H = Slab.GetWindowActiveSize()
-	if Slab.BeginComboBox("DrawComboBox_Two", {Selected = DrawComboBox_Selected_Width, W = W}) then
+	if Slab.BeginComboBox("DrawComboBox_Two", DrawComboBox_Selected_Width, {W = W}) then
 		for I, V in ipairs(DrawComboBox_Options) do
 			if Slab.TextSelectable(V) then
 				DrawComboBox_Selected_Width = V
@@ -1607,7 +1607,7 @@ local function DrawShapes()
 	Slab.SameLine()
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawShapes_Circle_Mode", {Selected = DrawShapes_Circle_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Circle_Mode", DrawShapes_Circle_Mode) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Circle_Mode = V
@@ -1644,7 +1644,7 @@ local function DrawShapes()
 	Slab.SameLine()
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawShapes_Triangle_Mode", {Selected = DrawShapes_Triangle_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Triangle_Mode", DrawShapes_Triangle_Mode) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Triangle_Mode = V
@@ -1737,7 +1737,7 @@ local function DrawShapes()
 
 	Slab.Text("Mode")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawShapes_Polygon_Mode", {Selected = DrawShapes_Polygon_Mode}) then
+	if Slab.BeginComboBox("DrawShapes_Polygon_Mode", DrawShapes_Polygon_Mode) then
 		for I, V in ipairs(DrawShapes_Modes) do
 			if Slab.TextSelectable(V) then
 				DrawShapes_Polygon_Mode = V
@@ -1833,7 +1833,7 @@ local function DrawWindow()
 	Slab.Textf("The text alignment of the title can also be changed.")
 	Slab.Text("Horizontal")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawWindow_TitleAlignmentX", {Selected = DrawWindow_TitleAlignmentX}) then
+	if Slab.BeginComboBox("DrawWindow_TitleAlignmentX", DrawWindow_TitleAlignmentX) then
 		for I, V in ipairs(DrawWindow_TitleAlignmentX_Options) do
 			if Slab.TextSelectable(V) then
 				DrawWindow_TitleAlignmentX = V
@@ -1846,7 +1846,7 @@ local function DrawWindow()
 	Slab.SameLine()
 	Slab.Text("Vertical")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawWindow_TitleAlignmentY", {Selected = DrawWindow_TitleAlignmentY}) then
+	if Slab.BeginComboBox("DrawWindow_TitleAlignmentY", DrawWindow_TitleAlignmentY) then
 		for I, V in ipairs(DrawWindow_TitleAlignmentY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawWindow_TitleAlignmentY = V
@@ -2083,7 +2083,7 @@ local function DrawTooltip()
 
 	Slab.NewLine()
 
-	if Slab.BeginComboBox("DrawTooltip_ComboBox", {Selected = DrawTooltip_ComboBox_Selected, Tooltip = "This is a combo box."}) then
+	if Slab.BeginComboBox("DrawTooltip_ComboBox", DrawTooltip_ComboBox_Selected, {Tooltip = "This is a combo box."}) then
 		for I, V in ipairs(DrawTooltip_ComboBox_Items) do
 			if Slab.TextSelectable(V) then
 				DrawTooltip_ComboBox_Selected = V
@@ -2202,7 +2202,7 @@ local function DrawLayout()
 
 	Slab.Text("AlignX")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawLayout_AlignX", {Selected = DrawLayout_AlignX}) then
+	if Slab.BeginComboBox("DrawLayout_AlignX", DrawLayout_AlignX) then
 		for I, V in ipairs(DrawLayout_AlignX_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignX = V
@@ -2215,7 +2215,7 @@ local function DrawLayout()
 	Slab.SameLine()
 	Slab.Text("AlignY")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawLayout_AlignY", {Selected = DrawLayout_AlignY}) then
+	if Slab.BeginComboBox("DrawLayout_AlignY", DrawLayout_AlignY) then
 		for I, V in ipairs(DrawLayout_AlignY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignY = V
@@ -2228,7 +2228,7 @@ local function DrawLayout()
 	Slab.SameLine()
 	Slab.Text("AlignRowY")
 	Slab.SameLine()
-	if Slab.BeginComboBox("DrawLayout_AlignRowY", {Selected = DrawLayout_AlignRowY}) then
+	if Slab.BeginComboBox("DrawLayout_AlignRowY", DrawLayout_AlignRowY) then
 		for I, V in ipairs(DrawLayout_AlignY_Options) do
 			if Slab.TextSelectable(V) then
 				DrawLayout_AlignRowY = V
@@ -2517,7 +2517,7 @@ function SlabTest.Begin()
 
 	local W, H = Slab.GetWindowActiveSize()
 
-	if Slab.BeginComboBox("Categories", {Selected = Selected[1], W = W}) then
+	if Slab.BeginComboBox("Categories", Selected[1], {W = W}) then
 		for I, V in ipairs(Categories) do
 			if Slab.TextSelectable(V[1]) then
 				Selected = Categories[I]
