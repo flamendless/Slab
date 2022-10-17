@@ -368,7 +368,6 @@ function Window.Top() return active_instance end
 
 function Window.IsObstructed(x, y, skip)
 	if Region.IsScrolling() then return true end
-	-- If there are no windows, then nothing can obstruct.
 	if #stack == 0 then return false end
 	if not active_instance then return false end
 	if (not active_instance.IsOpen) or (not active_instance.IsContentOpen) or
@@ -412,7 +411,9 @@ function Window.IsObstructed(x, y, skip)
 	return false
 end
 
-function Window.IsObstructedAtMouse() return Window.IsObstructed(Mouse.Position()) end
+function Window.IsObstructedAtMouse()
+	return Window.IsObstructed(Mouse.Position())
+end
 
 function Window.Reset()
 	Utility.ClearTable(pending_stack)

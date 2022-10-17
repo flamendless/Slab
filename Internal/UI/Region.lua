@@ -137,6 +137,8 @@ local function UpdateScrollBars(instance, is_obstructed)
 
 		if not scroll_instance and is_mouse_clicked and either_scroll then
 			scroll_instance = instance
+			scroll_instance.IsScrollingX = instance.HoverScrollX
+			scroll_instance.IsScrollingY = instance.HoverScrollY
 		end
 	end
 
@@ -464,7 +466,13 @@ function Region.IsScrolling(id)
 		local instance = GetInstance(id)
 		return scroll_instance == instance or wheel_instance == instance
 	end
-	return scroll_instance ~= nil or wheel_instance ~= nil
+	if scroll_instance then
+		return scroll_instance.IsScrollingX or scroll_instance.IsScrollingY
+	end
+	if wheel_instance then
+		return wheel_instance.IsScrollingX or wheel_instance.IsScrollingY
+	end
+	return false
 end
 
 local STR_EMPTY = ""
