@@ -1005,7 +1005,7 @@ local function DrawListBox()
 
 	Slab.BeginListBox("DrawListBox_Basic", {Clear = Clear})
 	for I = 1, DrawListBox_Basic_Count, 1 do
-		Slab.BeginListBoxItem("DrawListBox_Basic_Item_" .. I, {Selected = I == DrawListBox_Basic_Selected})
+		Slab.BeginListBoxItem("DrawListBox_Basic_Item_" .. I, I == DrawListBox_Basic_Selected)
 		Slab.Text("List Box Item " .. I)
 		if Slab.IsListBoxItemClicked() then
 			DrawListBox_Basic_Selected = I
@@ -1025,7 +1025,7 @@ local function DrawListBox()
 	Slab.BeginListBox("DrawListBox_Advanced")
 	local Rotation = 0
 	for I = 1, 4, 1 do
-		Slab.BeginListBoxItem("DrawListBox_Advanced_Item_" .. I, {Selected = I == DrawListBox_Advanced_Selected})
+		Slab.BeginListBoxItem("DrawListBox_Advanced_Item_" .. I, I == DrawListBox_Advanced_Selected)
 		Slab.Triangle({Radius = 24.0, Rotation = Rotation})
 		Slab.SameLine({CenterY = true})
 		Slab.Text("Triangle " .. I)
