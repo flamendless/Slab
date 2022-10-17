@@ -933,16 +933,22 @@ end
 	is the selected one.
 
 	Label: [String] The label to display next to the button.
+	SelectedIndex: [Number] The index of the radio button that is selected. If this equals the Index field, then this radio button
+		will be rendered as selected.
 	Options: [Table] List of options for how this radio button will behave.
 		Index: [Number] The index of this radio button. Will be 0 by default and not selectable. Assign an index to group the button.
-		SelectedIndex: [Number] The index of the radio button that is selected. If this equals the Index field, then this radio button
-			will be rendered as selected.
 		Tooltip: [String] The tooltip to display when the user hovers over the button or label.
 
 	Return: [Boolean] Returns true if the user clicks on this button.
 --]]
-function Slab.RadioButton(Label, Options)
-	return Button.BeginRadio(Label, Options)
+function Slab.RadioButton(Label, selected, Options)
+	if selected then
+		assert(
+			selected and type(selected) == "number",
+			"selected must be of type number. Got " .. type(selected)
+		)
+	end
+	return Button.BeginRadio(Label, selected, Options)
 end
 
 --[[
@@ -1356,7 +1362,7 @@ end
 function Slab.BeginComboBox(Id, selected, Options)
 	if selected then
 		assert(
-			type(selected) == "string",
+			selected and type(selected) == "string",
 			"selected must be of type string. Got " .. type(selected)
 		)
 	end

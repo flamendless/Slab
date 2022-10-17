@@ -24,7 +24,6 @@ SOFTWARE.
 
 --]]
 
-local love = require("love")
 local floor = math.floor
 local max = math.max
 
@@ -150,12 +149,12 @@ function Button.Begin(label, opt)
 	return res
 end
 
-function Button.BeginRadio(label, opt)
+function Button.BeginRadio(label, selected, opt)
 	local stat_handle = Stats.Begin("RadioButton", "Slab")
 	label = label or EMPTY_STR
 	opt = opt or TBL_EMPTY
+	selected = selected or 0
 	local index = opt.Index or 0
-	local sel_index = opt.SelectedIndex or 0
 	local res = false
 	local id = Window.GetItemId(label)
 	local w, h = RAD2, RAD2
@@ -188,7 +187,7 @@ function Button.BeginRadio(label, opt)
 	end
 	DrawCommands.Circle("fill", cx, cy, RAD, color)
 
-	if index > 0 and index == sel_index then
+	if index > 0 and index == selected then
 		DrawCommands.Circle("fill", cx, cy, RAD_INNER, Style.RadioButtonSelectedColor)
 	end
 

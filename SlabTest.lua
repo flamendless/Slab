@@ -236,7 +236,7 @@ local function DrawRadioButton()
 
 	Slab.NewLine()
 	for I = 1, 5, 1 do
-		if Slab.RadioButton("Option " .. I, {Index = I, SelectedIndex = DrawRadioButton_Selected}) then
+		if Slab.RadioButton("Option " .. I, DrawRadioButton_Selected, {Index = I}) then
 			DrawRadioButton_Selected = I
 		end
 	end
@@ -2068,7 +2068,7 @@ local function DrawTooltip()
 	Slab.Button("Button", {Tooltip = "This is a button."})
 
 	Slab.NewLine()
-	
+
 	if Slab.CheckBox(DrawTooltip_CheckBox, "Check Box", {Tooltip = "This is a check box."}) then
 		DrawTooltip_CheckBox = not DrawTooltip_CheckBox
 	end
@@ -2076,7 +2076,7 @@ local function DrawTooltip()
 	Slab.NewLine()
 
 	for I = 1, 3, 1 do
-		if Slab.RadioButton("Radio " .. I, {SelectedIndex = DrawTooltip_Radio, Index = I, Tooltip = "This is radio button " .. I}) then
+		if Slab.RadioButton("Radio " .. I, DrawTooltip_Radio, {Index = I, Tooltip = "This is radio button " .. I}) then
 			DrawTooltip_Radio = I
 		end
 	end
