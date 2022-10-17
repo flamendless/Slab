@@ -235,8 +235,8 @@ local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 local Slab = {}
 
 -- Slab version numbers.
-local Version_Major = 0
-local Version_Minor = 9
+local Version_Major = 1
+local Version_Minor = 0
 local Version_Revision = 0
 
 local FrameStatHandle = nil
