@@ -120,7 +120,7 @@ local function DrawPerformance()
 	SlabDebug_Performance.Y = DrawPerformance_WinY
 	SlabDebug_Performance.ResetPosition = DrawPerformance_ResetPosition
 
-	if Slab.BeginWindow("SlabDebug_Performance", SlabDebug_Performance) then
+	SlabDebug_Performance.IsOpen =  Slab.BeginWindow("SlabDebug_Performance", SlabDebug_Performance)
 		DrawPerformance_ResetPosition = false
 
 		local Categories = Stats.GetCategories()
@@ -204,8 +204,7 @@ local function DrawPerformance()
 			end
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 local function EditColor(Color)
@@ -221,7 +220,7 @@ local function RestoreEditColor()
 end
 
 local function DrawStyleEditor()
-	if Slab.BeginWindow("SlabDebug_StyleEditor", SlabDebug_StyleEditor) then
+	SlabDebug_StyleEditor.IsOpen = Slab.BeginWindow("SlabDebug_StyleEditor", SlabDebug_StyleEditor)
 		local X, Y = Slab.GetWindowPosition()
 		local W, H = Slab.GetWindowSize()
 
@@ -291,8 +290,7 @@ local function DrawStyleEditor()
 			end
 		end
 		Slab.EndLayout()
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 
 	if Style_EditingColor ~= nil then
 		local Result = Slab.ColorPicker({Color = Style_ColorStore, X = X + W, Y = Y})
@@ -357,7 +355,7 @@ function SlabDebug.OpenAbout()
 end
 
 function SlabDebug.Mouse()
-	if Slab.BeginWindow("SlabDebug_Mouse", SlabDebug_Mouse) then
+	SlabDebug_Mouse.IsOpen = Slab.BeginWindow("SlabDebug_Mouse", SlabDebug_Mouse)
 		local X, Y = Mouse.Position()
 		Slab.Text("X: " .. X)
 		Slab.Text("Y: " .. Y)
@@ -371,12 +369,11 @@ function SlabDebug.Mouse()
 		end
 
 		Slab.Text("Hot Region: " .. Region.GetHotInstanceId())
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 function SlabDebug.Windows()
-	if Slab.BeginWindow("SlabDebug_Windows", SlabDebug_Windows) then
+	SlabDebug_Windows.IsOpen = Slab.BeginWindow("SlabDebug_Windows", SlabDebug_Windows)
 
 		if Slab.BeginComboBox("SlabDebug_Windows_Categories", SlabDebug_Windows_Category) then
 			for I, V in ipairs(SlabDebug_Windows_Categories) do
@@ -394,12 +391,11 @@ function SlabDebug.Windows()
 			Window_Stack()
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 function SlabDebug.Regions()
-	if Slab.BeginWindow("SlabDebug_Regions", SlabDebug_Regions) then
+	SlabDebug_Regions.IsOpen = Slab.BeginWindow("SlabDebug_Regions", SlabDebug_Regions)
 
 		local Ids = Region.GetInstanceIds()
 		if Slab.BeginComboBox("SlabDebug_Regions_Ids", SlabDebug_Regions_Selected) then
@@ -416,32 +412,29 @@ function SlabDebug.Regions()
 			Slab.Text(V)
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 function SlabDebug.Tooltip()
-	if Slab.BeginWindow("SlabDebug_Tooltip", SlabDebug_Tooltip) then
+	SlabDebug_Tooltip.IsOpen = Slab.BeginWindow("SlabDebug_Tooltip", SlabDebug_Tooltip)
 
 		local Info = Tooltip.GetDebugInfo()
 		for I, V in ipairs(Info) do
 			Slab.Text(V)
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 function SlabDebug.DrawCommands()
-	if Slab.BeginWindow("SlabDebug_DrawCommands", SlabDebug_DrawCommands) then
+	SlabDebug_DrawCommands.IsOpen = Slab.BeginWindow("SlabDebug_DrawCommands", SlabDebug_DrawCommands)
 
 		local Info = DrawCommands.GetDebugInfo()
 		for K, V in pairs(Info) do
 			DrawCommands_Item(V, K)
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 function SlabDebug.Performance()
@@ -459,7 +452,7 @@ function SlabDebug.StyleEditor()
 end
 
 function SlabDebug.Input()
-	if Slab.BeginWindow("SlabDebug_Input", SlabDebug_Input) then
+	SlabDebug_Input.IsOpen = Slab.BeginWindow("SlabDebug_Input", SlabDebug_Input)
 
 		local Info = Input.GetDebugInfo()
 		Slab.Text("Focused: " .. Info["Focused"])
@@ -479,8 +472,7 @@ function SlabDebug.Input()
 			Slab.Text("Lines: " .. #Lines)
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 local SlabDebug_MultiLine_Highlight = {
@@ -510,7 +502,7 @@ local SlabDebug_MultiLine_Highlight = {
 local SlabDebug_MultiLine_ShouldHighlight = true
 
 function SlabDebug.MultiLine()
-	if Slab.BeginWindow("SlabDebug_MultiLine", SlabDebug_MultiLine) then
+	SlabDebug_MultiLine.IsOpen = Slab.BeginWindow("SlabDebug_MultiLine", SlabDebug_MultiLine)
 
 		if Slab.Button("Load") then
 			SlabDebug_MultiLine_FileDialog = true
@@ -548,8 +540,7 @@ function SlabDebug.MultiLine()
 			SlabDebug_MultiLine_Contents = Slab.GetInputText()
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 
 	if SlabDebug_MultiLine_FileDialog then
 		local Result = Slab.FileDialog({AllowMultiSelect = false, Type = "openfile"})
@@ -577,7 +568,7 @@ function SlabDebug.Tree()
 
 	local Info = Tree.GetDebugInfo()
 
-	if Slab.BeginWindow("Tree", SlabDebug_Tree) then
+	SlabDebug_Tree.IsOpen = Slab.BeginWindow("Tree", SlabDebug_Tree)
 		Slab.Text("Instances: " .. #Info)
 
 		Slab.BeginLayout("Tree_List_Layout", {ExpandW = true, ExpandH = true})
@@ -590,14 +581,13 @@ function SlabDebug.Tree()
 		Slab.EndListBox()
 		Slab.EndLayout()
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 local SlabDebug_LayoutManager_Selected = nil
 
 function SlabDebug.LayoutManager()
-	if Slab.BeginWindow("LayoutManager", SlabDebug_LayoutManager) then
+	SlabDebug_LayoutManager.IsOpen = Slab.BeginWindow("LayoutManager", SlabDebug_LayoutManager)
 		local Info = LayoutManager.GetDebugInfo()
 
 		Slab.BeginLayout("LayoutManager_Layout", {ExpandW = true})
@@ -624,8 +614,7 @@ function SlabDebug.LayoutManager()
 			end
 		end
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 end
 
 local function MenuItemWindow(Options)

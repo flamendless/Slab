@@ -2509,7 +2509,7 @@ function SlabTest.Begin()
 
 	SlabTest.MainMenuBar()
 
-	if Slab.BeginWindow("SlabTest", SlabTest_Options) then
+	SlabTest_Options.IsOpen = Slab.BeginWindow("SlabTest", SlabTest_Options)
 
 		local W, H = Slab.GetWindowActiveSize()
 
@@ -2527,8 +2527,7 @@ function SlabTest.Begin()
 
 		Selected[2]()
 
-		Slab.EndWindow()
-	end
+	Slab.EndWindow()
 
 	SlabDebug.Begin()
 
