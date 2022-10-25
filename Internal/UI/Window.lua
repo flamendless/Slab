@@ -535,13 +535,13 @@ function Window.Begin(id, opt)
 
 	local show_close = false
 	local def_is_open = opt.IsOpen
-	if def_is_open and type(def_is_open) == "boolean" then
+	if (def_is_open ~= nil) and (type(def_is_open) == "boolean") then
 		active_instance.IsOpen = def_is_open
 		show_close = true
 	end
 
 	local def_is_content_open = opt.IsContentOpen
-	if def_is_content_open and type(def_is_content_open) == "boolean" then
+	if (def_is_content_open ~= nil) and (type(def_is_content_open) == "boolean") then
 		active_instance.IsContentOpen = def_is_content_open
 	end
 
