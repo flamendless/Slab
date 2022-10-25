@@ -2502,38 +2502,33 @@ local Categories = {
 	{"Messages", DrawMessages}
 }
 
-local Selected = nil
+local Selected = Categories[1]
 
 function SlabTest.Begin()
 	local StatHandle = Slab.BeginStat("Slab Test", "Slab Test")
 
 	SlabTest.MainMenuBar()
 
-	if Selected == nil then
-		Selected = Categories[1]
-	end
+	if Slab.BeginWindow("SlabTest", SlabTest_Options) then
 
-	Slab.BeginWindow("SlabTest", SlabTest_Options)
+		local W, H = Slab.GetWindowActiveSize()
 
-	local W, H = Slab.GetWindowActiveSize()
-
-	if Slab.BeginComboBox("Categories", Selected[1], {W = W}) then
-		for I, V in ipairs(Categories) do
-			if Slab.TextSelectable(V[1]) then
-				Selected = Categories[I]
+		if Slab.BeginComboBox("Categories", Selected[1], {W = W}) then
+			for I, V in ipairs(Categories) do
+				if Slab.TextSelectable(V[1]) then
+					Selected = Categories[I]
+				end
 			end
+
+			Slab.EndComboBox()
 		end
 
-		Slab.EndComboBox()
-	end
+		Slab.Separator()
 
-	Slab.Separator()
-
-	if Selected ~= nil and Selected[2] ~= nil then
 		Selected[2]()
-	end
 
-	Slab.EndWindow()
+		Slab.EndWindow()
+	end
 
 	SlabDebug.Begin()
 
