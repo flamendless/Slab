@@ -48,6 +48,7 @@ local Window = {}
 local instances, stack, pending_stack, id_stack = {}, {}, {}, {}
 local id_cache = IDCache()
 local stack_lock_id, active_instance, moving_instance
+local menu_bar_instance
 
 local TITLE_ROUNDING = {0, 0, 0, 0}
 local BODY_ROUNDING = {0, 0, 0, 0}
@@ -165,6 +166,11 @@ local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
 		end
 	elseif Mouse.IsReleased(1) then
 		instance.IsMoving = false
+
+		-- Prevent window going behind MenuBar
+		if menu_bar_instance then
+			instance.TitleDeltaY = -menu_bar_instance.H
+		end
 	end
 
 	if instance.IsMoving then
@@ -180,10 +186,15 @@ local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
 			local ox = instance.X - tdx
 			local oy = instance.Y - tdy
 			instance.TitleDeltaX = Utility.Clamp(
-				instance.TitleDeltaX, - ox, love.graphics.getWidth() - (ox + instance.W))
+				instance.TitleDeltaX,
+				-ox,
+				love.graphics.getWidth() - (ox + instance.W)
+			)
 			instance.TitleDeltaY = Utility.Clamp(
-				instance.TitleDeltaY, - oy + MenuState.MainMenuBarH,
-				love.graphics.getHeight() - (oy + instance.H + instance.TitleH))
+				instance.TitleDeltaY,
+				-oy + MenuState.MainMenuBarH,
+				love.graphics.getHeight() - (oy + instance.H + instance.TitleH)
+			)
 		end
 	elseif is_tethered then
 		Dock.UpdateTear(instance.Id, mx, my)
@@ -430,6 +441,7 @@ function Window.Reset()
 	active_instance.Border = 0
 	active_instance.NoSavedSettings = true
 	insert(pending_stack, 1, active_instance)
+	menu_bar_instance = nil
 end
 
 function Window.Begin(id, opt)
@@ -485,6 +497,10 @@ function Window.Begin(id, opt)
 
 	local instance = GetInstance(id)
 	insert(pending_stack, 1, instance)
+
+	if opt.IsMenuBar then
+		menu_bar_instance = instance
+	end
 
 	if active_instance then
 		active_instance.Children[id] = instance
