@@ -50,6 +50,7 @@ local ActiveInstance = nil
 local MovingInstance = nil
 local IDStack = {}
 local idCache = IdCache()
+local MenuBarInstance
 
 local SizerNone = 0
 local SizerN = 1
@@ -202,6 +203,11 @@ local function UpdateTitleBar(instance, isObstructed, allowMove, constrain)
 			end
 		elseif Mouse.IsReleased(1) then
 			instance.IsMoving = false
+
+			-- Prevent window going behind MenuBar
+			if MenuBarInstance then
+				instance.TitleDeltaY = -MenuBarInstance.H
+			end
 		end
 
 		if instance.IsMoving then
@@ -516,6 +522,7 @@ function Window.Reset()
 	ActiveInstance.Border = 0
 	ActiveInstance.NoSavedSettings = true
 	insert(PendingStack, 1, ActiveInstance)
+	MenuBarInstance = nil
 end
 
 function Window.Begin(id, options)
@@ -568,6 +575,10 @@ function Window.Begin(id, options)
 
 	local instance = GetInstance(id)
 	insert(PendingStack, 1, instance)
+
+	if options.IsMenuBar then
+		MenuBarInstance = instance
+	end
 
 	if ActiveInstance ~= nil then
 		ActiveInstance.Children[id] = instance
