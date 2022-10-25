@@ -81,9 +81,9 @@ local function ConstrainPosition(x, y, w, h)
 	local ox = r >= ww
 	local oy = b >= wh
 	local wx = Window.GetBounds()
-	res_x = ox and x - (r - ww) or res_x
-	res_y = oy and y - h or res_y
-	res_x = ox and wx - w or res_x
+	res_x = ox and (x - (r - ww)) or res_x
+	res_y = oy and (y - h) or res_y
+	res_x = ox and (wx - w) or res_x
 	res_x = max(res_x, 0)
 	res_y = max(res_y, 0)
 	return res_x, res_y
@@ -145,7 +145,7 @@ function Menu.BeginMenu(label, opt)
 			end
 		end
 
-		if Menu.IsOpened and (not opened.good) and res then
+		if MenuState.IsOpened and (not opened.good) and res then
 			win.Selected = id
 		else
 			win.Selected = nil
@@ -207,15 +207,6 @@ function Menu.MenuItemChecked(label, is_checked, opt)
 	return res
 end
 
-function Menu.Separator()
-	-- TODO (Brandon) - what/where is this Context??
-	local ctx = Context.Top()
-	if not ctx.type == Enums.context_type.menu then return end
-	local item = GetItem("Sep_" .. ctx.Data.SeparatorId)
-	item.IsSeparator = true
-	ctx.Data.SeparatorId = ctx.Data.SeparatorId + 1
-end
-
 function Menu.EndMenu()
 	local id = Window.GetId()
 	if not instances[id] then
@@ -259,7 +250,7 @@ function Menu.BeginContextMenu(opt)
 	if not Window.IsObstructedAtMouse() and
 		Window.IsMouseHovered() and
 		Mouse.IsClicked(opt.Button) then
-		local valid_win = opt.IsWindow and not Window.GetHotItem()
+		local valid_win = opt.IsWindow and (Window.GetHotItem() == nil)
 		local valid_item = opt.IsItem
 
 		if valid_win or valid_item then

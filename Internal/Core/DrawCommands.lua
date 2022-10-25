@@ -35,13 +35,20 @@ local remove = table.remove
 local sin = math.sin
 local cos = math.cos
 local rad = math.rad
+local min = math.min
 local max = math.max
 local lg = love.graphics
 
 local DrawCommands = {}
 
 local ordered_layers = {
-	"normal", "dock", "context_menu", "main_menu_bar", "dialog", "debug", "mouse"
+	"normal",
+	"dock",
+	"context_menu",
+	"main_menu_bar",
+	"dialog",
+	"debug",
+	"mouse"
 }
 
 local active_layer = Enums.layers.normal
@@ -268,14 +275,23 @@ end
 local function DrawLayer(layer, name)
 	if not layer then return end
 	local stat_handle = Stats.Begin("Draw Layer " .. name, stats_category)
-	for _, channel in ipairs(layer) do
-		for _, elements in ipairs(channel) do
-			local element_stat_handle = Stats.Begin("Draw Elements", stats_category)
-			for _, element in ipairs(elements) do
-				local e_type = element.type
-				DrawMethods[e_type](element)
+
+	--NOTE we do this because `layer` can have a hole, thus breaking `ipairs`
+	local min_c, max_c = 1e9, 0
+	for i in pairs(layer) do
+		min_c, max_c = min(min_c, i), max(max_c, i)
+	end
+
+	for i = min_c, max_c do
+		local channel = layer[i]
+		if channel then
+			for _, elements in ipairs(channel) do
+				local sh = Stats.Begin("Draw Elements", stats_category)
+				for _, element in ipairs(elements) do
+					DrawMethods[element.type](element)
+				end
+				Stats.End(sh)
 			end
-			Stats.End(element_stat_handle)
 		end
 	end
 	Stats.End(stat_handle)
@@ -300,7 +316,7 @@ end
 
 function DrawCommands.Reset()
 	for _, layer in ipairs(layer_table) do
-		for j, channel in ipairs(layer) do
+		for j, channel in pairs(layer) do
 			for _, batch in ipairs(channel) do
 				ClearBatch(batch)
 			end

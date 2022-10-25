@@ -41,11 +41,16 @@ local Region = require(SLAB_PATH .. ".Internal.UI.Region")
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Style = require(SLAB_PATH .. ".Style")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local IDCache = require(SLAB_PATH .. ".Internal.Core.IdCache")
 
 local Window = {}
 
 local instances, stack, pending_stack, id_stack = {}, {}, {}, {}
+local id_cache = IDCache()
 local stack_lock_id, active_instance, moving_instance
+
+local TITLE_ROUNDING = {0, 0, 0, 0}
+local BODY_ROUNDING = {0, 0, 0, 0}
 
 local function UpdateStackIndex()
 	for i = 1, #stack do
@@ -134,8 +139,8 @@ local function UpdateTitleBar(instance, is_obstructed, allow_move, constrain)
 		return
 	end
 
-	if not instance or instance.Title == STR_EMPTY or
-		instance.SizerType ~= Enums.sizer_type.None then
+	if (not instance) or (instance.Title == STR_EMPTY) or
+		(instance.SizerType ~= Enums.sizer_type.None) then
 		return
 	end
 
@@ -370,7 +375,7 @@ function Window.IsObstructed(x, y, skip)
 	if Region.IsScrolling() then return true end
 	if #stack == 0 then return false end
 	if not active_instance then return false end
-	if (not active_instance.IsOpen) or (not active_instance.IsContentOpen) or
+	if (not active_instance.IsOpen) or (active_instance.IsContentOpen == false) or
 		(active_instance.IsAppearing) then
 		return true
 	end
@@ -416,17 +421,16 @@ function Window.IsObstructedAtMouse()
 end
 
 function Window.Reset()
-	Utility.ClearTable(pending_stack)
+	for i = 1, #pending_stack do
+		pending_stack[i] = nil
+	end
+	-- Utility.ClearTable(pending_stack)
 	active_instance = GetInstance("Global")
-	active_instance.W = love.graphics.getWidth()
-	active_instance.H = love.graphics.getHeight()
+	active_instance.W, active_instance.H = love.graphics.getDimensions()
 	active_instance.Border = 0
 	active_instance.NoSavedSettings = true
 	insert(pending_stack, 1, active_instance)
 end
-
-local TITLE_ROUNDING = {0, 0, 0, 0}
-local BODY_ROUNDING = {0, 0, 0, 0}
 
 function Window.Begin(id, opt)
 	local font = Style.Font
@@ -536,7 +540,6 @@ function Window.Begin(id, opt)
 		show_close = true
 	end
 
-	local show_minimize = def_show_minimize
 	local def_is_content_open = opt.IsContentOpen
 	if def_is_content_open and type(def_is_content_open) == "boolean" then
 		active_instance.IsContentOpen = def_is_content_open
@@ -544,7 +547,7 @@ function Window.Begin(id, opt)
 
 	if active_instance.IsOpen then
 		local cur_frame = Stats.GetFrameNumber()
-		active_instance.IsAppearing = cur_frame - active_instance.FrameNumber > 1
+		active_instance.IsAppearing = (cur_frame - active_instance.FrameNumber) > 1
 		active_instance.FrameNumber = cur_frame
 		if active_instance.StackIndex == 0 then
 			insert(stack, 1, active_instance)
@@ -583,14 +586,14 @@ function Window.Begin(id, opt)
 	UpdateTitleBar(active_instance, is_obs, def_allow_move, def_constrain_pos)
 	DrawCommands.SetLayer(active_instance.Layer)
 	DrawCommands.Begin(active_instance.StackIndex)
+	local show_minimize = def_show_minimize
 	Window.HandleTitleBar(opt, oy, is_obs, show_close, show_minimize, title_rounding)
 
 	local ww, wh = love.graphics.getDimensions()
-	local region_w = active_instance.W
+	local region_w, region_h = active_instance.W, active_instance.H
 	if active_instance.X + active_instance.W > ww then
 		region_w = ww - active_instance.X
 	end
-	local region_h = active_instance.H
 	if active_instance.Y + active_instance.H > wh then
 		region_h = wh - active_instance.Y
 	end
@@ -729,7 +732,10 @@ end
 function Window.End()
 	if not active_instance then return end
 	local handle = active_instance.StatHandle
-	Utility.ClearTable(id_stack)
+	-- Utility.ClearTable(id_stack)
+	for i = 1, #id_stack do
+		id_stack[i] = nil
+	end
 	Region.End()
 	DrawCommands.End(not active_instance.IsOpen)
 	remove(pending_stack, 1)
@@ -893,7 +899,7 @@ end
 function Window.GetItemId(id)
 	if not active_instance then return end
 	if not active_instance.Items[id] then
-		active_instance.Items[id] = active_instance.Id .. "." .. id
+		active_instance.Items[id] = id_cache:get(active_instance.Id, id)
 	end
 	local res = active_instance.Items[id]
 	if #id_stack > 0 then

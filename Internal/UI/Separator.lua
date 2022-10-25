@@ -24,7 +24,6 @@ SOFTWARE.
 
 --]]
 
-local love = require("love")
 local max = math.max
 
 local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
@@ -49,8 +48,9 @@ function Separator.Begin(opt)
 	local x, y = Cursor.GetPosition()
 
 	if def_include then
-		w = w + Window.GetBorder() * 2
-		x = x - Window.GetBorder()
+		border = Window.GetBorder()
+		w = w + border * 2
+		x = x - border
 	end
 
 	DrawCommands.Line(x, y + h * 0.5, x + w, y + h * 0.5, def_thickness, Style.SeparatorColor)

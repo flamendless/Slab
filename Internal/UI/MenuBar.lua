@@ -33,10 +33,12 @@ local Window = require(SLAB_PATH .. ".Internal.UI.Window")
 local MenuBar = {}
 local instances = {}
 
+local STR_MB = "_MenuBar"
+
 local function GetInstance()
 	local win = Window.Top()
 	if not instances[win] then
-		instances[win] = {Id = win.Id .. "_MenuBar"}
+		instances[win] = {Id = win.Id .. STR_MB}
 	end
 	return instances[win]
 end
@@ -49,7 +51,9 @@ function MenuBar.Begin(is_main_menu_bar)
 		instance.Selected = nil
 	end
 	local fh = Style.Font:getHeight()
-	MenuState.MainMenuBarH = is_main_menu_bar and fh or MenuState.MainMenuBarH
+	if is_main_menu_bar then
+		MenuState.MainMenuBarH = fh
+	end
 	Window.Begin(instance.Id, {
 		X = x, Y = y,
 		W = ww, H = fh,
@@ -58,7 +62,7 @@ function MenuBar.Begin(is_main_menu_bar)
 		BgColor = Style.MenuColor,
 		NoOutline = true, IsMenuBar = true,
 		AutoSizeWindow = false, AutoSizeContent = false,
-		Layer = is_main_menu_bar and Enums.layers.main_menu_bar,
+		Layer = is_main_menu_bar and Enums.layers.main_menu_bar or nil,
 		Rounding = 0,
 		NoSavedSettings = true
 	})
