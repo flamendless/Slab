@@ -806,8 +806,8 @@ end
 	Return: [Boolean] Returns true if the user right clicks on the previous item call. EndContextMenu must be called in order for
 		this to function properly.
 --]]
-function Slab.BeginContextMenuItem(Button)
-	return Menu.BeginContextMenu({IsItem = true, Button = Button})
+function Slab.BeginContextMenuItem(btn)
+	return Menu.BeginContextMenu({IsItem = true, Button = btn})
 end
 
 --[[
@@ -822,8 +822,8 @@ end
 	Return: [Boolean] Returns true if the user right clicks anywhere within the window. EndContextMenu must be called in order for this
 		to function properly.
 --]]
-function Slab.BeginContextMenuWindow(Button)
-	return Menu.BeginContextMenu({IsWindow = true, Button = Button})
+function Slab.BeginContextMenuWindow(btn)
+	return Menu.BeginContextMenu({IsWindow = true, Button = btn})
 end
 
 --[[
@@ -1810,8 +1810,8 @@ end
 
 	Return: [Boolean] True if the given button is down. False otherwise.
 --]]
-function Slab.IsMouseDown(Button)
-	return Mouse.IsDown(Button and Button or 1)
+function Slab.IsMouseDown(btn)
+	return Mouse.IsDown(btn or 1)
 end
 
 --[[
@@ -1823,8 +1823,8 @@ end
 
 	Return: [Boolean] True if the given button changes state from up to down. False otherwise.
 --]]
-function Slab.IsMouseClicked(Button)
-	return Mouse.IsClicked(Button and Button or 1)
+function Slab.IsMouseClicked(btn)
+	return Mouse.IsClicked(btn or 1)
 end
 
 --[[
@@ -1836,8 +1836,8 @@ end
 
 	Return: [Boolean] True if the given button changes state from down to up. False otherwise.
 --]]
-function Slab.IsMouseReleased(Button)
-	return Mouse.IsReleased(Button and Button or 1)
+function Slab.IsMouseReleased(btn)
+	return Mouse.IsReleased(btn or 1)
 end
 
 --[[
@@ -1849,8 +1849,8 @@ end
 
 	Return: [Boolean] True if the given button was double clicked. False otherwise.
 --]]
-function Slab.IsMouseDoubleClicked(Button)
-	return Mouse.IsDoubleClicked(Button and Button or 1)
+function Slab.IsMouseDoubleClicked(btn)
+	return Mouse.IsDoubleClicked(btn or 1)
 end
 
 --[[
@@ -1862,8 +1862,8 @@ end
 
 	Return: [Boolean] True if the button is held down and is moving. False otherwise.
 --]]
-function Slab.IsMouseDragging(Button)
-	return Mouse.IsDragging(Button and Button or 1)
+function Slab.IsMouseDragging(btn)
+	return Mouse.IsDragging(btn or 1)
 end
 
 --[[
@@ -1933,13 +1933,13 @@ end
 --]]
 function Slab.IsControlHovered()
 	-- Prevent hovered checks on mobile if user is not dragging a touch.
-	if Utility.IsMobile() and not Slab.IsMouseDown() then
+	if Utility.IsMobile() and (not Slab.IsMouseDown()) then
 		return false
 	end
 
 	local Result = Window.IsItemHot()
 
-	if not Result and not Window.IsObstructedAtMouse() then
+	if (not Result) and (not Window.IsObstructedAtMouse()) then
 		local X, Y = Slab.GetMousePositionWindow()
 		Result = Cursor.IsInItemBounds(X, Y)
 	end
@@ -1956,8 +1956,8 @@ end
 
 	Return: [Boolean] True if the previous control is hovered and clicked. False otherwise.
 --]]
-function Slab.IsControlClicked(Button)
-	return Slab.IsControlHovered() and Slab.IsMouseClicked(Button)
+function Slab.IsControlClicked(btn)
+	return Slab.IsControlHovered() and Slab.IsMouseClicked(btn)
 end
 
 --[[
@@ -1997,8 +1997,8 @@ end
 
 	Return: [Boolean] True if any non-Slab area of the viewport is clicked. False otherwise.
 --]]
-function Slab.IsVoidClicked(Button)
-	return Slab.IsMouseClicked(Button) and Slab.IsVoidHovered()
+function Slab.IsVoidClicked(btn)
+	return Slab.IsMouseClicked(btn) and Slab.IsVoidHovered()
 end
 
 --[[

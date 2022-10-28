@@ -898,8 +898,10 @@ function Window.GetHotItem()
 end
 
 function Window.IsItemHot()
-	if not active_instance then return false end
-	return active_instance.HotItem == active_instance.LastItem
+	if (active_instance ~= nil) and (active_instance.LastItem ~= nil) then
+		return active_instance.HotItem == active_instance.LastItem
+	end
+	return false
 end
 
 function Window.GetContextHotItem()

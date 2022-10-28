@@ -53,6 +53,15 @@ local current_color = {1, 1, 1, 1}
 local color_h = 25
 
 local STR_CP = "ColorPicker_"
+local TBL_EMPTY = {}
+local TBL_ALIGNX = {AlignX = "right"}
+local COLOR_WHITE = {1, 1, 1, 1}
+local STR_HASH2 = "##"
+local STR_HASH4 = "####"
+local STR_NEW = "New"
+local STR_OLD = "Old"
+local TBL_CP = {Title = "ColorPicker"}
+local PATH = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Transparency.png"
 
 local function InputColor(component, value, offset_x)
 	local changed = false
@@ -183,13 +192,80 @@ local function InitializeAlphaMesh()
 	alpha_mesh = love.graphics.newMesh(verts)
 end
 
-local TBL_EMPTY = {}
-local TBL_ALIGNX = {AlignX = "right"}
-local COLOR_WHITE = {1, 1, 1, 1}
-local STR_HASH2 = "##"
-local STR_HASH4 = "####"
-local STR_NEW = "New"
-local STR_OLD = "Old"
+local function DrawSat(x, y, mx, my, s, v, dragging, mouse_clicked)
+	for _, v2 in ipairs(sat_meshes) do
+		DrawCommands.Mesh(v2, x, y)
+	end
+	Window.AddItem(x, y, sat_size, sat_size)
+
+	local update_sat = false
+	if (x <= mx and mx < x + sat_size and y <= my and my < y + sat_size) and mouse_clicked then
+		sat_focused = true
+		update_sat = true
+	end
+
+	update_sat = sat_focused and dragging or update_sat
+	if update_sat then
+		local cx = max(mx - x, 0)
+		local cy = max(my - y, 0)
+		cx = min(cx, sat_size)
+		cy = min(cy, sat_size)
+		s = cx/sat_size
+		v = 1 - (cy/sat_size)
+		update_color = true
+	end
+
+	local sat_x = s * sat_size
+	local sat_y = (1 - v) * sat_size
+	DrawCommands.Circle("line", x + sat_x, y + sat_y, 4, COLOR_WHITE)
+	x = x + sat_size + Cursor.PadX()
+end
+
+local function DrawTint(x, y, mx, my, h, dragging, mouse_clicked)
+	for _, v2 in ipairs(tint_meshes) do
+		DrawCommands.Mesh(v2, x, y)
+	end
+	Window.AddItem(x, y, tint_w, tint_h)
+
+	local update_tint = false
+	if x <= mx and mx < x + tint_w and y <= my and my < y + tint_h and mouse_clicked then
+		tint_focused = true
+		update_tint = true
+	end
+	update_tint = tint_focused and dragging or update_tint
+
+	if update_tint then
+		local cy = max(my - y, 0)
+		cy = min(cy, tint_h)
+		h = cy/tint_h
+		update_color = true
+	end
+
+	local tint_y = h * tint_h
+	DrawCommands.Line(x, y + tint_y, x + tint_w, y + tint_y, 2, COLOR_WHITE)
+	x = x + tint_w + Cursor.PadX()
+	DrawCommands.Mesh(alpha_mesh, x, y)
+	Window.AddItem(x, y, alpha_w, alpha_h)
+
+	local update_alpha = false
+	if x <= mx and mx < x + alpha_w and y <= my and my < y + alpha_h and mouse_clicked then
+		alpha_focused = true
+		update_alpha = true
+	end
+	update_alpha = alpha_focused and dragging or update_alpha
+
+	if update_alpha then
+		local cy = max(my - y, 0)
+		cy = min(cy, alpha_w)
+		current_color[4] = 1 - cy/alpha_h
+		update_color = true
+	end
+	local a = 1 - current_color[4]
+	local ay = a * alpha_h
+	DrawCommands.Line(x, y + ay, x + alpha_w, y + ay, 2, {a, a, a, 1})
+	-- y = y + alpha_h + Cursor.PadY()
+end
+
 function ColorPicker.Begin(opt)
 	opt = opt or TBL_EMPTY
 	local color = opt.Color or COLOR_WHITE
@@ -207,181 +283,114 @@ function ColorPicker.Begin(opt)
 		InitializeAlphaMesh()
 	end
 
-	Window.Begin("ColorPicker", {Title = "Color Picker", X = opt.X, Y = opt.Y})
-
-	if Window.IsAppearing() or refresh then
-		current_color[1] = color[1] or 0
-		current_color[2] = color[2] or 0
-		current_color[3] = color[3] or 0
-		current_color[4] = color[4] or 1
-		UpdateSaturationColors()
-	end
-
-	local x, y = Cursor.GetPosition()
-	local mx, my = Window.GetMousePosition()
-	local h, s, v = Utility.RGBtoHSV(current_color[1], current_color[2], current_color[3])
-	local update_color = false
-	local mouse_clicked = Mouse.IsClicked(1) and not Window.IsObstructedAtMouse()
-	local dragging = Mouse.IsDragging(1)
-
-	if sat_meshes then
-		for _, v2 in ipairs(sat_meshes) do
-			DrawCommands.Mesh(v2, x, y)
-		end
-		Window.AddItem(x, y, sat_size, sat_size)
-
-		local update_sat = false
-		if x <= mx and mx < x + sat_size and y <= my and my < y + sat_size then
-			if mouse_clicked then
-				sat_focused = true
-				update_sat = true
-			end
+	TBL_CP.X, TBL_CP.Y = opt.X, opt.Y
+	Window.Begin("ColorPicker", TBL_CP)
+		if Window.IsAppearing() or refresh then
+			current_color[1] = color[1] or 0
+			current_color[2] = color[2] or 0
+			current_color[3] = color[3] or 0
+			current_color[4] = color[4] or 1
+			UpdateSaturationColors()
 		end
 
-		update_sat = sat_focused and dragging or update_sat
+		local x, y = Cursor.GetPosition()
+		local mx, my = Window.GetMousePosition()
+		local h, s, v = Utility.RGBtoHSV(current_color[1], current_color[2], current_color[3])
+		local update_color = false
+		local mouse_clicked = Mouse.IsClicked(1) and (not Window.IsObstructedAtMouse())
+		local dragging = Mouse.IsDragging(1)
 
-		if update_sat then
-			local cx = max(mx - x, 0)
-			local cy = max(my - y, 0)
-			cx = min(cx, sat_size)
-			cy = min(cy, sat_size)
-			s = cx/sat_size
-			v = 1 - (cy/sat_size)
-			update_color = true
+		if sat_meshes then
+			DrawSat(x, y, mx, my, s, v, dragging, mouse_clicked)
 		end
 
-		local sat_x = s * sat_size
-		local sat_y = (1 - v) * sat_size
-		DrawCommands.Circle("line", x + sat_x, y + sat_y, 4, COLOR_WHITE)
-		x = x + sat_size + Cursor.PadX()
-	end
-
-	if tint_meshes then
-		for _, v2 in ipairs(tint_meshes) do
-			DrawCommands.Mesh(v2, x, y)
-		end
-		Window.AddItem(x, y, tint_w, tint_h)
-
-		local update_tint = false
-		if x <= mx and mx < x + tint_w and y <= my and my < y + tint_h and mouse_clicked then
-			tint_focused = true
-			update_tint = true
-		end
-		update_tint = tint_focused and dragging or update_tint
-
-		if update_tint then
-			local cy = max(my - y, 0)
-			cy = min(cy, tint_h)
-			h = cy/tint_h
-			update_color = true
+		if tint_meshes then
+			DrawTint(x, y, mx, my, h, dragging, mouse_clicked)
 		end
 
-		local tint_y = h * tint_h
-		DrawCommands.Line(x, y + tint_y, x + tint_w, y + tint_y, 2, COLOR_WHITE)
-		x = x + tint_w + Cursor.PadX()
-		DrawCommands.Mesh(alpha_mesh, x, y)
-		Window.AddItem(x, y, alpha_w, alpha_h)
-
-		local update_alpha = false
-		if x <= mx and mx < x + alpha_w and y <= my and my < y + alpha_h and mouse_clicked then
-			alpha_focused = true
-			update_alpha = true
+		if update_color then
+			current_color[1], current_color[2], current_color[3] = Utility.HSVtoRGB(h, s, v)
+			UpdateSaturationColors()
 		end
-		update_alpha = alpha_focused and dragging or update_alpha
 
-		if update_alpha then
-			local cy = max(my - y, 0)
-			cy = min(cy, alpha_w)
-			current_color[4] = 1 - cy/alpha_h
-			update_color = true
+		local ox = Text.GetWidth(STR_HASH2)
+		Cursor.AdvanceY(sat_size)
+		y = Cursor.GetY()
+		local r, g, b, a = unpack(current_color)
+		current_color[1], changed_r = InputColor("R", r, ox)
+		current_color[2], changed_g = InputColor("G", g, ox)
+		current_color[3], changed_b = InputColor("B", b, ox)
+		current_color[4], changed_a = InputColor("A", a, ox)
+
+		if changed_r or changed_g or changed_b or changed_a then
+			UpdateSaturationColors()
 		end
-		local a = 1 - current_color[4]
-		local ay = a * alpha_h
-		DrawCommands.Line(x, y + ay, x + alpha_w, y + ay, 2, {a, a, a, 1})
-		-- y = y + alpha_h + Cursor.PadY()
-	end
 
-	if update_color then
-		current_color[1], current_color[2], current_color[3] = Utility.HSVtoRGB(h, s, v)
-		UpdateSaturationColors()
-	end
+		local ix, iy = Cursor.GetPosition()
+		Cursor.SameLine()
+		x = Cursor.GetX()
+		Cursor.SetY(y)
 
-	local ox = Text.GetWidth(STR_HASH2)
-	Cursor.AdvanceY(sat_size)
-	y = Cursor.GetY()
-	local r, g, b, a = unpack(current_color)
-	current_color[1], r = InputColor("R", r, ox)
-	current_color[2], g = InputColor("G", g, ox)
-	current_color[3], b = InputColor("B", b, ox)
-	current_color[4], a = InputColor("A", a, ox)
+		local wx = Window.GetBounds()
+		local ww = Window.GetBorderlessSize()
+		ox = Text.GetWidth(STR_HASH4)
 
-	if r or g or b or a then
-		UpdateSaturationColors()
-	end
+		local color_x = x + ox
+		local color_w = (wx + ww) - color_x
+		Cursor.SetPosition(color_x, y)
+		local br = Style.ButtonRounding
 
-	local ix, iy = Cursor.GetPosition()
-	Cursor.SameLine()
-	x = Cursor.GetX()
-	Cursor.SetY(y)
+		Image.Begin("ColorPicker_CurrentAlpha", {
+			Path = PATH,
+			SubW = color_w,
+			SubH = color_h,
+			WrapH = "repeat",
+			WrapV = "repeat"
+		})
+		DrawCommands.Rectangle("fill", color_x, y, color_w, color_h, current_color, br)
+		local label_w, label_h = Text.GetSize(STR_NEW)
+		Cursor.SetPosition(
+			color_x - label_w - Cursor.PadX(),
+			y + (color_h * 0.5) - (label_h * 0.5)
+		)
+		Text.Begin(STR_NEW)
+		y = y + color_h + Cursor.PadY()
+		Cursor.SetPosition(color_x, y)
+		Image.Begin("ColorPicker_CurrentAlpha", {
+			Path = PATH,
+			SubW = color_w,
+			SubH = color_h,
+			WrapH = "repeat",
+			WrapV = "repeat"
+		})
+		DrawCommands.Rectangle("fill", color_x, y, color_w, color_h, color, br)
 
-	local wx = Window.GetBounds()
-	local ww = Window.GetBorderlessSize()
-	ox = Text.GetWidth(STR_HASH4)
+		label_w, label_h = Text.GetSize(STR_OLD)
+		Cursor.SetPosition(color_x - label_w - Cursor.PadX(),
+			y + (color_h * 0.5) - (label_h * 0.5))
+		Text.Begin(STR_OLD)
 
-	local color_x = x + ox
-	local color_w = (wx + ww) - color_x
-	Cursor.SetPosition(color_x, y)
-	local br = Style.ButtonRounding
+		if Mouse.IsReleased(1) then
+			sat_focused, tint_focused, alpha_focused = false, false, false
+		end
 
-	Image.Begin("ColorPicker_CurrentAlpha", {
-		Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Transparency.png",
-		SubW = color_w,
-		SubH = color_h,
-		WrapH = "repeat",
-		WrapV = "repeat"
-	})
-	DrawCommands.Rectangle("fill", color_x, y, color_w, color_h, current_color, br)
-	local label_w, label_h = Text.GetSize(STR_NEW)
-	Cursor.SetPosition(color_x - label_w - Cursor.PadX(),
-		y + (color_h * 0.5) - (label_h * 0.5))
-	Text.Begin(STR_NEW)
-	y = y + color_h + Cursor.PadY()
-	Cursor.SetPosition(color_x, y)
-	Image.Begin("ColorPicker_CurrentAlpha", {
-		Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Transparency.png",
-		SubW = color_w,
-		SubH = color_h,
-		WrapH = "repeat",
-		WrapV = "repeat"
-	})
-	DrawCommands.Rectangle("fill", color_x, y, color_w, color_h, color, br)
+		Cursor.SetPosition(ix, iy)
+		Cursor.NewLine()
 
-	label_w, label_h = Text.GetSize(STR_OLD)
-	Cursor.SetPosition(color_x - label_w - Cursor.PadX(),
-		y + (color_h * 0.5) - (label_h * 0.5))
-	Text.Begin(STR_OLD)
+		LayoutManager.Begin("ColorPicker_Buttons_Layout", TBL_ALIGNX)
+		local res = {Button = 0, Color = Utility.MakeColor(current_color)}
 
-	if Mouse.IsReleased(1) then
-		sat_focused, tint_focused, alpha_focused = false, false, false
-	end
+		if Button.Begin("OK") then
+			res.Button = 1
+		end
 
-	Cursor.SetPosition(ix, iy)
-	Cursor.NewLine()
+		LayoutManager.SameLine()
 
-	LayoutManager.Begin("ColorPicker_Buttons_Layout", TBL_ALIGNX)
-	local res = {Button = 0, Color = Utility.MakeColor(current_color)}
-
-	if Button.Begin("OK") then
-		res.Button = 1
-	end
-
-	LayoutManager.SameLine()
-
-	if Button.Begin("Cancel") then
-		res.Button = -1
-		res.Color = Utility.MakeColor(color)
-	end
-	LayoutManager.End()
+		if Button.Begin("Cancel") then
+			res.Button = -1
+			res.Color = Utility.MakeColor(color)
+		end
+		LayoutManager.End()
 	Window.End()
 	return res
 end
