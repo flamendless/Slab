@@ -300,6 +300,19 @@ local function OnQuit()
 end
 
 --[[
+	Event forwarding
+--]]
+
+Slab.OnTextInput = TextInput;
+Slab.OnWheelMoved = WheelMoved;
+Slab.OnQuit = OnQuit;
+Slab.OnKeyPressed = Keyboard.OnKeyPressed;
+Slab.OnKeyReleased = Keyboard.OnKeyReleased;
+Slab.OnMouseMoved = Mouse.OnMouseMoved
+Slab.OnMousePressed = Mouse.OnMousePressed;
+Slab.OnMouseReleased = Mouse.OnMouseReleased;
+
+--[[
 	Initialize
 
 	Initializes Slab and hooks into the required events. This function should be called in love.load.
@@ -311,20 +324,12 @@ end
 
 	Return: None.
 --]]
-function Slab.Initialize(args)
+function Slab.Initialize(args, dontInterceptEventHandlers)
 	if Initialized then
 		return
 	end
 
 	Style.API.Initialize()
-	love.handlers['textinput'] = TextInput
-	love.handlers['wheelmoved'] = WheelMoved
-
-	-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
-	-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
-	-- the stored function once Slab is finished with its process.
-	QuitFn = love.quit
-	love.quit = OnQuit
 
 	args = args or {}
 	if type(args) == 'table' then
@@ -337,8 +342,19 @@ function Slab.Initialize(args)
 		end
 	end
 
-	Keyboard.Initialize(args)
-	Mouse.Initialize(args)
+	if not dontInterceptEventHandlers then
+		love.handlers['textinput'] = TextInput
+		love.handlers['wheelmoved'] = WheelMoved
+
+		-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
+		-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
+		-- the stored function once Slab is finished with its process.
+		QuitFn = love.quit
+		love.quit = OnQuit
+	end
+
+	Keyboard.Initialize(args, dontInterceptEventHandlers)
+	Mouse.Initialize(args, dontInterceptEventHandlers)
 
 	LoadState()
 
