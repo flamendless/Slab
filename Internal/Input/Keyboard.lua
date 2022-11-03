@@ -93,11 +93,16 @@ local function ProcessEvents()
 	Events = NextEvents
 end
 
-function Keyboard.Initialize(Args)
-	KeyPressedFn = love.handlers['keypressed']
-	KeyReleasedFn = love.handlers['keyreleased']
-	love.handlers['keypressed'] = OnKeyPressed
-	love.handlers['keyreleased'] = OnKeyReleased
+Keyboard.OnKeyPressed = OnKeyPressed;
+Keyboard.OnKeyReleased = OnKeyReleased;
+
+function Keyboard.Initialize(Args, dontInterceptEventHandlers)
+	if not dontInterceptEventHandlers then
+		KeyPressedFn = love.handlers['keypressed']
+		KeyReleasedFn = love.handlers['keyreleased']
+		love.handlers['keypressed'] = OnKeyPressed
+		love.handlers['keyreleased'] = OnKeyReleased
+	end
 end
 
 function Keyboard.Update()

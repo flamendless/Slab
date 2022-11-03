@@ -129,15 +129,21 @@ local function ProcessEvents()
 	end
 end
 
-function Mouse.Initialize(Args)
+Mouse.OnMouseMoved = OnMouseMoved;
+Mouse.OnMousePressed = OnMousePressed;
+Mouse.OnMouseReleased = OnMouseReleased;
+
+function Mouse.Initialize(Args, dontInterceptEventHandlers)
 	TransformPoint = Args.TransformPointToSlab or TransformPoint
 
-	MouseMovedFn = love.handlers['mousemoved']
-	MousePressedFn = love.handlers['mousepressed']
-	MouseReleasedFn = love.handlers['mousereleased']
-	love.handlers['mousemoved'] = OnMouseMoved
-	love.handlers['mousepressed'] = OnMousePressed
-	love.handlers['mousereleased'] = OnMouseReleased
+	if not dontInterceptEventHandlers then
+		MouseMovedFn = love.handlers['mousemoved']
+		MousePressedFn = love.handlers['mousepressed']
+		MouseReleasedFn = love.handlers['mousereleased']
+		love.handlers['mousemoved'] = OnMouseMoved
+		love.handlers['mousepressed'] = OnMousePressed
+		love.handlers['mousereleased'] = OnMouseReleased
+	end
 end
 
 function Mouse.Update()
