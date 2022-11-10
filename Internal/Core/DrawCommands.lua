@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 
 local insert = table.insert
 local remove = table.remove
@@ -711,6 +712,8 @@ end
 
 function DrawCommands.Execute()
 	local StatHandle = Stats.Begin('Execute', StatsCategory)
+
+    graphics.scale(Scale.GetScale())
 
 	DrawLayer(LayerTable[LayerNormal], 'Normal')
 	DrawLayer(LayerTable[LayerDock], 'Dock')

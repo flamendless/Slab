@@ -39,6 +39,7 @@ local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Config = require(SLAB_PATH .. '.Internal.Core.Config')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
@@ -245,6 +246,7 @@ local IsDefault = true
 local QuitFn = nil
 local Verbose = false
 local Initialized = false
+
 
 local function LoadState()
 	if INIStatePath == nil then return end
@@ -533,6 +535,33 @@ end
 function Slab.GetStyle()
 	return Style
 end
+
+
+--[[
+    SetScale
+
+    Sets the rendering scale for the Slab context.
+
+	scaleFactor: [number] The scale factor to use
+
+	Return: None.
+--]]
+function Slab.SetScale(scaleFactor)
+    Scale.SetScale(scaleFactor)
+end
+
+
+--[[
+    GetScale
+
+	Retrieve the scale of the current Slab context.
+
+	Return: [number] The current scale.
+--]]
+function Slab.GetScale()
+    return Scale.GetScale()
+end
+
 
 --[[
 	PushFont

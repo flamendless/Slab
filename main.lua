@@ -36,6 +36,7 @@ function love.load(args)
 end
 
 function love.update(dt)
+    Slab.SetScale(2)
 	Slab.Update(dt)
 	SlabTest.Begin()
 end
