@@ -527,10 +527,14 @@ function DrawCommands.Scissor(X, Y, W, H)
     local SF = Scale.GetScale()
 	local Item = pool[TypeScissor]:pull()
 	Item.Type = TypeScissor
-	Item.X = (X or 0.0) * SF
-	Item.Y = (Y or 0.0) * SF
-	Item.W = (W or 0.0) * SF 
-	Item.H = (H or 0.0) * SF
+    if X then X = X * SF end
+    if Y then Y = Y * SF end
+    if W then W = W * SF end
+    if H then H = H * SF end
+	Item.X = X
+	Item.Y = Y
+	Item.W = W
+	Item.H = H
 	insert(ActiveBatch, Item)
 end
 
