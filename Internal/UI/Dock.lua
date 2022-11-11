@@ -29,6 +29,8 @@ local MenuState = require(SLAB_PATH .. '.Internal.UI.MenuState')
 local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
 local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+
 
 local Dock = {}
 
@@ -68,7 +70,7 @@ end
 
 local function GetOverlayBounds(Type)
 	local X, Y, W, H = 0, 0, 0, 0
-	local ViewW, ViewH = love.graphics.getWidth(), love.graphics.getHeight()
+	local ViewW, ViewH = Scale.GetScreenDimensions()
 	local Offset = 75
 
 	if Type == 'Left' then
@@ -172,7 +174,7 @@ end
 
 function Dock.GetBounds(Type, Options)
 	local X, Y, W, H = 0, 0, 0, 0
-	local ViewW, ViewH = love.graphics.getWidth(), love.graphics.getHeight()
+	local ViewW, ViewH = Scale.GetScreenDimensions()
 	local MainMenuBarH = MenuState.MainMenuBarH
 	local TitleH = Style.Font:getHeight()
 

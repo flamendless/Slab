@@ -35,6 +35,8 @@ local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
 local Style = require(SLAB_PATH .. '.Style')
 local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+
 
 local Menu = {}
 local Instances = {}
@@ -73,11 +75,11 @@ local function ConstrainPosition(X, Y, W, H)
 
 	local Right = X + W
 	local Bottom = Y + H
-	local OffsetX = Right >= love.graphics.getWidth()
-	local OffsetY = Bottom >= love.graphics.getHeight()
+	local OffsetX = Right >= Scale.GetScreenWidth()
+	local OffsetY = Bottom >= Scale.GetScreenHeight()
 
 	if OffsetX then
-		ResultX = X - (Right - love.graphics.getWidth())
+		ResultX = X - (Right - Scale.GetScreenWidth())
 	end
 
 	if OffsetY then

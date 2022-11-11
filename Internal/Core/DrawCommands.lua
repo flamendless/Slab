@@ -26,6 +26,7 @@ SOFTWARE.
 
 local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 
 local insert = table.insert
 local remove = table.remove
@@ -523,8 +524,13 @@ function DrawCommands.Scissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
+	local SF = Scale.GetScale()
 	local Item = pool[TypeScissor]:pull()
 	Item.Type = TypeScissor
+	if X then X = X * SF end
+	if Y then Y = Y * SF end
+	if W then W = W * SF end
+	if H then H = H * SF end
 	Item.X = X
 	Item.Y = Y
 	Item.W = W
@@ -540,12 +546,13 @@ function DrawCommands.IntersectScissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
+	local SF = Scale.GetScale()
 	local Item = pool[TypeIntersectScissor]:pull()
 	Item.Type = TypeIntersectScissor
-	Item.X = X and X or 0.0
-	Item.Y = Y and Y or 0.0
-	Item.W = W and W or 0.0
-	Item.H = H and H or 0.0
+	Item.X = (X or 0.0) * SF
+	Item.Y = (Y or 0.0) * SF
+	Item.W = (W or 0.0) * SF
+	Item.H = (H or 0.0) * SF
 	insert(ActiveBatch, Item)
 end
 
@@ -711,6 +718,8 @@ end
 
 function DrawCommands.Execute()
 	local StatHandle = Stats.Begin('Execute', StatsCategory)
+
+	graphics.scale(Scale.GetScale())
 
 	DrawLayer(LayerTable[LayerNormal], 'Normal')
 	DrawLayer(LayerTable[LayerDock], 'Dock')
