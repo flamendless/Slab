@@ -60,17 +60,17 @@ local eventPool = TablePool()
 local CustomCursors = {}
 
 local function ScaleMouseXY(X, Y)
-    local scale = Scale.GetScale()
-    return X / scale, Y / scale
+	local scale = Scale.GetScale()
+	return X / scale, Y / scale
 end
 
 local function ScaleMouseDXDY(Dx, Dy)
-    local scale = Scale.GetScale()
-    return Dx / scale, Dy / scale
+	local scale = Scale.GetScale()
+	return Dx / scale, Dy / scale
 end
 
 local function TransformPoint(X,Y)
-    return ScaleMouseXY(X, Y)
+	return ScaleMouseXY(X, Y)
 end
 
 local function OnMouseMoved(X, Y, DX, DY, IsTouch)
@@ -78,7 +78,7 @@ local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 	State.X = X
 	State.Y = Y
 
-    DX, DY = ScaleMouseDXDY(DX, DY)
+	DX, DY = ScaleMouseDXDY(DX, DY)
 	State.AsyncDeltaX = State.AsyncDeltaX + DX
 	State.AsyncDeltaY = State.AsyncDeltaY + DY
 

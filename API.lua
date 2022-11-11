@@ -547,7 +547,7 @@ end
 	Return: None.
 --]]
 function Slab.SetScale(scaleFactor)
-    Scale.SetScale(scaleFactor)
+	Scale.SetScale(scaleFactor)
 end
 
 
@@ -559,7 +559,7 @@ end
 	Return: [number] The current scale.
 --]]
 function Slab.GetScale()
-    return Scale.GetScale()
+	return Scale.GetScale()
 end
 
 

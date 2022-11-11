@@ -32,24 +32,24 @@ local CurrentScale = 1
 local Scale = {}
 
 function Scale.SetScale(newScale)
-    assert(type(newScale) == "number", "Scale needs to be a number!")
-    CurrentScale = newScale
+	assert(type(newScale) == "number", "Scale needs to be a number!")
+	CurrentScale = newScale
 end
 
 function Scale.GetScale()
-    return CurrentScale or 1
+	return CurrentScale or 1
 end
 
 function Scale.GetScreenWidth()
-    return love.graphics.getWidth() / Scale.GetScale()
+	return love.graphics.getWidth() / Scale.GetScale()
 end
 
 function Scale.GetScreenHeight()
-    return love.graphics.getHeight() / Scale.GetScale()
+	return love.graphics.getHeight() / Scale.GetScale()
 end
 
 function Scale.GetScreenDimensions()
-    return Scale.GetScreenWidth(), Scale.GetScreenHeight()
+	return Scale.GetScreenWidth(), Scale.GetScreenHeight()
 end
 
 

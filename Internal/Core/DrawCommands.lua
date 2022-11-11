@@ -524,13 +524,13 @@ function DrawCommands.Scissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
-    local SF = Scale.GetScale()
+	local SF = Scale.GetScale()
 	local Item = pool[TypeScissor]:pull()
 	Item.Type = TypeScissor
-    if X then X = X * SF end
-    if Y then Y = Y * SF end
-    if W then W = W * SF end
-    if H then H = H * SF end
+	if X then X = X * SF end
+	if Y then Y = Y * SF end
+	if W then W = W * SF end
+	if H then H = H * SF end
 	Item.X = X
 	Item.Y = Y
 	Item.W = W
@@ -546,7 +546,7 @@ function DrawCommands.IntersectScissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
-    local SF = Scale.GetScale()
+	local SF = Scale.GetScale()
 	local Item = pool[TypeIntersectScissor]:pull()
 	Item.Type = TypeIntersectScissor
 	Item.X = (X or 0.0) * SF
@@ -719,7 +719,7 @@ end
 function DrawCommands.Execute()
 	local StatHandle = Stats.Begin('Execute', StatsCategory)
 
-    graphics.scale(Scale.GetScale())
+	graphics.scale(Scale.GetScale())
 
 	DrawLayer(LayerTable[LayerNormal], 'Normal')
 	DrawLayer(LayerTable[LayerDock], 'Dock')
