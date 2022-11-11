@@ -524,12 +524,13 @@ function DrawCommands.Scissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
+    local SF = Scale.GetScale()
 	local Item = pool[TypeScissor]:pull()
 	Item.Type = TypeScissor
-	Item.X = X
-	Item.Y = Y
-	Item.W = W
-	Item.H = H
+	Item.X = (X or 0.0) * SF
+	Item.Y = (Y or 0.0) * SF
+	Item.W = (W or 0.0) * SF 
+	Item.H = (H or 0.0) * SF
 	insert(ActiveBatch, Item)
 end
 
@@ -541,12 +542,13 @@ function DrawCommands.IntersectScissor(X, Y, W, H)
 	if H ~= nil then
 		H = max(H, 0.0)
 	end
+    local SF = Scale.GetScale()
 	local Item = pool[TypeIntersectScissor]:pull()
 	Item.Type = TypeIntersectScissor
-	Item.X = X and X or 0.0
-	Item.Y = Y and Y or 0.0
-	Item.W = W and W or 0.0
-	Item.H = H and H or 0.0
+	Item.X = (X or 0.0) * SF
+	Item.Y = (Y or 0.0) * SF
+	Item.W = (W or 0.0) * SF
+	Item.H = (H or 0.0) * SF
 	insert(ActiveBatch, Item)
 end
 

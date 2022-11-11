@@ -40,5 +40,18 @@ function Scale.GetScale()
     return CurrentScale or 1
 end
 
+function Scale.GetScreenWidth()
+    return love.graphics.getWidth() / Scale.GetScale()
+end
+
+function Scale.GetScreenHeight()
+    return love.graphics.getHeight() / Scale.GetScale()
+end
+
+function Scale.GetScreenDimensions()
+    return Scale.GetScreenWidth(), Scale.GetScreenHeight()
+end
+
+
 return Scale
 

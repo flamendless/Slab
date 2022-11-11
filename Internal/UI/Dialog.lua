@@ -47,6 +47,8 @@ local Text = require(SLAB_PATH .. '.Internal.UI.Text')
 local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
 local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+
 
 local Dialog = {}
 local Instances = {}
@@ -311,8 +313,8 @@ function Dialog.Begin(Id, Options)
 	end
 
 	Options = Options == nil and {} or Options
-	Options.X = floor(love.graphics.getWidth() * 0.5 - Instance.W * 0.5)
-	Options.Y = floor(love.graphics.getHeight() * 0.5 - Instance.H * 0.5)
+	Options.X = floor(Scale.GetScreenWidth() * 0.5 - Instance.W * 0.5)
+	Options.Y = floor(Scale.GetScreenHeight() * 0.5 - Instance.H * 0.5)
 	Options.Layer = 'Dialog'
 	Options.AllowFocus = false
 	Options.AllowMove = false
@@ -382,7 +384,7 @@ function Dialog.MessageBox(Title, Message, Options)
 
         LayoutManager.Begin('MessageBox_Message_Layout', {AlignX = 'center', AlignY = 'center'})
         LayoutManager.NewLine()
-        local TextW = min(Text.GetWidth(Message), love.graphics.getWidth() * 0.80)
+        local TextW = min(Text.GetWidth(Message), Scale.GetScreenWidth() * 0.80)
         Text.BeginFormatted(Message, {Align = 'center', W = TextW})
         LayoutManager.End()
 
@@ -433,8 +435,8 @@ function Dialog.FileDialog(Options)
 	local WasOpen = IsInstanceOpen('FileDialog')
 
 	Dialog.Open("FileDialog")
-	local W = love.graphics.getWidth() * 0.65
-	local H = love.graphics.getHeight() * 0.65
+	local W = Scale.GetScreenWidth() * 0.65
+	local H = Scale.GetScreenHeight() * 0.65
 	if Dialog.Begin('FileDialog', {
 		Title = Options.Title,
 		AutoSizeWindow = false,
