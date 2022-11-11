@@ -164,7 +164,7 @@ function Tree.Begin(Id, Options)
 	end
 
 	local IsExpanderClicked = false
-    local ExpandIconOptions = Instance.ExpandIconOptions
+	local ExpandIconOptions = Instance.ExpandIconOptions
 
 	if not Options.IsLeaf then
 		-- Render the triangle depending on if the tree item is open/closed.
