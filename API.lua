@@ -2284,7 +2284,9 @@ end
 
 function Slab.CalculateStats(LoveStats)
 	for k, v in pairs(LoveStats) do
-		LoveStats[k] = v - StatsData[k]
+		if StatsData[k] then
+			LoveStats[k] = v - StatsData[k]
+		end
 	end
 	return LoveStats
 end
