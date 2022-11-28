@@ -39,6 +39,7 @@ local ColorPicker = require(SLAB_PATH .. '.Internal.UI.ColorPicker')
 local ComboBox = require(SLAB_PATH .. '.Internal.UI.ComboBox')
 local Config = require(SLAB_PATH .. '.Internal.Core.Config')
 local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
@@ -246,6 +247,7 @@ local QuitFn = nil
 local Verbose = false
 local Initialized = false
 
+
 local function LoadState()
 	if INIStatePath == nil then return end
 
@@ -300,6 +302,19 @@ local function OnQuit()
 end
 
 --[[
+	Event forwarding
+--]]
+
+Slab.OnTextInput = TextInput;
+Slab.OnWheelMoved = WheelMoved;
+Slab.OnQuit = OnQuit;
+Slab.OnKeyPressed = Keyboard.OnKeyPressed;
+Slab.OnKeyReleased = Keyboard.OnKeyReleased;
+Slab.OnMouseMoved = Mouse.OnMouseMoved
+Slab.OnMousePressed = Mouse.OnMousePressed;
+Slab.OnMouseReleased = Mouse.OnMouseReleased;
+
+--[[
 	Initialize
 
 	Initializes Slab and hooks into the required events. This function should be called in love.load.
@@ -311,20 +326,12 @@ end
 
 	Return: None.
 --]]
-function Slab.Initialize(args)
+function Slab.Initialize(args, dontInterceptEventHandlers)
 	if Initialized then
 		return
 	end
 
 	Style.API.Initialize()
-	love.handlers['textinput'] = TextInput
-	love.handlers['wheelmoved'] = WheelMoved
-
-	-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
-	-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
-	-- the stored function once Slab is finished with its process.
-	QuitFn = love.quit
-	love.quit = OnQuit
 
 	args = args or {}
 	if type(args) == 'table' then
@@ -337,8 +344,19 @@ function Slab.Initialize(args)
 		end
 	end
 
-	Keyboard.Initialize(args)
-	Mouse.Initialize(args)
+	if not dontInterceptEventHandlers then
+		love.handlers['textinput'] = TextInput
+		love.handlers['wheelmoved'] = WheelMoved
+
+		-- In Love 11.3, overriding love.handlers['quit'] doesn't seem to affect the callback during shutdown.
+		-- Storing and overriding love.quit manually will properly call Slab's callback. This function will call
+		-- the stored function once Slab is finished with its process.
+		QuitFn = love.quit
+		love.quit = OnQuit
+	end
+
+	Keyboard.Initialize(args, dontInterceptEventHandlers)
+	Mouse.Initialize(args, dontInterceptEventHandlers)
 
 	LoadState()
 
@@ -517,6 +535,33 @@ end
 function Slab.GetStyle()
 	return Style
 end
+
+
+--[[
+    SetScale
+
+    Sets the rendering scale for the Slab context.
+
+	scaleFactor: [number] The scale factor to use
+
+	Return: None.
+--]]
+function Slab.SetScale(scaleFactor)
+	Scale.SetScale(scaleFactor)
+end
+
+
+--[[
+    GetScale
+
+	Retrieve the scale of the current Slab context.
+
+	Return: [number] The current scale.
+--]]
+function Slab.GetScale()
+	return Scale.GetScale()
+end
+
 
 --[[
 	PushFont

@@ -36,6 +36,8 @@ local Region = require(SLAB_PATH .. '.Internal.UI.Region')
 local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
 local Style = require(SLAB_PATH .. '.Style')
 local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+
 
 local Text = {}
 local EMPTY = {}
@@ -119,7 +121,7 @@ function Text.BeginFormatted(label, options)
 	local w = options.W or winW
 
 	if Window.IsAutoSize() then
-		w = love.graphics.getWidth()
+		w = Scale.GetScreenWidth()
 	end
 
 	local width, wrapped = Style.Font:getWrap(label, w)

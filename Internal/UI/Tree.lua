@@ -164,12 +164,13 @@ function Tree.Begin(Id, Options)
 	end
 
 	local IsExpanderClicked = false
+	local ExpandIconOptions = Instance.ExpandIconOptions
+
 	if not Options.IsLeaf then
 		-- Render the triangle depending on if the tree item is open/closed.
 		local SubX = Instance.IsOpen and 0 or 200
 		local SubY = Instance.IsOpen and 100 or 50
 
-		local ExpandIconOptions = Instance.ExpandIconOptions
 		if not ExpandIconOptions then
 			ExpandIconOptions = {
 				Image = { Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubW = 50, SubH = 50 },

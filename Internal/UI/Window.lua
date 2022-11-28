@@ -39,6 +39,8 @@ local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
 local Style = require(SLAB_PATH .. ".Style")
 local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 local IdCache = require(SLAB_PATH .. ".Internal.Core.IdCache")
+local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+
 
 local Window = {}
 
@@ -221,8 +223,8 @@ local function UpdateTitleBar(instance, isObstructed, allowMove, constrain)
 				-- removed to retrieve the original position, and clamp the delta based off of that posiiton.
 				local originX = instance.X - titleDeltaX
 				local originY = instance.Y - titleDeltaY - instance.TitleH
-				instance.TitleDeltaX = Utility.Clamp(instance.TitleDeltaX, -originX, love.graphics.getWidth() - (originX + instance.W))
-				instance.TitleDeltaY = Utility.Clamp(instance.TitleDeltaY, -originY + MenuState.MainMenuBarH, love.graphics.getHeight() - (originY + instance.H + instance.TitleH))
+				instance.TitleDeltaX = Utility.Clamp(instance.TitleDeltaX, -originX, Scale.GetScreenWidth() - (originX + instance.W))
+				instance.TitleDeltaY = Utility.Clamp(instance.TitleDeltaY, -originY + MenuState.MainMenuBarH, Scale.GetScreenHeight() - (originY + instance.H + instance.TitleH))
 			end
 		elseif isTethered then
 			Dock.UpdateTear(instance.Id, mouseX, mouseY)
@@ -517,8 +519,7 @@ function Window.Reset()
 	end
 
 	ActiveInstance = GetInstance('Global')
-	ActiveInstance.W = love.graphics.getWidth()
-	ActiveInstance.H = love.graphics.getHeight()
+	ActiveInstance.W, ActiveInstance.H = Scale.GetScreenDimensions()
 	ActiveInstance.Border = 0
 	ActiveInstance.NoSavedSettings = true
 	insert(PendingStack, 1, ActiveInstance)
@@ -780,8 +781,8 @@ function Window.Begin(id, options)
 	local regionW = ActiveInstance.W
 	local regionH = ActiveInstance.H
 
-	if ActiveInstance.X + ActiveInstance.W > love.graphics.getWidth() then regionW = love.graphics.getWidth() - ActiveInstance.X end
-	if ActiveInstance.Y + ActiveInstance.H > love.graphics.getHeight() then regionH = love.graphics.getHeight() - ActiveInstance.Y end
+	if ActiveInstance.X + ActiveInstance.W > Scale.GetScreenWidth() then regionW = Scale.GetScreenWidth() - ActiveInstance.X end
+	if ActiveInstance.Y + ActiveInstance.H > Scale.GetScreenHeight() then regionH = Scale.GetScreenHeight() - ActiveInstance.Y end
 
 	if ActiveInstance.IsContentOpen == false then
 		regionW = 0
