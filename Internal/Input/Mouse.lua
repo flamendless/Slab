@@ -64,21 +64,16 @@ local function ScaleMouseXY(X, Y)
 	return X / scale, Y / scale
 end
 
-local function ScaleMouseDXDY(Dx, Dy)
-	local scale = Scale.GetScale()
-	return Dx / scale, Dy / scale
-end
 
 local function TransformPoint(X,Y)
 	return ScaleMouseXY(X, Y)
 end
 
 local function OnMouseMoved(X, Y, DX, DY, IsTouch)
-	X, Y = TransformPoint(X, Y)
-	State.X = X
-	State.Y = Y
+	local tX, tY = TransformPoint(X, Y)
+	State.X = tX
+	State.Y = tY
 
-	DX, DY = ScaleMouseDXDY(DX, DY)
 	State.AsyncDeltaX = State.AsyncDeltaX + DX
 	State.AsyncDeltaY = State.AsyncDeltaY + DY
 
@@ -99,8 +94,8 @@ local function PushEvent(Type, X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMousePressed(X, Y, Button, IsTouch, Presses)
-	X, Y = TransformPoint(X, Y)
-	PushEvent(Common.Event.Pressed, X, Y, Button, IsTouch, Presses)
+	local tX, tY = TransformPoint(X, Y)
+	PushEvent(Common.Event.Pressed, tX, tY, Button, IsTouch, Presses)
 
 	if MousePressedFn ~= nil then
 		MousePressedFn(X, Y, Button, IsTouch, Presses)
@@ -108,8 +103,8 @@ local function OnMousePressed(X, Y, Button, IsTouch, Presses)
 end
 
 local function OnMouseReleased(X, Y, Button, IsTouch, Presses)
-	X, Y = TransformPoint(X, Y)
-	PushEvent(Common.Event.Released, X, Y, Button, IsTouch, Presses)
+	local tX, tY = TransformPoint(X, Y)
+	PushEvent(Common.Event.Released, tX, tY, Button, IsTouch, Presses)
 
 	if MouseReleasedFn ~= nil then
 		MouseReleasedFn(X, Y, Button, IsTouch, Presses)
