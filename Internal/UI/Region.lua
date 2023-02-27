@@ -513,12 +513,17 @@ function Region.GetWheelDelta()
 end
 
 function Region.IsScrolling(id)
-	if id ~= nil then
+	if id then
 		local instance = GetInstance(id)
 		return ScrollInstance == instance or WheelInstance == instance
 	end
-
-	return ScrollInstance ~= nil or WheelInstance ~= nil
+	if ScrollInstance then
+		return ScrollInstance.IsScrollingX or ScrollInstance.IsScrollingY
+	end
+	if WheelInstance then
+		return WheelInstance.IsScrollingX or WheelInstance.IsScrollingY
+	end
+	return false
 end
 
 function Region.GetHotInstanceId()
