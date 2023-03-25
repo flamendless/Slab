@@ -43,6 +43,7 @@ local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
@@ -2509,6 +2510,20 @@ end
 --]]
 function Slab.WindowToDock(Type)
 	Window.ToDock(Type)
+end
+
+--[[
+	ToLoveFile
+
+	Moves a file to a temporary location and returns a Love2D friendly way to access the file. The returned string can be used in
+	any Love2D function that takes a Filename
+
+	Source: [String] An absolute path to a file on the disk, can take a value from FileDialog
+
+	Return: [String] A Love2D Filename
+]]
+function Slab.ToLoveFile(Source)
+	return FileSystem.ToLove(Source)
 end
 
 return Slab
