@@ -248,6 +248,7 @@ local QuitFn = nil
 local Verbose = false
 local Initialized = false
 
+local ModifyCursor = true
 
 local function LoadState()
 	if INIStatePath == nil then return end
@@ -324,6 +325,7 @@ Slab.OnMouseReleased = Mouse.OnMouseReleased;
 		love.load function. Below is a list of arguments available to modify Slab:
 		NoMessages: [String] Disables the messaging system that warns developers of any changes in the API.
 		NoDocks: [String] Disables all docks.
+		NoCursor: [String] Disables modifying the cursor
 
 	Return: None.
 --]]
@@ -341,6 +343,8 @@ function Slab.Initialize(args, dontInterceptEventHandlers)
 				Messages.SetEnabled(false)
 			elseif string.lower(V) == 'nodocks' then
 				Slab.DisableDocks({'Left', 'Right', 'Bottom'})
+			elseif string.lower(V) == 'nocursor' then
+				ModifyCursor = false
 			end
 		end
 	end
@@ -450,7 +454,9 @@ function Slab.Draw()
 		MenuBar.Clear()
 	end
 
-	Mouse.Draw()
+	if ModifyCursor then
+		Mouse.Draw()
+	end
 
 	if Mouse.IsReleased(1) then
 		Button.ClearClicked()
@@ -1480,10 +1486,15 @@ end
 
 	This forces the cursor to advance to the next line based on the height of the current font.
 
+	Count: [Number] Specify how many new lines to insert, defaults to 1
+
 	Return: None.
 --]]
-function Slab.NewLine()
+function Slab.NewLine(Count)
+	Count = Count or 1
+	for i = 1, Count do 
 	LayoutManager.NewLine()
+end
 end
 
 --[[
