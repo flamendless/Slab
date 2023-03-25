@@ -49,7 +49,7 @@ function CheckBox.Begin(checked, label, options)
 	options = options or EMPTY
 	local id = options.Id or label
 	local rounding = options.Rounding or Style.CheckBoxRounding
-	local size = options.Size or 16
+	local size = options.Size or Style.Font:getHeight()
 	local disabled = options.Disabled
 
 	local itemId = Window.GetItemId(id)
@@ -67,7 +67,7 @@ function CheckBox.Begin(checked, label, options)
 	local x, y = Cursor.GetPosition()
 	local mouseX, mouseY = Window.GetMousePosition()
 	local isObstructed = Window.IsObstructedAtMouse()
-	if not isObstructed and not disabled and x <= mouseX and mouseX <= x + boxW and y <= mouseY and mouseY <= y + boxH then
+	if not isObstructed and not disabled and x <= mouseX and mouseX <= x + w and y <= mouseY and mouseY <= y + h then
 		color = Style.ButtonHoveredColor
 
 		if Mouse.IsDown(1) then
