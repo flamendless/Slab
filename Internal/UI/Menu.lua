@@ -211,10 +211,25 @@ end
 function Menu.MenuItem(Label, Options)
 	Options = AlterOptions(Options)
 
+	local RightPad = RightPad
+	if Options.Hint ~= nil then
+		RightPad = RightPad + Text.GetWidth(Options.Hint)
+	end
+
 	Cursor.SetX(Cursor.GetX() + LeftPad)
 	local Result = Text.Begin(Label, Options)
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
 	Window.AddItem(ItemX, ItemY, ItemW + RightPad, ItemH)
+
+	if Options.Hint ~= nil then
+		Cursor.SameLine()
+		Text.BeginFormatted(Options.Hint, {
+			Align = "right",
+			W = Window.GetRemainingSize() - LeftPad,
+			H = ItemH,
+			Color = Style.TextDisabledColor,
+		})
+	end
 
 	if Result then
 		local Win = Window.Top()

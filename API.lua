@@ -897,6 +897,7 @@ end
 	Options: [Table] List of options that control how this menu behaves.
 		Enabled: [Boolean] Determines if this menu is enabled. This value is true by default. Disabled items are displayed but
 			cannot be interacted with.
+		Hint: [String] Show an input hint to the right of the menu item
 
 	Return: [Boolean] Returns true if the user clicks on this menu item.
 --]]
