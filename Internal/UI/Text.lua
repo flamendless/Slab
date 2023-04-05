@@ -47,7 +47,8 @@ function Text.Begin(label, options)
 
 	options = options or EMPTY
 	local color = options.Color or Style.TextColor
-	local pad = options.Pad or 0
+	local pad = options.Pad or 0 -- TODO: rename on next major version?
+	local padH = options.PadH or 0
 	local isSelectableTextOnly = options.IsSelectableTextOnly
 	local isSelectable = options.IsSelectable or isSelectableTextOnly
 
@@ -59,7 +60,7 @@ function Text.Begin(label, options)
 	local w = Text.GetWidth(label)
 	local h = Style.Font:getHeight()
 
-	LayoutManager.AddControl(w + pad, h, 'Text')
+	LayoutManager.AddControl(w + pad, h + padH, 'Text')
 
 	local result = false
 	local winId = Window.GetItemId(label)
@@ -76,11 +77,11 @@ function Text.Begin(label, options)
 	local checkX = isSelectableTextOnly and x or winX
 	-- The region's width may have been reset prior to the first control being added. Account for this discrepency.
 	local checkW = isSelectableTextOnly and w or max(winW, w)
-	local hovered = not isObstructed and checkX <= mouseX and mouseX <= checkX + checkW + pad and y <= mouseY and mouseY <= y + h
+	local hovered = not isObstructed and checkX <= mouseX and mouseX <= checkX + checkW + pad and y <= mouseY and mouseY <= y + h + padH
 
 	if isSelectable or options.IsSelected then
 		if hovered or options.IsSelected then
-			DrawCommands.Rectangle('fill', checkX, y, checkW + pad, h, options.HoverColor or Style.TextHoverBgColor)
+			DrawCommands.Rectangle('fill', checkX, y, checkW + pad, h + padH, options.HoverColor or Style.TextHoverBgColor)
 		end
 
 		result = hovered and (options.SelectOnHover or Mouse.IsClicked(1))
@@ -94,17 +95,17 @@ function Text.Begin(label, options)
 		end
 	end
 
-	DrawCommands.Print(label, floor(x + pad * 0.5), floor(y), color, Style.Font)
+	DrawCommands.Print(label, floor(x + pad * 0.5), floor(y + padH * 0.5), color, Style.Font)
 
 	if options.URL ~= nil then
 		DrawCommands.Line(x + pad, y + h, x + w, y + h, 1.0, color)
 	end
 
-	Cursor.SetItemBounds(x, y, w + pad, h)
-	Cursor.AdvanceY(h)
+	Cursor.SetItemBounds(x, y, w + pad, h + padH)
+	Cursor.AdvanceY(h + padH)
 
 	if options.AddItem ~= false then
-		Window.AddItem(x, y, w + pad, h, winId)
+		Window.AddItem(x, y, w + pad, h + padH, winId)
 	end
 
 	Stats.End(statHandle)

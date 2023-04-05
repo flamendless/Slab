@@ -38,4 +38,6 @@ CheckBoxRounding = 2.0
 ComboBoxRounding = 2.0
 InputBgRounding = 2.0
 ScrollBarRounding = 2.0
-Indent=14.0
+Indent = 14.0
+MenuPadH = 0.0
+MenuItemPadH = 0.0

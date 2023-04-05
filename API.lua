@@ -1005,6 +1005,7 @@ end
 	Options: [Table] List of options for how this text is displayed.
 		Color: [Table] The color to render the text.
 		Pad: [Number] How far to pad the text from the left side of the current cursor position.
+		PadH: [Number] How far to pad the text vertically, will render centered in this region
 		IsSelectable: [Boolean] Whether this text is selectable using the text's Y position and the window X and width as the
 			hot zone.
 		IsSelectableTextOnly: [Boolean] Will use the text width instead of the window width to determine the hot zone. Will set IsSelectable
@@ -1493,9 +1494,9 @@ end
 --]]
 function Slab.NewLine(Count)
 	Count = Count or 1
-	for i = 1, Count do 
-	LayoutManager.NewLine()
-end
+	for i = 1, Count do
+		LayoutManager.NewLine()
+	end
 end
 
 --[[
