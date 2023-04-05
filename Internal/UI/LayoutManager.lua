@@ -179,6 +179,7 @@ local function AddControl(Instance, W, H, Type)
 		local AnchorX, AnchorY = GetColumnPosition(Instance)
 		WinW, WinH = GetColumnSize(Instance)
 		local Column = Instance.Columns[Instance.ColumnNo]
+		local Border = Window.GetBorder()
 
 		if RowW == 0 then
 			RowW = W
@@ -197,7 +198,7 @@ local function AddControl(Instance, W, H, Type)
 					Right = Right + Window.GetBorder()
 				end
 
-				X = max(Right, AnchorX)
+				X = max(Right, AnchorX) - Border * 2
 			else
 				X = AnchorX
 			end
@@ -218,9 +219,8 @@ local function AddControl(Instance, W, H, Type)
 			end
 		end
 
-		local Border = Window.GetBorder()
-		Cursor.SetX(WinX + X - Border)
-		Cursor.SetY(WinY + Y - Border)
+		Cursor.SetX(WinX + X)
+		Cursor.SetY(WinY + Y)
 
 		if H < RowH then
 			if Instance.AlignRowY == 'center' then
