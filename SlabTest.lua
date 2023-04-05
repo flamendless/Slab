@@ -108,7 +108,7 @@ local function DrawButtons()
 
 	Slab.Textf("Buttons can also be disabled. Click the button below to toggle the status of the neighboring button.")
 
-	if Slab.Button("Toggle") then
+	if Slab.Button("Toggle", { Active = DrawButtons_Enabled }) then
 		DrawButtons_Enabled = not DrawButtons_Enabled
 	end
 
@@ -125,6 +125,7 @@ local function DrawButtons()
 end
 
 local DrawText_Width = 450.0
+local DrawText_Height = 0.0
 local DrawText_Alignment = {'left', 'center', 'right', 'justify'}
 local DrawText_Alignment_Selected = 'left'
 local DrawText_NumClicked = 0
@@ -145,13 +146,20 @@ local function DrawText()
 	Slab.Textf(
 		"Text can be formatted using the Slab.Textf API. Formatted text will wrap the text based on the 'W' option. " ..
 		"If the 'W' option is not specified, the window's width will be used as the width. Formatted text also has an " ..
-		"alignment option.")
+		"alignment option. The 'H' option can be used to center the text within a given height.")
 
 	Slab.NewLine()
 	Slab.Text("Width")
 	Slab.SameLine()
 	if Slab.Input('DrawText_Width', {Text = tostring(DrawText_Width), NumbersOnly = true, ReturnOnText = false}) then
 		DrawText_Width = Slab.GetInputNumber()
+	end
+
+	Slab.SameLine()
+	Slab.Text("Height")
+	Slab.SameLine()
+	if Slab.Input('DrawText_Height', {Text = tostring(DrawText_Height), NumbersOnly = true, ReturnOnText = false}) then
+		DrawText_Height = Slab.GetInputNumber()
 	end
 
 	Slab.SameLine()
@@ -172,7 +180,7 @@ local function DrawText()
 		"et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut " ..
 		"aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum " ..
 		"dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui " ..
-		"officia deserunt mollit anim id est laborum.", {W = DrawText_Width, Align = DrawText_Alignment_Selected})
+		"officia deserunt mollit anim id est laborum.", {W = DrawText_Width, H = DrawText_Height, Align = DrawText_Alignment_Selected})
 
 	Slab.NewLine()
 	Slab.Separator()
@@ -2067,7 +2075,7 @@ local function DrawTooltip()
 	Slab.Button("Button", {Tooltip = "This is a button."})
 
 	Slab.NewLine()
-	
+
 	if Slab.CheckBox(DrawTooltip_CheckBox, "Check Box", {Tooltip = "This is a check box."}) then
 		DrawTooltip_CheckBox = not DrawTooltip_CheckBox
 	end
@@ -2462,7 +2470,7 @@ function SlabTest.MainMenuBar()
 				SlabTest_Options.IsOpen = not SlabTest_Options.IsOpen
 			end
 
-			if Slab.MenuItem("Quit") then
+			if Slab.MenuItem("Quit", { Hint = "alt+f4" }) then
 				love.event.quit()
 			end
 
