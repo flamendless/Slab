@@ -405,7 +405,7 @@ local function DrawButton(type, activeInstance, options, radius, offsetX, offset
 		isObstructed = Window.IsObstructed(mouseX, mouseY, true)
 	end
 	local size = radius * 0.5
-	local x = activeInstance.X + activeInstance.W - activeInstance.Border - radius * offsetX
+	local x = activeInstance.X + activeInstance.W - radius * offsetX
 	local y = activeInstance.Y - offsetY * 0.5
 	local isHovered =
 		x - radius <= mouseX and mouseX <= x + radius and
@@ -426,7 +426,7 @@ local function DrawButton(type, activeInstance, options, radius, offsetX, offset
 		if activeInstance.IsMinimized then
 			DrawCommands.Rectangle("line", x - size, y - size, size * 2, size * 2, color)
 		else
-			DrawCommands.Line(x - size, y, x + size, y, size, color)
+			DrawCommands.Line(x - size, y, x + size, y, 2, color)
 		end
 	end
 
@@ -549,7 +549,7 @@ function Window.Begin(id, options)
 	local allowMove = options.AllowMove == nil or options.AllowMove
 	local allowResize = options.AllowResize == nil or options.AllowResize
 	local allowFocus = options.AllowFocus == nil or options.AllowFocus
-	local border = options.Border or 4
+	local border = options.Border or Style.WindowBorder
 	local autoSizeWindow = options.AutoSizeWindow == nil or options.AutoSizeWindow
 	local autoSizeWindowW = options.AutoSizeWindowW or autoSizeWindow
 	local autoSizeWindowH = options.AutoSizeWindowH or autoSizeWindow
@@ -738,7 +738,7 @@ function Window.Begin(id, options)
 
 		local offsetX = 1
 		if showMinimize then
-			offsetX = showClose and 4 or 1
+			offsetX = showClose and 5 or 2
 			local isClicked = DrawButton(
 				"Minimize",
 				ActiveInstance,
@@ -757,7 +757,7 @@ function Window.Begin(id, options)
 		end
 
 		if showClose then
-			offsetX = 1
+			offsetX = 2
 			local isClicked = DrawButton(
 				"Close",
 				ActiveInstance,
