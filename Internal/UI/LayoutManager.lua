@@ -490,6 +490,16 @@ function LayoutManager.SameLine(CursorOptions)
 	if Active ~= nil then
 		local Column = Active.Columns[Active.ColumnNo]
 		Column.RowNo = max(Column.RowNo - 1, 1)
+
+		if Column.Rows ~= nil and CursorOptions ~= nil then
+			local Row = Column.Rows[Column.RowNo]
+			local Pad = CursorOptions.Pad
+
+			if Row ~= nil and Pad ~= nil then
+				Row.CursorX = Row.CursorX + Pad
+				Cursor.SetX(Row.CursorX)
+			end
+		end
 	end
 end
 
