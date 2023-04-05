@@ -224,9 +224,10 @@ function Menu.MenuItem(Label, Options)
 		Cursor.SameLine()
 		Text.BeginFormatted(Options.Hint, {
 			Align = "right",
-			W = Window.GetRemainingSize() - LeftPad,
+			W = Window.GetRemainingSize() - LeftPad, -- Pad the right side equal to the left side
 			H = ItemH,
 			Color = Style.TextDisabledColor,
+			RightPad = LeftPad, -- hack, see Text.BeginFormatted()
 		})
 	end
 

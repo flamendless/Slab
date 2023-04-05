@@ -122,6 +122,9 @@ function Text.BeginFormatted(label, options)
 	local w = options.W or winW
 	local h = options.H or 0
 
+	-- TODO: Hack to ensure right-aligned menu hints don't change menu item click area
+	local rightPad = options.RightPad or 0
+
 	if Window.IsAutoSize() and options.W == nil then
 		w = Scale.GetScreenWidth()
 	end
@@ -145,7 +148,7 @@ function Text.BeginFormatted(label, options)
 	Cursor.AdvanceY(height)
 
 	Window.ResetContentSize()
-	Window.AddItem(floor(x), floor(y), width, height)
+	Window.AddItem(floor(x), floor(y), width + rightPad, height)
 
 	Stats.End(statHandle)
 end
