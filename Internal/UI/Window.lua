@@ -545,7 +545,7 @@ function Window.Begin(id, options)
 	local title = options.Title or ""
 	local titleAlignX = options.TitleAlignX or 'center'
 	local titleAlignY = options.TitleAlignY or 'center'
-	local titleH = options.TitleH == nil and ((title ~= nil and title ~= "") and Style.Font:getHeight() or 0) or options.TitleH
+	local titleH = options.TitleH == nil and ((title ~= nil and title ~= "") and max(Style.WindowTitleH, Style.Font:getHeight()) or 0) or options.TitleH
 	local allowMove = options.AllowMove == nil or options.AllowMove
 	local allowResize = options.AllowResize == nil or options.AllowResize
 	local allowFocus = options.AllowFocus == nil or options.AllowFocus

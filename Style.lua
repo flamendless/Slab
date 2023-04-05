@@ -73,6 +73,7 @@ local Style =
 
 	WindowRounding = 2.0,
 	WindowBorder = 4.0,
+	WindowTitleH = 0.0,
 	ButtonRounding = 2.0,
 	CheckBoxRounding = 2.0,
 	ComboBoxRounding = 2.0,
