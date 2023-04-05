@@ -120,12 +120,16 @@ function Text.BeginFormatted(label, options)
 	options = options or EMPTY
 	local w = options.W or winW
 
-	if Window.IsAutoSize() then
+	if Window.IsAutoSize() and options.W == nil then
 		w = Scale.GetScreenWidth()
 	end
 
 	local width, wrapped = Style.Font:getWrap(label, w)
 	local height = #wrapped * Style.Font:getHeight()
+
+	if options.W ~= nil then
+		width = options.W
+	end
 
 	LayoutManager.AddControl(width, height, 'TextFormatted')
 

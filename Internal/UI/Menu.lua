@@ -211,15 +211,12 @@ end
 function Menu.MenuItem(Label, Options)
 	Options = AlterOptions(Options)
 
-	local RightPad = RightPad
-	if Options.Hint ~= nil then
-		RightPad = RightPad + Text.GetWidth(Options.Hint)
-	end
+	local HintWidth = Options.Hint == nil and 0 or Text.GetWidth(Options.Hint)
 
 	Cursor.SetX(Cursor.GetX() + LeftPad)
 	local Result = Text.Begin(Label, Options)
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-	Window.AddItem(ItemX, ItemY, ItemW + RightPad, ItemH)
+	Window.AddItem(ItemX, ItemY, ItemW + RightPad + HintWidth, ItemH)
 
 	if Options.Hint ~= nil then
 		Cursor.SameLine()
