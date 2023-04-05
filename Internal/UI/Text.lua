@@ -119,13 +119,16 @@ function Text.BeginFormatted(label, options)
 
 	options = options or EMPTY
 	local w = options.W or winW
+	local h = options.H or 0
 
 	if Window.IsAutoSize() and options.W == nil then
 		w = Scale.GetScreenWidth()
 	end
 
 	local width, wrapped = Style.Font:getWrap(label, w)
-	local height = #wrapped * Style.Font:getHeight()
+	local textHeight = #wrapped * Style.Font:getHeight()
+	local height = max(h, textHeight)
+	local padH = height - textHeight
 
 	if options.W ~= nil then
 		width = options.W
@@ -135,7 +138,7 @@ function Text.BeginFormatted(label, options)
 
 	local x, y = Cursor.GetPosition()
 
-	DrawCommands.Printf(label, floor(x), floor(y), width, options.Align or 'left', options.Color or Style.TextColor, Style.Font)
+	DrawCommands.Printf(label, floor(x), floor(y + padH * 0.5), width, options.Align or 'left', options.Color or Style.TextColor, Style.Font)
 
 	Cursor.SetItemBounds(floor(x), floor(y), width, height)
 	Cursor.AdvanceY(height)
