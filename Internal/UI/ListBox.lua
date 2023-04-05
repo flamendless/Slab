@@ -72,7 +72,6 @@ local function GetInstance(id)
 			StatHandle = nil,
 			Region = {
 				AutoSizeContent = true,
-				NoBackground = true,
 				Intersect = true,
 			},
 		}
@@ -87,6 +86,7 @@ function ListBox.Begin(id, options)
 	local w = options.W or 150
 	local h = options.H or 150
 	local rounding = options.Rounding or Style.WindowRounding
+	local bgColor = options.BgColor or Style.ListBoxBgColor
 
 	local instance = GetInstance(Window.GetItemId(id))
 
@@ -135,6 +135,7 @@ function ListBox.Begin(id, options)
 		region.H = h
 		region.SX = tx
 		region.SY = ty
+		region.BgColor = bgColor
 		region.MouseX = mouseX
 		region.MouseY = mouseY
 		region.ResetContent = Window.HasResized()

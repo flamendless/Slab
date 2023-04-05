@@ -28,6 +28,7 @@ InputEditBgColor = (0.89, 0.98, 1.0, 1.0)
 InputSelectColor = (0.14, 0.29, 0.53, 0.4)
 InputSliderColor = (1.0, 0.79, 0.18, 1.0)
 MultilineTextColor = (0.0, 0.0, 0.0, 1.0)
+ListBoxBgColor = (0.0, 0.0, 0.0, 0.0)
 
 WindowRounding = 2.0
 ButtonRounding = 2.0
