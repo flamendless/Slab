@@ -55,7 +55,7 @@ function MenuBar.Begin(IsMainMenuBar)
 	end
 
 	if IsMainMenuBar then
-		MenuState.MainMenuBarH = Style.Font:getHeight()
+		MenuState.MainMenuBarH = Style.Font:getHeight() + Style.MenuPadH
 	end
 
 	Window.Begin(Instance.Id,
@@ -63,7 +63,7 @@ function MenuBar.Begin(IsMainMenuBar)
 		X = X,
 		Y = Y,
 		W = WinW,
-		H = Style.Font:getHeight(),
+		H = Style.Font:getHeight() + Style.MenuPadH,
 		AllowResize = false,
 		AllowFocus = false,
 		Border = 0.0,

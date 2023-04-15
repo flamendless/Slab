@@ -60,6 +60,7 @@ local function AlterOptions(Options)
 	Options.Enabled = Options.Enabled == nil and true or Options.Enabled
 	Options.IsSelectable = Options.Enabled
 	Options.SelectOnHover = Options.Enabled
+	Options.PadH = Style.MenuItemPadH
 
 	if Options.Enabled then
 		Options.Color = Style.TextColor
@@ -134,6 +135,7 @@ function Menu.BeginMenu(Label, Options)
 	if IsMenuBar then
 		Options.IsSelectableTextOnly = Options.Enabled
 		Options.Pad = Pad * 2
+		Options.PadH = Style.MenuPadH
 	else
 		Cursor.SetX(X + LeftPad)
 	end
@@ -211,10 +213,23 @@ end
 function Menu.MenuItem(Label, Options)
 	Options = AlterOptions(Options)
 
+	local HintWidth = Options.Hint == nil and 0 or Text.GetWidth(Options.Hint)
+
 	Cursor.SetX(Cursor.GetX() + LeftPad)
 	local Result = Text.Begin(Label, Options)
 	local ItemX, ItemY, ItemW, ItemH = Cursor.GetItemBounds()
-	Window.AddItem(ItemX, ItemY, ItemW + RightPad, ItemH)
+	Window.AddItem(ItemX, ItemY, ItemW + RightPad + HintWidth, ItemH)
+
+	if Options.Hint ~= nil then
+		Cursor.SameLine()
+		Text.BeginFormatted(Options.Hint, {
+			Align = "right",
+			W = Window.GetRemainingSize() - LeftPad, -- Pad the right side equal to the left side
+			H = ItemH,
+			Color = Style.TextDisabledColor,
+			RightPad = LeftPad, -- hack, see Text.BeginFormatted()
+		})
+	end
 
 	if Result then
 		local Win = Window.Top()
@@ -239,7 +254,7 @@ function Menu.MenuItemChecked(Label, IsChecked, Options)
 	local Result = Menu.MenuItem(Label, Options)
 
 	if IsChecked then
-		local H = Style.Font:getHeight()
+		local H = Style.Font:getHeight() + Options.PadH
 		DrawCommands.Check(X + LeftPad * 0.5, Y + H * 0.5, CheckSize, Options.Color)
 	end
 

@@ -179,6 +179,7 @@ local function AddControl(Instance, W, H, Type)
 		local AnchorX, AnchorY = GetColumnPosition(Instance)
 		WinW, WinH = GetColumnSize(Instance)
 		local Column = Instance.Columns[Instance.ColumnNo]
+		local Border = Window.GetBorder()
 
 		if RowW == 0 then
 			RowW = W
@@ -197,7 +198,7 @@ local function AddControl(Instance, W, H, Type)
 					Right = Right + Window.GetBorder()
 				end
 
-				X = max(Right, AnchorX)
+				X = max(Right, AnchorX) - Border * 2
 			else
 				X = AnchorX
 			end
@@ -218,9 +219,8 @@ local function AddControl(Instance, W, H, Type)
 			end
 		end
 
-		local Border = Window.GetBorder()
-		Cursor.SetX(WinX + X - Border)
-		Cursor.SetY(WinY + Y - Border)
+		Cursor.SetX(WinX + X)
+		Cursor.SetY(WinY + Y)
 
 		if H < RowH then
 			if Instance.AlignRowY == 'center' then
@@ -490,6 +490,16 @@ function LayoutManager.SameLine(CursorOptions)
 	if Active ~= nil then
 		local Column = Active.Columns[Active.ColumnNo]
 		Column.RowNo = max(Column.RowNo - 1, 1)
+
+		if Column.Rows ~= nil and CursorOptions ~= nil then
+			local Row = Column.Rows[Column.RowNo]
+			local Pad = CursorOptions.Pad
+
+			if Row ~= nil and Pad ~= nil then
+				Row.CursorX = Row.CursorX + Pad
+				Cursor.SetX(Row.CursorX)
+			end
+		end
 	end
 end
 

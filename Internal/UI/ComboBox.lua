@@ -170,6 +170,7 @@ function ComboBox.Begin(id, options)
 		winOpts.H = instance.WinH
 		winOpts.Layer = Window.GetLayer()
 		winOpts.ContentW = max(w, instance.WinW)
+		winOpts.Border = 4
 
 		Window.Begin(instance.WinId, winOpts)
 		Active = instance

@@ -64,6 +64,10 @@ function Button.Begin(label, options)
 	local padY = options.PadY or PAD * 0.5
 	local vLines = options.VLines or 1
 
+	if options.Active then
+		color = pressColor
+	end
+
 	local id = Window.GetItemId(label)
 	local w, h = Button.GetSize(label)
 	h = h * vLines

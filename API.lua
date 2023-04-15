@@ -43,6 +43,7 @@ local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
 local Dialog = require(SLAB_PATH .. '.Internal.UI.Dialog')
 local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
+local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
 local Image = require(SLAB_PATH .. '.Internal.UI.Image')
 local Input = require(SLAB_PATH .. '.Internal.UI.Input')
 local Keyboard = require(SLAB_PATH .. '.Internal.Input.Keyboard')
@@ -247,6 +248,7 @@ local QuitFn = nil
 local Verbose = false
 local Initialized = false
 
+local ModifyCursor = true
 
 local function LoadState()
 	if INIStatePath == nil then return end
@@ -323,6 +325,7 @@ Slab.OnMouseReleased = Mouse.OnMouseReleased;
 		love.load function. Below is a list of arguments available to modify Slab:
 		NoMessages: [String] Disables the messaging system that warns developers of any changes in the API.
 		NoDocks: [String] Disables all docks.
+		NoCursor: [String] Disables modifying the cursor
 
 	Return: None.
 --]]
@@ -340,6 +343,8 @@ function Slab.Initialize(args, dontInterceptEventHandlers)
 				Messages.SetEnabled(false)
 			elseif string.lower(V) == 'nodocks' then
 				Slab.DisableDocks({'Left', 'Right', 'Bottom'})
+			elseif string.lower(V) == 'nocursor' then
+				ModifyCursor = false
 			end
 		end
 	end
@@ -449,7 +454,9 @@ function Slab.Draw()
 		MenuBar.Clear()
 	end
 
-	Mouse.Draw()
+	if ModifyCursor then
+		Mouse.Draw()
+	end
 
 	if Mouse.IsReleased(1) then
 		Button.ClearClicked()
@@ -890,6 +897,7 @@ end
 	Options: [Table] List of options that control how this menu behaves.
 		Enabled: [Boolean] Determines if this menu is enabled. This value is true by default. Disabled items are displayed but
 			cannot be interacted with.
+		Hint: [String] Show an input hint to the right of the menu item
 
 	Return: [Boolean] Returns true if the user clicks on this menu item.
 --]]
@@ -997,6 +1005,7 @@ end
 	Options: [Table] List of options for how this text is displayed.
 		Color: [Table] The color to render the text.
 		Pad: [Number] How far to pad the text from the left side of the current cursor position.
+		PadH: [Number] How far to pad the text vertically, will render centered in this region
 		IsSelectable: [Boolean] Whether this text is selectable using the text's Y position and the window X and width as the
 			hot zone.
 		IsSelectableTextOnly: [Boolean] Will use the text width instead of the window width to determine the hot zone. Will set IsSelectable
@@ -1479,10 +1488,15 @@ end
 
 	This forces the cursor to advance to the next line based on the height of the current font.
 
+	Count: [Number] Specify how many new lines to insert, defaults to 1
+
 	Return: None.
 --]]
-function Slab.NewLine()
-	LayoutManager.NewLine()
+function Slab.NewLine(Count)
+	Count = Count or 1
+	for i = 1, Count do
+		LayoutManager.NewLine()
+	end
 end
 
 --[[
@@ -2509,6 +2523,20 @@ end
 --]]
 function Slab.WindowToDock(Type)
 	Window.ToDock(Type)
+end
+
+--[[
+	ToLoveFile
+
+	Moves a file to a temporary location and returns a Love2D friendly way to access the file. The returned string can be used in
+	any Love2D function that takes a Filename
+
+	Source: [String] An absolute path to a file on the disk, can take a value from FileDialog
+
+	Return: [String] A Love2D Filename
+]]
+function Slab.ToLoveFile(Source)
+	return FileSystem.ToLove(Source)
 end
 
 return Slab

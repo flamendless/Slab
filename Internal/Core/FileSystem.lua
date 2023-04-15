@@ -49,6 +49,7 @@ end
 local GetDirectoryItems = nil
 local Exists = nil
 local IsDirectory = nil
+local Copy = nil
 
 local function Access(Table, Param)
 	return Table[Param];
@@ -96,6 +97,7 @@ if FFI.os == "Windows" then
 		bool FindNextFileW(void* ff, struct WIN32_FIND_DATAW* fd);
 		bool FindClose(void* ff);
 		DWORD GetFileAttributesW(const wchar_t* Path);
+		bool CopyFileW(const wchar_t* src, const wchar_t* dst, bool bFailIfExists);
 
 		int MultiByteToWideChar(unsigned int CodePage, uint32_t dwFlags, const char* lpMultiByteStr,
 			int cbMultiByte, const wchar_t* lpWideCharStr, int cchWideChar);
@@ -157,6 +159,10 @@ if FFI.os == "Windows" then
 	IsDirectory = function(Path)
 		local Attributes = FFI.C.GetFileAttributesW(u2w(Path))
 		return Attributes ~= FFI.C.INVALID_FILE_ATTRIBUTES and Bit.band(Attributes, FFI.C.FILE_ATTRIBUTE_DIRECTORY) ~= 0
+	end
+
+	Copy = function(Source, Dest)
+		FFI.C.CopyFileW(u2w(Source), u2w(Dest), false)
 	end
 else
 	FFI.cdef[[
@@ -320,6 +326,14 @@ else
 		end
 
 		return Result
+	end
+
+	Copy = function(Source, Dest)
+		local inp = assert(io.open(Source, "rb"))
+		local out = assert(io.open(Dest, "wb"))
+		local data = inp:read("*all")
+		out:write(data)
+		assert(out:close())
 	end
 
 end
@@ -596,6 +610,15 @@ function FileSystem.GetClipboard()
 	end
 
 	return Contents
+end
+
+function FileSystem.ToLove(Source)
+	local ext = FileSystem.GetExtension(Source)
+
+	love.filesystem.createDirectory('tmp')
+	Copy(Source, love.filesystem.getSaveDirectory() .. "/tmp/temp." .. ext)
+
+	return "tmp/temp." .. ext
 end
 
 return FileSystem

@@ -36,7 +36,7 @@ local DefaultStyles = {}
 local CurrentStyle = ""
 local FontStack = {}
 
-local Style = 
+local Style =
 {
 	Font = nil,
 	FontSize = 14,
@@ -69,14 +69,19 @@ local Style =
 	InputSelectColor = {0.14, 0.29, 0.53, 0.4},
 	InputSliderColor = {0.1, 0.1, 0.1, 1.0},
 	MultilineTextColor = {0.0, 0.0, 0.0, 1.0},
+	ListBoxBgColor = {0.0, 0.0, 0.0, 0.0},
 
 	WindowRounding = 2.0,
+	WindowBorder = 4.0,
+	WindowTitleH = 0.0,
 	ButtonRounding = 2.0,
 	CheckBoxRounding = 2.0,
 	ComboBoxRounding = 2.0,
 	InputBgRounding = 2.0,
 	ScrollBarRounding = 2.0,
 	Indent = 14.0,
+	MenuPadH = 0.0,
+	MenuItemPadH = 0.0,
 
 	API = API
 }
