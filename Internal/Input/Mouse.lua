@@ -30,6 +30,7 @@ local Common = require(SLAB_PATH .. '.Internal.Input.Common')
 local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
 local TablePool = require(SLAB_PATH .. '.Internal.Core.TablePool')
 local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
 
 
 local Mouse = {}
@@ -165,7 +166,7 @@ function Mouse.Update()
 	State.AsyncDeltaX = 0
 	State.AsyncDeltaY = 0
 
-	if Cursors == nil then
+	if Cursors == nil and (not Utility.IsMobile()) then
 		Cursors = {}
 		Cursors.Arrow = love.mouse.getSystemCursor('arrow')
 		Cursors.SizeWE = love.mouse.getSystemCursor('sizewe')

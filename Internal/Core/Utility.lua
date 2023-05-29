@@ -176,16 +176,17 @@ function Utility.TableCount(Table)
 	return Result
 end
 
+local OS = love.system.getOS()
 function Utility.IsWindows()
-	return love.system.getOS() == "Windows"
+	return OS == "Windows"
 end
 
 function Utility.IsOSX()
-	return love.system.getOS() == "OS X"
+	return OS == "OS X"
 end
 
 function Utility.IsMobile()
-	return love.system.getOS() == "Android" or love.system.getOS() == "iOS"
+	return (OS == "Android") or (OS == "iOS")
 end
 
 function Utility.Clamp(Value, Min, Max)
