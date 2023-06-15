@@ -76,9 +76,8 @@ local function OnMouseMoved(X, Y, DX, DY, IsTouch)
 	State.X = tX
 	State.Y = tY
 
-	local tDX, tDY = ScaleMouseXY(DX, DY)
-	State.AsyncDeltaX = State.AsyncDeltaX + tDX
-	State.AsyncDeltaY = State.AsyncDeltaY + tDY
+	State.AsyncDeltaX = State.AsyncDeltaX + DX
+	State.AsyncDeltaY = State.AsyncDeltaY + DY
 
 	if MouseMovedFn ~= nil then
 		MouseMovedFn(X, Y, DX, DY, IsTouch)
