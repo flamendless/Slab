@@ -247,6 +247,8 @@ local IsDefault = true
 local QuitFn = nil
 local Verbose = false
 local Initialized = false
+local DontInterceptEventHandlers = false
+
 
 local ModifyCursor = true
 
@@ -282,7 +284,7 @@ end
 local function TextInput(Ch)
 	Input.Text(Ch)
 
-	if love.textinput ~= nil then
+	if (not DontInterceptEventHandlers) and love.textinput ~= nil then
 		love.textinput(Ch)
 	end
 end
@@ -290,7 +292,7 @@ end
 local function WheelMoved(X, Y)
 	Window.WheelMoved(X, Y)
 
-	if love.wheelmoved ~= nil then
+	if (not DontInterceptEventHandlers) and love.wheelmoved ~= nil then
 		love.wheelmoved(X, Y)
 	end
 end
@@ -334,6 +336,7 @@ function Slab.Initialize(args, dontInterceptEventHandlers)
 		return
 	end
 
+	DontInterceptEventHandlers = dontInterceptEventHandlers
 	Style.API.Initialize()
 
 	args = args or {}
