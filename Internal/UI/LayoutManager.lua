@@ -29,8 +29,9 @@ local remove = table.remove
 local max = math.max
 local min = math.min
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
 
 local LayoutManager = {}
 

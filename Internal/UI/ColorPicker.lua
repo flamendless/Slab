@@ -30,17 +30,18 @@ local min = math.min
 local insert = table.insert
 local unpack = table.unpack
 
-local Button = require(SLAB_PATH .. '.Internal.UI.Button')
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Image = require(SLAB_PATH .. '.Internal.UI.Image')
-local Input = require(SLAB_PATH .. '.Internal.UI.Input')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Const = require("const")
+local Button = require(Const.SLAB_PATH .. '.Internal.UI.Button')
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(Const.SLAB_PATH .. '.Internal.UI.Image')
+local Input = require(Const.SLAB_PATH .. '.Internal.UI.Input')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Mouse = require(Const.SLAB_PATH .. '.Internal.Input.Mouse')
+local Style = require(Const.SLAB_PATH .. '.Style')
+local Text = require(Const.SLAB_PATH .. '.Internal.UI.Text')
+local Utility = require(Const.SLAB_PATH .. '.Internal.Core.Utility')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
 
 local ColorPicker = {}
 

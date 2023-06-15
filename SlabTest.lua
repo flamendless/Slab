@@ -24,8 +24,9 @@ SOFTWARE.
 
 --]]
 
-local Slab = require(SLAB_PATH .. '.Slab')
-local SlabDebug = require(SLAB_PATH .. '.SlabDebug')
+local Const = require("const")
+local Slab = require(Const.SLAB_PATH .. '.Slab')
+local SlabDebug = require(Const.SLAB_PATH .. '.SlabDebug')
 
 local SlabTest = {}
 
@@ -121,7 +122,7 @@ local function DrawButtons()
 	Slab.Textf(
 		"Buttons can also display images instead of a text label. This can be down through the 'Image' option, which accepts a table " ..
 		"where the options are the same as those found in the 'Image' API function.")
-	Slab.Button("", {Image = {Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/avatar.png"}})
+	Slab.Button("", {Image = {Path = Const.SLAB_FILE_PATH .. "/Internal/Resources/Textures/avatar.png"}})
 end
 
 local DrawText_Width = 450.0
@@ -688,8 +689,8 @@ local function DrawInput()
 	end
 end
 
-local DrawImage_Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/avatar.png"
-local DrawImage_Path_Icons = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png"
+local DrawImage_Path = Const.SLAB_FILE_PATH .. "/Internal/Resources/Textures/avatar.png"
+local DrawImage_Path_Icons = Const.SLAB_FILE_PATH .. "/Internal/Resources/Textures/Icons.png"
 local DrawImage_Color = {1, 0, 0, 1}
 local DrawImage_Color_Edit = false
 local DrawImage_Scale = 1.0
@@ -1045,7 +1046,7 @@ local function DrawListBox()
 	Slab.EndListBox()
 end
 
-local DrawTree_Icon_Path = SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"
+local DrawTree_Icon_Path = Const.SLAB_FILE_PATH .. "/Internal/Resources/Textures/Folder.png"
 local DrawTree_Opened_Selected = 1
 local DrawTree_Tables = nil
 
@@ -2324,7 +2325,7 @@ local function DrawLayout()
 end
 
 local DrawFonts_Roboto = nil
-local DrawFonts_Roboto_Path = SLAB_FILE_PATH .. "/Internal/Resources/Fonts/Roboto-Regular.ttf"
+local DrawFonts_Roboto_Path = Const.SLAB_FILE_PATH .. "/Internal/Resources/Fonts/Roboto-Regular.ttf"
 
 local function DrawFonts()
 	if DrawFonts_Roboto == nil then

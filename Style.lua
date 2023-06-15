@@ -24,10 +24,11 @@ SOFTWARE.
 
 --]]
 
-local Config = require(SLAB_PATH .. '.Internal.Core.Config')
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local FileSystem = require(SLAB_PATH .. '.Internal.Core.FileSystem')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
+local Const = require("const")
+local Config = require(Const.SLAB_PATH .. '.Internal.Core.Config')
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local FileSystem = require(Const.SLAB_PATH .. '.Internal.Core.FileSystem')
+local Utility = require(Const.SLAB_PATH .. '.Internal.Core.Utility')
 
 local API = {}
 local Styles = {}
@@ -88,7 +89,7 @@ local Style =
 
 function API.Initialize()
 	local StylePath = "/Internal/Resources/Styles/"
-	local Path = SLAB_FILE_PATH .. StylePath
+	local Path = Const.SLAB_FILE_PATH .. StylePath
 	-- Use love's filesystem functions to support both packaged and unpackaged builds
 	local Items = love.filesystem.getDirectoryItems(Path)
 

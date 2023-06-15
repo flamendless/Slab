@@ -24,9 +24,7 @@ SOFTWARE.
 
 --]]
 
--- Global path used in all modules in this library
-SLAB_PATH = ...
-
-local Slab = require(SLAB_PATH .. '.API')
+local Const = require("const")
+local Slab = require(Const.SLAB_PATH .. ".API")
 
 return Slab

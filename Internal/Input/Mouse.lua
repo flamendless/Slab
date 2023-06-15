@@ -26,11 +26,12 @@ SOFTWARE.
 
 local insert = table.insert
 
-local Common = require(SLAB_PATH .. '.Internal.Input.Common')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local TablePool = require(SLAB_PATH .. '.Internal.Core.TablePool')
-local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
-local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local Const = require("const")
+local Common = require(Const.SLAB_PATH .. '.Internal.Input.Common')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local TablePool = require(Const.SLAB_PATH .. '.Internal.Core.TablePool')
+local Scale = require(Const.SLAB_PATH .. ".Internal.Core.Scale")
+local Utility = require(Const.SLAB_PATH .. ".Internal.Core.Utility")
 
 
 local Mouse = {}

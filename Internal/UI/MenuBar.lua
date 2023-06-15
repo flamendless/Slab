@@ -24,12 +24,11 @@ SOFTWARE.
 
 --]]
 
-local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
-local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
-local Menu = require(SLAB_PATH .. ".Internal.UI.Menu")
-local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
-local Style = require(SLAB_PATH .. ".Style")
-local Window = require(SLAB_PATH .. ".Internal.UI.Window")
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. ".Internal.Core.Cursor")
+local MenuState = require(Const.SLAB_PATH .. ".Internal.UI.MenuState")
+local Style = require(Const.SLAB_PATH .. ".Style")
+local Window = require(Const.SLAB_PATH .. ".Internal.UI.Window")
 
 local MenuBar = {}
 local Instances = {}

@@ -28,14 +28,14 @@ local insert = table.insert
 local format = string.format
 local min = math.min
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
-local Utility = require(SLAB_PATH .. '.Internal.Core.Utility')
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Mouse = require(Const.SLAB_PATH .. '.Internal.Input.Mouse')
+local Style = require(Const.SLAB_PATH .. '.Style')
+local Text = require(Const.SLAB_PATH .. '.Internal.UI.Text')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
+local Utility = require(Const.SLAB_PATH .. '.Internal.Core.Utility')
 
 local Tooltip = {}
 local LastDisplayTime = 0.0

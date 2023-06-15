@@ -30,11 +30,12 @@ local max = math.max
 local min = math.min
 local huge = math.huge
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Stats = require(Const.SLAB_PATH .. '.Internal.Core.Stats')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
 
 local Shape = {}
 local Curve = nil

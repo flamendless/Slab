@@ -24,17 +24,18 @@ SOFTWARE.
 
 --]]
 
-local Slab = require(SLAB_PATH .. '.Slab')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Input = require(SLAB_PATH .. '.Internal.UI.Input')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Tree = require(SLAB_PATH .. '.Internal.UI.Tree')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
+local Const = require("const")
+local Slab = require(Const.SLAB_PATH .. '.Slab')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Input = require(Const.SLAB_PATH .. '.Internal.UI.Input')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Mouse = require(Const.SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(Const.SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(Const.SLAB_PATH .. '.Internal.Core.Stats')
+local Style = require(Const.SLAB_PATH .. '.Style')
+local Tooltip = require(Const.SLAB_PATH .. '.Internal.UI.Tooltip')
+local Tree = require(Const.SLAB_PATH .. '.Internal.UI.Tree')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
 
 local SlabDebug = {}
 local SlabDebug_About = 'SlabDebug_About'

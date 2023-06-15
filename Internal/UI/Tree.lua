@@ -28,20 +28,21 @@ local max = math.max
 local insert = table.insert
 local remove = table.remove
 
-local Button = require(SLAB_PATH .. '.Internal.UI.Button')
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local Image = require(SLAB_PATH .. '.Internal.UI.Image')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Messages = require(SLAB_PATH .. '.Internal.Core.Messages')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Region = require(SLAB_PATH .. '.Internal.UI.Region')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Text = require(SLAB_PATH .. '.Internal.UI.Text')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
-local IdCache = require(SLAB_PATH .. '.Internal.Core.IdCache')
+local Const = require("const")
+local Button = require(Const.SLAB_PATH .. '.Internal.UI.Button')
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local Image = require(Const.SLAB_PATH .. '.Internal.UI.Image')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Messages = require(Const.SLAB_PATH .. '.Internal.Core.Messages')
+local Mouse = require(Const.SLAB_PATH .. '.Internal.Input.Mouse')
+local Region = require(Const.SLAB_PATH .. '.Internal.UI.Region')
+local Stats = require(Const.SLAB_PATH .. '.Internal.Core.Stats')
+local Style = require(Const.SLAB_PATH .. '.Style')
+local Text = require(Const.SLAB_PATH .. '.Internal.UI.Text')
+local Tooltip = require(Const.SLAB_PATH .. '.Internal.UI.Tooltip')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
+local IdCache = require(Const.SLAB_PATH .. '.Internal.Core.IdCache')
 
 local Tree = {}
 local Instances = setmetatable({}, {__mode = "k"})
@@ -173,7 +174,7 @@ function Tree.Begin(Id, Options)
 
 		if not ExpandIconOptions then
 			ExpandIconOptions = {
-				Image = { Path = SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubW = 50, SubH = 50 },
+				Image = { Path = Const.SLAB_FILE_PATH .. '/Internal/Resources/Textures/Icons.png', SubW = 50, SubH = 50 },
 				PadX = 0,
 				PadY = 0,
 				Color = TRANSPARENT,

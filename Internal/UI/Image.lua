@@ -24,15 +24,14 @@ SOFTWARE.
 
 --]]
 
-local Cursor = require(SLAB_PATH .. '.Internal.Core.Cursor')
-local DrawCommands = require(SLAB_PATH .. '.Internal.Core.DrawCommands')
-local LayoutManager = require(SLAB_PATH .. '.Internal.UI.LayoutManager')
-local Mouse = require(SLAB_PATH .. '.Internal.Input.Mouse')
-local Stats = require(SLAB_PATH .. '.Internal.Core.Stats')
-local Style = require(SLAB_PATH .. '.Style')
-local Tooltip = require(SLAB_PATH .. '.Internal.UI.Tooltip')
-local Window = require(SLAB_PATH .. '.Internal.UI.Window')
-local IdCache = require(SLAB_PATH .. '.Internal.Core.IdCache')
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. '.Internal.Core.Cursor')
+local DrawCommands = require(Const.SLAB_PATH .. '.Internal.Core.DrawCommands')
+local LayoutManager = require(Const.SLAB_PATH .. '.Internal.UI.LayoutManager')
+local Stats = require(Const.SLAB_PATH .. '.Internal.Core.Stats')
+local Tooltip = require(Const.SLAB_PATH .. '.Internal.UI.Tooltip')
+local Window = require(Const.SLAB_PATH .. '.Internal.UI.Window')
+local IdCache = require(Const.SLAB_PATH .. '.Internal.Core.IdCache')
 
 local Image = {}
 local instances = {}

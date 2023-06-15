@@ -28,11 +28,12 @@ local max = math.max
 local min = math.min
 local floor = math.floor
 
-local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
-local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
-local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
-local Style = require(SLAB_PATH .. ".Style")
-local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
+local Const = require("const")
+local DrawCommands = require(Const.SLAB_PATH .. ".Internal.Core.DrawCommands")
+local MenuState = require(Const.SLAB_PATH .. ".Internal.UI.MenuState")
+local Mouse = require(Const.SLAB_PATH .. ".Internal.Input.Mouse")
+local Style = require(Const.SLAB_PATH .. ".Style")
+local Utility = require(Const.SLAB_PATH .. ".Internal.Core.Utility")
 
 local Region = {}
 local Instances = {}

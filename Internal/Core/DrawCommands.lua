@@ -24,10 +24,6 @@ SOFTWARE.
 
 --]]
 
-local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
-local TablePool = require(SLAB_PATH .. ".Internal.Core.TablePool")
-local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
-
 local insert = table.insert
 local remove = table.remove
 local sin = math.sin
@@ -37,13 +33,17 @@ local max = math.max
 local min = math.min
 local graphics = love.graphics
 
+local Const = require("const")
+local Stats = require(Const.SLAB_PATH .. ".Internal.Core.Stats")
+local TablePool = require(Const.SLAB_PATH .. ".Internal.Core.TablePool")
+local Scale = require(Const.SLAB_PATH .. ".Internal.Core.Scale")
+
 local DrawCommands = {}
 
 local PendingBatches = {}
 local ActiveBatch = nil
 local Shaders = {}
 
-local EMPTY = {}
 local BLACK = { 0, 0, 0, 1 }
 local WHITE = { 1, 1, 1, 1 }
 

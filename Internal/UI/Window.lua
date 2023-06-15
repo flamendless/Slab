@@ -29,17 +29,18 @@ local remove = table.remove
 local max = math.max
 local floor = math.floor
 
-local Cursor = require(SLAB_PATH .. ".Internal.Core.Cursor")
-local Dock = require(SLAB_PATH .. '.Internal.UI.Dock')
-local DrawCommands = require(SLAB_PATH .. ".Internal.Core.DrawCommands")
-local MenuState = require(SLAB_PATH .. ".Internal.UI.MenuState")
-local Mouse = require(SLAB_PATH .. ".Internal.Input.Mouse")
-local Region = require(SLAB_PATH .. ".Internal.UI.Region")
-local Stats = require(SLAB_PATH .. ".Internal.Core.Stats")
-local Style = require(SLAB_PATH .. ".Style")
-local Utility = require(SLAB_PATH .. ".Internal.Core.Utility")
-local IdCache = require(SLAB_PATH .. ".Internal.Core.IdCache")
-local Scale = require(SLAB_PATH .. ".Internal.Core.Scale")
+local Const = require("const")
+local Cursor = require(Const.SLAB_PATH .. ".Internal.Core.Cursor")
+local Dock = require(Const.SLAB_PATH .. '.Internal.UI.Dock')
+local DrawCommands = require(Const.SLAB_PATH .. ".Internal.Core.DrawCommands")
+local MenuState = require(Const.SLAB_PATH .. ".Internal.UI.MenuState")
+local Mouse = require(Const.SLAB_PATH .. ".Internal.Input.Mouse")
+local Region = require(Const.SLAB_PATH .. ".Internal.UI.Region")
+local Stats = require(Const.SLAB_PATH .. ".Internal.Core.Stats")
+local Style = require(Const.SLAB_PATH .. ".Style")
+local Utility = require(Const.SLAB_PATH .. ".Internal.Core.Utility")
+local IdCache = require(Const.SLAB_PATH .. ".Internal.Core.IdCache")
+local Scale = require(Const.SLAB_PATH .. ".Internal.Core.Scale")
 
 
 local Window = {}
