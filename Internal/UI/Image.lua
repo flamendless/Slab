@@ -102,15 +102,18 @@ function Image.Begin(id, options)
 	scaleX = options.W and (options.W / instance.Image:getWidth()) or scaleX
 	scaleY = options.H and (options.H / instance.Image:getHeight()) or scaleY
 
-	w = w * scaleX
-	h = h * scaleY
+	local hasExplicitSize = options.W and options.H
+	if not hasExplicitSize then
+		-- if the size isn't explictly defined, then apply scaling to the size.
+		-- (If size is explicit, don't apply scaling, because the w,h are already exactly correct.)
+		w = w * scaleX
+		h = h * scaleY
+	end
 
 	local useSubImage = subW > 0.0 and subH > 0.0
 	if useSubImage then
 		scaleX = options.W and (options.W / subW) or scaleX
 		scaleY = options.H and (options.H / subH) or scaleY
-		w = options.W or w
-		h = options.H or h
 	end
 
 	w, h = LayoutManager.ComputeSize(w, h)
