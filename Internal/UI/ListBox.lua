@@ -144,13 +144,14 @@ function ListBox.Begin(id, options)
 		Region.Begin(instance.Id, region)
 	end
 
+	local in_region = Region.Contains(mouseX, mouseY)
 	instance.HotItem = nil
 	mouseX, mouseY = Region.InverseTransform(instance.Id, mouseX, mouseY)
 	for k, v in pairs(instance.Items) do
 		if not isObstructed
 			and not Region.IsHoverScrollBar(instance.Id)
 			and v.X <= mouseX and mouseX <= v.X + instance.W and v.Y <= mouseY and mouseY <= v.Y + v.H
-			and Region.Contains(mouseX, mouseY)
+			and in_region
 			then
 			instance.HotItem = v
 		end
