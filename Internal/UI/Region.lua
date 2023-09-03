@@ -47,19 +47,22 @@ local HotInstance = nil
 local WheelInstance = nil
 local ScrollInstance = nil
 
+local ScrollbarMinWidth = 10
+local ScrollbarMinHeight = 10
+
 local EMPTY = {}
 local tempColor = {}
 
 local function GetXScrollSize(instance)
 	if instance ~= nil then
-		return max(instance.W - (instance.ContentW - instance.W), 10)
+		return max(instance.W - (instance.ContentW - instance.W), ScrollbarMinWidth)
 	end
 	return 0
 end
 
 local function GetYScrollSize(instance)
 	if instance ~= nil then
-		return max(instance.H - (instance.ContentH - instance.H), 10)
+		return max(instance.H - (instance.ContentH - instance.H), ScrollbarMinHeight)
 	end
 	return 0
 end
