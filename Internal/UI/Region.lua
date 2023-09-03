@@ -48,7 +48,7 @@ local WheelInstance = nil
 local ScrollInstance = nil
 
 local ScrollbarMinWidth = 10
-local ScrollbarMinHeight = 10
+local ScrollbarMinHeight = 30
 
 local EMPTY = {}
 local tempColor = {}
