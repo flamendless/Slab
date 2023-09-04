@@ -768,7 +768,11 @@ end
 	Return: [Boolean] Returns true if the main menu bar process has started.
 --]]
 function Slab.BeginMainMenuBar()
-	Cursor.SetPosition(0.0, 0.0)
+	local X,Y = 0.0, 0.0
+	if Utility.IsMobile() then
+		X, Y = love.window.getSafeArea()
+	end
+	Cursor.SetPosition(X, Y)
 	return Slab.BeginMenuBar(true)
 end
 
