@@ -148,6 +148,8 @@ local function NewInstance(id)
 			IgnoreScroll = true,
 		},
 		InstanceRegion = {},
+		ShowScrollbarX = false,
+		ShowScrollbarY = false,
 	}
 	return instance
 end
@@ -561,6 +563,8 @@ function Window.Begin(id, options)
 	local canObstruct = options.CanObstruct == nil or options.CanObstruct
 	local rounding = options.Rounding or Style.WindowRounding
 	local showMinimize = options.ShowMinimize == nil or options.ShowMinimize
+	local showScrollbarX = not not options.ShowScrollbarX
+	local showScrollbarY = not not options.ShowScrollbarY
 
 	TitleRounding[1], TitleRounding[2] = rounding, rounding
 	BodyRounding[3], BodyRounding[4] = rounding, rounding
@@ -632,6 +636,8 @@ function Window.Begin(id, options)
 	ActiveInstance.StatHandle = statHandle
 	ActiveInstance.NoSavedSettings = options.NoSavedSettings
 	ActiveInstance.ShowMinimize = showMinimize
+	ActiveInstance.ShowScrollbarX = showScrollbarX
+	ActiveInstance.ShowScrollbarY = showScrollbarY
 
 	local showClose = false
 	if options.IsOpen ~= nil and type(options.IsOpen) == 'boolean' then
@@ -806,6 +812,12 @@ function Window.Begin(id, options)
 		region.ResetContent = ActiveInstance.HasResized
 		region.Rounding = bodyRounding
 		region.NoOutline = options.NoOutline
+
+		if ActiveInstance.ShowScrollbarX or ActiveInstance.ShowScrollbarY then
+			region.IsObstructed = false
+		end
+		region.ForceShowX = showScrollbarX
+		region.ForceShowY = showScrollbarY
 
 		Region.Begin(ActiveInstance.Id, region)
 	end

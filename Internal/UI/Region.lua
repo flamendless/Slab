@@ -92,13 +92,13 @@ local function Contains(instance, x, y)
 	return false
 end
 
-local function UpdateScrollBars(instance, isObstructed)
+local function UpdateScrollBars(instance, isObstructed, forceShowX, forceShowY)
 	if instance.IgnoreScroll then
 		return
 	end
 
-	instance.HasScrollX = instance.ContentW > instance.W
-	instance.HasScrollY = instance.ContentH > instance.H
+	instance.HasScrollX = forceShowX or (instance.ContentW > instance.W)
+	instance.HasScrollY = forceShowY or (instance.ContentH > instance.H)
 
 	local x, y = instance.MouseX, instance.MouseY
 	instance.HoverScrollX, instance.HoverScrollY = IsScrollHovered(instance, x, y)
@@ -302,7 +302,7 @@ function Region.Begin(id, options)
 	ActiveInstance = instance
 	table.insert(Stack, 1, ActiveInstance)
 
-	UpdateScrollBars(instance, options.IsObstructed)
+	UpdateScrollBars(instance, options.IsObstructed, options.ForceShowX, options.ForceShowY)
 
 	if options.AutoSizeContent then
 		instance.ContentH = 0
@@ -314,7 +314,12 @@ function Region.Begin(id, options)
 	end
 
 	if not options.IsObstructed then
-		if Contains(instance, instance.MouseX, instance.MouseY) or (instance.HoverScrollX or instance.HoverScrollY) then
+		if (
+			options.ForceShowX or
+			options.ForceShowY or
+			Contains(instance, instance.MouseX, instance.MouseY) or
+			(instance.HoverScrollX or instance.HoverScrollY)
+		) then
 			if ScrollInstance == nil then
 				HotInstance = instance
 			else
