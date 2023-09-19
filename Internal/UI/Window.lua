@@ -207,7 +207,7 @@ local function UpdateTitleBar(instance, isObstructed, allowMove, constrain)
 			instance.IsMoving = false
 
 			-- Prevent window going behind MenuBar
-			if MenuBarInstance then
+			if MenuBarInstance and Contains(MenuBarInstance, mouseX, mouseY) then
 				instance.TitleDeltaY = MenuBarInstance.H
 			end
 		end
