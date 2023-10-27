@@ -1300,7 +1300,7 @@ function Input.Begin(Id, Options)
 			DragSelect = false
 		end
 
-		if Keyboard.IsPressed('return') then
+		if Keyboard.IsPressed('return') or Keyboard.IsPressed('kpenter') then
 			Result = true
 			if Options.MultiLine then
 				Input.Text('\n')
