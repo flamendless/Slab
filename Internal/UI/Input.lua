@@ -76,6 +76,7 @@ local DragDelta = 0
 
 local MIN_WIDTH = 150.0
 local DEF_PW_CHAR = "*"
+local LINE_NUMBER_W = 32
 
 local function SanitizeText(Data)
 	local Result = false
@@ -88,6 +89,25 @@ local function SanitizeText(Data)
 
 	return Data, Result
 end
+
+local function UpdateLineNumbers(Instance, W, H, n_right, color)
+	if not Instance.LineNumbers then return end
+	n_right = n_right or 0
+	local n_lines = max(H/Text.GetHeight(), n_right)
+	local line_numbers = {}
+	for i = 0, n_lines do
+		table.insert(line_numbers, Instance.LineNumbersStart + i)
+	end
+
+	local lines = table.concat(line_numbers, "\r\n")
+	if color then
+		local colored_lines = {color, lines}
+		Instance.LineNumbersObject:setf(colored_lines, W - 2, "right")
+	else
+		Instance.LineNumbersObject:setf(lines, W - 2, "right")
+	end
+end
+
 
 local function GetDisplayCharacter(Data, Pos)
 	local Result = ''
@@ -267,35 +287,34 @@ local function GetSelection(Instance)
 end
 
 local function MoveCursorVertical(Instance, MoveDown)
-	if Instance ~= nil and Instance.Lines ~= nil then
-		local OldLineNumber = TextCursorPosLineNumber
-		if MoveDown then
-			TextCursorPosLineNumber = min(TextCursorPosLineNumber + 1, #Instance.Lines)
+	if (Instance == nil) or (Instance.Lines == nil) then return end
+	local OldLineNumber = TextCursorPosLineNumber
+	if MoveDown then
+		TextCursorPosLineNumber = min(TextCursorPosLineNumber + 1, #Instance.Lines)
+	else
+		TextCursorPosLineNumber = max(1, TextCursorPosLineNumber - 1)
+	end
+	local Line = Instance.Lines[TextCursorPosLineNumber]
+	if OldLineNumber == TextCursorPosLineNumber then
+		TextCursorPosLine = MoveDown and len(Line) or 0
+	else
+		if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= len(Line) then
+			TextCursorPosLine = len(Line)
 		else
-			TextCursorPosLineNumber = max(1, TextCursorPosLineNumber - 1)
-		end
-		local Line = Instance.Lines[TextCursorPosLineNumber]
-		if OldLineNumber == TextCursorPosLineNumber then
-			TextCursorPosLine = MoveDown and len(Line) or 0
-		else
-			if TextCursorPosLineNumber == #Instance.Lines and TextCursorPosLine >= len(Line) then
-				TextCursorPosLine = len(Line)
-			else
-				TextCursorPosLine = min(len(Line), TextCursorPosLineMax + 1)
-				local Ch = GetCharacter(Line, TextCursorPosLine)
-				if Ch ~= nil then
-					TextCursorPosLine = TextCursorPosLine - len(Ch)
-				end
+			TextCursorPosLine = min(len(Line), TextCursorPosLineMax + 1)
+			local Ch = GetCharacter(Line, TextCursorPosLine)
+			if Ch ~= nil then
+				TextCursorPosLine = TextCursorPosLine - len(Ch)
 			end
 		end
-		local Start = 0
-		for I, V in ipairs(Instance.Lines) do
-			if I == TextCursorPosLineNumber then
-				TextCursorPos = Start + TextCursorPosLine
-				break
-			end
-			Start = Start + len(V)
+	end
+	local Start = 0
+	for I, V in ipairs(Instance.Lines) do
+		if I == TextCursorPosLineNumber then
+			TextCursorPos = Start + TextCursorPosLine
+			break
 		end
+		Start = Start + len(V)
 	end
 end
 
@@ -558,36 +577,38 @@ local function MoveCursorPage(Instance, PageDown)
 end
 
 local function UpdateTransform(Instance)
-	if Instance ~= nil then
-		local X, Y = GetCursorPos(Instance)
+	if Instance == nil then return end
+	local X, Y = GetCursorPos(Instance)
 
-		local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
-		local W = TX + Instance.W - Region.GetScrollPad() - Region.GetScrollBarSize()
-		local H = TY + Instance.H
+	local TX, TY = Region.InverseTransform(Instance.Id, 0.0, 0.0)
+	local W = TX + Instance.W - Region.GetScrollPad() - Region.GetScrollBarSize()
+	local H = TY + Instance.H
 
-		if Instance.H > Text.GetHeight() then
-			H = H - Region.GetScrollPad() - Region.GetScrollBarSize()
-		end
+	if Instance.H > Text.GetHeight() then
+		H = H - Region.GetScrollPad() - Region.GetScrollBarSize()
+	end
 
-		local NewX = 0.0
-		if TextCursorPosLine == 0 then
-			NewX = TX
-		elseif X > W then
-			NewX = -(X - W)
-		elseif X < TX then
-			NewX = TX - X
-		end
+	local NewX = 0.0
+	if TextCursorPosLine == 0 then
+		NewX = TX
+	elseif X > W then
+		NewX = -(X - W)
+	elseif X < TX then
+		NewX = TX - X
+	end
 
-		local NewY = 0.0
-		if TextCursorPosLineNumber == 1 then
-			NewY = TY
-		elseif Y > H then
-			NewY = -(Y - H)
-		elseif Y < TY then
-			NewY = TY - Y
-		end
+	local NewY = 0.0
+	if TextCursorPosLineNumber == 1 then
+		NewY = TY
+	elseif Y > H then
+		NewY = -(Y - H)
+	elseif Y < TY then
+		NewY = TY - Y
+	end
 
-		Region.Translate(Instance.Id, NewX, NewY)
+	Region.Translate(Instance.Id, NewX, NewY)
+	if Instance.LineNumbers then
+		Region.Translate(Instance.Id .. "LineNumbers", NewX, NewY)
 	end
 end
 
@@ -814,19 +835,6 @@ local function UpdateTextObject(Instance, Width, Align, Highlight, BaseColor)
 	end
 
 	Instance.TextObject:setf(ColoredText, Width, Align)
-end
-
-local function UpdateLineNumbers(Instance, W, H, n_right)
-	if not Instance.LineNumbers then return end
-	n_right = n_right or 0
-	local n_lines = max(H/Text.GetHeight(), n_right)
-	local line_numbers = {}
-	for i = 0, n_lines + 8 do
-		table.insert(line_numbers, Instance.LineNumbersStart + i)
-	end
-
-	local lines = table.concat(line_numbers, "\r\n")
-	Instance.LineNumbersObject:setf(lines, W - 2, "right")
 end
 
 local function UpdateSlider(Instance, Precision)
@@ -1065,11 +1073,10 @@ function Input.Begin(Id, Options)
 		ShouldUpdateTextObject = true
 	end
 
-	local line_number_width = 32
 	if Instance.MultiLine and Instance.LineNumbers then
 		if Instance.LineNumbersObject == nil then
 			Instance.LineNumbersObject = love.graphics.newText(Style.Font)
-			UpdateLineNumbers(Instance, line_number_width, H)
+			UpdateLineNumbers(Instance, LINE_NUMBER_W, H, nil, Options.TextColor)
 		end
 	end
 
@@ -1100,7 +1107,7 @@ function Input.Begin(Id, Options)
 	end
 
 	if ShouldUpdateTextObject then
-		UpdateLineNumbers(Instance, line_number_width, H)
+		UpdateLineNumbers(Instance, LINE_NUMBER_W, H, nil, Options.TextColor)
 		UpdateTextObject(
 			Instance,
 			Options.MultiLineW,
@@ -1330,7 +1337,7 @@ function Input.Begin(Id, Options)
 			DragSelect = false
 		end
 
-		if Keyboard.IsPressed('return') or Keyboard.IsPressed('kpenter') then
+		if Keyboard.IsPressed("return") or Keyboard.IsPressed("kpenter") then
 			Result = true
 			if Options.MultiLine then
 				Input.Text('\n')
@@ -1346,8 +1353,20 @@ function Input.Begin(Id, Options)
 
 			if Options.MultiLine then
 				Instance.Lines = Text.GetLines(Instance.Text, Options.MultiLineW)
-				UpdateLineNumbers(Instance, line_number_width, H, #Instance.Lines)
-				UpdateTextObject(Instance, Options.MultiLineW, Instance.Align, Options.Highlight, Options.TextColor)
+				UpdateLineNumbers(
+					Instance,
+					LINE_NUMBER_W,
+					H,
+					#Instance.Lines,
+					Options.TextColor
+				)
+				UpdateTextObject(
+					Instance,
+					Options.MultiLineW,
+					Instance.Align,
+					Options.Highlight,
+					Options.TextColor
+				)
 			end
 
 			UpdateMultiLinePosition(Instance)
@@ -1386,12 +1405,11 @@ function Input.Begin(Id, Options)
 	end
 
 	local TX, TY = Window.TransformPoint(X, Y)
-
 	if Instance.LineNumbers and (Instance.LineNumbersObject ~= nil) then
-		Region.Begin(Instance.Id .. "LineNumber", {
+		Region.Begin(Instance.Id .. "LineNumbers", {
 			X = X,
 			Y = Y,
-			W = line_number_width,
+			W = LINE_NUMBER_W,
 			H = H,
 			ContentW = ContentW + Pad,
 			ContentH = ContentH + Pad,
@@ -1411,9 +1429,10 @@ function Input.Begin(Id, Options)
 			LayoutManager.End()
 		Region.End()
 		Region.ApplyScissor()
-		X = X + line_number_width
+		X = X + LINE_NUMBER_W
 	end
 
+	TX, TY = Window.TransformPoint(X, Y)
 	Region.Begin(Instance.Id, {
 		X = X,
 		Y = Y,
