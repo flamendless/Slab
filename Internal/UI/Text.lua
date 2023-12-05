@@ -196,19 +196,25 @@ function Text.GetSizeWrap(label, width)
 end
 
 function Text.GetLines(label, width)
-	local w, lines = Style.Font:getWrap(label, width)
+	local _, lines = Style.Font:getWrap(label, width)
 
 	local start = 0
 	for i, v in ipairs(lines) do
-		if #v == 0 then
-			lines[i] = "\n"
+		local line
+		local len_v = #v
+		if len_v == 0 then
+			line = "\n"
 		else
-			local offset = start + #v + 1
+			local offset = start + len_v + 1
 			local ch = string.sub(label, offset, offset)
 
-			if ch == '\n' then
-				lines[i] = lines[i] .. "\n"
+			if ch == "\n" then
+				line = lines[i] .. "\n"
 			end
+		end
+
+		if line then
+			lines[i] = line
 		end
 
 		start = start + #lines[i]

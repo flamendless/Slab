@@ -297,7 +297,7 @@ local function GetInstance(Id)
 end
 
 function LayoutManager.AddControl(W, H, Type)
-	if Active ~= nil and not Active.Ignore then
+	if Active ~= nil and (not Active.Ignore) then
 		AddControl(Active, W, H, Type)
 	end
 end
