@@ -118,10 +118,12 @@ local function DrawRect(Rect)
 	local StatHandle = Stats.Begin('DrawRect', StatsCategory)
 
 	local LineW = graphics.getLineWidth()
+	local Color = table.pack(graphics.getColor())
 	graphics.setLineWidth(Rect.LineW)
 	graphics.setColor(Rect.Color)
 	local pixelOffset = Rect.Mode == 'line' and .5 or 0
 	graphics.rectangle(Rect.Mode, Rect.X + pixelOffset, Rect.Y + pixelOffset, Rect.Width, Rect.Height, Rect.Radius, Rect.Radius)
+	graphics.setColor(Color)
 	graphics.setLineWidth(LineW)
 
 	Stats.End(StatHandle)
@@ -151,8 +153,10 @@ end
 local function DrawTriangle(Triangle)
 	local StatHandle = Stats.Begin('DrawTriangle', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Triangle.Color)
 	graphics.polygon(Triangle.Mode, GetTriangleVertices(Triangle.X, Triangle.Y, Triangle.Radius, Triangle.Rotation))
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -160,12 +164,14 @@ end
 local function DrawCheck(Check)
 	local StatHandle = Stats.Begin('DrawCheck', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Check.Color)
 	graphics.line(
 		Check.X - Check.Radius * 0.5, Check.Y,
 		Check.X, Check.Y + Check.Radius,
 		Check.X + Check.Radius, Check.Y - Check.Radius
 	)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -173,9 +179,11 @@ end
 local function DrawText(Text)
 	local StatHandle = Stats.Begin('DrawText', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setFont(Text.Font)
 	graphics.setColor(Text.Color)
 	graphics.print(Text.Text, Text.X, Text.Y)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -183,9 +191,11 @@ end
 local function DrawTextFormatted(Text)
 	local StatHandle = Stats.Begin('DrawTextFormatted', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setFont(Text.Font)
 	graphics.setColor(Text.Color)
 	graphics.printf(Text.Text, Text.X, Text.Y, Text.W, Text.Align)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -193,8 +203,10 @@ end
 local function DrawTextObject(Text)
 	local StatHandle = Stats.Begin('DrawTextObject', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(1, 1, 1, 1)
 	graphics.draw(Text.Text, Text.X, Text.Y)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -202,11 +214,13 @@ end
 local function DrawLine(Line)
 	local StatHandle = Stats.Begin('DrawLine', StatsCategory)
 
-	graphics.setColor(Line.Color)
+	local Color = table.pack(graphics.getColor())
 	local LineW = graphics.getLineWidth()
+	graphics.setColor(Line.Color)
 	graphics.setLineWidth(Line.Width)
 	graphics.line(Line.X1, Line.Y1, Line.X2, Line.Y2)
 	graphics.setLineWidth(LineW)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -214,11 +228,13 @@ end
 local function DrawCross(Cross)
 	local StatHandle = Stats.Begin('DrawCross', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	local X, Y = Cross.X, Cross.Y
 	local R = Cross.Radius
 	graphics.setColor(Cross.Color)
 	graphics.line(X - R, Y - R, X + R, Y + R)
 	graphics.line(X - R, Y + R, X + R, Y - R)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -226,8 +242,10 @@ end
 local function DrawImage(Image)
 	local StatHandle = Stats.Begin('DrawImage', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Image.Color)
 	graphics.draw(Image.Image, Image.X, Image.Y, Image.Rotation, Image.ScaleX, Image.ScaleY)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -235,8 +253,10 @@ end
 local function DrawSubImage(Image)
 	local StatHandle = Stats.Begin('DrawSubImage', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Image.Color)
 	graphics.draw(Image.Image, Image.Quad, Image.Transform)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -244,8 +264,10 @@ end
 local function DrawCircle(Circle)
 	local StatHandle = Stats.Begin('DrawCircle', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Circle.Color)
 	graphics.circle(Circle.Mode, Circle.X, Circle.Y, Circle.Radius, Circle.Segments)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -253,8 +275,10 @@ end
 local function DrawCurve(Curve)
 	local StatHandle = Stats.Begin('DrawCurve', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Curve.Color)
 	graphics.line(Curve.Points)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -262,8 +286,10 @@ end
 local function DrawPolygon(Polygon)
 	local StatHandle = Stats.Begin('DrawPolygon', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(Polygon.Color)
 	graphics.polygon(Polygon.Mode, Polygon.Points)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -271,10 +297,12 @@ end
 local function DrawCanvas(Canvas)
 	local StatHandle = Stats.Begin('DrawCanvas', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setBlendMode('alpha', 'premultiplied')
 	graphics.setColor(1.0, 1.0, 1.0, 1.0)
 	graphics.draw(Canvas.Canvas, Canvas.X, Canvas.Y)
 	graphics.setBlendMode('alpha')
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
@@ -282,8 +310,10 @@ end
 local function DrawMesh(Mesh)
 	local StatHandle = Stats.Begin('DrawMesh', StatsCategory)
 
+	local Color = table.pack(graphics.getColor())
 	graphics.setColor(1.0, 1.0, 1.0, 1.0)
 	graphics.draw(Mesh.Mesh, Mesh.X, Mesh.Y)
+	graphics.setColor(Color)
 
 	Stats.End(StatHandle)
 end
