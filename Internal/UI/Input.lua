@@ -647,6 +647,13 @@ local function DeleteSelection(Instance)
 		local Right = sub(Instance.Text, Max)
 		Instance.Text = Left .. Right
 
+		if Instance.IsPassword then
+			local Left = sub(Instance.OrigText, 1, Min)
+			local Right = sub(Instance.OrigText, Max)
+			Instance.OrigText = Left .. Right
+			Instance.PasswordText = string.rep(Instance.PasswordChar, #Instance.OrigText)
+		end
+
 		TextCursorPos = len(Left)
 
 		if TextCursorAnchor ~= -1 then
@@ -926,6 +933,8 @@ local function GetInstance(Id)
 	local Instance = {}
 	Instance.Id = Id
 	Instance.Text = ""
+	Instance.OrigText = ""
+	Instance.PasswordText = ""
 	Instance.TextChanged = false
 	Instance.NumbersOnly = true
 	Instance.ReadOnly = false
@@ -976,11 +985,6 @@ function Input.Begin(Id, Options)
 	Options.IsPassword = not not Options.IsPassword --default is false
 	Options.PasswordChar = Options.IsPassword and Options.PasswordChar or DEF_PW_CHAR
 
-	if Options.IsPassword then
-		Options.OrigText = Options.Text
-		Options.Text = string.rep(Options.PasswordChar, #Options.Text)
-	end
-
 	if type(Options.MinNumber) ~= "number" then
 		Options.MinNumber = nil
 	end
@@ -1003,6 +1007,8 @@ function Input.Begin(Id, Options)
 	Instance.LineNumbers = Options.LineNumbers
 	Instance.LineNumbersStart = Options.LineNumbersStart
 	Instance.NeedDrag = Options.NeedDrag
+	Instance.IsPassword = Options.IsPassword
+	Instance.PasswordChar = Options.PasswordChar
 
 	if Instance.MultiLineW ~= Options.MultiLineW then
 		Instance.Lines = nil
@@ -1029,6 +1035,10 @@ function Input.Begin(Id, Options)
 		end
 
 		Instance.Text = Options.Text == nil and Instance.Text or Options.Text
+
+		if Options.IsPassword then
+			Instance.Text = Instance.PasswordText == nil and Instance.Text or Instance.PasswordText
+		end
 	end
 
 	if Instance.MinNumber ~= nil and Instance.MaxNumber ~= nil then
@@ -1522,11 +1532,22 @@ function Input.Text(Ch)
 
 		if TextCursorPos == 0 then
 			Focused.Text = Ch .. Focused.Text
+			Focused.OrigText = Ch .. Focused.OrigText
 		else
-			local Temp = Focused.Text
-			local Left = sub(Temp, 0, TextCursorPos)
-			local Right = sub(Temp, TextCursorPos + 1)
+			local Left = sub(Focused.Text, 0, TextCursorPos)
+			local Right = sub(Focused.Text, TextCursorPos + 1)
 			Focused.Text = Left .. Ch .. Right
+
+			if Focused.IsPassword then
+				local Left = sub(Focused.OrigText, 0, TextCursorPos)
+				local Right = sub(Focused.OrigText, TextCursorPos + 1)
+				Focused.OrigText = Left .. Ch .. Right
+			end
+		end
+
+		if Focused.IsPassword then
+			Focused.PasswordText = string.rep(Focused.PasswordChar, #Focused.OrigText)
+			Focused.Text = Focused.PasswordText
 		end
 
 		TextCursorPos = min(TextCursorPos + len(Ch), len(Focused.Text))
