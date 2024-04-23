@@ -465,10 +465,12 @@ function Slab.Draw()
 		Button.ClearClicked()
 	end
 
+	love.graphics.setColor(1, 1, 1, 1)
 	love.graphics.push()
 	love.graphics.origin()
 	DrawCommands.Execute()
 	love.graphics.pop()
+	love.graphics.setColor(1, 1, 1, 1)
 
 	Stats.End(StatHandle)
 
