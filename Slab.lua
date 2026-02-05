@@ -30,6 +30,8 @@ if SLAB_PATH == nil then
 	SLAB_PATH = (...):match("(.-)[^%.]+$") 
 end
 
+---@type Slab
 local Slab = require(SLAB_PATH .. '.API')
 
+---@type Slab
 return Slab
