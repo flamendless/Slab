@@ -27,6 +27,8 @@ SOFTWARE.
 -- Global path used in all modules in this library
 SLAB_PATH = ...
 
+---@type Slab
 local Slab = require(SLAB_PATH .. '.API')
 
+---@type Slab
 return Slab
