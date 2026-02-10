@@ -1382,7 +1382,7 @@ function Input.Begin(Id, Options)
 			UpdateMultiLinePosition(Instance)
 
 			Instance.TextChanged = false
-			PreviousTextCursorPos = -1
+			-- PreviousTextCursorPos = -1
 		end
 
 		if ShouldUpdateTransform then
