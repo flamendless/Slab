@@ -1204,7 +1204,7 @@ function Input.Begin(Id, Options)
 
 		if Keyboard.IsPressed('backspace') then
 			ShouldDelete = true
-			IgnoreBack = TextCursorAnchor ~= -1
+			-- IgnoreBack = TextCursorAnchor ~= -1
 		end
 
 		if Keyboard.IsPressed('delete') then
@@ -1215,7 +1215,7 @@ function Input.Begin(Id, Options)
 					ShouldDelete = true
 				end
 			else
-				IgnoreBack = true
+				-- IgnoreBack = true
 				ShouldDelete = true
 			end
 		end
