@@ -321,7 +321,7 @@ end
 ---@field BgColor? table
 ---@field SelectColor? table
 ---@field SelectOnFocus? boolean
----@field NumberOnly? boolean
+---@field NumbersOnly? boolean
 ---@field W? number
 ---@field H? number
 ---@field ReadOnly? boolean
