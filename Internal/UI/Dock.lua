@@ -103,6 +103,15 @@ local function DrawOverlay(Type)
 		return
 	end
 
+	-- Проверка DisableDocks у перетаскиваемого окна
+	if PendingWindow and PendingWindow.DisableDocks then
+		for _, d in ipairs(PendingWindow.DisableDocks) do
+			if d == Type then
+				return
+			end
+		end
+	end
+
 	local X, Y, W, H = GetOverlayBounds(Type)
 	local Color = {0.29, 0.59, 0.83, 0.65}
 	local TitleH = 14
@@ -183,14 +192,14 @@ function Dock.GetBounds(Type, Options)
 		W = Options.W or 150
 		H = ViewH - Y - TitleH
 	elseif Type == 'Right' then
-		X = ViewW - 150
-		Y = MainMenuBarH
 		W = Options.W or 150
+		X = ViewW - W
+		Y = MainMenuBarH
 		H = ViewH - Y - TitleH
 	elseif Type == 'Bottom' then
-		Y = ViewH - 150
-		W = ViewW
 		H = Options.H or 150
+		Y = ViewH - H
+		W = ViewW
 	end
 
 	return X, Y, W, H
@@ -364,4 +373,3 @@ function Dock.Load(Table)
 end
 
 return Dock
-
