@@ -600,7 +600,7 @@ function Window.Begin(id, options)
 	end
 
 	ActiveInstance = instance
-	-- Сохраняем DisableDocks в инстансе для доступа из Dock
+	-- Save DisableDocks in the instance to access from Dock
 	if options.DisableDocks then
 		instance.DisableDocks = options.DisableDocks
 	end
@@ -628,7 +628,9 @@ function Window.Begin(id, options)
 	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + h + border, border)
 	ActiveInstance.X = ActiveInstance.TitleDeltaX + x
 	ActiveInstance.Y = ActiveInstance.TitleDeltaY + y
-	-- Жёстко фиксируем позицию для dock-окон
+
+
+	-- Hard-fix position for docked windows
 	if dockType == 'Right' then
 		ActiveInstance.X = Scale.GetScreenWidth() - ActiveInstance.W
 	elseif dockType == 'Bottom' then

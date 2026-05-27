@@ -103,7 +103,7 @@ local function DrawOverlay(Type)
 		return
 	end
 
-	-- Проверка DisableDocks у перетаскиваемого окна
+	-- Check DisableDocks for the window being dragged
 	if PendingWindow and PendingWindow.DisableDocks then
 		for _, d in ipairs(PendingWindow.DisableDocks) do
 			if d == Type then
