@@ -533,8 +533,18 @@ function Window.Begin(id, options)
 
 	options = options or EMPTY
 
-	if not Mouse.IsDragging(1) then
+	local instance = GetInstance(id)
+	local dockType = Dock.GetDock(id)
+
+	if not Mouse.IsDragging(1) or dockType then
 		Dock.AlterOptions(id, options)
+		if dockType then
+			if instance.SizerType == 0 then
+				instance.TitleDeltaX = 0
+				instance.TitleDeltaY = 0
+			end
+			options.ResetPosition = false
+		end
 	end
 
 	local x = options.X or 50
@@ -578,7 +588,7 @@ function Window.Begin(id, options)
 		bodyRounding = rounding
 	end
 
-	local instance = GetInstance(id)
+	--local instance = GetInstance(id)
 	insert(PendingStack, 1, instance)
 
 	if options.IsMenuBar then
@@ -590,6 +600,10 @@ function Window.Begin(id, options)
 	end
 
 	ActiveInstance = instance
+	-- Save DisableDocks in the instance to access from Dock
+	if options.DisableDocks then
+		instance.DisableDocks = options.DisableDocks
+	end
 	if autoSizeWindowW then
 		w = 0
 	end
@@ -610,11 +624,19 @@ function Window.Begin(id, options)
 	if ActiveInstance.Border ~= border then
 		resetSize = true
 	end
-
-	ActiveInstance.X = ActiveInstance.TitleDeltaX + x
-	ActiveInstance.Y = ActiveInstance.TitleDeltaY + y
 	ActiveInstance.W = max(ActiveInstance.SizeDeltaX + w + border, border)
 	ActiveInstance.H = max(ActiveInstance.SizeDeltaY + h + border, border)
+	ActiveInstance.X = ActiveInstance.TitleDeltaX + x
+	ActiveInstance.Y = ActiveInstance.TitleDeltaY + y
+
+
+	-- Hard-fix position for docked windows
+	if dockType == 'Right' then
+		ActiveInstance.X = Scale.GetScreenWidth() - ActiveInstance.W
+	elseif dockType == 'Bottom' then
+		ActiveInstance.Y = Scale.GetScreenHeight() - ActiveInstance.H
+	end
+
 	ActiveInstance.ContentW = contentW
 	ActiveInstance.ContentH = contentH
 	ActiveInstance.BackgroundColor = bgColor
