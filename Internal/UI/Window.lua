@@ -539,7 +539,18 @@ function Window.Begin(id, options)
 
 	options = options or EMPTY
 
-	if not Mouse.IsDragging(1) then
+	-- Mouse.IsDragging(1) is GLOBAL mouse state (button held + moved), not
+	-- specific to this window -- so guarding AlterOptions on it alone skips
+	-- the dock-bounds recalculation for EVERY window, including docked ones
+	-- that aren't being touched at all, for as long as ANY OTHER window is
+	-- being dragged. A stationary docked window then keeps toggling between
+	-- its correct docked bounds (whenever this happens to be a frame where
+	-- Mouse.HasDelta() is momentarily false) and its raw undocked options
+	-- (options.X/Y/W/H as passed by the caller every frame) otherwise --
+	-- a constant visible flicker on the docked window for the whole
+	-- duration of dragging something else. Only skip AlterOptions for the
+	-- window that is itself the one currently being moved.
+	if not (Mouse.IsDragging(1) and GetInstance(id).IsMoving) then
 		Dock.AlterOptions(id, options)
 	end
 
