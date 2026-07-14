@@ -183,14 +183,20 @@ function Dock.GetBounds(Type, Options)
 		W = Options.W or 150
 		H = ViewH - Y - TitleH
 	elseif Type == 'Right' then
-		X = ViewW - 150
-		Y = MainMenuBarH
+		-- X must be offset by the real W, not a hardcoded 150, or a window
+		-- docked Right wider than 150 overflows off the right edge of the
+		-- screen (its left edge is still anchored at ViewW - 150 while its
+		-- own width extends further than that).
 		W = Options.W or 150
+		X = ViewW - W
+		Y = MainMenuBarH
 		H = ViewH - Y - TitleH
 	elseif Type == 'Bottom' then
-		Y = ViewH - 150
-		W = ViewW
+		-- Same fix, vertically: a window docked Bottom taller than 150
+		-- overflows off the bottom of the screen without this.
 		H = Options.H or 150
+		Y = ViewH - H
+		W = ViewW
 	end
 
 	return X, Y, W, H
