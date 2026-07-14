@@ -205,6 +205,28 @@ end
 function Dock.AlterOptions(WinId, Options)
 	Options = Options == nil and {} or Options
 
+	-- A drag-to-dock only becomes official via Dock.Commit(), called from
+	-- Slab.Draw() once the window stops moving -- but Slab.Draw() runs
+	-- AFTER this same frame's widget code (Window.Begin, called from the
+	-- host application's update phase) already built this window's draw
+	-- commands using its OLD (undocked) bounds plus whatever drag offset
+	-- had accumulated. That one-frame lag renders a visible glitch/flash --
+	-- the window jumps to a stale position for exactly one frame -- before
+	-- snapping to the correct docked bounds the frame after (worse the
+	-- further the window was dragged before release). Detect the same
+	-- "mouse just released while hovering a valid dock zone" condition
+	-- Dock.Commit() checks, and commit it here too, so the very same
+	-- Window.Begin call that sees the release also sees the correct dock
+	-- bounds -- Dock.Commit() still runs afterward in Slab.Draw() and just
+	-- harmlessly repeats this assignment.
+	if PendingWindow ~= nil and PendingWindow.Id == WinId and IsValid(Pending) and Mouse.IsReleased(1) then
+		local PendingInstance = GetInstance(Pending)
+		if PendingInstance.Window == nil then
+			PendingInstance.Window = WinId
+			PendingInstance.Reset = true
+		end
+	end
+
 	for Id, Instance in pairs(Instances) do
 		if Instance.Window == WinId then
 
