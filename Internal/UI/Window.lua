@@ -240,8 +240,14 @@ local function UpdateTitleBar(instance, isObstructed, allowMove, constrain)
 
 				if options ~= nil then
 					-- Properly place the window at the mouse position offset by the title width/height.
-					instance.TitleDeltaX = mouseX - x - floor(w * 0.25)
-					instance.TitleDeltaY = mouseY - y - floor(h * 0.5)
+					-- NOTE: TitleDeltaX/Y is added to options.X/Y (the cached, pre-dock bounds this
+					-- window reverts to starting next frame's Window.Begin, now that it's untethered) --
+					-- NOT to x/w/h above, which are this frame's still-docked position/size. Computing
+					-- the delta against x/y instead of options.X/Y makes the window jump back toward its
+					-- old pre-dock position for one frame before subsequent mouse deltas correct it -- a
+					-- visible "flash to the original position" on every tear.
+					instance.TitleDeltaX = mouseX - options.X - floor((options.W or w) * 0.25)
+					instance.TitleDeltaY = mouseY - options.Y - floor((options.H or h) * 0.5)
 				end
 			end
 		end
